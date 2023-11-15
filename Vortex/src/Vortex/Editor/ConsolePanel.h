@@ -14,7 +14,7 @@ namespace Vortex {
 	{
 	public:
 		ConsolePanel();
-		~ConsolePanel();
+		~ConsolePanel() override;
 
 		void OnGuiRender() override;
 

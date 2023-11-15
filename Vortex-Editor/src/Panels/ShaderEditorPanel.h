@@ -2,27 +2,27 @@
 
 #include <Vortex.h>
 
+#include <Vortex/Editor/EditorPanel.h>
+
 #include <TextEditor.h>
 
 namespace Vortex {
 
-	class ShaderEditorPanel
+	class ShaderEditorPanel : public EditorPanel
 	{
 	public:
-		ShaderEditorPanel();
-		~ShaderEditorPanel() = default;
+		~ShaderEditorPanel() override = default;
 
-		void OnGuiRender();
-		void SetProjectContext(SharedReference<Project>& project) {}
-		void SetSceneContext(SharedReference<Scene>& scene) {}
-		bool& IsOpen() { return s_ShowPanel; }
+		void OnEditorAttach() override;
+		void OnEditorDetach() override;
+
+		void OnGuiRender() override;
+
+		EDITOR_PANEL_TYPE(ShaderEditor)
 
 	private:
 		void LoadShaderFile(const std::filesystem::path& path);
-		void RenderShaderCodeEditor();
-
-	private:
-		inline static bool s_ShowPanel = false;
+		void RenderShaderEditor();
 
 	private:
 		std::filesystem::path m_CurrentShaderPath = std::filesystem::path();

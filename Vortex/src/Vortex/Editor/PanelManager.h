@@ -94,13 +94,18 @@ namespace Vortex {
 		}
 
 		template <typename TPanel>
-		bool MainMenuBarItem()
+		bool MainMenuBarItem(const std::string& shortcut = "")
 		{
 			static_assert(std::is_base_of<EditorPanel, TPanel>::value, "MainMenuBarItem only works with type derived from EditorPanel!");
 
 			SharedReference<TPanel> panel = GetPanel<TPanel>();
 			std::string panelName = panel->GetName();
-			const bool clicked = Gui::MenuItem(panelName.c_str(), nullptr, &panel->IsOpen);
+
+			const bool clicked = Gui::MenuItem(
+				panelName.c_str(),
+				shortcut.empty() ? nullptr : shortcut.c_str(),
+				&panel->IsOpen
+			);
 
 			if (clicked)
 			{

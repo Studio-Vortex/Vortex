@@ -9,7 +9,9 @@ namespace Vortex {
 		{
 			switch (type)
 			{
+				case EditorPanelType::BuildSettings: return "Build Settings";
 				case EditorPanelType::SystemManager: return "System Manager";
+				case EditorPanelType::ShaderEditor:  return "Shader Editor";
 				case EditorPanelType::SubModules:    return "Sub Modules";
 				case EditorPanelType::ECSDebug:      return "ECS Registry View";
 				case EditorPanelType::Console:       return "Console";

@@ -16,7 +16,9 @@
 
 #include <Vortex/Editor/ConsolePanel.h>
 
+#include "Panels/BuildSettingsPanel.h"
 #include "Panels/SystemManagerPanel.h"
+#include "Panels/ShaderEditorPanel.h"
 #include "Panels/SubModulesPanel.h"
 #include "Panels/ECSDebugPanel.h"
 #include "Panels/AboutPanel.h"
@@ -58,10 +60,9 @@ namespace Vortex {
 
 		m_PanelManager = PanelManager::Create();
 
-		// (NOTE): We may not be creating all panels here,
-		//         this is because some panels need to be
-		//         created when a project is opened etc...
+		m_PanelManager->AddPanel<BuildSettingsPanel>(VX_BIND_CALLBACK(OnLaunchRuntime));
 		m_PanelManager->AddPanel<SystemManagerPanel>();
+		m_PanelManager->AddPanel<ShaderEditorPanel>();
 		m_PanelManager->AddPanel<SubModulesPanel>();
 		m_PanelManager->AddPanel<ECSDebugPanel>();
 		m_PanelManager->AddPanel<ConsolePanel>()->IsOpen = true;
@@ -398,9 +399,9 @@ namespace Vortex {
 			m_MaterialEditorPanel.OnGuiRender();
 			m_SceneRendererPanel.OnGuiRender();
 			m_AssetRegistryPanel.OnGuiRender();
-			m_BuildSettingsPanel->OnGuiRender();
+			m_PanelManager->OnGuiRender<BuildSettingsPanel>();
 			m_PanelManager->OnGuiRender<SystemManagerPanel>();
-			m_ShaderEditorPanel.OnGuiRender();
+			m_PanelManager->OnGuiRender<ShaderEditorPanel>();
 			m_PanelManager->OnGuiRender<SubModulesPanel>();
 			m_PanelManager->OnGuiRender<ECSDebugPanel>();
 			m_PanelManager->OnGuiRender<ConsolePanel>();
@@ -723,7 +724,7 @@ namespace Vortex {
 				}
 				UI::Draw::Underline();
 
-				Gui::MenuItem("Settings", "Ctrl+Shift+B", &m_BuildSettingsPanel->IsOpen());
+				m_PanelManager->MainMenuBarItem<BuildSettingsPanel>("Ctrl+Shift+B");
 
 				Gui::EndMenu();
 			}
@@ -748,7 +749,7 @@ namespace Vortex {
 				UI::Draw::Underline();
 				Gui::MenuItem("Second Viewport", nullptr, &m_ShowSecondViewport);
 				UI::Draw::Underline();
-				Gui::MenuItem("Shader Editor", nullptr, &m_ShaderEditorPanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<ShaderEditorPanel>();
 				UI::Draw::Underline();
 				Gui::MenuItem("Project Settings", nullptr, &m_ProjectSettingsPanel->IsOpen());
 				UI::Draw::Underline();
@@ -2356,8 +2357,8 @@ namespace Vortex {
 				{
 					if (shiftDown)
 					{
-						bool& buildSettingsPanelOpen = m_BuildSettingsPanel->IsOpen();
-						buildSettingsPanelOpen = !buildSettingsPanelOpen;
+						auto buildSettingsPanel = m_PanelManager->GetPanel<BuildSettingsPanel>();
+						buildSettingsPanel->IsOpen = !buildSettingsPanel->IsOpen;
 					}
 					else
 					{
@@ -2611,7 +2612,6 @@ namespace Vortex {
 		SharedReference<Project> activeProject = Project::GetActive();
 		m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(activeProject);
 		m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
-		m_BuildSettingsPanel = CreateShared<BuildSettingsPanel>(activeProject, VX_BIND_CALLBACK(OnLaunchRuntime));
 	}
 
 	void EditorLayer::SaveProject()

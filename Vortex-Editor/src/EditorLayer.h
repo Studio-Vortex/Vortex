@@ -14,8 +14,6 @@
 #include "Panels/MaterialEditorPanel.h"
 #include "Panels/SceneRendererPanel.h"
 #include "Panels/AssetRegistryPanel.h"
-#include "Panels/BuildSettingsPanel.h"
-#include "Panels/ShaderEditorPanel.h"
 #include "Panels/PerformancePanel.h"
 
 namespace Vortex {
@@ -188,8 +186,6 @@ namespace Vortex {
 		MaterialEditorPanel m_MaterialEditorPanel;
 		SceneRendererPanel m_SceneRendererPanel;
 		AssetRegistryPanel m_AssetRegistryPanel;
-		SharedRef<BuildSettingsPanel> m_BuildSettingsPanel = nullptr;
-		ShaderEditorPanel m_ShaderEditorPanel;
 		PerformancePanel m_PerformancePanel;
 
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
