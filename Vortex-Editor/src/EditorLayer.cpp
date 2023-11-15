@@ -134,11 +134,19 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Renderer::ResetRenderTime();
-
 		RenderTime& renderTime = Renderer::GetRenderTime();
-		InstrumentationTimer timer("Shadow Pass");
-		Renderer::RenderToDepthMap(m_ActiveScene);
-		renderTime.ShadowMapRenderTime += timer.ElapsedMS();
+
+		// Shadow pass
+		if (Entity skylightEntity = m_ActiveScene->GetSkylightEntity())
+		{
+			const auto& lsc = skylightEntity.GetComponent<LightSourceComponent>();
+			if (lsc.CastShadows)
+			{
+				InstrumentationTimer timer("Shadow Pass");
+				Renderer::RenderToDepthMap(m_ActiveScene);
+				renderTime.ShadowMapRenderTime += timer.ElapsedMS();
+			}
+		}
 
 		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
@@ -213,8 +221,9 @@ namespace Vortex {
 
 		m_Framebuffer->Unbind();
 
+		// Bloom pass
 		{
-			timer = InstrumentationTimer("Bloom Pass");
+			InstrumentationTimer timer = InstrumentationTimer("Bloom Pass");
 			Math::vec3 cameraPos = m_EditorCamera->GetPosition();
 			if (m_SceneState == SceneState::Play)
 			{
@@ -2927,7 +2936,6 @@ namespace Vortex {
 	{
 		m_PanelManager->SetSceneContext(scene);
 		m_SceneHierarchyPanel.SetSceneContext(scene);
-		m_SceneRendererPanel.SetSceneContext(scene);
 	}
 
 	void EditorLayer::ResetEditorCameras()

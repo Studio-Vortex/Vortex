@@ -724,10 +724,29 @@ namespace Vortex {
 
 		for (const auto entity : view)
 		{
-			auto& cc = view.get<CameraComponent>(entity);
+			const auto& cc = view.get<CameraComponent>(entity);
 
 			if (cc.Primary)
 				return { entity, this };
+		}
+
+		return Entity{};
+	}
+
+	Entity Scene::GetSkylightEntity()
+	{
+		VX_PROFILE_FUNCTION();
+
+		auto view = m_Registry.view<LightSourceComponent>();
+
+		for (const auto entity : view)
+		{
+			auto& lsc = view.get<LightSourceComponent>(entity);
+
+			if (lsc.Type != LightType::Directional)
+				continue;
+
+			return { entity, this };
 		}
 
 		return Entity{};

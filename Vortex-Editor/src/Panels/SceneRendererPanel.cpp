@@ -55,13 +55,20 @@ namespace Vortex {
 
 		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
-		if (UI::PropertyGridHeader("Shadow Maps", false))
+		if (Entity skylightEntity = m_ContextScene->GetSkylightEntity())
 		{
-			Gui::Text("Sky Light");
-			auto shadowMapID = Renderer::GetSkyLightDepthFramebuffer()->GetDepthTextureRendererID();
-			Gui::Image(reinterpret_cast<void*>(shadowMapID), { 256, 256 }, { 0, 1 }, { 1, 0 });
+			const auto& lsc = skylightEntity.GetComponent<LightSourceComponent>();
+			if (lsc.CastShadows)
+			{
+				if (UI::PropertyGridHeader("Shadow Maps", false))
+				{
+					Gui::Text("Sky Light");
+					auto shadowMapID = Renderer::GetSkyLightDepthFramebuffer()->GetDepthTextureRendererID();
+					Gui::Image(reinterpret_cast<void*>(shadowMapID), { 256, 256 }, { 0, 1 }, { 1, 0 });
 
-			UI::EndTreeNode();
+					UI::EndTreeNode();
+				}
+			}
 		}
 
 		if (UI::PropertyGridHeader("Shaders", false))

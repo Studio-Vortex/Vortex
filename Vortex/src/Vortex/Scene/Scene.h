@@ -98,7 +98,9 @@ namespace Vortex {
 
 		Entity GetRootEntityInHierarchy(Entity child) const;
 		Entity TryGetEntityWithUUID(UUID uuid);
+
 		Entity GetPrimaryCameraEntity();
+		Entity GetSkylightEntity();
 
 		Entity DuplicateEntity(Entity entity);
 
