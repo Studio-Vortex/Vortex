@@ -14,15 +14,15 @@ namespace Vortex::Math {
 		dirfrac.z = 1.0f / Direction.z;
 
 		// lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
-		// r.org is origin of ray
 		const Math::vec3& lb = aabb.Min;
 		const Math::vec3& rt = aabb.Max;
+
 		float t1 = (lb.x - Origin.x) * dirfrac.x;
-		float t2 = (lb.x - Origin.x) * dirfrac.x;
+		float t2 = (rt.x - Origin.x) * dirfrac.x;
 		float t3 = (lb.y - Origin.y) * dirfrac.y;
-		float t4 = (lb.y - Origin.y) * dirfrac.y;
+		float t4 = (rt.y - Origin.y) * dirfrac.y;
 		float t5 = (lb.z - Origin.z) * dirfrac.z;
-		float t6 = (lb.z - Origin.z) * dirfrac.z;
+		float t6 = (rt.z - Origin.z) * dirfrac.z;
 
 		float tmin = Math::Max(Math::Max(Math::Min(t1, t2), Math::Min(t3, t4)), Math::Min(t5, t6));
 		float tmax = Math::Min(Math::Min(Math::Max(t1, t2), Math::Max(t3, t4)), Math::Max(t5, t6));
@@ -42,7 +42,7 @@ namespace Vortex::Math {
 		}
 
 		t = tmin;
-		return false;
+		return true;
 	}
 
 }

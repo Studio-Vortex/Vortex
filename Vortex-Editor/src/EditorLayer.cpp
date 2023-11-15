@@ -2484,13 +2484,13 @@ namespace Vortex {
 			return false;
 		}
 
+		std::vector<UUID> selectionData;
+
 		auto [mouseX, mouseY] = GetMouseViewportSpace(m_SceneViewportHovered);
 		if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
 		{
 			const auto& camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
 			auto [origin, direction] = CastRay(camera, mouseX, mouseY);
-
-			std::vector<UUID> selectedEntities;
 
 			auto meshView = m_ActiveScene->GetAllEntitiesWith<MeshRendererComponent>();
 			for (const auto e : meshView)
@@ -2532,13 +2532,13 @@ namespace Vortex {
 					const bool intersects = ray.IntersectsAABB(aabb, t);
 					if (intersects)
 					{
-						selectedEntities.emplace_back(entity.GetUUID());
+						selectionData.emplace_back(entity.GetUUID());
 						break;
 					}
 				}
 			}
 
-			if (selectedEntities.empty())
+			if (selectionData.empty())
 			{
 				SelectionManager::DeselectEntity();
 				return false;
@@ -2547,7 +2547,7 @@ namespace Vortex {
 			const bool anyViewportHovered = (m_SceneViewportHovered && m_SceneState != SceneState::Play) || m_SecondViewportHovered;
 			if (anyViewportHovered)
 			{
-				Entity selected = m_ActiveScene->TryGetEntityWithUUID(selectedEntities.front());
+				Entity selected = m_ActiveScene->TryGetEntityWithUUID(selectionData.front());
 				SelectionManager::SetSelectedEntity(selected);
 
 				if (SelectionManager::GetSelectedEntity() != Entity{})
