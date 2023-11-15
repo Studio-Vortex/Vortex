@@ -2,21 +2,19 @@
 
 #include <Vortex.h>
 
+#include <Vortex/Editor/EditorPanel.h>
+
 namespace Vortex {
 
-	class SystemManagerPanel
+	class SystemManagerPanel : public EditorPanel
 	{
 	public:
 		SystemManagerPanel() = default;
-		~SystemManagerPanel() = default;
+		~SystemManagerPanel() override = default;
 
-		void OnGuiRender();
-		void SetProjectContext(SharedReference<Project>& project) { }
-		void SetSceneContext(SharedReference<Scene>& scene) { }
-		bool& IsOpen() { return s_ShowPanel; }
+		void OnGuiRender() override;
 
-	private:
-		inline static bool s_ShowPanel = false;
+		EDITOR_PANEL_TYPE(SystemManager)
 	};
 
 }

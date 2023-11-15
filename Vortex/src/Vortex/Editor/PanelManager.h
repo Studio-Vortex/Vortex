@@ -1,10 +1,9 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+#include "Vortex/Core/ReferenceCounting/RefCounted.h"
 
 #include "Vortex/Editor/EditorPanel.h"
-
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
 
 #include "Vortex/UI/UI.h"
 
@@ -14,44 +13,50 @@
 
 namespace Vortex {
 
-	using EditorPanelFn = std::function<void(SharedReference<EditorPanel>)>;
+	using VORTEX_API EditorPanelFn = std::function<void(SharedReference<EditorPanel>)>;
 
 	class VORTEX_API PanelManager : public RefCounted
 	{
 	public:
-		PanelManager();
-		~PanelManager();
+		PanelManager() = default;
+		~PanelManager() = default;
 
-		template <typename TPanel, typename ...Args>
-		SharedReference<TPanel> AddPanel(const std::string& name, Args&& ...args)
+		template <typename TPanel, typename... TArgs>
+		SharedReference<TPanel> AddPanel(TArgs&&... args)
 		{
 			static_assert(std::is_base_of<EditorPanel, TPanel>::value, "AddPanel only works with types derived from EditorPanel!");
 
-			VX_CORE_ASSERT(!m_Panels.contains(name), "Panel with name already exists");
-			SharedReference<TPanel> panel = SharedReference<TPanel>::Create(std::forward(args)...);
-			panel->SetName(name);
-			m_Panels[name] = panel;
+			VX_CORE_ASSERT(!m_Panels.contains(type), "Panel with type already exists");
+			SharedReference<TPanel> panel = SharedReference<TPanel>::Create(std::forward<TArgs>(args)...);
+			EditorPanelType type = TPanel::GetStaticType();
+			std::string panelName = Utils::EditorPanelTypeToString(type);
+			panel->SetName(panelName);
 
+			VX_CONSOLE_LOG_INFO("Panel created - '{}' {}", panelName, (uint64_t)panel.Raw());
+			m_Panels[type] = panel;
 			return panel;
 		}
 
-		bool RemovePanel(const std::string& name);
+		bool RemovePanel(EditorPanelType type);
 
 		template <typename TPanel>
 		SharedReference<TPanel> GetPanel()
 		{
 			static_assert(std::is_base_of<EditorPanel, TPanel>::value, "GetPanel only works with types derived from EditorPanel!");
 
-			for (auto& [name, panel] : m_Panels)
+			for (const auto& [type, panel] : m_Panels)
 			{
-				if (!panel.Is<TPanel>())
+				if (type != TPanel::GetStaticType())
 					continue;
-
+				
 				return panel.As<TPanel>();
 			}
 
 			VX_CORE_ASSERT(false, "Invalid panel type");
+			return nullptr;
 		}
+
+		SharedReference<EditorPanel> GetPanel(EditorPanelType type);
 
 		void OnEditorAttach();
 		void OnEditorDetach();
@@ -78,19 +83,19 @@ namespace Vortex {
 
 		void SetSceneContext(SharedReference<Scene> scene);
 
-		template <typename TPanel, typename ...Args>
-		void OnGuiRender(Args&& ...args)
+		template <typename TPanel, typename... TArgs>
+		void OnGuiRender(TArgs&&... args)
 		{
 			static_assert(std::is_base_of<EditorPanel, TPanel>::value, "OnGuiRender only works with types derived from EditorPanel!");
 
 			SharedReference<TPanel> panel = GetPanel<TPanel>();
-			panel->OnGuiRender();
+			panel->OnGuiRender(std::forward<TArgs>(args)...);
 		}
 
 		template <typename TPanel>
-		bool AddMainMenuBarItem()
+		bool MainMenuBarItem()
 		{
-			static_assert(std::is_base_of<EditorPanel, TPanel>::value, "AddMainMenuBarItem only works with type derived from EditorPanel!");
+			static_assert(std::is_base_of<EditorPanel, TPanel>::value, "MainMenuBarItem only works with type derived from EditorPanel!");
 
 			SharedReference<TPanel> panel = GetPanel<TPanel>();
 			std::string panelName = panel->GetName();
@@ -109,7 +114,7 @@ namespace Vortex {
 		static SharedReference<PanelManager> Create();
 
 	private:
-		std::unordered_map<std::string, SharedReference<EditorPanel>> m_Panels;
+		std::unordered_map<EditorPanelType, SharedReference<EditorPanel>> m_Panels;
 	};
 
 }

@@ -16,13 +16,10 @@
 #include "Panels/SceneRendererPanel.h"
 #include "Panels/AssetRegistryPanel.h"
 #include "Panels/BuildSettingsPanel.h"
-#include "Panels/SystemManagerPanel.h"
 #include "Panels/ShaderEditorPanel.h"
 #include "Panels/PerformancePanel.h"
 #include "Panels/SubModulesPanel.h"
 #include "Panels/ECSDebugPanel.h"
-#include "Panels/AboutPanel.h"
-
 
 namespace Vortex {
 
@@ -195,13 +192,11 @@ namespace Vortex {
 		SceneRendererPanel m_SceneRendererPanel;
 		AssetRegistryPanel m_AssetRegistryPanel;
 		SharedRef<BuildSettingsPanel> m_BuildSettingsPanel = nullptr;
-		SystemManagerPanel m_SystemManagerPanel;
 		ShaderEditorPanel m_ShaderEditorPanel;
 		PerformancePanel m_PerformancePanel;
 		SubModulesPanel m_SubModulesPanel;
 		ECSDebugPanel m_ECSDebugPanel;
 		ConsolePanel m_ConsolePanel;
-		//AboutPanel m_AboutPanel;
 
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;

@@ -2,8 +2,10 @@
 
 #include <Vortex/Serialization/SceneSerializer.h>
 #include <Vortex/Project/ProjectLoader.h>
+
 #include <Vortex/Scripting/ScriptEngine.h>
 #include <Vortex/Scripting/ScriptRegistry.h>
+
 #include <Vortex/Editor/EditorCamera.h>
 #include <Vortex/Editor/EditorResources.h>
 #include <Vortex/Editor/SelectionManager.h>
@@ -11,6 +13,9 @@
 #include <Vortex/Gui/Colors.h>
 
 #include <ImGuizmo.h>
+
+#include "Panels/SystemManagerPanel.h"
+#include "Panels/AboutPanel.h"
 
 namespace Vortex {
 
@@ -84,7 +89,8 @@ namespace Vortex {
 		);
 
 		m_PanelManager = PanelManager::Create();
-		m_PanelManager->AddPanel<AboutPanel>("About");
+		m_PanelManager->AddPanel<SystemManagerPanel>();
+		m_PanelManager->AddPanel<AboutPanel>();
 
 		m_PanelManager->OnEditorAttach();
 	}
@@ -378,7 +384,7 @@ namespace Vortex {
 			m_SceneRendererPanel.OnGuiRender();
 			m_AssetRegistryPanel.OnGuiRender();
 			m_BuildSettingsPanel->OnGuiRender();
-			m_SystemManagerPanel.OnGuiRender();
+			m_PanelManager->OnGuiRender<SystemManagerPanel>();
 			m_ShaderEditorPanel.OnGuiRender();
 			m_SubModulesPanel.OnGuiRender();
 			m_ECSDebugPanel.OnGuiRender();
@@ -746,7 +752,7 @@ namespace Vortex {
 					UI::Draw::Underline();
 					Gui::MenuItem("Sub Modules", nullptr, &m_SubModulesPanel.IsOpen());
 					UI::Draw::Underline();
-					Gui::MenuItem("System Manager", nullptr, &m_SystemManagerPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<SystemManagerPanel>();
 
 					Gui::EndMenu();
 				}
@@ -756,7 +762,7 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Help"))
 			{
-				m_PanelManager->AddMainMenuBarItem<AboutPanel>();
+				m_PanelManager->MainMenuBarItem<AboutPanel>();
 
 				Gui::EndMenu();
 			}

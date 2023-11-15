@@ -3,21 +3,28 @@
 
 namespace Vortex {
 
-	PanelManager::PanelManager() { }
-
-	PanelManager::~PanelManager() { }
-
-	bool PanelManager::RemovePanel(const std::string& name)
+	bool PanelManager::RemovePanel(EditorPanelType type)
 	{
-		VX_CORE_ASSERT(m_Panels.contains(name), "Invalid panel name");
-		if (!m_Panels.contains(name))
+		VX_CORE_ASSERT(m_Panels.contains(type), "Invalid panel type");
+		if (!m_Panels.contains(type))
 		{
 			return false;
 		}
 
-		m_Panels.erase(name);
+		m_Panels.erase(type);
 		return true;
 	}
+
+    SharedReference<EditorPanel> PanelManager::GetPanel(EditorPanelType type)
+    {
+		VX_CORE_ASSERT(m_Panels.contains(type), "Invalid panel type");
+		if (!m_Panels.contains(type))
+		{
+			return nullptr;
+		}
+
+		return m_Panels[type];
+    }
 
     void PanelManager::OnEditorAttach()
     {
@@ -49,7 +56,7 @@ namespace Vortex {
 
 	void PanelManager::ForEach(const EditorPanelFn& func)
 	{
-		for (auto& [name, panel] : m_Panels)
+		for (auto& [type, panel] : m_Panels)
 		{
 			func(panel);
 		}

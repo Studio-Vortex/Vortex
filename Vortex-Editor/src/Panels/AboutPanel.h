@@ -13,6 +13,8 @@ namespace Vortex {
 		~AboutPanel() override = default;
 
 		void OnGuiRender() override;
+
+		EDITOR_PANEL_TYPE(About)
 	};
 
 }
