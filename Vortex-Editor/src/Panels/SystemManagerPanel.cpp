@@ -8,10 +8,10 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (!m_ShowPanel)
+		if (!IsOpen)
 			return;
 
-		Gui::Begin(m_PanelName.c_str(), &m_ShowPanel);
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
 		auto& assetSystems = SystemManager::s_AssetSystems;
 

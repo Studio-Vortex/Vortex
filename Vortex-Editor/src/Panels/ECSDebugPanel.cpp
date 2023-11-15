@@ -10,13 +10,13 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (!s_ShowPanel)
+		if (!IsOpen)
 			return;
 
 		if (!m_ContextScene)
 			return;
 
-		Gui::Begin("ECS Registry View", &s_ShowPanel);
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
 		if (Entity selected = SelectionManager::GetSelectedEntity())
 		{

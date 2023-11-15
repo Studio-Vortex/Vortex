@@ -10,6 +10,9 @@ namespace Vortex {
 	{
 		None = 0,
 		SystemManager,
+		SubModules,
+		ECSDebug,
+		Console,
 		About,
 	};
 

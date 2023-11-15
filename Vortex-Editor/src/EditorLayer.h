@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/ConsolePanel.h>
 #include <Vortex/Scene/SceneRenderer.h>
 
 #include <Vortex/Editor/PanelManager.h>
@@ -18,8 +17,6 @@
 #include "Panels/BuildSettingsPanel.h"
 #include "Panels/ShaderEditorPanel.h"
 #include "Panels/PerformancePanel.h"
-#include "Panels/SubModulesPanel.h"
-#include "Panels/ECSDebugPanel.h"
 
 namespace Vortex {
 
@@ -194,9 +191,6 @@ namespace Vortex {
 		SharedRef<BuildSettingsPanel> m_BuildSettingsPanel = nullptr;
 		ShaderEditorPanel m_ShaderEditorPanel;
 		PerformancePanel m_PerformancePanel;
-		SubModulesPanel m_SubModulesPanel;
-		ECSDebugPanel m_ECSDebugPanel;
-		ConsolePanel m_ConsolePanel;
 
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;

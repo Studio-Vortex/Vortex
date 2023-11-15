@@ -1,29 +1,31 @@
 #pragma once
 
 #include "Vortex/Core/Math/Math.h"
-#include "Vortex/Editor/ConsoleMessage.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/Editor/EditorPanel.h"
+#include "Vortex/Editor/ConsoleMessage.h"
 
 namespace Vortex {
 
 	class Scene;
 
-	class ConsolePanel
+	class ConsolePanel : public EditorPanel
 	{
 	public:
 		ConsolePanel();
 		~ConsolePanel();
 
-		void OnGuiRender(SharedReference<Scene>& contextScene);
-
-		bool& IsOpen() { return s_ShowPanel; }
+		void OnGuiRender() override;
 
 		bool ClearOnPlay() const { return m_ClearOnPlay; }
 		void ClearMessages();
 
+		EDITOR_PANEL_TYPE(Console)
+
 	private:
 		void RenderMenu(const Math::vec2& size);
-		void RenderConsole(const Math::vec2& size, SharedReference<Scene>& contextScene);
+		void RenderConsole(const Math::vec2& size);
 
 		const char* GetMessageType(const ConsoleMessage& message) const;
 		const Math::vec4& GetMessageColor(const ConsoleMessage& message) const;
@@ -47,9 +49,6 @@ namespace Vortex {
 		bool m_DetailedPanelOpen = false;
 
 	private:
-
-		inline static bool s_ShowPanel = true;
-
 		friend class EditorConsoleSink;
 	};
 

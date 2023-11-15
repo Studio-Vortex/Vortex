@@ -15,6 +15,9 @@ namespace Vortex {
 	class VORTEX_API EditorPanel : public RefCounted
 	{
 	public:
+		bool IsOpen = false;
+
+	public:
 		virtual ~EditorPanel() = default;
 
 		virtual void OnEditorAttach() {}
@@ -27,7 +30,6 @@ namespace Vortex {
 
 		virtual void SetProjectContext(SharedReference<Project> project) { m_ContextProject = project; }
 		virtual void SetSceneContext(SharedReference<Scene> scene) { m_ContextScene = scene; }
-		virtual bool& IsOpen() { return m_ShowPanel; }
 
 		virtual const std::string& GetName() const { return m_PanelName; }
 		virtual void SetName(const std::string& name) { m_PanelName = name; }
@@ -36,7 +38,6 @@ namespace Vortex {
 		SharedReference<Project> m_ContextProject = nullptr;
 		SharedReference<Scene> m_ContextScene = nullptr;
 		std::string m_PanelName;
-		bool m_ShowPanel;
 	};
 
 }

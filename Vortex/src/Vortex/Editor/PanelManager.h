@@ -27,13 +27,14 @@ namespace Vortex {
 			static_assert(std::is_base_of<EditorPanel, TPanel>::value, "AddPanel only works with types derived from EditorPanel!");
 
 			VX_CORE_ASSERT(!m_Panels.contains(type), "Panel with type already exists");
+			
 			SharedReference<TPanel> panel = SharedReference<TPanel>::Create(std::forward<TArgs>(args)...);
 			EditorPanelType type = TPanel::GetStaticType();
 			std::string panelName = Utils::EditorPanelTypeToString(type);
 			panel->SetName(panelName);
 
-			VX_CONSOLE_LOG_INFO("Panel created - '{}' {}", panelName, (uint64_t)panel.Raw());
 			m_Panels[type] = panel;
+
 			return panel;
 		}
 
@@ -83,13 +84,13 @@ namespace Vortex {
 
 		void SetSceneContext(SharedReference<Scene> scene);
 
-		template <typename TPanel, typename... TArgs>
-		void OnGuiRender(TArgs&&... args)
+		template <typename TPanel>
+		void OnGuiRender()
 		{
 			static_assert(std::is_base_of<EditorPanel, TPanel>::value, "OnGuiRender only works with types derived from EditorPanel!");
 
 			SharedReference<TPanel> panel = GetPanel<TPanel>();
-			panel->OnGuiRender(std::forward<TArgs>(args)...);
+			panel->OnGuiRender();
 		}
 
 		template <typename TPanel>
@@ -99,7 +100,7 @@ namespace Vortex {
 
 			SharedReference<TPanel> panel = GetPanel<TPanel>();
 			std::string panelName = panel->GetName();
-			const bool clicked = Gui::MenuItem(panelName.c_str(), nullptr, &panel->IsOpen());
+			const bool clicked = Gui::MenuItem(panelName.c_str(), nullptr, &panel->IsOpen);
 
 			if (clicked)
 			{

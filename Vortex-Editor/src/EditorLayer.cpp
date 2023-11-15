@@ -14,7 +14,11 @@
 
 #include <ImGuizmo.h>
 
+#include <Vortex/Editor/ConsolePanel.h>
+
 #include "Panels/SystemManagerPanel.h"
+#include "Panels/SubModulesPanel.h"
+#include "Panels/ECSDebugPanel.h"
 #include "Panels/AboutPanel.h"
 
 namespace Vortex {
@@ -52,6 +56,17 @@ namespace Vortex {
 		m_ViewportSize = { appProps.WindowWidth, appProps.WindowHeight };
 		m_SecondViewportSize = { appProps.WindowWidth, appProps.WindowHeight };
 
+		m_PanelManager = PanelManager::Create();
+
+		// (NOTE): We may not be creating all panels here,
+		//         this is because some panels need to be
+		//         created when a project is opened etc...
+		m_PanelManager->AddPanel<SystemManagerPanel>();
+		m_PanelManager->AddPanel<SubModulesPanel>();
+		m_PanelManager->AddPanel<ECSDebugPanel>();
+		m_PanelManager->AddPanel<ConsolePanel>()->IsOpen = true;
+		m_PanelManager->AddPanel<AboutPanel>();
+
 		auto commandLineArgs = appProps.CommandLineArgs;
 		if (commandLineArgs.Count > 1)
 		{
@@ -88,11 +103,9 @@ namespace Vortex {
 			1000.0f
 		);
 
-		m_PanelManager = PanelManager::Create();
-		m_PanelManager->AddPanel<SystemManagerPanel>();
-		m_PanelManager->AddPanel<AboutPanel>();
-
 		m_PanelManager->OnEditorAttach();
+		m_PanelManager->SetSceneContext(m_ActiveScene);
+		m_PanelManager->SetProjectContext(activeProject);
 	}
 
 	void EditorLayer::OnDetach()
@@ -100,6 +113,8 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		m_PanelManager->OnEditorDetach();
+		m_PanelManager->SetSceneContext(nullptr);
+		m_PanelManager->SetProjectContext(nullptr);
 
 		delete m_EditorCamera;
 		delete m_SecondEditorCamera;
@@ -386,9 +401,9 @@ namespace Vortex {
 			m_BuildSettingsPanel->OnGuiRender();
 			m_PanelManager->OnGuiRender<SystemManagerPanel>();
 			m_ShaderEditorPanel.OnGuiRender();
-			m_SubModulesPanel.OnGuiRender();
-			m_ECSDebugPanel.OnGuiRender();
-			m_ConsolePanel.OnGuiRender(m_ActiveScene);
+			m_PanelManager->OnGuiRender<SubModulesPanel>();
+			m_PanelManager->OnGuiRender<ECSDebugPanel>();
+			m_PanelManager->OnGuiRender<ConsolePanel>();
 			m_PanelManager->OnGuiRender<AboutPanel>();
 		}
 
@@ -715,7 +730,7 @@ namespace Vortex {
 			
 			if (Gui::BeginMenu("Window"))
 			{
-				Gui::MenuItem("Console", nullptr, &m_ConsolePanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<ConsolePanel>();
 				UI::Draw::Underline();
 				Gui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel->IsOpen());
 				UI::Draw::Underline();
@@ -742,7 +757,7 @@ namespace Vortex {
 				{
 					Gui::MenuItem("Asset Registry", nullptr, &m_AssetRegistryPanel.IsOpen());
 					UI::Draw::Underline();
-					Gui::MenuItem("ECS Debug Panel", nullptr, &m_ECSDebugPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<ECSDebugPanel>();
 					UI::Draw::Underline();
 					Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
 					UI::Draw::Underline();
@@ -750,7 +765,7 @@ namespace Vortex {
 					UI::Draw::Underline();
 					Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
 					UI::Draw::Underline();
-					Gui::MenuItem("Sub Modules", nullptr, &m_SubModulesPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<SubModulesPanel>();
 					UI::Draw::Underline();
 					m_PanelManager->MainMenuBarItem<SystemManagerPanel>();
 
@@ -2745,8 +2760,9 @@ namespace Vortex {
 		if (projectProps.EditorProps.MaximizeOnPlay)
 			m_SceneViewportMaximized = true;
 
-		if (m_ConsolePanel.ClearOnPlay())
-			m_ConsolePanel.ClearMessages();
+		auto consolePanel = m_PanelManager->GetPanel<ConsolePanel>();
+		if (consolePanel->ClearOnPlay())
+			consolePanel->ClearMessages();
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart(projectProps.EditorProps.MuteAudioSources);
@@ -2903,9 +2919,9 @@ namespace Vortex {
 
 	void EditorLayer::SetSceneContext(SharedReference<Scene>& scene)
 	{
+		m_PanelManager->SetSceneContext(scene);
 		m_SceneHierarchyPanel.SetSceneContext(scene);
 		m_SceneRendererPanel.SetSceneContext(scene);
-		m_ECSDebugPanel.SetSceneContext(scene);
 	}
 
 	void EditorLayer::ResetEditorCameras()
