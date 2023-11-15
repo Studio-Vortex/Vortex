@@ -733,7 +733,7 @@ namespace Vortex {
 		return Entity{};
 	}
 
-	Entity Scene::GetSkylightEntity()
+	Entity Scene::GetSkyLightEntity()
 	{
 		VX_PROFILE_FUNCTION();
 

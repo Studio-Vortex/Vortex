@@ -55,9 +55,9 @@ namespace Vortex {
 
 		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
-		if (Entity skylightEntity = m_ContextScene->GetSkylightEntity())
+		if (Entity skyLightEntity = m_ContextScene->GetSkyLightEntity())
 		{
-			const auto& lsc = skylightEntity.GetComponent<LightSourceComponent>();
+			const auto& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
 			if (lsc.CastShadows)
 			{
 				if (UI::PropertyGridHeader("Shadow Maps", false))

@@ -100,7 +100,7 @@ namespace Vortex {
 		Entity TryGetEntityWithUUID(UUID uuid);
 
 		Entity GetPrimaryCameraEntity();
-		Entity GetSkylightEntity();
+		Entity GetSkyLightEntity();
 
 		Entity DuplicateEntity(Entity entity);
 

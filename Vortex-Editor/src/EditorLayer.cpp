@@ -137,9 +137,9 @@ namespace Vortex {
 		RenderTime& renderTime = Renderer::GetRenderTime();
 
 		// Shadow pass
-		if (Entity skylightEntity = m_ActiveScene->GetSkylightEntity())
+		if (Entity skyLightEntity = m_ActiveScene->GetSkyLightEntity())
 		{
-			const auto& lsc = skylightEntity.GetComponent<LightSourceComponent>();
+			const auto& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
 			if (lsc.CastShadows)
 			{
 				InstrumentationTimer timer("Shadow Pass");
