@@ -8,7 +8,7 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (!s_ShowPanel)
+		if (!IsOpen)
 			return;
 
 		if (s_Loaded2DShaders.empty())
@@ -53,7 +53,7 @@ namespace Vortex {
 			}
 		}
 
-		Gui::Begin("Scene Renderer", &s_ShowPanel);
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
 		if (UI::PropertyGridHeader("Shadow Maps", false))
 		{
@@ -312,10 +312,5 @@ namespace Vortex {
 
 		Gui::End();
 	}
-
-    void SceneRendererPanel::SetSceneContext(SharedReference<Scene>& scene)
-    {
-		m_ContextScene = scene;
-    }
 
 }

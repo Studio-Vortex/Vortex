@@ -12,9 +12,6 @@
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/ScriptRegistryPanel.h"
 #include "Panels/MaterialEditorPanel.h"
-#include "Panels/SceneRendererPanel.h"
-#include "Panels/AssetRegistryPanel.h"
-#include "Panels/PerformancePanel.h"
 
 namespace Vortex {
 
@@ -184,9 +181,6 @@ namespace Vortex {
 		SharedRef<ContentBrowserPanel> m_ContentBrowserPanel = nullptr;
 		ScriptRegistryPanel m_ScriptRegistryPanel;
 		MaterialEditorPanel m_MaterialEditorPanel;
-		SceneRendererPanel m_SceneRendererPanel;
-		AssetRegistryPanel m_AssetRegistryPanel;
-		PerformancePanel m_PerformancePanel;
 
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;

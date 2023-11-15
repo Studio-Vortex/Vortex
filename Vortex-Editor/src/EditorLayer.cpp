@@ -16,9 +16,12 @@
 
 #include <Vortex/Editor/ConsolePanel.h>
 
+#include "Panels/SceneRendererPanel.h"
+#include "Panels/AssetRegistryPanel.h"
 #include "Panels/BuildSettingsPanel.h"
 #include "Panels/SystemManagerPanel.h"
 #include "Panels/ShaderEditorPanel.h"
+#include "Panels/PerformancePanel.h"
 #include "Panels/SubModulesPanel.h"
 #include "Panels/ECSDebugPanel.h"
 #include "Panels/AboutPanel.h"
@@ -60,9 +63,12 @@ namespace Vortex {
 
 		m_PanelManager = PanelManager::Create();
 
+		m_PanelManager->AddPanel<SceneRendererPanel>()->IsOpen = true;
+		m_PanelManager->AddPanel<AssetRegistryPanel>();
 		m_PanelManager->AddPanel<BuildSettingsPanel>(VX_BIND_CALLBACK(OnLaunchRuntime));
 		m_PanelManager->AddPanel<SystemManagerPanel>();
 		m_PanelManager->AddPanel<ShaderEditorPanel>();
+		m_PanelManager->AddPanel<PerformancePanel>();
 		m_PanelManager->AddPanel<SubModulesPanel>();
 		m_PanelManager->AddPanel<ECSDebugPanel>();
 		m_PanelManager->AddPanel<ConsolePanel>()->IsOpen = true;
@@ -397,8 +403,8 @@ namespace Vortex {
 			m_ContentBrowserPanel->OnGuiRender();
 			m_ScriptRegistryPanel.OnGuiRender();
 			m_MaterialEditorPanel.OnGuiRender();
-			m_SceneRendererPanel.OnGuiRender();
-			m_AssetRegistryPanel.OnGuiRender();
+			m_PanelManager->OnGuiRender<SceneRendererPanel>();
+			m_PanelManager->OnGuiRender<AssetRegistryPanel>();
 			m_PanelManager->OnGuiRender<BuildSettingsPanel>();
 			m_PanelManager->OnGuiRender<SystemManagerPanel>();
 			m_PanelManager->OnGuiRender<ShaderEditorPanel>();
@@ -409,7 +415,7 @@ namespace Vortex {
 		}
 
 		// Always render if open
-		m_PerformancePanel.OnGuiRender(m_ActiveScene->GetEntityCount());
+		m_PanelManager->OnGuiRender<PerformancePanel>();
 
 		// Update Engine Systems Gui
 		SystemManager::OnGuiRender();
@@ -745,7 +751,7 @@ namespace Vortex {
 				UI::Draw::Underline();
 				Gui::MenuItem("Scene Hierarchy", nullptr, &m_SceneHierarchyPanel.IsOpen());
 				UI::Draw::Underline();
-				Gui::MenuItem("Scene Renderer", nullptr, &m_SceneRendererPanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<SceneRendererPanel>();
 				UI::Draw::Underline();
 				Gui::MenuItem("Second Viewport", nullptr, &m_ShowSecondViewport);
 				UI::Draw::Underline();
@@ -756,11 +762,11 @@ namespace Vortex {
 
 				if (Gui::BeginMenu("Debug"))
 				{
-					Gui::MenuItem("Asset Registry", nullptr, &m_AssetRegistryPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<AssetRegistryPanel>();
 					UI::Draw::Underline();
 					m_PanelManager->MainMenuBarItem<ECSDebugPanel>();
 					UI::Draw::Underline();
-					Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<PerformancePanel>();
 					UI::Draw::Underline();
 					Gui::MenuItem("Physics Stats", nullptr, &m_PhysicsStatsPanel.IsOpen());
 					UI::Draw::Underline();
