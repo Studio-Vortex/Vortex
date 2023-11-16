@@ -216,6 +216,23 @@ namespace Vortex::Math {
 	}
 
 	template <typename T>
+	static auto Midpoint(T v0, T v1)
+	{
+		VX_CORE_ASSERT(v0.length() == v1.length(), "Incompatible types, expected vectors of the same size");
+
+		T result = T(0.0f);
+
+		size_t componentCount = v0.length();
+
+		for (size_t i = 0; i < componentCount; i++)
+		{
+			result[i] = (v0[i] + v1[i]) / 2.0f;
+		}
+
+		return result;
+	}
+
+	template <typename T>
 	static auto Distance(T v0, T v1)
 	{
 		return glm::distance(v0, v1);

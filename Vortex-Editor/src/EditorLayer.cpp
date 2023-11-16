@@ -1721,13 +1721,29 @@ namespace Vortex {
 					{
 						const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
 
-						Math::vec3 translation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
+						const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
+						Math::vec3 translation = worldSpaceTransform.Translation;
 						Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
 
 						switch (lightSourceComponent.Type)
 						{
 							case LightType::Directional:
 							{
+								Math::vec3 midpoint = Math::Midpoint(translation, Math::vec3(0.0f));
+
+								Math::quaternion rotation = worldSpaceTransform.GetRotation();
+
+								Math::vec3 left = Math::Rotate(rotation, Math::vec3(-1.0f, 0.0f, 0.0f)) * 0.5f;
+								Math::vec3 right = Math::Rotate(rotation, Math::vec3(1.0f, 0.0f, 0.0f)) * 0.5f;
+								Math::vec3 up = Math::Rotate(rotation, Math::vec3(0.0f, 1.0f, 0.0f)) * 0.5f;
+								Math::vec3 down = Math::Rotate(rotation, Math::vec3(0.0f, -1.0f, 0.0f)) * 0.5f;
+
+								Renderer2D::DrawLine(translation, midpoint, color);
+								Renderer2D::DrawLine(translation + left, midpoint + left, color);
+								Renderer2D::DrawLine(translation + right, midpoint + right, color);
+								Renderer2D::DrawLine(translation + up, midpoint + up, color);
+								Renderer2D::DrawLine(translation + down, midpoint + down, color);
+
 								break;
 							}
 							case LightType::Point:

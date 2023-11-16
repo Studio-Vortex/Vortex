@@ -6,6 +6,11 @@ namespace Vortex::Math {
 	Ray::Ray(const Math::vec3& origin, const Math::vec3& direction)
 		: Origin(origin), Direction(direction) { }
 
+    Ray Ray::Zero()
+    {
+		return Ray(Math::vec3(0.0f), Math::vec3(0.0f));
+    }
+
 	bool Ray::IntersectsAABB(const Math::AABB& aabb, float& t)
 	{
 		Math::vec3 dirfrac;
