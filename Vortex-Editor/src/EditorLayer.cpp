@@ -2535,7 +2535,7 @@ namespace Vortex {
 			return false;
 		}
 
-		std::vector<UUID> selectionData;
+		std::vector<SelectionData> selectionData;
 
 		auto [mouseX, mouseY] = GetMouseViewportSpace(m_SceneViewportHovered);
 		if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
@@ -2555,6 +2555,8 @@ namespace Vortex {
 			for (const auto e : staticMeshView)
 			{
 				Entity entity{ e, m_ActiveScene.Raw() };
+
+				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(entity);
 				
 				const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
 				if (!AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh))
@@ -2583,7 +2585,8 @@ namespace Vortex {
 					const bool intersects = ray.IntersectsAABB(aabb, t);
 					if (intersects)
 					{
-						selectionData.emplace_back(entity.GetUUID());
+						float distance = Math::Distance(camera->GetPosition(), worldSpaceTransform.Translation);
+						selectionData.emplace_back(SelectionData{ entity.GetUUID(), distance });
 						break;
 					}
 				}
@@ -2598,7 +2601,20 @@ namespace Vortex {
 			const bool anyViewportHovered = (m_SceneViewportHovered && m_SceneState != SceneState::Play) || m_SecondViewportHovered;
 			if (anyViewportHovered)
 			{
-				Entity selected = m_ActiveScene->TryGetEntityWithUUID(selectionData.front());
+				SelectionData selectedData = selectionData[0];
+
+				float closest = selectedData.Distance;
+				for (const auto& data : selectionData)
+				{
+					if (data.Distance < closest)
+					{
+						closest = data.Distance;
+						selectedData.SelectedUUID = data.SelectedUUID;
+						selectedData.Distance = data.Distance;
+					}
+				}
+
+				Entity selected = m_ActiveScene->TryGetEntityWithUUID(selectedData.SelectedUUID);
 				SelectionManager::SetSelectedEntity(selected);
 
 				if (SelectionManager::GetSelectedEntity() != Entity{})

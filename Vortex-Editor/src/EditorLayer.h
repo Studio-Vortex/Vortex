@@ -125,6 +125,16 @@ namespace Vortex {
 		std::pair<Math::vec3, Math::vec3> CastRay(EditorCamera* editorCamera, float mx, float my);
 
 	private:
+		struct SelectionData
+		{
+			UUID SelectedUUID;
+			float Distance;
+
+			SelectionData(UUID uuid = 0, float distance = 0.0f)
+				: SelectedUUID(uuid), Distance(distance) { }
+		};
+
+	private:
 		EditorCamera* m_EditorCamera = nullptr;
 		EditorCamera* m_SecondEditorCamera = nullptr;
 		SharedReference<Framebuffer> m_Framebuffer = nullptr;
