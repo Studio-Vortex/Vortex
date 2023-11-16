@@ -16,6 +16,12 @@
 
 #include <Vortex/Editor/ConsolePanel.h>
 
+#include "Panels/PhysicsMaterialEditorPanel.h"
+#include "Panels/PhysicsStatisticsPanel.h"
+#include "Panels/ProjectSettingsPanel.h"
+#include "Panels/ContentBrowserPanel.h"
+#include "Panels/ScriptRegistryPanel.h"
+#include "Panels/MaterialEditorPanel.h"
 #include "Panels/SceneRendererPanel.h"
 #include "Panels/AssetRegistryPanel.h"
 #include "Panels/BuildSettingsPanel.h"
@@ -63,6 +69,10 @@ namespace Vortex {
 
 		m_PanelManager = PanelManager::Create();
 
+		m_PanelManager->AddPanel<PhysicsMaterialEditorPanel>();
+		m_PanelManager->AddPanel<PhysicsStatisticsPanel>();
+		m_PanelManager->AddPanel<ScriptRegistryPanel>();
+		m_PanelManager->AddPanel<MaterialEditorPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<SceneRendererPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<AssetRegistryPanel>();
 		m_PanelManager->AddPanel<BuildSettingsPanel>(VX_BIND_CALLBACK(OnLaunchRuntime));
@@ -405,13 +415,13 @@ namespace Vortex {
 		// Render Panels if the scene isn't maximized
 		if (!m_SceneViewportMaximized)
 		{
-			m_PhysicsMaterialEditorPanel.OnGuiRender();
-			m_PhysicsStatsPanel.OnGuiRender();
-			m_ProjectSettingsPanel->OnGuiRender();
+			m_PanelManager->OnGuiRender<PhysicsMaterialEditorPanel>();
+			m_PanelManager->OnGuiRender<PhysicsStatisticsPanel>();
+			m_PanelManager->OnGuiRender<ProjectSettingsPanel>();
 			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
-			m_ContentBrowserPanel->OnGuiRender();
-			m_ScriptRegistryPanel.OnGuiRender();
-			m_MaterialEditorPanel.OnGuiRender();
+			m_PanelManager->OnGuiRender<ContentBrowserPanel>();
+			m_PanelManager->OnGuiRender<ScriptRegistryPanel>();
+			m_PanelManager->OnGuiRender<MaterialEditorPanel>();
 			m_PanelManager->OnGuiRender<SceneRendererPanel>();
 			m_PanelManager->OnGuiRender<AssetRegistryPanel>();
 			m_PanelManager->OnGuiRender<BuildSettingsPanel>();
@@ -748,13 +758,13 @@ namespace Vortex {
 			{
 				m_PanelManager->MainMenuBarItem<ConsolePanel>();
 				UI::Draw::Underline();
-				Gui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel->IsOpen());
+				m_PanelManager->MainMenuBarItem<ContentBrowserPanel>();
 				UI::Draw::Underline();
 				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
 				UI::Draw::Underline();
-				Gui::MenuItem("Material Editor", nullptr, &m_MaterialEditorPanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<MaterialEditorPanel>();
 				UI::Draw::Underline();
-				Gui::MenuItem("Physics Material Editor", nullptr, &m_PhysicsMaterialEditorPanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<PhysicsMaterialEditorPanel>();
 				UI::Draw::Underline();
 				Gui::MenuItem("Scene", nullptr, &m_ShowScenePanel);
 				UI::Draw::Underline();
@@ -766,7 +776,7 @@ namespace Vortex {
 				UI::Draw::Underline();
 				m_PanelManager->MainMenuBarItem<ShaderEditorPanel>();
 				UI::Draw::Underline();
-				Gui::MenuItem("Project Settings", nullptr, &m_ProjectSettingsPanel->IsOpen());
+				m_PanelManager->MainMenuBarItem<ProjectSettingsPanel>();
 				UI::Draw::Underline();
 
 				if (Gui::BeginMenu("Debug"))
@@ -777,9 +787,9 @@ namespace Vortex {
 					UI::Draw::Underline();
 					m_PanelManager->MainMenuBarItem<PerformancePanel>();
 					UI::Draw::Underline();
-					Gui::MenuItem("Physics Stats", nullptr, &m_PhysicsStatsPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<PhysicsStatisticsPanel>();
 					UI::Draw::Underline();
-					Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<ScriptRegistryPanel>();
 					UI::Draw::Underline();
 					m_PanelManager->MainMenuBarItem<SubModulesPanel>();
 					UI::Draw::Underline();
@@ -2677,8 +2687,8 @@ namespace Vortex {
 		OpenScene(relativePath);
 
 		SharedReference<Project> activeProject = Project::GetActive();
-		m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(activeProject);
-		m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
+		m_PanelManager->AddPanel<ProjectSettingsPanel>(activeProject);
+		m_PanelManager->AddPanel<ContentBrowserPanel>(Project::GetAssetDirectory())->IsOpen = true;
 	}
 
 	void EditorLayer::SaveProject()

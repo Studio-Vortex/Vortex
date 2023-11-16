@@ -2,21 +2,18 @@
 
 #include <Vortex.h>
 
+#include  <Vortex/Editor/EditorPanel.h>
+
 namespace Vortex {
 
-	class ScriptRegistryPanel
+	class ScriptRegistryPanel : public EditorPanel
 	{
 	public:
-		ScriptRegistryPanel() = default;
-		~ScriptRegistryPanel() = default;
+		~ScriptRegistryPanel() override = default;
 
-		void OnGuiRender();
-		void SetProjectContext(SharedReference<Project>& project) {}
-		void SetSceneContext(SharedReference<Scene>& scene) {}
-		bool& IsOpen() { return s_ShowPanel; }
+		void OnGuiRender() override;
 
-	private:
-		inline static bool s_ShowPanel = false;
+		EDITOR_PANEL_TYPE(ScriptRegistry)
 	};
 
 }

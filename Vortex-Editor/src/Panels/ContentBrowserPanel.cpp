@@ -6,15 +6,15 @@
 
 namespace Vortex {
 
-	ContentBrowserPanel::ContentBrowserPanel()
-		: m_BaseDirectory(Project::GetAssetDirectory()), m_CurrentDirectory(m_BaseDirectory) { }
+	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path& assetDir)
+		: m_BaseDirectory(assetDir), m_CurrentDirectory(m_BaseDirectory) { }
 
 	void ContentBrowserPanel::OnGuiRender()
 	{
-		if (!s_ShowPanel)
+		if (!IsOpen)
 			return;
 
-		Gui::Begin("Content Browser", &s_ShowPanel);
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
 		// Left
 		float directoryContainerWidth = std::max(Gui::GetWindowContentRegionWidth() * 0.15f, 165.0f);

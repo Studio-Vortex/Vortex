@@ -5,13 +5,7 @@
 
 #include <Vortex/Editor/PanelManager.h>
 
-#include "Panels/PhysicsMaterialEditorPanel.h"
-#include "Panels/PhysicsStatisticsPanel.h"
-#include "Panels/ProjectSettingsPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
-#include "Panels/ContentBrowserPanel.h"
-#include "Panels/ScriptRegistryPanel.h"
-#include "Panels/MaterialEditorPanel.h"
 
 namespace Vortex {
 
@@ -186,13 +180,7 @@ namespace Vortex {
 
 		SharedReference<PanelManager> m_PanelManager = nullptr;
 
-		PhysicsMaterialEditorPanel m_PhysicsMaterialEditorPanel;
-		PhysicsStatisticsPanel m_PhysicsStatsPanel;
-		SharedRef<ProjectSettingsPanel> m_ProjectSettingsPanel = nullptr;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
-		SharedRef<ContentBrowserPanel> m_ContentBrowserPanel = nullptr;
-		ScriptRegistryPanel m_ScriptRegistryPanel;
-		MaterialEditorPanel m_MaterialEditorPanel;
 
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;
