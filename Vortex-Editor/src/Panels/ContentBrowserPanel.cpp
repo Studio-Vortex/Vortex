@@ -273,7 +273,6 @@ public class Untitled : Entity
 	void ContentBrowserPanel::RenderMenuBar()
 	{
 		Gui::BeginDisabled(m_CurrentDirectory == Project::GetAssetDirectory());
-
 		if (Gui::Button((const char*)VX_ICON_CHEVRON_LEFT, { 45, 0 }))
 		{
 			// Clear the search input text so it does not interfere with the parent directory
@@ -282,8 +281,9 @@ public class Untitled : Entity
 
 			m_CurrentDirectory = FileSystem::GetParentDirectory(m_CurrentDirectory);
 		}
-
+		UI::SetTooltip("back");
 		Gui::EndDisabled();
+
 		Gui::SameLine();
 
 		std::filesystem::path fullyQualifiedAssetDirectory = m_BaseDirectory;
@@ -300,6 +300,9 @@ public class Untitled : Entity
 			{
 				m_CurrentDirectory = m_BaseDirectory;
 			}
+
+			memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+			m_SearchInputTextFilter.Build();
 		}
 
 		Gui::SameLine();
@@ -325,10 +328,15 @@ public class Untitled : Entity
 			std::string label = entry + "##" + std::to_string(i);
 			if (Gui::Button(label.c_str()))
 			{
+				// TODO fix this
+				// currently crashes when you click any of these buttons
 				if (!FileSystem::Equivalent(m_CurrentDirectory, entry))
 				{
 					m_CurrentDirectory = FileSystem::Relative(entry, m_BaseDirectory);
 				}
+
+				memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+				m_SearchInputTextFilter.Build();
 			}
 
 			Gui::SameLine();
