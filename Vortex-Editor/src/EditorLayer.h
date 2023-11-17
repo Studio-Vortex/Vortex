@@ -5,8 +5,6 @@
 
 #include <Vortex/Editor/PanelManager.h>
 
-#include "Panels/SceneHierarchyPanel.h"
-
 namespace Vortex {
 
 	class EditorCamera;
@@ -59,6 +57,8 @@ namespace Vortex {
 		void OpenProject(const std::filesystem::path& filepath);
 		void SaveProject();
 		void CloseProject();
+		void BuildProject();
+		void BuildAndRunProject();
 
 		// Scene
 
@@ -179,8 +179,6 @@ namespace Vortex {
 		bool m_OpenMeshImportPopup = false;
 
 		SharedReference<PanelManager> m_PanelManager = nullptr;
-
-		SceneHierarchyPanel m_SceneHierarchyPanel;
 
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;

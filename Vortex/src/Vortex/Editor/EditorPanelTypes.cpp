@@ -11,6 +11,7 @@ namespace Vortex {
 			{
 				case EditorPanelType::PhysicsMaterialEditor: return "Physics Material Editor";
 				case EditorPanelType::ProjectSettings:       return "Project Settings";
+				case EditorPanelType::SceneHierarchy:        return "Scene Hierarchy";
 				case EditorPanelType::PhysicsStats:          return "Physics Stats";
 				case EditorPanelType::ContentBrowser:        return "Content Browser";
 				case EditorPanelType::ScriptRegistry:        return "Script Registry";

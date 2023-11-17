@@ -19,6 +19,7 @@
 #include "Panels/PhysicsMaterialEditorPanel.h"
 #include "Panels/PhysicsStatisticsPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
+#include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/ScriptRegistryPanel.h"
 #include "Panels/MaterialEditorPanel.h"
@@ -71,6 +72,7 @@ namespace Vortex {
 
 		m_PanelManager->AddPanel<PhysicsMaterialEditorPanel>();
 		m_PanelManager->AddPanel<PhysicsStatisticsPanel>();
+		m_PanelManager->AddPanel<SceneHierarchyPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<ScriptRegistryPanel>();
 		m_PanelManager->AddPanel<MaterialEditorPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<SceneRendererPanel>()->IsOpen = true;
@@ -418,7 +420,7 @@ namespace Vortex {
 			m_PanelManager->OnGuiRender<PhysicsMaterialEditorPanel>();
 			m_PanelManager->OnGuiRender<PhysicsStatisticsPanel>();
 			m_PanelManager->OnGuiRender<ProjectSettingsPanel>();
-			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
+			m_PanelManager->GetPanel<SceneHierarchyPanel>()->OnGuiRender(m_HoveredEntity, m_EditorCamera);
 			m_PanelManager->OnGuiRender<ContentBrowserPanel>();
 			m_PanelManager->OnGuiRender<ScriptRegistryPanel>();
 			m_PanelManager->OnGuiRender<MaterialEditorPanel>();
@@ -462,7 +464,8 @@ namespace Vortex {
 
 		if (Gui::BeginPopup("SceneCreateEntityMenu"))
 		{
-			m_SceneHierarchyPanel.DisplayCreateEntityMenu(m_EditorCamera);
+			EditorCamera* camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
+			m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateEntityMenu(camera);
 
 			Gui::PopStyleVar();
 			Gui::EndPopup();
@@ -586,7 +589,7 @@ namespace Vortex {
 
 						if (Gui::MenuItem("Rename Entity", "F2"))
 						{
-							m_SceneHierarchyPanel.EditSelectedEntityName(true);
+							m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(true);
 							Gui::CloseCurrentPopup();
 						}
 						UI::Draw::Underline();
@@ -738,13 +741,14 @@ namespace Vortex {
 			{
 				if (Gui::MenuItem("Build"))
 				{
-					// TODO build asset pack here
+					BuildProject();
+					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Build and Run", "Ctrl+B"))
 				{
-					OnLaunchRuntime(activeProject->GetProjectFilepath());
+					BuildAndRunProject();
 					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
@@ -760,7 +764,7 @@ namespace Vortex {
 				UI::Draw::Underline();
 				m_PanelManager->MainMenuBarItem<ContentBrowserPanel>();
 				UI::Draw::Underline();
-				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
+				Gui::MenuItem("Inspector", nullptr, &m_PanelManager->GetPanel<SceneHierarchyPanel>()->IsInspectorOpen());
 				UI::Draw::Underline();
 				m_PanelManager->MainMenuBarItem<MaterialEditorPanel>();
 				UI::Draw::Underline();
@@ -768,7 +772,7 @@ namespace Vortex {
 				UI::Draw::Underline();
 				Gui::MenuItem("Scene", nullptr, &m_ShowScenePanel);
 				UI::Draw::Underline();
-				Gui::MenuItem("Scene Hierarchy", nullptr, &m_SceneHierarchyPanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<SceneHierarchyPanel>();
 				UI::Draw::Underline();
 				m_PanelManager->MainMenuBarItem<SceneRendererPanel>();
 				UI::Draw::Underline();
@@ -2287,7 +2291,8 @@ namespace Vortex {
 
     bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 	{
-		if (m_SceneHierarchyPanel.IsEditingEntityName())
+		auto sceneHierarchyPanel = m_PanelManager->GetPanel<SceneHierarchyPanel>();
+		if (sceneHierarchyPanel->IsEditingEntityName())
 			return false;
 
 		if (ImGuizmo::IsUsing())
@@ -2423,7 +2428,7 @@ namespace Vortex {
 					}
 					else
 					{
-						OnLaunchRuntime(Project::GetProjectFilepath());
+						BuildAndRunProject();
 					}
 				}
 
@@ -2485,7 +2490,9 @@ namespace Vortex {
 			case KeyCode::F2:
 			{
 				if (selectedEntity)
-					m_SceneHierarchyPanel.EditSelectedEntityName(true);
+				{
+					m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(true);
+				}
 
 				break;
 			}
@@ -2629,7 +2636,7 @@ namespace Vortex {
 
 				if (SelectionManager::GetSelectedEntity() != Entity{})
 				{
-					m_SceneHierarchyPanel.EditSelectedEntityName(false);
+					m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(false);
 				}
 			}
 		}
@@ -2705,6 +2712,16 @@ namespace Vortex {
 	{
 		if (m_ActiveScene->IsRunning())
 			OnSceneStop();
+	}
+
+	void EditorLayer::BuildProject()
+	{
+		//
+	}
+
+	void EditorLayer::BuildAndRunProject()
+	{
+		OnLaunchRuntime(Project::GetProjectFilepath());
 	}
 
 	void EditorLayer::CreateNewScene()
@@ -2990,14 +3007,13 @@ namespace Vortex {
 
 		Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
 		SelectionManager::SetSelectedEntity(duplicatedEntity);
-		// TODO should we keep this?
-		m_SceneHierarchyPanel.EditSelectedEntityName(true);
+		
+		m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(true);
 	}
 
 	void EditorLayer::SetSceneContext(SharedReference<Scene>& scene)
 	{
 		m_PanelManager->SetSceneContext(scene);
-		m_SceneHierarchyPanel.SetSceneContext(scene);
 	}
 
 	void EditorLayer::ResetEditorCameras()

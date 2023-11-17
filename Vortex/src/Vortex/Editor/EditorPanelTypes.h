@@ -11,6 +11,7 @@ namespace Vortex {
 		None = 0,
 		PhysicsMaterialEditor,
 		ProjectSettings,
+		SceneHierarchy,
 		PhysicsStats,
 		ContentBrowser,
 		ScriptRegistry,

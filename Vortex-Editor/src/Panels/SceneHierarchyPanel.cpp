@@ -19,9 +19,9 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera)
 	{
-		if (s_ShowSceneHierarchyPanel)
+		if (IsOpen)
 		{
-			Gui::Begin("Scene Hierarchy", &s_ShowSceneHierarchyPanel);
+			Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
 			ImRect windowRect = ImRect(Gui::GetWindowContentRegionMin(), Gui::GetWindowContentRegionMax());
 
@@ -169,7 +169,7 @@ namespace Vortex {
 		}
 	}
 
-	void SceneHierarchyPanel::SetSceneContext(const SharedReference<Scene>& scene)
+	void SceneHierarchyPanel::SetSceneContext(SharedReference<Scene> scene)
 	{
 		m_ContextScene = scene;
 		SelectionManager::DeselectEntity();
