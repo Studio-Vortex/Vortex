@@ -786,6 +786,8 @@ namespace Vortex {
 					UI::Draw::Underline();
 					m_PanelManager->MainMenuBarItem<ECSDebugPanel>();
 					UI::Draw::Underline();
+					Gui::MenuItem("Network Manager", nullptr, &m_NetworkManagerPanel.IsOpen());
+					UI::Draw::Underline();
 					m_PanelManager->MainMenuBarItem<PerformancePanel>();
 					UI::Draw::Underline();
 					m_PanelManager->MainMenuBarItem<PhysicsStatisticsPanel>();

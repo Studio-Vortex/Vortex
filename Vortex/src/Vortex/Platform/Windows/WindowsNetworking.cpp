@@ -28,6 +28,7 @@ namespace Vortex {
 	{
 		WORD dllVersion = MAKEWORD(WINSOCK_VERSION_MAJOR, WINSOCK_VERSION_MINOR);
 		ZeroMemory(&s_Data.WinSockInfo, sizeof(WSADATA));
+
 		VX_CHECK_NETWORK_RESULT(
 			WSAStartup(dllVersion, &s_Data.WinSockInfo),
 			"Failed to initialize WinSock"
