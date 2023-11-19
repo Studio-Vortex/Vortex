@@ -300,9 +300,6 @@ public class Untitled : Entity
 			{
 				m_CurrentDirectory = m_BaseDirectory;
 			}
-
-			memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
-			m_SearchInputTextFilter.Build();
 		}
 
 		Gui::SameLine();
