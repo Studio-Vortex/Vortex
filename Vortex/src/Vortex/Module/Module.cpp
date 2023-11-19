@@ -75,7 +75,7 @@ namespace Vortex {
 				{
 					RequiredModule required;
 					required.ModuleName = submodule.GetName();
-					required.RequiredModule = requiredModule;
+					required.RequiredModuleName = requiredModule;
 					result.FailedModuleReferences.push_back(required);
 					result.UnresolvedModules++;
 				}

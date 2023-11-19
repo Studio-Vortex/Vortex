@@ -2,21 +2,22 @@
 
 namespace Vortex {
 
-	void PerformancePanel::OnGuiRender(size_t entityCount)
+	void PerformancePanel::OnGuiRender()
 	{
 		ImGuiIO& io = Gui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (!s_ShowPanel)
+		if (!IsOpen)
 			return;
 
-		Gui::Begin("Performance", &s_ShowPanel);
+		Gui::Begin("Performance", &IsOpen);
 
 		uint32_t activeID = Application::Get().GetGuiLayer()->GetActiveLayerID();
 		Gui::Text("Active Panel ID: %u", activeID);
 
 		DrawHeading("Scene");
+		size_t entityCount = m_ContextScene->GetEntityCount();
 		Gui::Text("Entity Count: %u", entityCount);
 
 		DrawHeading("Renderer Frame Time");

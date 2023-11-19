@@ -19,9 +19,9 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera)
 	{
-		if (s_ShowSceneHierarchyPanel)
+		if (IsOpen)
 		{
-			Gui::Begin("Scene Hierarchy", &s_ShowSceneHierarchyPanel);
+			Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
 			ImRect windowRect = ImRect(Gui::GetWindowContentRegionMin(), Gui::GetWindowContentRegionMax());
 
@@ -169,7 +169,7 @@ namespace Vortex {
 		}
 	}
 
-	void SceneHierarchyPanel::SetSceneContext(const SharedReference<Scene>& scene)
+	void SceneHierarchyPanel::SetSceneContext(SharedReference<Scene> scene)
 	{
 		m_ContextScene = scene;
 		SelectionManager::DeselectEntity();
@@ -1117,21 +1117,21 @@ namespace Vortex {
 			if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 			{
 				float perspectiveVerticalFOV = Math::Rad2Deg(camera.GetPerspectiveVerticalFOVRad());
-				if (UI::Property("Field of View", perspectiveVerticalFOV))
+				if (UI::Property("Field of View", perspectiveVerticalFOV, 1.0f, 1.0f))
 				{
 					camera.SetPerspectiveVerticalFOVRad(Math::Deg2Rad(perspectiveVerticalFOV));
 					modified = true;
 				}
 				
 				float nearClip = camera.GetPerspectiveNearClip();
-				if (UI::Property("Near", nearClip))
+				if (UI::Property("Near", nearClip, 1.0f, 1.0f))
 				{
 					camera.SetPerspectiveNearClip(nearClip);
 					modified = true;
 				}
 
 				float farClip = camera.GetPerspectiveFarClip();
-				if (UI::Property("Far", farClip))
+				if (UI::Property("Far", farClip, 1.0f, 1.0f))
 				{
 					camera.SetPerspectiveFarClip(farClip);
 					modified = true;
@@ -1140,21 +1140,21 @@ namespace Vortex {
 			else
 			{
 				float orthoSize = camera.GetOrthographicSize();
-				if (UI::Property("Size", orthoSize))
+				if (UI::Property("Size", orthoSize, 1.0f, 1.0f))
 				{
 					camera.SetOrthographicSize(orthoSize);
 					modified = true;
 				}
 
 				float nearClip = camera.GetOrthographicNearClip();
-				if (UI::Property("Near", nearClip))
+				if (UI::Property("Near", nearClip, 1.0f, 1.0f))
 				{
 					camera.SetOrthographicNearClip(nearClip);
 					modified = true;
 				}
 
 				float farClip = camera.GetOrthographicFarClip();
-				if (UI::Property("Far", farClip))
+				if (UI::Property("Far", farClip, 1.0f, 1.0f))
 				{
 					camera.SetOrthographicFarClip(farClip);
 					modified = true;
@@ -1276,7 +1276,7 @@ namespace Vortex {
 			}
 
 			UI::Property("Radiance", &component.Radiance);
-			UI::Property("Intensity", component.Intensity, 0.05f, 0.0f);
+			UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
 
 			UI::EndPropertyGrid();
 

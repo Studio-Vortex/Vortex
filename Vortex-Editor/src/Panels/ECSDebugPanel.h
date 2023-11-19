@@ -2,18 +2,19 @@
 
 #include <Vortex.h>
 
+#include <Vortex/Editor/EditorPanel.h>
+
 namespace Vortex {
 
-	class ECSDebugPanel
+	class ECSDebugPanel : public EditorPanel
 	{
 	public:
 		ECSDebugPanel() = default;
-		~ECSDebugPanel() = default;
+		~ECSDebugPanel() override = default;
 
-		void OnGuiRender();
-		void SetProjectContext(SharedReference<Project>& project) { }
-		void SetSceneContext(SharedReference<Scene>& scene) { m_ContextScene = scene; }
-		bool& IsOpen() { return s_ShowPanel; }
+		void OnGuiRender() override;
+
+		EDITOR_PANEL_TYPE(ECSDebug)
 
 	private:
 		void RenderSelectedEntityView(Entity selectedEntity);
@@ -47,8 +48,6 @@ namespace Vortex {
 		}
 
 	private:
-		SharedReference<Scene> m_ContextScene = nullptr;
-		inline static bool s_ShowPanel = false;
 		bool m_ShowEntityComponentSignature = false;
 	};
 

@@ -12,6 +12,8 @@ namespace Vortex::Math {
 
 		Ray(const Math::vec3& origin, const Math::vec3& direction);
 
+		static Ray Zero();
+
 		bool IntersectsAABB(const Math::AABB& aabb, float& t);
 	};
 

@@ -8,7 +8,7 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (!s_ShowPanel)
+		if (!IsOpen)
 			return;
 
 		if (s_Loaded2DShaders.empty())
@@ -53,15 +53,22 @@ namespace Vortex {
 			}
 		}
 
-		Gui::Begin("Scene Renderer", &s_ShowPanel);
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
-		if (UI::PropertyGridHeader("Shadow Maps", false))
+		if (Entity skyLightEntity = m_ContextScene->GetSkyLightEntity())
 		{
-			Gui::Text("Sky Light");
-			auto shadowMapID = Renderer::GetSkyLightDepthFramebuffer()->GetDepthTextureRendererID();
-			Gui::Image(reinterpret_cast<void*>(shadowMapID), { 256, 256 }, { 0, 1 }, { 1, 0 });
+			const auto& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
+			if (lsc.CastShadows)
+			{
+				if (UI::PropertyGridHeader("Shadow Maps", false))
+				{
+					Gui::Text("Sky Light");
+					auto shadowMapID = Renderer::GetSkyLightDepthFramebuffer()->GetDepthTextureRendererID();
+					Gui::Image(reinterpret_cast<void*>(shadowMapID), { 256, 256 }, { 0, 1 }, { 1, 0 });
 
-			UI::EndTreeNode();
+					UI::EndTreeNode();
+				}
+			}
 		}
 
 		if (UI::PropertyGridHeader("Shaders", false))
@@ -312,10 +319,5 @@ namespace Vortex {
 
 		Gui::End();
 	}
-
-    void SceneRendererPanel::SetSceneContext(SharedReference<Scene>& scene)
-    {
-		m_ContextScene = scene;
-    }
 
 }

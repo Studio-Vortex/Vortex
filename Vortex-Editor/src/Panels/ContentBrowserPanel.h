@@ -2,18 +2,19 @@
 
 #include <Vortex.h>
 
+#include <Vortex/Editor/EditorPanel.h>
+
 namespace Vortex {
 
-	class ContentBrowserPanel
+	class ContentBrowserPanel : public EditorPanel
 	{
 	public:
-		ContentBrowserPanel();
-		~ContentBrowserPanel() = default;
+		ContentBrowserPanel(const std::filesystem::path& assetDir);
+		~ContentBrowserPanel() override = default;
 		
-		void OnGuiRender();
-		void SetProjectContext(SharedReference<Project> project) {}
-		void SetSceneContext(const SharedReference<Scene>& scene) {}
-		bool& IsOpen() { return s_ShowPanel; }
+		void OnGuiRender() override;
+		
+		EDITOR_PANEL_TYPE(ContentBrowser)
 
 	private:
 		void RenderCreateItemPopup();
@@ -27,14 +28,12 @@ namespace Vortex {
 		void FindMeshIcon(const std::filesystem::path& extension, SharedReference<Texture2D>& itemIcon);
 
 	private:
-		inline static bool s_ShowPanel = true;
-		float m_ThumbnailSize = 96.0f;
-		float m_ThumbnailPadding = 16.0f;
-
-	private:
 		std::filesystem::path m_BaseDirectory;
 		std::filesystem::path m_CurrentDirectory;
 		std::filesystem::path m_ItemPathToRename;
+
+		float m_ThumbnailSize = 96.0f;
+		float m_ThumbnailPadding = 16.0f;
 
 		ImGuiTextFilter m_SearchInputTextFilter;
 	};

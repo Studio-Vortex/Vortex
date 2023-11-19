@@ -2,8 +2,10 @@
 
 #include <Vortex/Serialization/SceneSerializer.h>
 #include <Vortex/Project/ProjectLoader.h>
+
 #include <Vortex/Scripting/ScriptEngine.h>
 #include <Vortex/Scripting/ScriptRegistry.h>
+
 #include <Vortex/Editor/EditorCamera.h>
 #include <Vortex/Editor/EditorResources.h>
 #include <Vortex/Editor/SelectionManager.h>
@@ -11,6 +13,25 @@
 #include <Vortex/Gui/Colors.h>
 
 #include <ImGuizmo.h>
+
+#include <Vortex/Editor/ConsolePanel.h>
+
+#include "Panels/PhysicsMaterialEditorPanel.h"
+#include "Panels/PhysicsStatisticsPanel.h"
+#include "Panels/ProjectSettingsPanel.h"
+#include "Panels/SceneHierarchyPanel.h"
+#include "Panels/ContentBrowserPanel.h"
+#include "Panels/ScriptRegistryPanel.h"
+#include "Panels/MaterialEditorPanel.h"
+#include "Panels/SceneRendererPanel.h"
+#include "Panels/AssetRegistryPanel.h"
+#include "Panels/BuildSettingsPanel.h"
+#include "Panels/SystemManagerPanel.h"
+#include "Panels/ShaderEditorPanel.h"
+#include "Panels/PerformancePanel.h"
+#include "Panels/SubModulesPanel.h"
+#include "Panels/ECSDebugPanel.h"
+#include "Panels/AboutPanel.h"
 
 namespace Vortex {
 
@@ -46,6 +67,24 @@ namespace Vortex {
 
 		m_ViewportSize = { appProps.WindowWidth, appProps.WindowHeight };
 		m_SecondViewportSize = { appProps.WindowWidth, appProps.WindowHeight };
+
+		m_PanelManager = PanelManager::Create();
+
+		m_PanelManager->AddPanel<PhysicsMaterialEditorPanel>();
+		m_PanelManager->AddPanel<PhysicsStatisticsPanel>();
+		m_PanelManager->AddPanel<SceneHierarchyPanel>()->IsOpen = true;
+		m_PanelManager->AddPanel<ScriptRegistryPanel>();
+		m_PanelManager->AddPanel<MaterialEditorPanel>()->IsOpen = true;
+		m_PanelManager->AddPanel<SceneRendererPanel>()->IsOpen = true;
+		m_PanelManager->AddPanel<AssetRegistryPanel>();
+		m_PanelManager->AddPanel<BuildSettingsPanel>(VX_BIND_CALLBACK(OnLaunchRuntime));
+		m_PanelManager->AddPanel<SystemManagerPanel>();
+		m_PanelManager->AddPanel<ShaderEditorPanel>();
+		m_PanelManager->AddPanel<PerformancePanel>();
+		m_PanelManager->AddPanel<SubModulesPanel>();
+		m_PanelManager->AddPanel<ECSDebugPanel>();
+		m_PanelManager->AddPanel<ConsolePanel>()->IsOpen = true;
+		m_PanelManager->AddPanel<AboutPanel>();
 
 		auto commandLineArgs = appProps.CommandLineArgs;
 		if (commandLineArgs.Count > 1)
@@ -83,12 +122,18 @@ namespace Vortex {
 			1000.0f
 		);
 
-		m_NetworkManagerPanel.OnEditorAttach();
+		m_PanelManager->OnEditorAttach();
+		m_PanelManager->SetSceneContext(m_ActiveScene);
+		m_PanelManager->SetProjectContext(activeProject);
 	}
 
 	void EditorLayer::OnDetach()
 	{
 		VX_PROFILE_FUNCTION();
+
+		m_PanelManager->OnEditorDetach();
+		m_PanelManager->SetSceneContext(nullptr);
+		m_PanelManager->SetProjectContext(nullptr);
 
 		delete m_EditorCamera;
 		delete m_SecondEditorCamera;
@@ -101,14 +146,19 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Renderer::ResetRenderTime();
-
 		RenderTime& renderTime = Renderer::GetRenderTime();
-		InstrumentationTimer timer("Shadow Pass");
-		Renderer::RenderToDepthMap(m_ActiveScene);
-		renderTime.ShadowMapRenderTime += timer.ElapsedMS();
 
-		SharedReference<Project> activeProject = Project::GetActive();
-		const ProjectProperties& projectProps = activeProject->GetProperties();
+		// Shadow pass
+		if (Entity skyLightEntity = m_ActiveScene->GetSkyLightEntity())
+		{
+			const auto& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
+			if (lsc.CastShadows)
+			{
+				InstrumentationTimer timer("Shadow Pass");
+				Renderer::RenderToDepthMap(m_ActiveScene);
+				renderTime.ShadowMapRenderTime += timer.ElapsedMS();
+			}
+		}
 
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
@@ -180,8 +230,9 @@ namespace Vortex {
 
 		m_Framebuffer->Unbind();
 
+		// Bloom pass
 		{
-			timer = InstrumentationTimer("Bloom Pass");
+			InstrumentationTimer timer = InstrumentationTimer("Bloom Pass");
 			Math::vec3 cameraPos = m_EditorCamera->GetPosition();
 			if (m_SceneState == SceneState::Play)
 			{
@@ -363,27 +414,26 @@ namespace Vortex {
 		// Render Panels if the scene isn't maximized
 		if (!m_SceneViewportMaximized)
 		{
-			m_PhysicsMaterialEditorPanel.OnGuiRender();
-			m_PhysicsStatsPanel.OnGuiRender();
-			m_ProjectSettingsPanel->OnGuiRender();
-			m_SceneHierarchyPanel.OnGuiRender(m_HoveredEntity, m_EditorCamera);
-			m_ContentBrowserPanel->OnGuiRender();
-			m_ScriptRegistryPanel.OnGuiRender();
-			m_MaterialEditorPanel.OnGuiRender();
-			m_NetworkManagerPanel.OnGuiRender();
-			m_SceneRendererPanel.OnGuiRender();
-			m_AssetRegistryPanel.OnGuiRender();
-			m_BuildSettingsPanel->OnGuiRender();
-			m_SystemManagerPanel.OnGuiRender();
-			m_ShaderEditorPanel.OnGuiRender();
-			m_SubModulesPanel.OnGuiRender();
-			m_ECSDebugPanel.OnGuiRender();
-			m_ConsolePanel.OnGuiRender(m_ActiveScene);
-			m_AboutPanel.OnGuiRender();
+			m_PanelManager->OnGuiRender<PhysicsMaterialEditorPanel>();
+			m_PanelManager->OnGuiRender<PhysicsStatisticsPanel>();
+			m_PanelManager->OnGuiRender<ProjectSettingsPanel>();
+			m_PanelManager->GetPanel<SceneHierarchyPanel>()->OnGuiRender(m_HoveredEntity, m_EditorCamera);
+			m_PanelManager->OnGuiRender<ContentBrowserPanel>();
+			m_PanelManager->OnGuiRender<ScriptRegistryPanel>();
+			m_PanelManager->OnGuiRender<MaterialEditorPanel>();
+			m_PanelManager->OnGuiRender<SceneRendererPanel>();
+			m_PanelManager->OnGuiRender<AssetRegistryPanel>();
+			m_PanelManager->OnGuiRender<BuildSettingsPanel>();
+			m_PanelManager->OnGuiRender<SystemManagerPanel>();
+			m_PanelManager->OnGuiRender<ShaderEditorPanel>();
+			m_PanelManager->OnGuiRender<SubModulesPanel>();
+			m_PanelManager->OnGuiRender<ECSDebugPanel>();
+			m_PanelManager->OnGuiRender<ConsolePanel>();
+			m_PanelManager->OnGuiRender<AboutPanel>();
 		}
 
 		// Always render if open
-		m_PerformancePanel.OnGuiRender(m_ActiveScene->GetEntityCount());
+		m_PanelManager->OnGuiRender<PerformancePanel>();
 
 		// Update Engine Systems Gui
 		SystemManager::OnGuiRender();
@@ -411,7 +461,8 @@ namespace Vortex {
 
 		if (Gui::BeginPopup("SceneCreateEntityMenu"))
 		{
-			m_SceneHierarchyPanel.DisplayCreateEntityMenu(m_EditorCamera);
+			EditorCamera* camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
+			m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateEntityMenu(camera);
 
 			Gui::PopStyleVar();
 			Gui::EndPopup();
@@ -535,7 +586,7 @@ namespace Vortex {
 
 						if (Gui::MenuItem("Rename Entity", "F2"))
 						{
-							m_SceneHierarchyPanel.EditSelectedEntityName(true);
+							m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(true);
 							Gui::CloseCurrentPopup();
 						}
 						UI::Draw::Underline();
@@ -687,64 +738,65 @@ namespace Vortex {
 			{
 				if (Gui::MenuItem("Build"))
 				{
-					// TODO build asset pack here
+					BuildProject();
+					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Build and Run", "Ctrl+B"))
 				{
-					OnLaunchRuntime(activeProject->GetProjectFilepath());
+					BuildAndRunProject();
 					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
 
-				Gui::MenuItem("Settings", "Ctrl+Shift+B", &m_BuildSettingsPanel->IsOpen());
+				m_PanelManager->MainMenuBarItem<BuildSettingsPanel>("Ctrl+Shift+B");
 
 				Gui::EndMenu();
 			}
 			
 			if (Gui::BeginMenu("Window"))
 			{
-				Gui::MenuItem("Console", nullptr, &m_ConsolePanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<ConsolePanel>();
 				UI::Draw::Underline();
-				Gui::MenuItem("Content Browser", nullptr, &m_ContentBrowserPanel->IsOpen());
+				m_PanelManager->MainMenuBarItem<ContentBrowserPanel>();
 				UI::Draw::Underline();
-				Gui::MenuItem("Inspector", nullptr, &m_SceneHierarchyPanel.IsInspectorOpen());
+				Gui::MenuItem("Inspector", nullptr, &m_PanelManager->GetPanel<SceneHierarchyPanel>()->IsInspectorOpen());
 				UI::Draw::Underline();
-				Gui::MenuItem("Material Editor", nullptr, &m_MaterialEditorPanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<MaterialEditorPanel>();
 				UI::Draw::Underline();
-				Gui::MenuItem("Physics Material Editor", nullptr, &m_PhysicsMaterialEditorPanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<PhysicsMaterialEditorPanel>();
 				UI::Draw::Underline();
 				Gui::MenuItem("Scene", nullptr, &m_ShowScenePanel);
 				UI::Draw::Underline();
-				Gui::MenuItem("Scene Hierarchy", nullptr, &m_SceneHierarchyPanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<SceneHierarchyPanel>();
 				UI::Draw::Underline();
-				Gui::MenuItem("Scene Renderer", nullptr, &m_SceneRendererPanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<SceneRendererPanel>();
 				UI::Draw::Underline();
 				Gui::MenuItem("Second Viewport", nullptr, &m_ShowSecondViewport);
 				UI::Draw::Underline();
-				Gui::MenuItem("Shader Editor", nullptr, &m_ShaderEditorPanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<ShaderEditorPanel>();
 				UI::Draw::Underline();
-				Gui::MenuItem("Project Settings", nullptr, &m_ProjectSettingsPanel->IsOpen());
+				m_PanelManager->MainMenuBarItem<ProjectSettingsPanel>();
 				UI::Draw::Underline();
 
 				if (Gui::BeginMenu("Debug"))
 				{
-					Gui::MenuItem("Asset Registry", nullptr, &m_AssetRegistryPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<AssetRegistryPanel>();
 					UI::Draw::Underline();
-					Gui::MenuItem("ECS Debug Panel", nullptr, &m_ECSDebugPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<ECSDebugPanel>();
 					UI::Draw::Underline();
 					Gui::MenuItem("Network Manager", nullptr, &m_NetworkManagerPanel.IsOpen());
 					UI::Draw::Underline();
-					Gui::MenuItem("Performance", nullptr, &m_PerformancePanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<PerformancePanel>();
 					UI::Draw::Underline();
-					Gui::MenuItem("Physics Stats", nullptr, &m_PhysicsStatsPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<PhysicsStatisticsPanel>();
 					UI::Draw::Underline();
-					Gui::MenuItem("Script Registry", nullptr, &m_ScriptRegistryPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<ScriptRegistryPanel>();
 					UI::Draw::Underline();
-					Gui::MenuItem("Sub Modules", nullptr, &m_SubModulesPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<SubModulesPanel>();
 					UI::Draw::Underline();
-					Gui::MenuItem("System Manager", nullptr, &m_SystemManagerPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<SystemManagerPanel>();
 
 					Gui::EndMenu();
 				}
@@ -754,7 +806,7 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Help"))
 			{
-				Gui::MenuItem("About", nullptr, &m_AboutPanel.IsOpen());
+				m_PanelManager->MainMenuBarItem<AboutPanel>();
 
 				Gui::EndMenu();
 			}
@@ -1659,15 +1711,22 @@ namespace Vortex {
 					{
 						const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
 
-						if (sceneCamera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+						switch (sceneCamera.GetProjectionType())
 						{
-							// TODO fix this
-							//Renderer::DrawFrustumOutline(entityTransform, sceneCamera, ColorToVec4(Color::LightBlue));
-							Renderer2D::DrawRect(transform, outlineColor);
-						}
-						else
-						{
-							Renderer2D::DrawRect(transform, outlineColor);
+							case SceneCamera::ProjectionType::Perspective:
+							{
+								const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
+								auto corners = GetFrustumCornersWorldSpace(worldSpaceTransform, sceneCamera);
+
+								Renderer::DrawFrustum(corners, ColorToVec4(Color::LightBlue));
+								break;
+							}
+							case SceneCamera::ProjectionType::Orthographic:
+							{
+								auto scaled = transform * Math::Scale({ sceneCamera.GetOrthographicSize() * 1.6f, sceneCamera.GetOrthographicSize() * 0.9f, 1.0f });
+								Renderer2D::DrawRect(scaled, outlineColor);
+								break;
+							}
 						}
 					}
 
@@ -1675,16 +1734,45 @@ namespace Vortex {
 					{
 						const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
 
-						if (lightSourceComponent.Type == LightType::Point)
+						const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
+						Math::vec3 translation = worldSpaceTransform.Translation;
+						Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
+
+						switch (lightSourceComponent.Type)
 						{
-							Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
+							case LightType::Directional:
+							{
+								Math::vec3 midpoint = Math::Midpoint(translation, Math::vec3(0.0f));
 
-							Math::vec3 translation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
-							const float radius = lightSourceComponent.Intensity * 0.5f;
+								Math::quaternion rotation = worldSpaceTransform.GetRotation();
 
-							Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, color);
-							Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, color);
-							Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, color);
+								Math::vec3 left = Math::Rotate(rotation, Math::vec3(-1.0f, 0.0f, 0.0f)) * 0.5f;
+								Math::vec3 right = Math::Rotate(rotation, Math::vec3(1.0f, 0.0f, 0.0f)) * 0.5f;
+								Math::vec3 up = Math::Rotate(rotation, Math::vec3(0.0f, 1.0f, 0.0f)) * 0.5f;
+								Math::vec3 down = Math::Rotate(rotation, Math::vec3(0.0f, -1.0f, 0.0f)) * 0.5f;
+
+								Renderer2D::DrawLine(translation, midpoint, color);
+								Renderer2D::DrawLine(translation + left, midpoint + left, color);
+								Renderer2D::DrawLine(translation + right, midpoint + right, color);
+								Renderer2D::DrawLine(translation + up, midpoint + up, color);
+								Renderer2D::DrawLine(translation + down, midpoint + down, color);
+
+								break;
+							}
+							case LightType::Point:
+							{
+								const float radius = lightSourceComponent.Intensity * 0.5f;
+
+								Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, color);
+								Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, color);
+								Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, color);
+
+								break;
+							}
+							case LightType::Spot:
+							{
+								break;
+							}
 						}
 					}
 				}
@@ -2202,7 +2290,8 @@ namespace Vortex {
 
     bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 	{
-		if (m_SceneHierarchyPanel.IsEditingEntityName())
+		auto sceneHierarchyPanel = m_PanelManager->GetPanel<SceneHierarchyPanel>();
+		if (sceneHierarchyPanel->IsEditingEntityName())
 			return false;
 
 		if (ImGuizmo::IsUsing())
@@ -2333,12 +2422,12 @@ namespace Vortex {
 				{
 					if (shiftDown)
 					{
-						bool& buildSettingsPanelOpen = m_BuildSettingsPanel->IsOpen();
-						buildSettingsPanelOpen = !buildSettingsPanelOpen;
+						auto buildSettingsPanel = m_PanelManager->GetPanel<BuildSettingsPanel>();
+						buildSettingsPanel->IsOpen = !buildSettingsPanel->IsOpen;
 					}
 					else
 					{
-						OnLaunchRuntime(Project::GetProjectFilepath());
+						BuildAndRunProject();
 					}
 				}
 
@@ -2370,6 +2459,8 @@ namespace Vortex {
 
 					break;
 				}
+
+				break;
 			}
 			case KeyCode::X:
 			{
@@ -2390,13 +2481,17 @@ namespace Vortex {
 
 					break;
 				}
+
+				break;
 			}
 
 			// Tools
 			case KeyCode::F2:
 			{
 				if (selectedEntity)
-					m_SceneHierarchyPanel.EditSelectedEntityName(true);
+				{
+					m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(true);
+				}
 
 				break;
 			}
@@ -2456,13 +2551,13 @@ namespace Vortex {
 			return false;
 		}
 
+		std::vector<SelectionData> selectionData;
+
 		auto [mouseX, mouseY] = GetMouseViewportSpace(m_SceneViewportHovered);
 		if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
 		{
 			const auto& camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
 			auto [origin, direction] = CastRay(camera, mouseX, mouseY);
-
-			std::vector<UUID> selectedEntities;
 
 			auto meshView = m_ActiveScene->GetAllEntitiesWith<MeshRendererComponent>();
 			for (const auto e : meshView)
@@ -2476,6 +2571,8 @@ namespace Vortex {
 			for (const auto e : staticMeshView)
 			{
 				Entity entity{ e, m_ActiveScene.Raw() };
+
+				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(entity);
 				
 				const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
 				if (!AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh))
@@ -2504,13 +2601,14 @@ namespace Vortex {
 					const bool intersects = ray.IntersectsAABB(aabb, t);
 					if (intersects)
 					{
-						selectedEntities.emplace_back(entity.GetUUID());
+						float distance = Math::Distance(camera->GetPosition(), worldSpaceTransform.Translation);
+						selectionData.emplace_back(SelectionData{ entity.GetUUID(), distance });
 						break;
 					}
 				}
 			}
 
-			if (selectedEntities.empty())
+			if (selectionData.empty())
 			{
 				SelectionManager::DeselectEntity();
 				return false;
@@ -2519,12 +2617,25 @@ namespace Vortex {
 			const bool anyViewportHovered = (m_SceneViewportHovered && m_SceneState != SceneState::Play) || m_SecondViewportHovered;
 			if (anyViewportHovered)
 			{
-				Entity selected = m_ActiveScene->TryGetEntityWithUUID(selectedEntities.front());
+				SelectionData selectedData = selectionData[0];
+
+				float closest = selectedData.Distance;
+				for (const auto& data : selectionData)
+				{
+					if (data.Distance < closest)
+					{
+						closest = data.Distance;
+						selectedData.SelectedUUID = data.SelectedUUID;
+						selectedData.Distance = data.Distance;
+					}
+				}
+
+				Entity selected = m_ActiveScene->TryGetEntityWithUUID(selectedData.SelectedUUID);
 				SelectionManager::SetSelectedEntity(selected);
 
 				if (SelectionManager::GetSelectedEntity() != Entity{})
 				{
-					m_SceneHierarchyPanel.EditSelectedEntityName(false);
+					m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(false);
 				}
 			}
 		}
@@ -2546,9 +2657,6 @@ namespace Vortex {
 
 	bool EditorLayer::OpenExistingProject()
 	{
-		if (Project::GetActive())
-			CloseProject();
-
 		std::string filepath = FileDialogue::OpenFileDialog("Vortex Project (*.vxproject)\0*.vxproject\0");
 
 		if (filepath.empty())
@@ -2558,12 +2666,12 @@ namespace Vortex {
 		return true;
 	}
 
-	void EditorLayer::OpenProject(const std::filesystem::path& filepath)
+	bool EditorLayer::OpenProject(const std::filesystem::path& filepath)
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (m_SceneState != SceneState::Edit)
-			OnSceneStop();
+		if (Project::GetActive())
+			CloseProject();
 
 		m_HoveredEntity = Entity{};
 
@@ -2571,7 +2679,7 @@ namespace Vortex {
 		if (!success)
 		{
 			VX_CORE_FATAL("Failed to open project: '{}'", filepath.string());
-			return;
+			return false;
 		}
 		
 		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
@@ -2582,9 +2690,10 @@ namespace Vortex {
 		OpenScene(relativePath);
 
 		SharedReference<Project> activeProject = Project::GetActive();
-		m_ProjectSettingsPanel = CreateShared<ProjectSettingsPanel>(activeProject);
-		m_ContentBrowserPanel = CreateShared<ContentBrowserPanel>();
-		m_BuildSettingsPanel = CreateShared<BuildSettingsPanel>(activeProject, VX_BIND_CALLBACK(OnLaunchRuntime));
+		m_PanelManager->AddPanel<ProjectSettingsPanel>(activeProject);
+		m_PanelManager->AddPanel<ContentBrowserPanel>(Project::GetAssetDirectory())->IsOpen = true;
+		
+		return true;
 	}
 
 	void EditorLayer::SaveProject()
@@ -2601,6 +2710,21 @@ namespace Vortex {
 	{
 		if (m_ActiveScene->IsRunning())
 			OnSceneStop();
+
+		ScriptEngine::Shutdown();
+	}
+
+	void EditorLayer::BuildProject()
+	{
+		// TODO build asset pack here
+	}
+
+	void EditorLayer::BuildAndRunProject()
+	{
+		// TODO build asset pack here
+
+		// This will be changed in the future
+		OnLaunchRuntime(Project::GetProjectFilepath());
 	}
 
 	void EditorLayer::CreateNewScene()
@@ -2733,8 +2857,9 @@ namespace Vortex {
 		if (projectProps.EditorProps.MaximizeOnPlay)
 			m_SceneViewportMaximized = true;
 
-		if (m_ConsolePanel.ClearOnPlay())
-			m_ConsolePanel.ClearMessages();
+		auto consolePanel = m_PanelManager->GetPanel<ConsolePanel>();
+		if (consolePanel->ClearOnPlay())
+			consolePanel->ClearMessages();
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnRuntimeStart(projectProps.EditorProps.MuteAudioSources);
@@ -2863,7 +2988,13 @@ namespace Vortex {
 		Window& window = application.GetWindow();
 
 		const static std::string originalTitle = window.GetTitle();
-		std::string newTitle = fmt::format("{0} - {1} - {2} - {3} - <{4}>", projectName, sceneName, platformName, originalTitle, graphicsAPI);
+		std::string newTitle = fmt::format("{0} - {1} - {2} - {3} - <{4}>",
+			projectName,
+			sceneName,
+			platformName,
+			originalTitle,
+			graphicsAPI
+		);
 		window.SetTitle(newTitle);
 	}
 
@@ -2879,15 +3010,13 @@ namespace Vortex {
 
 		Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
 		SelectionManager::SetSelectedEntity(duplicatedEntity);
-		// TODO should we keep this?
-		m_SceneHierarchyPanel.EditSelectedEntityName(true);
+		
+		m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(true);
 	}
 
 	void EditorLayer::SetSceneContext(SharedReference<Scene>& scene)
 	{
-		m_SceneHierarchyPanel.SetSceneContext(scene);
-		m_SceneRendererPanel.SetSceneContext(scene);
-		m_ECSDebugPanel.SetSceneContext(scene);
+		m_PanelManager->SetSceneContext(scene);
 	}
 
 	void EditorLayer::ResetEditorCameras()
@@ -2944,6 +3073,35 @@ namespace Vortex {
 			FileSystem::ReplaceExtension(copy, ".vortex");
 			filepath = copy.string();
 		}
+	}
+
+	std::vector<Math::vec4> EditorLayer::GetFrustumCornersWorldSpace(const TransformComponent& transform, const SceneCamera& sceneCamera)
+	{
+		Math::mat4 proj = sceneCamera.GetProjectionMatrix();
+		Math::mat4 view = Math::Inverse(transform.GetTransform());
+
+		Math::mat4 inv = Math::Inverse(proj * view);
+
+		std::vector<Math::vec4> frustumCorners;
+		for (uint32_t x = 0; x < 2; x++)
+		{
+			for (uint32_t y = 0; y < 2; y++)
+			{
+				for (uint32_t z = 0; z < 2; z++)
+				{
+					const Math::vec4 pt = inv * Math::vec4(
+						2.0f * x - 1.0f,
+						2.0f * y - 1.0f,
+						2.0f * z - 1.0f,
+						1.0f
+					);
+
+					frustumCorners.push_back(pt / pt.w);
+				}
+			}
+		}
+
+		return frustumCorners;
 	}
 
 	std::pair<float, float> EditorLayer::GetMouseViewportSpace(bool mainViewport)

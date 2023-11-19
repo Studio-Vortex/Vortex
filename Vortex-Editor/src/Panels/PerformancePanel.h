@@ -2,24 +2,21 @@
 
 #include <Vortex.h>
 
+#include <Vortex/Editor/EditorPanel.h>
+
 namespace Vortex {
 
-	class PerformancePanel
+	class PerformancePanel : public EditorPanel
 	{
 	public:
-		PerformancePanel() = default;
-		~PerformancePanel() = default;
+		~PerformancePanel() override = default;
 
-		void OnGuiRender(size_t entityCount);
-		void SetProjectContext(SharedReference<Project>& project) {}
-		void SetSceneContext(SharedReference<Scene>& scene) {}
-		bool& IsOpen() { return s_ShowPanel; }
+		void OnGuiRender() override;
+
+		EDITOR_PANEL_TYPE(Performance)
 
 	private:
 		void DrawHeading(const char* title);
-
-	private:
-		inline static bool s_ShowPanel = false;
 	};
 
 }

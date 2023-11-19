@@ -27,23 +27,23 @@ namespace Vortex {
 		s_Instance = nullptr;
 	}
 
-	void ConsolePanel::OnGuiRender(SharedReference<Scene>& contextScene)
+	void ConsolePanel::OnGuiRender()
 	{
 		ImGuiIO& io = Gui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (!s_ShowPanel)
+		if (!IsOpen)
 			return;
 
-		Gui::Begin("Console", &s_ShowPanel);
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
 		auto contentRegionAvail = Gui::GetContentRegionAvail();
 		Math::vec2 consoleSize = { contentRegionAvail.x, contentRegionAvail.y };
 		consoleSize.y -= 32.0f;
 
 		RenderMenu({ consoleSize.x, 28.0f });
-		RenderConsole(consoleSize, contextScene);
+		RenderConsole(consoleSize);
 
 		Gui::End();
 	}
@@ -96,7 +96,7 @@ namespace Vortex {
 		Gui::EndChild();
 	}
 
-	void ConsolePanel::RenderConsole(const Math::vec2& size, SharedReference<Scene>& contextScene)
+	void ConsolePanel::RenderConsole(const Math::vec2& size)
 	{
 		static const char* s_Columns[] = { "Type", "Timestamp", "Message" };
 
@@ -126,7 +126,7 @@ namespace Vortex {
 				const bool clicked = UI::TableRowClickable(msg.ShortMessage.c_str(), rowHeight);
 				const auto& color = GetMessageColor(msg);
 
-				if (contextScene->IsRunning())
+				if (m_ContextScene->IsRunning())
 				{
 					std::string icon;
 					if (msg.Flags & (int16_t)ConsoleMessageFlags::None)

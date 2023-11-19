@@ -1,13 +1,17 @@
 #include "BuildSettingsPanel.h"
 
 namespace Vortex {
+	
+	BuildSettingsPanel::BuildSettingsPanel(const LaunchRuntimeFn& func)
+		: m_LaunchRuntimeFunc(func) { }
 
-	BuildSettingsPanel::BuildSettingsPanel(SharedReference<Project>& project, const LaunchRuntimeFn& func)
-		: m_ProjectProperties(project->GetProperties()), m_LaunchRuntimeFunc(func)
+	void BuildSettingsPanel::OnEditorAttach()
 	{
 		m_ProjectPath = Project::GetProjectFilepath();
-		m_StartupScene = m_ProjectProperties.General.StartScene;
+		m_StartupScene = Project::GetActive()->GetProperties().General.StartScene;
 	}
+
+	void BuildSettingsPanel::OnEditorDetach() { }
 
 	void BuildSettingsPanel::OnGuiRender()
 	{
@@ -15,10 +19,10 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (!s_ShowPanel)
+		if (!IsOpen)
 			return;
 
-		Gui::Begin("Build Settings", &s_ShowPanel);
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
 		UI::BeginPropertyGrid();
 
@@ -26,6 +30,9 @@ namespace Vortex {
 		UI::Property("Project Location", projectPath, true);
 
 		UI::EndPropertyGrid();
+
+		SharedReference<Project> activeProject = Project::GetActive();
+		ProjectProperties& projectProps = activeProject->GetProperties();
 
 		if (UI::PropertyGridHeader("Scenes in Build"))
 		{
@@ -97,9 +104,9 @@ namespace Vortex {
 						{
 							auto relativePath = FileSystem::Relative(filePath, Project::GetAssetDirectory());
 
-							if (const bool isFirstSceneInBuild = m_ProjectProperties.BuildProps.BuildIndices.size() == 0)
+							if (const bool isFirstSceneInBuild = projectProps.BuildProps.BuildIndices.size() == 0)
 							{
-								m_ProjectProperties.General.StartScene = relativePath;
+								projectProps.General.StartScene = relativePath;
 							}
 
 							Scene::SubmitSceneToBuild(relativePath.string());
@@ -117,19 +124,19 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			if (!m_ProjectProperties.BuildProps.Window.Maximized)
-				UI::Property("Size", m_ProjectProperties.BuildProps.Window.Size);
-			if (UI::Property("Force 16:9 Aspect Ratio", m_ProjectProperties.BuildProps.Window.ForceSixteenByNine))
+			if (!projectProps.BuildProps.Window.Maximized)
+				UI::Property("Size", projectProps.BuildProps.Window.Size);
+			if (UI::Property("Force 16:9 Aspect Ratio", projectProps.BuildProps.Window.ForceSixteenByNine))
 			{
-				if (m_ProjectProperties.BuildProps.Window.ForceSixteenByNine)
+				if (projectProps.BuildProps.Window.ForceSixteenByNine)
 				{
 					FindAndSetBestSize();
 				}
 			}
 
-			UI::Property("Maximized", m_ProjectProperties.BuildProps.Window.Maximized);
-			UI::Property("Decorated", m_ProjectProperties.BuildProps.Window.Decorated);
-			UI::Property("Resizeable", m_ProjectProperties.BuildProps.Window.Resizeable);
+			UI::Property("Maximized", projectProps.BuildProps.Window.Maximized);
+			UI::Property("Decorated", projectProps.BuildProps.Window.Decorated);
+			UI::Property("Resizeable", projectProps.BuildProps.Window.Resizeable);
 
 			UI::EndPropertyGrid();
 			UI::EndTreeNode();
@@ -148,7 +155,7 @@ namespace Vortex {
 
 		if (Gui::Button("Build and Run"))
 		{
-			m_LaunchRuntimeFunc(m_ProjectPath);
+			std::invoke(m_LaunchRuntimeFunc, m_ProjectPath);
 		}
 		
 		Gui::End();
@@ -156,13 +163,16 @@ namespace Vortex {
 
 	void BuildSettingsPanel::FindAndSetBestSize()
 	{
-		float width = m_ProjectProperties.BuildProps.Window.Size.x;
-		float height = m_ProjectProperties.BuildProps.Window.Size.y;
+		SharedReference<Project> activeProject = Project::GetActive();
+		ProjectProperties& projectProps = activeProject->GetProperties();
+
+		float width = projectProps.BuildProps.Window.Size.x;
+		float height = projectProps.BuildProps.Window.Size.y;
 
 		FindBestWidth(width);
 		FindBestHeight(height);
 
-		m_ProjectProperties.BuildProps.Window.Size = { width, height };
+		projectProps.BuildProps.Window.Size = { width, height };
 	}
 
 	void BuildSettingsPanel::FindBestWidth(float& width)

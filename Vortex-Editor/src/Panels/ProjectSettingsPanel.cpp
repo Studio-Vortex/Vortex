@@ -4,7 +4,7 @@
 
 namespace Vortex {
 
-	ProjectSettingsPanel::ProjectSettingsPanel(SharedReference<Project>& project)
+	ProjectSettingsPanel::ProjectSettingsPanel(SharedReference<Project> project)
 		: m_ProjectProperties(project->GetProperties())
 	{
 		m_CallbackPanels = std::vector<std::function<void()>>
@@ -26,10 +26,10 @@ namespace Vortex {
 
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
-		if (!s_ShowPanel)
+		if (!IsOpen)
 			return;
 
-		Gui::Begin("Project Settings", &s_ShowPanel);
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 		Gui::BeginGroup();
 
 		ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
@@ -61,11 +61,6 @@ namespace Vortex {
 
 		Gui::End();
 	}
-
-    void ProjectSettingsPanel::SetProjectContext(SharedReference<Project>& project)
-    {
-		m_ProjectProperties = project->GetProperties();
-    }
 
 	void ProjectSettingsPanel::RenderGeneralSettingsPanel()
 	{

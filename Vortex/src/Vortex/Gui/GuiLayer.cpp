@@ -53,6 +53,7 @@ namespace Vortex {
 			{ "Resources/Fonts/Arial.ttf", 17.0f, false },
 			{ "Resources/Fonts/opensans/OpenSans-Medium.ttf", 17.0f, false },
 			{ "Resources/Fonts/SegoeUI.ttf", 18.0f, true },
+			{ "Resources/Fonts/SegoeUI.ttf", 24.0f, false },
 		};
 
 		for (const auto& font : fonts)
@@ -61,8 +62,10 @@ namespace Vortex {
 			
 			MergeIconFontWithLast();
 
-			if (font.IsDefault)
-				io.FontDefault = f;
+			if (!font.IsDefault)
+				continue;
+			
+			io.FontDefault = f;
 		}
 
 		ImGuiStyle& style = ImGui::GetStyle();

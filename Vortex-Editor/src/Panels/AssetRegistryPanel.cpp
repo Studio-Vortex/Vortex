@@ -6,10 +6,10 @@ namespace Vortex {
 
 	void AssetRegistryPanel::OnGuiRender()
 	{
-		if (!s_ShowPanel)
+		if (!IsOpen)
 			return;
 
-		Gui::Begin("Asset Registry", &s_ShowPanel);
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
 		RenderLoadedAssets();
 
