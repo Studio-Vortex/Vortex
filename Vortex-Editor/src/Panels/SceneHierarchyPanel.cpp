@@ -1,8 +1,12 @@
 #include "SceneHierarchyPanel.h"
 
-#include <Vortex/Editor/EditorResources.h>
-#include <Vortex/Scripting/ScriptEngine.h>
 #include <Vortex/Core/Buffer.h>
+
+#include <Vortex/Editor/EditorResources.h>
+
+#include <Vortex/Audio/AudioSystem.h>
+
+#include <Vortex/Scripting/ScriptEngine.h>
 
 #include <imgui_internal.h>
 
@@ -1771,7 +1775,7 @@ namespace Vortex {
 			SharedRef<Animation> animation = component.Animation;
 		});
 
-		DrawComponent<AudioSourceComponent>("Audio Source", entity, [](auto& component)
+		DrawComponent<AudioSourceComponent>("Audio Source", entity, [&entity](auto& component)
 		{
 			SharedReference<AudioSource> audioSource = nullptr;
 			if (AssetManager::IsHandleValid(component.AudioHandle))
@@ -1850,14 +1854,12 @@ namespace Vortex {
 
 							if (FileSystem::GetFileExtension(audioSourcePath) != ".vsound")
 							{
-								std::string name = FileSystem::RemoveFileExtension(audioSourcePath);
-								std::string filename = name + ".vsound";
-								SharedReference<AudioSource> asset = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, audioSourcePath.string());
-								if (asset)
-								{
-									component.AudioHandle = asset->Handle;
-									audioSource = asset;
-								}
+								SystemManager::GetAssetSystem<AudioSystem>()->CreateAsset(entity, audioSourcePath.string());
+							}
+							else
+							{
+								AssetHandle handle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(audioSourcePath);
+								component.AudioHandle = handle;
 							}
 						}
 						else

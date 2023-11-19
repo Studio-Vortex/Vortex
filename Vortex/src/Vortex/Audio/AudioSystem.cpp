@@ -109,11 +109,18 @@ namespace Vortex {
 		VX_CORE_ASSERT(entity.HasComponent<AudioSourceComponent>(), "Entity doesn't have audio source component!");
 		
 		AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-		asc.AudioHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
+		std::string name = FileSystem::RemoveFileExtension(filepath);
+		std::string filename = name + ".vsound";
+		SharedReference<AudioSource> asset = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, filepath);
 
-		VX_CORE_ASSERT(!s_Data.AudioData.AudioSources.contains(entity.GetUUID()), "Entities can only have one audio source component!");
+		if (asset)
+		{
+			asc.AudioHandle = asset->Handle;
 
-		s_Data.AudioData.AudioSources[entity.GetUUID()] = asc.AudioHandle;
+			VX_CORE_ASSERT(!s_Data.AudioData.AudioSources.contains(entity.GetUUID()), "Entities can only have one audio source component!");
+
+			s_Data.AudioData.AudioSources[entity.GetUUID()] = asc.AudioHandle;
+		}
     }
 
     void AudioSystem::DestroyAsset(Entity& entity)
@@ -325,7 +332,16 @@ namespace Vortex {
 	void AudioSystem::OnGuiRender()
 	{
 		Gui::Begin("Audio System");
-		Gui::Text("%u", s_Data.AudioData.AudioSources.size());
+		Gui::Text("Active Audio Sources: %u", s_Data.AudioData.AudioSources.size());
+		for (auto& [entityID, assetHandle] : s_Data.AudioData.AudioSources)
+		{
+			auto audioSource = Project::GetEditorAssetManager()->GetAsset(assetHandle).As<AudioSource>();
+			std::string btnName = fmt::format("Play - {}", audioSource->GetAudioClip().Name);
+			if (Gui::Button(btnName.c_str()))
+			{
+				audioSource->Play();
+			}
+		}
 		Gui::End();
 	}
 
