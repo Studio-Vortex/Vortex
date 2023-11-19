@@ -170,11 +170,8 @@ namespace Vortex {
 			mono_debug_init(MONO_DEBUG_FORMAT_MONO);
 		}
 
-		MonoDomain* rootDomain = mono_jit_init("VortexJITRuntime");
-		VX_CORE_ASSERT(rootDomain, "Root Domain was null pointer!");
-
-		// Store the root domain pointer
-		s_Data->RootDomain = rootDomain;
+		s_Data->RootDomain = mono_jit_init("VortexJITRuntime");
+		VX_CORE_ASSERT(s_Data->RootDomain, "Failed to initialize mono!");
 
 		if (s_Data->DebuggingEnabled)
 		{
@@ -189,7 +186,10 @@ namespace Vortex {
 	void ScriptEngine::ShutdownMono()
 	{
 		if (!s_Data->MonoInitialized)
+		{
+			VX_CORE_ASSERT(false, "Trying to shutdown mono multiple times");
 			return;
+		}
 
 		s_Data->AppDomain = nullptr;
 		mono_jit_cleanup(s_Data->RootDomain);
