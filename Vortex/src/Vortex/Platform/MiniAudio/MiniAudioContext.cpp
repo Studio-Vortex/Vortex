@@ -17,6 +17,9 @@ namespace Vortex {
 		ma_uint32 PlaybackDeviceCount;
 		ma_device_info* PlaybackDeviceInfos = nullptr;
 
+		ma_uint32 CaptureDeviceCount;
+		ma_device_info* CaptureDeviceInfos = nullptr;
+
 #endif // !VX_DIST
 
 	};
@@ -25,48 +28,71 @@ namespace Vortex {
 
 	void MiniAudioContext::Init()
 	{
-		ma_context_config contextConfig = ma_context_config_init();
-		contextConfig.pUserData = this;
+		ma_context_config config = ma_context_config_init();
+		config.pUserData = this;
 
-		VX_CHECK_AUDIO_RESULT(
-			ma_context_init(NULL, 0, &contextConfig, &s_Data.Context),
-			"Failed to initialize Audio Context!"
-		);
+		ma_result res = ma_context_init(nullptr, 0, &config, &s_Data.Context);
+		VX_CHECK_AUDIO_RESULT(res, "Failed to initialize miniaudio!");
 
 #ifndef VX_DIST
 
 		EnumerateDevices();
 
 #endif // !VX_DIST
+
 	}
 
 	void MiniAudioContext::Shutdown()
 	{
-		VX_CHECK_AUDIO_RESULT(
-			ma_context_uninit(&s_Data.Context),
-			"Failed to shutdown audio context!"
-		);
+		ma_result res = ma_context_uninit(&s_Data.Context);
+		VX_CHECK_AUDIO_RESULT(res, "Failed to shutdown miniaudio!");
 	}
 
     void* MiniAudioContext::GetLogger()
     {
-        return ma_context_get_log(&s_Data.Context);
+        return (void*)ma_context_get_log(&s_Data.Context);
     }
 
 	void MiniAudioContext::EnumerateDevices()
 	{
-		VX_CHECK_AUDIO_RESULT(
-			ma_context_get_devices(&s_Data.Context, &s_Data.PlaybackDeviceInfos, &s_Data.PlaybackDeviceCount, nullptr, nullptr),
-			"Failed to retrieve Audio Hardware Information!"
+		ma_result res = ma_context_get_devices(
+			&s_Data.Context,
+			&s_Data.PlaybackDeviceInfos,
+			&s_Data.PlaybackDeviceCount,
+			&s_Data.CaptureDeviceInfos,
+			&s_Data.CaptureDeviceCount
 		);
+		VX_CHECK_AUDIO_RESULT(res, "Failed to enumerate hardware devices!");
 
-		const bool hasMultipleDevices = s_Data.PlaybackDeviceCount > 1;
-		VX_CONSOLE_LOG_INFO("[Audio] Located {} hardware device{}", s_Data.PlaybackDeviceCount, hasMultipleDevices ? "(s)" : "");
+		VX_CONSOLE_LOG_INFO("[Audio] Located '{}' playback device(s)", s_Data.PlaybackDeviceCount);
+		VX_CONSOLE_LOG_INFO("[Audio] Located '{}' capture device(s)", s_Data.CaptureDeviceCount);
 
-		for (uint32_t i = 0; i < s_Data.PlaybackDeviceCount; i++)
+		uint32_t defaultDevice = 0;
+
 		{
-			VX_CONSOLE_LOG_INFO("[Audio] Device {}: {}", i + 1, s_Data.PlaybackDeviceInfos[i].name);
-			VX_CONSOLE_LOG_INFO("[Audio]        Default - {}", s_Data.PlaybackDeviceInfos[i].isDefault ? "true" : "false");
+			for (uint32_t i = 0; i < s_Data.PlaybackDeviceCount; i++)
+			{
+				VX_CONSOLE_LOG_INFO("[Audio]	Playback-Device {}: {}", i + 1, s_Data.PlaybackDeviceInfos[i].name);
+				if (!s_Data.PlaybackDeviceInfos[i].isDefault)
+					continue;
+
+				defaultDevice = i;
+			}
+
+			VX_CONSOLE_LOG_INFO("[Audio] Default Playback-Device: {}", s_Data.PlaybackDeviceInfos[defaultDevice].name);
+		}
+
+		{
+			for (uint32_t i = 0; i < s_Data.CaptureDeviceCount; i++)
+			{
+				VX_CONSOLE_LOG_INFO("[Audio]	Capture-Device {}: {}", i + 1, s_Data.CaptureDeviceInfos[i].name);
+				if (!s_Data.CaptureDeviceInfos[i].isDefault)
+					continue;
+
+				defaultDevice = i;
+			}
+
+			VX_CONSOLE_LOG_INFO("[Audio] Default Capture-Device: {}", s_Data.CaptureDeviceInfos[defaultDevice].name);
 		}
 	}
 

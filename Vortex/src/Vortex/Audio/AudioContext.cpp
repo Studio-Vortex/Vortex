@@ -3,7 +3,7 @@
 
 #include "Vortex/Audio/AudioSystem.h"
 
-#include "Vortex/Platform/MiniAudio/MiniAudioContext.h"
+#include "Vortex/Platform/Miniaudio/MiniAudioContext.h"
 
 namespace Vortex {
 

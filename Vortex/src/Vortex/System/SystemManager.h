@@ -11,12 +11,12 @@ namespace Vortex {
 	{
 	public:
 		static void SubmitContextScene(Scene* context);
-		static void RemoveContextScene(Scene* context);
+		static void RemoveContextScene();
 
-		static void OnRuntimeStart(Scene* context);
-		static void OnRuntimeScenePaused(Scene* context);
-		static void OnRuntimeSceneResumed(Scene* context);
-		static void OnRuntimeStop(Scene* context);
+		static void OnRuntimeStart();
+		static void OnRuntimeScenePaused();
+		static void OnRuntimeSceneResumed();
+		static void OnRuntimeStop();
 
 		static void OnGuiRender();
 

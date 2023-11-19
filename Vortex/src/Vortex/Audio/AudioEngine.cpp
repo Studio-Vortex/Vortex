@@ -18,6 +18,7 @@ namespace Vortex {
 		ma_engine_config engineConfig = ma_engine_config_init();
 		engineConfig.channels = 0; // use the device's native channel count
 		engineConfig.noAutoStart = (ma_bool32)true;
+		engineConfig.listenerCount = PlaybackDevice::MaxDeviceListeners;
 
 #ifdef VX_DEBUG
 
@@ -32,8 +33,6 @@ namespace Vortex {
 		engineConfig.pLog = logger;
 
 #endif // VX_DEBUG
-		
-		engineConfig.listenerCount = PlaybackDevice::MaxDeviceListeners;
 
 		VX_CHECK_AUDIO_RESULT(
 			ma_engine_init(&engineConfig, engine),
