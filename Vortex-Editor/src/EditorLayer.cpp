@@ -19,6 +19,7 @@
 #include "Panels/PhysicsMaterialEditorPanel.h"
 #include "Panels/PhysicsStatisticsPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
+#include "Panels/NetworkManagerPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/ScriptRegistryPanel.h"
@@ -72,6 +73,7 @@ namespace Vortex {
 
 		m_PanelManager->AddPanel<PhysicsMaterialEditorPanel>();
 		m_PanelManager->AddPanel<PhysicsStatisticsPanel>();
+		m_PanelManager->AddPanel<NetworkManagerPanel>();
 		m_PanelManager->AddPanel<SceneHierarchyPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<ScriptRegistryPanel>();
 		m_PanelManager->AddPanel<MaterialEditorPanel>()->IsOpen = true;
@@ -417,6 +419,7 @@ namespace Vortex {
 			m_PanelManager->OnGuiRender<PhysicsMaterialEditorPanel>();
 			m_PanelManager->OnGuiRender<PhysicsStatisticsPanel>();
 			m_PanelManager->OnGuiRender<ProjectSettingsPanel>();
+			m_PanelManager->OnGuiRender<NetworkManagerPanel>();
 			m_PanelManager->GetPanel<SceneHierarchyPanel>()->OnGuiRender(m_HoveredEntity, m_EditorCamera);
 			m_PanelManager->OnGuiRender<ContentBrowserPanel>();
 			m_PanelManager->OnGuiRender<ScriptRegistryPanel>();
@@ -786,7 +789,7 @@ namespace Vortex {
 					UI::Draw::Underline();
 					m_PanelManager->MainMenuBarItem<ECSDebugPanel>();
 					UI::Draw::Underline();
-					Gui::MenuItem("Network Manager", nullptr, &m_NetworkManagerPanel.IsOpen());
+					m_PanelManager->MainMenuBarItem<NetworkManagerPanel>();
 					UI::Draw::Underline();
 					m_PanelManager->MainMenuBarItem<PerformancePanel>();
 					UI::Draw::Underline();
