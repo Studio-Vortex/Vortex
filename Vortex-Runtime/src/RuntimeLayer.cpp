@@ -49,10 +49,7 @@ namespace Vortex {
 		}
 	}
 
-	void RuntimeLayer::OnDetach()
-	{
-		ScriptEngine::Shutdown();
-	}
+	void RuntimeLayer::OnDetach() { }
 
 	void RuntimeLayer::OnUpdate(TimeStep delta)
 	{
@@ -150,6 +147,9 @@ namespace Vortex {
 
 		Gui::PopStyleVar(3);
 
+		// Update Engine System Gui
+		SystemManager::OnGuiRender();
+
 		// Update Application Gui
 		m_RuntimeScene->OnUpdateEntityGui();
 	}
@@ -212,6 +212,8 @@ namespace Vortex {
 	{
 		if (m_RuntimeScene->IsRunning())
 			OnRuntimeSceneStop();
+
+		ScriptEngine::Shutdown();
 	}
 
 	bool RuntimeLayer::OpenScene(const AssetMetadata& sceneMetadata)

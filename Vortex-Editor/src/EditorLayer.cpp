@@ -2726,7 +2726,6 @@ namespace Vortex {
 	{
 		// TODO build asset pack here
 
-		// This will be changed in the future
 		OnLaunchRuntime(Project::GetProjectFilepath());
 	}
 
