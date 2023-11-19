@@ -54,7 +54,7 @@ namespace Vortex {
 
 		void CreateNewProject();
 		bool OpenExistingProject();
-		void OpenProject(const std::filesystem::path& filepath);
+		bool OpenProject(const std::filesystem::path& filepath);
 		void SaveProject();
 		void CloseProject();
 		void BuildProject();

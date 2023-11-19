@@ -26,13 +26,12 @@ namespace Vortex {
 		{
 			static_assert(std::is_base_of<EditorPanel, TPanel>::value, "AddPanel only works with types derived from EditorPanel!");
 
-			VX_CORE_ASSERT(!m_Panels.contains(type), "Panel with type already exists");
-			
 			SharedReference<TPanel> panel = SharedReference<TPanel>::Create(std::forward<TArgs>(args)...);
 			EditorPanelType type = TPanel::GetStaticType();
 			std::string panelName = Utils::EditorPanelTypeToString(type);
 			panel->SetName(panelName);
 
+			VX_CORE_ASSERT(!m_Panels.contains(type), "Panel with type already exists");
 			m_Panels[type] = panel;
 
 			return panel;

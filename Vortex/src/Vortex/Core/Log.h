@@ -254,8 +254,8 @@ namespace Vortex {
 #define VX_FATAL(...)   ::Vortex::Log::PrintMessage(::Vortex::Log::LoggerType::Client, ::Vortex::Log::LogLevel::Fatal, "", __VA_ARGS__)
 
 // Editor Console Logging Macros
-#define VX_CONSOLE_LOG_TRACE(...)   Vortex::Log::GetEditorConsoleLogger()->trace(__VA_ARGS__)
-#define VX_CONSOLE_LOG_INFO(...)    Vortex::Log::GetEditorConsoleLogger()->info(__VA_ARGS__)
-#define VX_CONSOLE_LOG_WARN(...)    Vortex::Log::GetEditorConsoleLogger()->warn(__VA_ARGS__)
-#define VX_CONSOLE_LOG_ERROR(...)   Vortex::Log::GetEditorConsoleLogger()->error(__VA_ARGS__)
-#define VX_CONSOLE_LOG_FATAL(...)   Vortex::Log::GetEditorConsoleLogger()->critical(__VA_ARGS__)
+#define VX_CONSOLE_LOG_TRACE(...)   ::Vortex::Log::GetEditorConsoleLogger()->trace(__VA_ARGS__)
+#define VX_CONSOLE_LOG_INFO(...)    ::Vortex::Log::GetEditorConsoleLogger()->info(__VA_ARGS__)
+#define VX_CONSOLE_LOG_WARN(...)    ::Vortex::Log::GetEditorConsoleLogger()->warn(__VA_ARGS__)
+#define VX_CONSOLE_LOG_ERROR(...)   ::Vortex::Log::GetEditorConsoleLogger()->error(__VA_ARGS__)
+#define VX_CONSOLE_LOG_FATAL(...)   ::Vortex::Log::GetEditorConsoleLogger()->critical(__VA_ARGS__)

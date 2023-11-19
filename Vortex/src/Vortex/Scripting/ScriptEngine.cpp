@@ -53,6 +53,7 @@ namespace Vortex {
 		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher = nullptr;
 		bool AssemblyReloadPending = false;
 		bool DebuggingEnabled = false;
+		bool MonoInitialized = false;
 
 		SharedReference<AudioSource> AppAssemblyReloadSound = nullptr;
 
@@ -148,6 +149,9 @@ namespace Vortex {
 
 	void ScriptEngine::InitMono()
 	{
+		if (s_Data->MonoInitialized)
+			return;
+
 		mono_set_assemblies_path("mono/lib");
 
 		SharedReference<Project> activeProject = Project::GetActive();
@@ -178,17 +182,20 @@ namespace Vortex {
 		}
 
 		mono_thread_set_main(mono_thread_current());
+
+		s_Data->MonoInitialized = true;
 	}
 
 	void ScriptEngine::ShutdownMono()
 	{
-		mono_domain_set(mono_get_root_domain(), false);
+		if (!s_Data->MonoInitialized)
+			return;
 
-		mono_domain_unload(s_Data->AppDomain);
 		s_Data->AppDomain = nullptr;
-
 		mono_jit_cleanup(s_Data->RootDomain);
 		s_Data->RootDomain = nullptr;
+
+		s_Data->MonoInitialized = false;
 	}
 
 	bool ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)

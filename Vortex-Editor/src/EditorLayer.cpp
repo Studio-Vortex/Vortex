@@ -160,9 +160,6 @@ namespace Vortex {
 			}
 		}
 
-		SharedReference<Project> activeProject = Project::GetActive();
-		const ProjectProperties& projectProps = activeProject->GetProperties();
-
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
 		ResizeTargetFramebuffersIfNeeded();
@@ -2658,9 +2655,6 @@ namespace Vortex {
 
 	bool EditorLayer::OpenExistingProject()
 	{
-		if (Project::GetActive())
-			CloseProject();
-
 		std::string filepath = FileDialogue::OpenFileDialog("Vortex Project (*.vxproject)\0*.vxproject\0");
 
 		if (filepath.empty())
@@ -2670,12 +2664,12 @@ namespace Vortex {
 		return true;
 	}
 
-	void EditorLayer::OpenProject(const std::filesystem::path& filepath)
+	bool EditorLayer::OpenProject(const std::filesystem::path& filepath)
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (m_SceneState != SceneState::Edit)
-			OnSceneStop();
+		if (Project::GetActive())
+			CloseProject();
 
 		m_HoveredEntity = Entity{};
 
@@ -2683,7 +2677,7 @@ namespace Vortex {
 		if (!success)
 		{
 			VX_CORE_FATAL("Failed to open project: '{}'", filepath.string());
-			return;
+			return false;
 		}
 		
 		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
@@ -2696,6 +2690,8 @@ namespace Vortex {
 		SharedReference<Project> activeProject = Project::GetActive();
 		m_PanelManager->AddPanel<ProjectSettingsPanel>(activeProject);
 		m_PanelManager->AddPanel<ContentBrowserPanel>(Project::GetAssetDirectory())->IsOpen = true;
+		
+		return true;
 	}
 
 	void EditorLayer::SaveProject()
@@ -2712,15 +2708,20 @@ namespace Vortex {
 	{
 		if (m_ActiveScene->IsRunning())
 			OnSceneStop();
+
+		ScriptEngine::Shutdown();
 	}
 
 	void EditorLayer::BuildProject()
 	{
-		//
+		// TODO build asset pack here
 	}
 
 	void EditorLayer::BuildAndRunProject()
 	{
+		// TODO build asset pack here
+
+		// This will be changed in the future
 		OnLaunchRuntime(Project::GetProjectFilepath());
 	}
 

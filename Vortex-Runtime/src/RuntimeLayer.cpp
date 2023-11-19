@@ -1,8 +1,11 @@
 #include "RuntimeLayer.h"
 
 #include <Vortex/Scene/Scene.h>
+
 #include <Vortex/Project/ProjectLoader.h>
+
 #include <Vortex/Serialization/SceneSerializer.h>
+
 #include <Vortex/Scripting/ScriptEngine.h>
 #include <Vortex/Scripting/ScriptRegistry.h>
 
@@ -46,13 +49,24 @@ namespace Vortex {
 		}
 	}
 
-	void RuntimeLayer::OnDetach() { }
+	void RuntimeLayer::OnDetach()
+	{
+		ScriptEngine::Shutdown();
+	}
 
 	void RuntimeLayer::OnUpdate(TimeStep delta)
 	{
 		VX_PROFILE_FUNCTION();
 
-		Renderer::RenderToDepthMap(m_RuntimeScene);
+		// Shadow pass
+		if (Entity skyLightEntity = m_RuntimeScene->GetSkyLightEntity())
+		{
+			const auto& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
+			if (lsc.CastShadows)
+			{
+				Renderer::RenderToDepthMap(m_RuntimeScene);
+			}
+		}
 
 		m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
@@ -70,6 +84,7 @@ namespace Vortex {
 		// Clear entityID attachment to -1
 		m_Framebuffer->ClearAttachment(1, -1);
 
+		// Update Scene
 		m_RuntimeScene->OnUpdateRuntime(delta);
 
 		auto [mx, my] = ImGui::GetMousePos();
@@ -87,6 +102,7 @@ namespace Vortex {
 
 		m_Framebuffer->Unbind();
 		
+		// Bloom pass
 		if (Entity primaryCamera = m_RuntimeScene->GetPrimaryCameraEntity())
 		{
 			PostProcessProperties postProcessProps{};
