@@ -316,32 +316,25 @@ namespace Vortex {
 		RenderCommand::SetCullMode(s_Data.CullMode);
 	}
 
-	void Renderer::DrawFrustumOutline(const TransformComponent& transform, SceneCamera sceneCamera, const Math::vec4& color)
+	void Renderer::DrawFrustum(const std::vector<Math::vec4>& corners, const Math::vec4& color)
 	{
-		Math::mat4 cameraOrientation = Math::ToMat4(transform.GetRotation());
+		// Near Rect
+		Renderer2D::DrawLine(Math::vec3(corners[0]), Math::vec3(corners[4]), color);
+		Renderer2D::DrawLine(Math::vec3(corners[2]), Math::vec3(corners[6]), color);
+		Renderer2D::DrawLine(Math::vec3(corners[4]), Math::vec3(corners[6]), color);
+		Renderer2D::DrawLine(Math::vec3(corners[2]), Math::vec3(corners[0]), color);
 
-		Math::vec3 corners[4] = {
-			 transform.Translation + (Math::vec3(transform.Scale.x, transform.Scale.y, 0) * Math::vec3(0.5f)),
-			 transform.Translation + (Math::vec3(-transform.Scale.x, transform.Scale.y, 0) * Math::vec3(0.5f)),
-			 transform.Translation + (Math::vec3(transform.Scale.x, -transform.Scale.y, 0) * Math::vec3(0.5f)),
-			 transform.Translation + (Math::vec3(-transform.Scale.x, -transform.Scale.y, 0) * Math::vec3(0.5f)),
-		};
+		// Far Rect
+		Renderer2D::DrawLine(Math::vec3(corners[1]), Math::vec3(corners[5]), color);
+		Renderer2D::DrawLine(Math::vec3(corners[3]), Math::vec3(corners[7]), color);
+		Renderer2D::DrawLine(Math::vec3(corners[5]), Math::vec3(corners[7]), color);
+		Renderer2D::DrawLine(Math::vec3(corners[3]), Math::vec3(corners[1]), color);
 
-		// Transform the points to the camera's orientation
-		for (uint32_t i = 0; i < 4; i++)
-		{
-			corners[i] = Math::vec4(corners[i], 1.0f) * cameraOrientation;
-		}
-
-		// Draw frustum
-		Renderer2D::DrawLine(transform.Translation, corners[0], color);
-		Renderer2D::DrawLine(transform.Translation, corners[1], color);
-		Renderer2D::DrawLine(transform.Translation, corners[2], color);
-		Renderer2D::DrawLine(transform.Translation, corners[3], color);
-		Renderer2D::DrawLine(corners[0], corners[1], color);
-		Renderer2D::DrawLine(corners[1], corners[3], color);
-		Renderer2D::DrawLine(corners[3], corners[2], color);
-		Renderer2D::DrawLine(corners[2], corners[0], color);
+		// Connect Rects
+		Renderer2D::DrawLine(Math::vec3(corners[0]), Math::vec3(corners[1]), color);
+		Renderer2D::DrawLine(Math::vec3(corners[2]), Math::vec3(corners[3]), color);
+		Renderer2D::DrawLine(Math::vec3(corners[4]), Math::vec3(corners[5]), color);
+		Renderer2D::DrawLine(Math::vec3(corners[6]), Math::vec3(corners[7]), color);
 	}
 
 	SceneLightDescription Renderer::GetSceneLightDescription()

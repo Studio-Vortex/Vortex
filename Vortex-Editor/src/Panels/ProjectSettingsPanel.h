@@ -2,18 +2,19 @@
 
 #include <Vortex.h>
 
+#include <Vortex/Editor/EditorPanel.h>
+
 namespace Vortex {
 
-	class ProjectSettingsPanel
+	class ProjectSettingsPanel : public EditorPanel
 	{
 	public:
-		ProjectSettingsPanel(SharedReference<Project>& project);
-		~ProjectSettingsPanel() = default;
+		ProjectSettingsPanel(SharedReference<Project> project);
+		~ProjectSettingsPanel() override = default;
 
-		void OnGuiRender();
-		void SetProjectContext(SharedReference<Project>& project);
-		void SetSceneContext(SharedReference<Scene>& scene) {}
-		bool& IsOpen() { return s_ShowPanel; }
+		void OnGuiRender() override;
+
+		EDITOR_PANEL_TYPE(ProjectSettings)
 
 	private:
 		void RenderGeneralSettingsPanel();
@@ -22,9 +23,6 @@ namespace Vortex {
 		void RenderNetworkSettingsPanel();
 		void RenderPhysicsSettingsPanel();
 		void RenderScriptingSettingsPanel();
-
-	private:
-		inline static bool s_ShowPanel = false;
 
 	private:
 		ProjectProperties& m_ProjectProperties;

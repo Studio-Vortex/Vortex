@@ -1,28 +1,31 @@
 #pragma once
 
 #include <Vortex.h>
+
+#include <Vortex/Editor/EditorPanel.h>
 #include <Vortex/Editor/SelectionManager.h>
 
 namespace Vortex {
 	
-	class SceneHierarchyPanel
+	class SceneHierarchyPanel : public EditorPanel
 	{
 	public:
 		SceneHierarchyPanel() = default;
 		SceneHierarchyPanel(const SharedReference<Scene>& context);
-		~SceneHierarchyPanel() = default;
+		~SceneHierarchyPanel() override = default;
 
 		void OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera);
-		void SetProjectContext(SharedReference<Project>& project) {}
-		void SetSceneContext(const SharedReference<Scene>& scene);
+		void OnGuiRender() override {}
+		void SetSceneContext(SharedReference<Scene> scene) override;
 
 		inline bool IsEditingEntityName() const { return m_IsEditingEntityName; }
 		inline void EditSelectedEntityName(bool enabled) { m_EntityShouldBeRenamed = enabled; }
 
 		void DisplayCreateEntityMenu(const EditorCamera* editorCamera);
 
-		inline bool& IsOpen() { return s_ShowSceneHierarchyPanel; }
 		inline bool& IsInspectorOpen() { return s_ShowInspectorPanel; }
+
+		EDITOR_PANEL_TYPE(SceneHierarchy)
 
 	private:
 		void DisplayInsectorPanel(Entity hoveredEntity);
@@ -59,7 +62,6 @@ namespace Vortex {
 		void RecursiveEntitySearch(UUID topEntity, const EditorCamera* editorCamera, uint32_t& searchDepth);
 
 	private:
-		inline static bool s_ShowSceneHierarchyPanel = true;
 		inline static bool s_ShowInspectorPanel = true;
 
 	private:

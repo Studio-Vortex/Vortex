@@ -19,7 +19,7 @@ namespace Vortex {
 		e2D, e3D
 	};
 
-	using BuildIndexMap = std::map<uint32_t, std::string>;
+	using VORTEX_API BuildIndexMap = std::map<uint32_t, std::string>;
 
 	struct VORTEX_API ProjectProperties
 	{

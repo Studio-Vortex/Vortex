@@ -19,8 +19,6 @@
 
 #include "Vortex/System/SystemManager.h"
 
-#include "Vortex/Scripting/ScriptEngine.h"
-
 #include "Vortex/Utils/FileSystem.h"
 #include "Vortex/Utils/Random.h"
 #include "Vortex/Utils/Time.h"
@@ -119,7 +117,6 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Input::Shutdown();
-		ScriptEngine::Shutdown();
 		SystemManager::UnregisterAssetSystem<AudioSystem>();
 		Physics::Shutdown();
 		Font::Shutdown();

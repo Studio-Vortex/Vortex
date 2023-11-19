@@ -1,26 +1,9 @@
 #pragma once
 
 #include <Vortex.h>
-#include <Vortex/Editor/ConsolePanel.h>
 #include <Vortex/Scene/SceneRenderer.h>
 
-#include "Panels/PhysicsMaterialEditorPanel.h"
-#include "Panels/PhysicsStatisticsPanel.h"
-#include "Panels/ProjectSettingsPanel.h"
-#include "Panels/SceneHierarchyPanel.h"
-#include "Panels/ContentBrowserPanel.h"
-#include "Panels/ScriptRegistryPanel.h"
-#include "Panels/MaterialEditorPanel.h"
-#include "Panels/SceneRendererPanel.h"
-#include "Panels/AssetRegistryPanel.h"
-#include "Panels/BuildSettingsPanel.h"
-#include "Panels/SystemManagerPanel.h"
-#include "Panels/ShaderEditorPanel.h"
-#include "Panels/PerformancePanel.h"
-#include "Panels/SubModulesPanel.h"
-#include "Panels/ECSDebugPanel.h"
-#include "Panels/AboutPanel.h"
-
+#include <Vortex/Editor/PanelManager.h>
 
 namespace Vortex {
 
@@ -71,9 +54,11 @@ namespace Vortex {
 
 		void CreateNewProject();
 		bool OpenExistingProject();
-		void OpenProject(const std::filesystem::path& filepath);
+		bool OpenProject(const std::filesystem::path& filepath);
 		void SaveProject();
 		void CloseProject();
+		void BuildProject();
+		void BuildAndRunProject();
 
 		// Scene
 
@@ -128,8 +113,20 @@ namespace Vortex {
 		void CaptureFramebufferImageToDisk();
 		void ReplaceSceneFileExtensionIfNeeded(std::string& filepath);
 
+		std::vector<Math::vec4> GetFrustumCornersWorldSpace(const TransformComponent& transform, const SceneCamera& sceneCamera);
+
 		std::pair<float, float> GetMouseViewportSpace(bool mainViewport);
 		std::pair<Math::vec3, Math::vec3> CastRay(EditorCamera* editorCamera, float mx, float my);
+
+	private:
+		struct SelectionData
+		{
+			UUID SelectedUUID;
+			float Distance;
+
+			SelectionData(UUID uuid = 0, float distance = 0.0f)
+				: SelectedUUID(uuid), Distance(distance) { }
+		};
 
 	private:
 		EditorCamera* m_EditorCamera = nullptr;
@@ -181,23 +178,7 @@ namespace Vortex {
 		bool m_OpenCreateScriptPopup = false;
 		bool m_OpenMeshImportPopup = false;
 
-		PhysicsMaterialEditorPanel m_PhysicsMaterialEditorPanel;
-		PhysicsStatisticsPanel m_PhysicsStatsPanel;
-		SharedRef<ProjectSettingsPanel> m_ProjectSettingsPanel = nullptr;
-		SceneHierarchyPanel m_SceneHierarchyPanel;
-		SharedRef<ContentBrowserPanel> m_ContentBrowserPanel = nullptr;
-		ScriptRegistryPanel m_ScriptRegistryPanel;
-		MaterialEditorPanel m_MaterialEditorPanel;
-		SceneRendererPanel m_SceneRendererPanel;
-		AssetRegistryPanel m_AssetRegistryPanel;
-		SharedRef<BuildSettingsPanel> m_BuildSettingsPanel = nullptr;
-		SystemManagerPanel m_SystemManagerPanel;
-		ShaderEditorPanel m_ShaderEditorPanel;
-		PerformancePanel m_PerformancePanel;
-		SubModulesPanel m_SubModulesPanel;
-		ECSDebugPanel m_ECSDebugPanel;
-		ConsolePanel m_ConsolePanel;
-		AboutPanel m_AboutPanel;
+		SharedReference<PanelManager> m_PanelManager = nullptr;
 
 		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;

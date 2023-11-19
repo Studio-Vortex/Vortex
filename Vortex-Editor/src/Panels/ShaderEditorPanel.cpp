@@ -2,31 +2,29 @@
 
 namespace Vortex {
 
-	ShaderEditorPanel::ShaderEditorPanel()
+	void ShaderEditorPanel::OnEditorAttach()
 	{
 		m_TextEditor.SetShowWhitespaces(false);
-		TextEditor::Breakpoints breakpoints;
-		breakpoints.insert(1);
-		m_TextEditor.SetBreakpoints(breakpoints);
 	}
+
+	void ShaderEditorPanel::OnEditorDetach() { }
 
 	void ShaderEditorPanel::OnGuiRender()
 	{
-		if (!s_ShowPanel)
+		if (!IsOpen)
 			return;
 
 		std::string filepath;
 		std::string srcCode;
 
-		Gui::Begin("Shader Editor", &s_ShowPanel);
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
-		// Right (Code Editor)
-		RenderShaderCodeEditor();
+		RenderShaderEditor();
 			
 		Gui::End();
 	}
 
-	void ShaderEditorPanel::RenderShaderCodeEditor()
+	void ShaderEditorPanel::RenderShaderEditor()
 	{
 		m_TextEditor.Render("Shader Editor", Gui::GetContentRegionAvail());
 
@@ -53,23 +51,22 @@ namespace Vortex {
 		std::ifstream in(path, std::ios::in, std::ios::binary); // Read as binary input
 		std::vector<std::string> lines;
 
-		if (in)
+		if (!in.is_open())
 		{
-			in.seekg(0, std::ios::end); // move to the end of the file
-			size_t size = in.tellg(); // get the size of the file
-
-			if (size != -1)
-			{
-				in.seekg(0, std::ios::beg); // move to the beginning
-				
-				while (std::getline(in, line))
-					lines.push_back(line);
-
-				in.close(); // close the file
-			}
-			else
-				VX_WARN("Could not load shader {}", path.filename().string());
+			VX_CONSOLE_LOG_WARN("Could not load shader {}", path.filename().string());
 		}
+
+		in.seekg(0, std::ios::end); // move to the end of the file
+		size_t size = in.tellg(); // get the size of the file
+
+		in.seekg(0, std::ios::beg); // move to the beginning
+
+		while (std::getline(in, line))
+		{
+			lines.push_back(line);
+		}
+
+		in.close(); // close the file
 
 		m_CurrentShaderPath = path;
 

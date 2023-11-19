@@ -243,7 +243,12 @@ project "Vortex-Editor"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp",
+    	"%{prj.name}/src/**.cpp",
+		
+		-- icon
+		"%{prj.name}/resource.h",
+		"%{prj.name}/%{prj.name}" .. ".aps",
+		"%{prj.name}/%{prj.name}" .. ".rc",
 	}
 
 	includedirs
@@ -342,7 +347,12 @@ project "Vortex-Launcher"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp",
+    	"%{prj.name}/src/**.cpp",
+		
+		-- icon
+		"%{prj.name}/resource.h",
+		"%{prj.name}/%{prj.name}" .. ".aps",
+		"%{prj.name}/%{prj.name}" .. ".rc",
 	}
 
 	includedirs
@@ -442,7 +452,12 @@ project "Vortex-Runtime"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp",
+    	"%{prj.name}/src/**.cpp",
+		
+		-- icon
+		"%{prj.name}/resource.h",
+		"%{prj.name}/%{prj.name}" .. ".aps",
+		"%{prj.name}/%{prj.name}" .. ".rc",
 	}
 
 	includedirs

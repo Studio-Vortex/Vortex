@@ -2,25 +2,32 @@
 
 #include <Vortex.h>
 
+#include <Vortex/Editor/EditorPanel.h>
+
 namespace Vortex {
 
-	class MaterialEditorPanel
+	class MaterialEditorPanel : public EditorPanel
 	{
 	public:
-		MaterialEditorPanel() = default;
-		~MaterialEditorPanel() = default;
+		~MaterialEditorPanel() override = default;
 
-		void OnGuiRender();
-		void SetProjectContext(SharedReference<Project>& project) {}
-		void SetSceneContext(SharedReference<Scene>& scene) {}
-		bool& IsOpen() { return s_ShowPanel; }
+		void OnGuiRender() override;
+
+		EDITOR_PANEL_TYPE(MaterialEditor)
 
 	private:
 		void RenderMeshMaterial(Entity selectedEntity);
 		void ParameterCallback(SharedReference<Material>& material, uint32_t materialIndex);
+		SharedReference<Texture2D> GetMaterialTexture(const SharedReference<Material>& material, uint32_t index);
+		void SetMaterialTexture(SharedReference<Material>& material, AssetHandle textureHandle, uint32_t index);
+		void RenderMaterialFlags(SharedReference<Material>& material);
+		void RenderMaterialProperties(SharedReference<Material>& material);
+		bool MaterialTextureHasProperties(uint32_t index);
+		using MaterialParameterCallbackFunc = const std::function<void(SharedReference<Material>&, uint32_t)>&;
+		void RenderMaterialTexturesAndProperties(SharedReference<Material>& material, MaterialParameterCallbackFunc parameterCallback);
 
 	private:
-		inline static bool s_ShowPanel = true;
+		ImGuiTextFilter m_ShaderDropdownTextFilter;
 	};
 
 }

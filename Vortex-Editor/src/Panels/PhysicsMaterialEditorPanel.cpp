@@ -10,20 +10,15 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (!s_ShowPanel)
+		if (!IsOpen)
 			return;
 
-		Entity selected = SelectionManager::GetSelectedEntity();
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
-		Gui::Begin("Physics Material Editor", &s_ShowPanel);
-
-		if (!selected)
+		if (Entity selected = SelectionManager::GetSelectedEntity())
 		{
-			Gui::End();
-			return;
+			RenderPhysicsMaterial(selected);
 		}
-
-		RenderPhysicsMaterial(selected);
 
 		Gui::End();
 	}
@@ -45,25 +40,33 @@ namespace Vortex {
 		{
 			physicsMaterialHandle = selectedEntity.GetComponent<BoxColliderComponent>().Material;
 			if (AssetManager::IsHandleValid(physicsMaterialHandle))
+			{
 				physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterialHandle);
+			}
 		}
 		else if (selectedEntity.HasComponent<SphereColliderComponent>())
 		{
 			physicsMaterialHandle = selectedEntity.GetComponent<SphereColliderComponent>().Material;
 			if (AssetManager::IsHandleValid(physicsMaterialHandle))
+			{
 				physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterialHandle);
+			}
 		}
 		else if (selectedEntity.HasComponent<CapsuleColliderComponent>())
 		{
 			physicsMaterialHandle = selectedEntity.GetComponent<CapsuleColliderComponent>().Material;
 			if (AssetManager::IsHandleValid(physicsMaterialHandle))
+			{
 				physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterialHandle);
+			}
 		}
 		else if (selectedEntity.HasComponent<MeshColliderComponent>())
 		{
 			physicsMaterialHandle = selectedEntity.GetComponent<MeshColliderComponent>().Material;
 			if (AssetManager::IsHandleValid(physicsMaterialHandle))
+			{
 				physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterialHandle);
+			}
 		}
 
 		if (physicsMaterial)
@@ -79,11 +82,15 @@ namespace Vortex {
 			const char* combineModes[] = { "Average", "Maximum", "Minimum", "Multiply" };
 			int32_t currentFrictionCombineMode = (uint32_t)physicsMaterial->FrictionCombineMode;
 			if (UI::PropertyDropdown("Friction Combine Mode", combineModes, VX_ARRAYCOUNT(combineModes), currentFrictionCombineMode))
+			{
 				physicsMaterial->FrictionCombineMode = (CombineMode)currentFrictionCombineMode;
+			}
 
 			int32_t currentBouncinessCombineMode = (uint32_t)physicsMaterial->BouncinessCombineMode;
 			if (UI::PropertyDropdown("Bounciness Combine Mode", combineModes, VX_ARRAYCOUNT(combineModes), currentBouncinessCombineMode))
+			{
 				physicsMaterial->BouncinessCombineMode = (CombineMode)currentBouncinessCombineMode;
+			}
 		}
 		else
 		{
@@ -100,13 +107,21 @@ namespace Vortex {
 					buffer.clear();
 
 					if (selectedEntity.HasComponent<BoxColliderComponent>())
+					{
 						selectedEntity.GetComponent<BoxColliderComponent>().Material = assetHandle;
+					}
 					else if (selectedEntity.HasComponent<SphereColliderComponent>())
+					{
 						selectedEntity.GetComponent<SphereColliderComponent>().Material = assetHandle;
+					}
 					else if (selectedEntity.HasComponent<CapsuleColliderComponent>())
+					{
 						selectedEntity.GetComponent<CapsuleColliderComponent>().Material = assetHandle;
+					}
 					else if (selectedEntity.HasComponent<MeshColliderComponent>())
+					{
 						selectedEntity.GetComponent<MeshColliderComponent>().Material = assetHandle;
+					}
 				}
 			}
 		}

@@ -46,7 +46,7 @@ namespace Vortex {
 	struct RequiredModule
 	{
 		std::string ModuleName;
-		std::string RequiredModule;
+		std::string RequiredModuleName;
 	};
 
 	struct ModuleResult

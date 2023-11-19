@@ -2,21 +2,25 @@
 
 #include <Vortex.h>
 
+#include <Vortex/Editor/EditorPanel.h>
+
 namespace Vortex {
 
-	class BuildSettingsPanel
+	class BuildSettingsPanel : public EditorPanel
 	{
 	public:
 		using LaunchRuntimeFn = std::function<void(const std::filesystem::path&)>;
 
 	public:
-		BuildSettingsPanel(SharedReference<Project>& project, const LaunchRuntimeFn& func);
-		~BuildSettingsPanel() = default;
+		BuildSettingsPanel(const LaunchRuntimeFn& func);
+		~BuildSettingsPanel() override = default;
 
-		void OnGuiRender();
-		void SetProjectContext(SharedReference<Project>& project) {}
-		void SetSceneContext(SharedReference<Scene>& scene) {}
-		bool& IsOpen() { return s_ShowPanel; }
+		void OnEditorAttach() override;
+		void OnEditorDetach() override;
+
+		void OnGuiRender() override;
+
+		EDITOR_PANEL_TYPE(BuildSettings)
 
 	private:
 		void FindAndSetBestSize();
@@ -24,10 +28,6 @@ namespace Vortex {
 		void FindBestHeight(float& height);
 
 	private:
-		inline static bool s_ShowPanel = false;
-
-	private:
-		ProjectProperties& m_ProjectProperties;
 		LaunchRuntimeFn m_LaunchRuntimeFunc;
 
 		std::filesystem::path m_ProjectPath;

@@ -2,22 +2,18 @@
 
 #include <Vortex.h>
 
+#include <Vortex/Editor/EditorPanel.h>
+
 namespace Vortex {
 
-	class PhysicsStatisticsPanel
+	class PhysicsStatisticsPanel : public EditorPanel
 	{
 	public:
+		~PhysicsStatisticsPanel() override = default;
 
-		PhysicsStatisticsPanel() = default;
-		~PhysicsStatisticsPanel() = default;
+		void OnGuiRender() override;
 
-		void OnGuiRender();
-		void SetProjectContext(SharedReference<Project>& project) {}
-		void SetSceneContext(SharedReference<Scene>& scene) {}
-		bool& IsOpen() { return s_ShowPanel; }
-
-	private:
-		inline static bool s_ShowPanel = false;
+		EDITOR_PANEL_TYPE(PhysicsStats)
 	};
 
 }

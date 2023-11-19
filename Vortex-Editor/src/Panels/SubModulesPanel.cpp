@@ -8,12 +8,12 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		if (!s_ShowPanel)
+		if (!IsOpen)
 			return;
 
-		const ModuleLibrary& moduleLib = Application::Get().GetModules();
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
-		Gui::Begin("Sub Modules", &s_ShowPanel);
+		const ModuleLibrary& moduleLib = Application::Get().GetModules();
 		Gui::PushFont(boldFont);
 		Gui::Text("Modules Loaded: %u", (uint32_t)moduleLib.Size());
 		Gui::PopFont();
