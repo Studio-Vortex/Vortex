@@ -259,8 +259,7 @@ namespace Vortex {
 
 	bool Application::OnWindowCloseEvent(WindowCloseEvent& e)
 	{
-		m_Running = false;
-		g_ApplicationRunning = false;
+		Close();
 
 		return false;
 	}

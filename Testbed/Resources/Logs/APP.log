@@ -21,18 +21,16 @@ Shader Loaded: 'Renderer2D_Circle' - path /Resources/Shaders/Renderer2D_Circle.g
 Shader Loaded: 'Renderer2D_Line' - path /Resources/Shaders/Renderer2D_Line.glsl
 Shader Loaded: 'Renderer2D_Text' - path /Resources/Shaders/Renderer2D_Text.glsl
 Enumerating Devices:
- 1  Device-Name: Speakers (JBL Go 3 Stereo)
+ 1  Device-Name: Headphones (Jesse’s AirPods Pro Stereo)
     Devive Type: Playback
     Is Default: true
- 2  Device-Name: LC27RG50 (NVIDIA High Definition Audio)
+ 2  Device-Name: Headset (Jesse’s AirPods Pro Hands-Free AG Audio)
     Devive Type: Playback
     Is Default: false
-GLFW Error: (65540): Invalid scancode 256
-GLFW Error: (65540): Invalid scancode 256
-GLFW Error: (65540): Invalid scancode 256
-GLFW Error: (65540): Invalid scancode 256
-GLFW Error: (65540): Invalid scancode 256
-GLFW Error: (65540): Invalid scancode 256
-GLFW Error: (65540): Invalid scancode 256
-GLFW Error: (65540): Invalid scancode 256
+ 3  Device-Name: LC27RG50 (NVIDIA High Definition Audio)
+    Devive Type: Playback
+    Is Default: false
+ 1  Device-Name: Headset (Jesse’s AirPods Pro Hands-Free AG Audio)
+    Devive Type: Capture
+    Is Default: true
 Shutting down...

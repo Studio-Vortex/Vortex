@@ -15,7 +15,5 @@ public:
 	void OnGuiRender() override;
 	void OnEvent(Vortex::Event &e) override;
 
-	bool OnWindowClose(Vortex::WindowCloseEvent& e);
-
 	Vortex::SharedReference<Vortex::AudioSource> audioSource;
 };
