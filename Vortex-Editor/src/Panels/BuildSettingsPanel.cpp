@@ -2,8 +2,8 @@
 
 namespace Vortex {
 	
-	BuildSettingsPanel::BuildSettingsPanel(const LaunchRuntimeFn& func)
-		: m_LaunchRuntimeFunc(func) { }
+	BuildSettingsPanel::BuildSettingsPanel(const BuildAndRunFn& func0, const BuildFn& func1)
+		: m_BuildAndRunFn(func0), m_BuildFn(func1) { }
 
 	void BuildSettingsPanel::OnEditorAttach()
 	{
@@ -148,14 +148,14 @@ namespace Vortex {
 
 		if (Gui::Button("Build"))
 		{
-			// TODO build asset pack here
+			std::invoke(m_BuildFn);
 		}
 
 		Gui::SameLine();
 
 		if (Gui::Button("Build and Run"))
 		{
-			std::invoke(m_LaunchRuntimeFunc, m_ProjectPath);
+			std::invoke(m_BuildAndRunFn);
 		}
 		
 		Gui::End();

@@ -15,8 +15,11 @@ namespace Vortex {
 
 	AudioSource::~AudioSource()
 	{
-		m_Device.Stop();
-		m_Device.Shutdown(Audio::GetContext());
+		// NOTE:
+		// Instead of cleaning up an audio source here
+		// they all get cleaned up in the scene's destructor.
+		// So if an AudioSource is used elsewhere outside a scene
+		// it must be cleaned up manually by calling Shutdown() on the playback device
 	}
 
 	void AudioSource::SetPath(const std::filesystem::path& path)

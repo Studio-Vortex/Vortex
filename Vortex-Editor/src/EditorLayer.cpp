@@ -79,7 +79,10 @@ namespace Vortex {
 		m_PanelManager->AddPanel<MaterialEditorPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<SceneRendererPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<AssetRegistryPanel>();
-		m_PanelManager->AddPanel<BuildSettingsPanel>(VX_BIND_CALLBACK(OnLaunchRuntime));
+		m_PanelManager->AddPanel<BuildSettingsPanel>(
+			VX_BIND_CALLBACK(BuildAndRunProject),
+			VX_BIND_CALLBACK(BuildProject)
+		);
 		m_PanelManager->AddPanel<SystemManagerPanel>();
 		m_PanelManager->AddPanel<ShaderEditorPanel>();
 		m_PanelManager->AddPanel<PerformancePanel>();
@@ -1564,7 +1567,6 @@ namespace Vortex {
 
 	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& filepath)
 	{
-		SaveScene();
 		SaveProject();
 
 		std::string runtimeApplicationPath = Application::Get().GetRuntimeBinaryPath();
@@ -2701,6 +2703,8 @@ namespace Vortex {
 
 	void EditorLayer::SaveProject()
 	{
+		SaveScene();
+
 		if (m_CaptureFramebufferToDiskOnSave)
 		{
 			CaptureFramebufferImageToDisk();
@@ -2724,7 +2728,7 @@ namespace Vortex {
 
 	void EditorLayer::BuildAndRunProject()
 	{
-		// TODO build asset pack here
+		BuildProject();
 
 		OnLaunchRuntime(Project::GetProjectFilepath());
 	}

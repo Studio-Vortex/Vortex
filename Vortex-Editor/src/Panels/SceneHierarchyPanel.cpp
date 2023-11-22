@@ -1771,14 +1771,13 @@ namespace Vortex {
 			if (AssetManager::IsHandleValid(component.AudioHandle))
 				audioSource = AssetManager::GetAsset<AudioSource>(component.AudioHandle);
 
-			PlaybackDevice device = audioSource->GetPlaybackDevice();
-
 			if (audioSource)
 			{
+				PlaybackDevice device = audioSource->GetPlaybackDevice();
 				if (device.GetEngine().GetID() != Wave::ID::Invalid && (device.GetSound().IsPlaying() || device.GetSound().IsPaused()))
 				{
 					Gui::BeginDisabled(!device.GetSound().IsPlaying());
-					const float fraction = device.GetSound().GetLength() / device.GetSound().GetSoundCursor();
+					const float fraction = device.GetSound().GetSoundCursor() / device.GetSound().GetLength();
 					Gui::ProgressBar(fraction);
 					Gui::EndDisabled();
 				}
@@ -1818,15 +1817,10 @@ namespace Vortex {
 				}
 
 				UI::BeginPropertyGrid();
-
-				// TODO we also need to fix this before we can even test out the new library
-				// Wave doesn't have Sound::GetPath() yet
-				// While we're at it we should also implement GetDataSource()
-				// idea is we will store the path and or dataSource so that we can retrieve them later if need be like right now
 				
-				//std::string audioSourcePath = device.GetSound().GetPath();
-				//std::string relativePath = FileSystem::Relative(audioSourcePath, Project::GetAssetDirectory()).string();
-				//UI::Property("Source", relativePath, true);
+				std::string ascPath = audioSource->GetPath().string();
+				std::string relativePath = FileSystem::Relative(ascPath, Project::GetAssetDirectory()).string();
+				UI::Property("Source", relativePath, true);
 
 				// Accept a Audio File from the content browser
 				if (Gui::BeginDragDropTarget())
@@ -1844,6 +1838,12 @@ namespace Vortex {
 
 							if (FileSystem::GetFileExtension(audioSourcePath) != ".vsound")
 							{
+								std::string filename = FileSystem::RemoveFileExtension(audioSourcePath);
+								filename += ".vsound";
+								auto asset = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, audioSourcePath);
+
+								component.AudioHandle = asset->Handle;
+
 								//SystemManager::GetAssetSystem<AudioSystem>()->CreateAsset(entity, audioSourcePath.string());
 							}
 							else
@@ -1863,22 +1863,16 @@ namespace Vortex {
 
 				Gui::BeginDisabled(audioSource == nullptr);
 
-				// TODO Ditto
-				/*if (!audioSource->GetPath().empty())
+				if (!audioSource->GetPath().empty())
 				{
 					Gui::BeginDisabled(true);
-					const AudioClip& audioClip = audioSource->GetAudioClip();
-					float length = audioClip.Length;
+					float length = device.GetSound().GetLength();
 					UI::Property("Length", length);
 					Gui::EndDisabled();
-				}*/
+				}
 
 				if (audioSource)
 				{
-					// TODO
-					// might as well have something like Sound::GetSoundData()
-					// which return struct of SoundData similiar to PlaybackDeviceProperties
-
 					float pitch = device.GetSound().GetPitch();
 					if (UI::Property("Pitch", pitch, 0.01f, 0.2f, 2.0f))
 						device.GetSound().SetPitch(pitch);
@@ -1886,7 +1880,6 @@ namespace Vortex {
 					float volume = device.GetSound().GetVolume();
 					if (UI::Property("Volume", volume, 0.1f))
 						device.GetSound().SetVolume(volume);
-
 
 					//if (UI::Property("Play On Start", props.PlayOnStart))
 						//audioSource->SetPlayOnStart(props.PlayOnStart);

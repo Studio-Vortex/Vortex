@@ -11,6 +11,7 @@
 #include "Vortex/Scene/SceneRenderer.h"
 #include "Vortex/Scene/ScriptableEntity.h"
 
+#include "Vortex/Audio/Audio.h"
 #include "Vortex/Audio/AudioSource.h"
 
 #include "Vortex/Animation/Animator.h"
@@ -132,6 +133,26 @@ namespace Vortex {
 	Scene::~Scene()
 	{
 		SystemManager::RemoveContextScene();
+
+		// Shutdown all AudioSources
+		{
+			auto view = GetAllEntitiesWith<AudioSourceComponent>();
+
+			for (const auto& e : view)
+			{
+				Entity entity{ e, this };
+
+				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+				if (!AssetManager::IsHandleValid(asc.AudioHandle))
+					continue;
+
+				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+				if (!audioSource)
+					continue;
+
+				audioSource->GetPlaybackDevice().Shutdown(Audio::GetContext());
+			}
+		}
 
 		m_Registry.on_construct<CameraComponent>().disconnect();
 		m_Registry.on_construct<StaticMeshRendererComponent>().disconnect();
@@ -570,6 +591,32 @@ namespace Vortex {
 		{
 			case true:  SystemManager::OnRuntimeScenePaused();  break;
 			case false: SystemManager::OnRuntimeSceneResumed(); break;
+		}
+
+		// Pause/Unpause AudioSources
+		{
+			auto view = GetAllEntitiesWith<AudioSourceComponent>();
+
+			for (const auto& e : view)
+			{
+				Entity entity{ e, this };
+
+				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+				if (!AssetManager::IsHandleValid(asc.AudioHandle))
+					continue;
+
+				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+				if (!audioSource)
+					continue;
+
+				Wave::PlaybackDevice device = audioSource->GetPlaybackDevice();
+
+				switch (m_IsPaused)
+				{
+					case true:  device.Pause(); continue;
+					case false: device.Play();  continue;
+				}
+			}
 		}
 	}
 
@@ -1231,10 +1278,10 @@ namespace Vortex {
 	void Scene::OnAudioSourceConstruct(entt::registry& registry, entt::entity e)
 	{
 		Entity entity = { e, this };
-		const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+		AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 		if (!AssetManager::IsHandleValid(asc.AudioHandle))
 		{
-			// TODO
+			asc.AudioHandle = AssetManager::CreateMemoryOnlyAsset<AudioSource>();
 		}
 	}
 

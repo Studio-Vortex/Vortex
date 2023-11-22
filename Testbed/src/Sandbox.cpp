@@ -48,12 +48,6 @@ void Sandbox::OnGuiRender()
 	{
 		audioSource->SetPath(std::filesystem::path(filepath));
 	}
-
-	// TODO we also need to make Sound::GetLength() faster
-	//float len = device.GetSound().GetLength();
-	//UI::BeginPropertyGrid();
-	//UI::Property("Length", len);
-	//UI::EndPropertyGrid();
 	Gui::SameLine();
 	if (!audioSource->GetPath().empty() && Gui::Button("Play##m1")) {
 		Wave::PlaybackDevice device = audioSource->GetPlaybackDevice();
