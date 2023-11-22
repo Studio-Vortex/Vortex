@@ -11,9 +11,7 @@
 #include "Vortex/Scene/SceneRenderer.h"
 #include "Vortex/Scene/ScriptableEntity.h"
 
-#include "Vortex/Audio/AudioSystem.h"
 #include "Vortex/Audio/AudioSource.h"
-#include "Vortex/Audio/AudioListener.h"
 
 #include "Vortex/Animation/Animator.h"
 #include "Vortex/Animation/Animation.h"
@@ -133,6 +131,8 @@ namespace Vortex {
 
 	Scene::~Scene()
 	{
+		SystemManager::RemoveContextScene();
+
 		m_Registry.on_construct<CameraComponent>().disconnect();
 		m_Registry.on_construct<StaticMeshRendererComponent>().disconnect();
 
@@ -149,8 +149,6 @@ namespace Vortex {
 		
 		m_Registry.on_construct<AudioListenerComponent>().disconnect();
 		m_Registry.on_destroy<AudioListenerComponent>().disconnect();
-
-		SystemManager::RemoveContextScene();
 	}
 
 	Entity Scene::CreateEntity(const std::string& name, const std::string& marker)
@@ -331,7 +329,8 @@ namespace Vortex {
 
 		OnPhysicsSimulationStart();
 
-		SystemManager::SetAssetSystemEnabled<AudioSystem>(!muteAudio);
+		// TODO: when we have AudioSources that play on
+		// start we need to stop them here if muteAudio is true
 		SystemManager::OnRuntimeStart();
 
 		CreateScriptInstancesRuntime();
@@ -446,7 +445,6 @@ namespace Vortex {
 		// Update Components
 		OnMeshUpdateRuntime();
 
-		SystemManager::GetAssetSystem<AudioSystem>()->OnUpdateRuntime();
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(delta);
 
 		if (updateCurrentFrame)
@@ -1235,13 +1233,15 @@ namespace Vortex {
 		Entity entity = { e, this };
 		const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 		if (!AssetManager::IsHandleValid(asc.AudioHandle))
-			SystemManager::GetAssetSystem<AudioSystem>()->CreateAsset(entity);
+		{
+			// TODO
+		}
 	}
 
 	void Scene::OnAudioSourceDestruct(entt::registry& registry, entt::entity e)
 	{
 		Entity entity = { e, this };
-		SystemManager::GetAssetSystem<AudioSystem>()->DestroyAsset(entity);
+		// TODO
 	}
 
 	void Scene::OnAudioListenerConstruct(entt::registry& registry, entt::entity e)
@@ -1249,13 +1249,15 @@ namespace Vortex {
 		Entity entity = { e, this };
 		const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
 		if (!AssetManager::IsHandleValid(alc.ListenerHandle))
-			SystemManager::GetAssetSystem<AudioSystem>()->CreateAudioListener(entity);
+		{
+			// TODO
+		}
 	}
 
 	void Scene::OnAudioListenerDestruct(entt::registry& registry, entt::entity e)
 	{
 		Entity entity = { e, this };
-		SystemManager::GetAssetSystem<AudioSystem>()->DestroyAudioListener(entity);
+		// TODO
 	}
 
 	void Scene::SubmitSceneToBuild(const std::string& sceneFilePath)

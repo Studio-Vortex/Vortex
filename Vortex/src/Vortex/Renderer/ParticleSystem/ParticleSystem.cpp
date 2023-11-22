@@ -103,8 +103,6 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		VX_CORE_ASSERT(s_Data.ActiveScene, "Invalid scene!");
-
 		for (auto& [entityUUID, assetHandle] : s_Data.ParticleData)
 		{
 			Entity entity = s_Data.ActiveScene->TryGetEntityWithUUID(entityUUID);

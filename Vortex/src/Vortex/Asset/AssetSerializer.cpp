@@ -70,51 +70,51 @@ namespace Vortex {
 			return;
 		}
 
-		const std::string& trackName = audioSource->GetAudioClip().Name;
-		const PlaybackDeviceProperties& deviceProperties = audioSource->GetProperties();
+		//const std::string& trackName = audioSource->GetAudioClip().Name;
+		//const PlaybackDeviceProperties& deviceProperties = audioSource->GetProperties();
 
-		out << YAML::BeginMap;
+		//out << YAML::BeginMap;
 
-		out << YAML::Key << "AudioSource" << YAML::Value << trackName;
-		out << YAML::Key << "Properties" << YAML::Value << YAML::BeginMap;
-		{
-			VX_SERIALIZE_PROPERTY(AssetHandle, audioSource->Handle, out);
-			std::string filepath = "Audio/" + FileSystem::Relative(audioSource->GetPath(), FileSystem::GetParentDirectory(audioSource->GetPath())).string();
-			VX_SERIALIZE_PROPERTY(Filepath, filepath, out);
+		//out << YAML::Key << "AudioSource" << YAML::Value << trackName;
+		//out << YAML::Key << "Properties" << YAML::Value << YAML::BeginMap;
+		//{
+		//	VX_SERIALIZE_PROPERTY(AssetHandle, audioSource->Handle, out);
+		//	std::string filepath = "Audio/" + FileSystem::Relative(audioSource->GetPath(), FileSystem::GetParentDirectory(audioSource->GetPath())).string();
+		//	VX_SERIALIZE_PROPERTY(Filepath, filepath, out);
 
-			out << YAML::Key << "DeviceProperties" << YAML::Value;
-			out << YAML::BeginMap; // SoundSettings
-			VX_SERIALIZE_PROPERTY(Position, deviceProperties.Position, out);
-			VX_SERIALIZE_PROPERTY(Direction, deviceProperties.Direction, out);
-			VX_SERIALIZE_PROPERTY(Velocity, deviceProperties.Velocity, out);
+		//	out << YAML::Key << "DeviceProperties" << YAML::Value;
+		//	out << YAML::BeginMap; // SoundSettings
+		//	VX_SERIALIZE_PROPERTY(Position, deviceProperties.Position, out);
+		//	VX_SERIALIZE_PROPERTY(Direction, deviceProperties.Direction, out);
+		//	VX_SERIALIZE_PROPERTY(Velocity, deviceProperties.Velocity, out);
 
-			out << YAML::Key << "Cone" << YAML::Value;
-			out << YAML::BeginMap; // Cone
-			VX_SERIALIZE_PROPERTY(InnerAngle, deviceProperties.Cone.InnerAngle, out);
-			VX_SERIALIZE_PROPERTY(OuterAngle, deviceProperties.Cone.OuterAngle, out);
-			VX_SERIALIZE_PROPERTY(OuterGain, deviceProperties.Cone.OuterGain, out);
-			out << YAML::EndMap; // Cone
+		//	out << YAML::Key << "Cone" << YAML::Value;
+		//	out << YAML::BeginMap; // Cone
+		//	VX_SERIALIZE_PROPERTY(InnerAngle, deviceProperties.Cone.InnerAngle, out);
+		//	VX_SERIALIZE_PROPERTY(OuterAngle, deviceProperties.Cone.OuterAngle, out);
+		//	VX_SERIALIZE_PROPERTY(OuterGain, deviceProperties.Cone.OuterGain, out);
+		//	out << YAML::EndMap; // Cone
 
-			VX_SERIALIZE_PROPERTY(MinGain, deviceProperties.MinGain, out);
-			VX_SERIALIZE_PROPERTY(MaxGain, deviceProperties.MaxGain, out);
+		//	VX_SERIALIZE_PROPERTY(MinGain, deviceProperties.MinGain, out);
+		//	VX_SERIALIZE_PROPERTY(MaxGain, deviceProperties.MaxGain, out);
 
-			VX_SERIALIZE_PROPERTY(AttenuationModel, Utils::AttenuationModelTypeToString(deviceProperties.AttenuationModel), out);
-			VX_SERIALIZE_PROPERTY(Falloff, deviceProperties.Falloff, out);
+		//	VX_SERIALIZE_PROPERTY(AttenuationModel, Utils::AttenuationModelTypeToString(deviceProperties.AttenuationModel), out);
+		//	VX_SERIALIZE_PROPERTY(Falloff, deviceProperties.Falloff, out);
 
-			VX_SERIALIZE_PROPERTY(MinDistance, deviceProperties.MinDistance, out);
-			VX_SERIALIZE_PROPERTY(MaxDistance, deviceProperties.MaxDistance, out);
-			VX_SERIALIZE_PROPERTY(Pitch, deviceProperties.Pitch, out);
-			VX_SERIALIZE_PROPERTY(DopplerFactor, deviceProperties.DopplerFactor, out);
-			VX_SERIALIZE_PROPERTY(Volume, deviceProperties.Volume, out);
+		//	VX_SERIALIZE_PROPERTY(MinDistance, deviceProperties.MinDistance, out);
+		//	VX_SERIALIZE_PROPERTY(MaxDistance, deviceProperties.MaxDistance, out);
+		//	VX_SERIALIZE_PROPERTY(Pitch, deviceProperties.Pitch, out);
+		//	VX_SERIALIZE_PROPERTY(DopplerFactor, deviceProperties.DopplerFactor, out);
+		//	VX_SERIALIZE_PROPERTY(Volume, deviceProperties.Volume, out);
 
-			VX_SERIALIZE_PROPERTY(PlayOnStart, deviceProperties.PlayOnStart, out);
-			VX_SERIALIZE_PROPERTY(PlayOneShot, deviceProperties.PlayOneShot, out);
-			VX_SERIALIZE_PROPERTY(Spacialized, deviceProperties.Spacialized, out);
-			VX_SERIALIZE_PROPERTY(Loop, deviceProperties.Loop, out);
-			out << YAML::EndMap; // SoundSettings
-		}
-		out << YAML::EndMap;
-		out << YAML::EndMap;
+		//	VX_SERIALIZE_PROPERTY(PlayOnStart, deviceProperties.PlayOnStart, out);
+		//	VX_SERIALIZE_PROPERTY(PlayOneShot, deviceProperties.PlayOneShot, out);
+		//	VX_SERIALIZE_PROPERTY(Spacialized, deviceProperties.Spacialized, out);
+		//	VX_SERIALIZE_PROPERTY(Loop, deviceProperties.Loop, out);
+		//	out << YAML::EndMap; // SoundSettings
+		//}
+		//out << YAML::EndMap;
+		//out << YAML::EndMap;
 
 		std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 		std::ofstream fout(outputFile);
@@ -144,7 +144,7 @@ namespace Vortex {
 		if (!deviceProps)
 			return false;
 		
-		PlaybackDeviceProperties deviceProperties;
+		/*PlaybackDeviceProperties deviceProperties;
 		deviceProperties.Position = deviceProps["Position"].as<Math::vec3>();
 		deviceProperties.Direction = deviceProps["Direction"].as<Math::vec3>();
 		deviceProperties.Velocity = deviceProps["Velocity"].as<Math::vec3>();
@@ -170,7 +170,7 @@ namespace Vortex {
 		deviceProperties.PlayOnStart = deviceProps["PlayOnStart"].as<bool>();
 		deviceProperties.PlayOneShot = deviceProps["PlayOneShot"].as<bool>();
 		deviceProperties.Spacialized = deviceProps["Spacialized"].as<bool>();
-		deviceProperties.Loop = deviceProps["Loop"].as<bool>();
+		deviceProperties.Loop = deviceProps["Loop"].as<bool>();*/
 
 		std::string fullPath = (Project::GetAssetDirectory() / filepath).string();
 		asset = AudioSource::Create(fullPath);

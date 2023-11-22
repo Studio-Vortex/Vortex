@@ -4,8 +4,6 @@
 
 #include <Vortex/Editor/EditorResources.h>
 
-#include <Vortex/Audio/AudioSystem.h>
-
 #include <Vortex/Scripting/ScriptEngine.h>
 
 #include <imgui_internal.h>
@@ -879,14 +877,6 @@ namespace Vortex {
 					{
 						component = StaticMeshRendererComponent();
 						component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(DefaultMeshes::StaticMeshes::Cube);
-					}
-					else if constexpr (std::is_same<TComponent, AudioSourceComponent>())
-					{
-						if (AssetManager::IsHandleValid(component.AudioHandle))
-						{
-							SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(component.AudioHandle);
-							audioSource->SetProperties(PlaybackDeviceProperties{});
-						}
 					}
 					else if constexpr (std::is_same<TComponent, LightSourceComponent>())
 					{
@@ -1781,62 +1771,62 @@ namespace Vortex {
 			if (AssetManager::IsHandleValid(component.AudioHandle))
 				audioSource = AssetManager::GetAsset<AudioSource>(component.AudioHandle);
 
-			if (!audioSource)
-				audioSource = AudioSource::Create();
+			PlaybackDevice device = audioSource->GetPlaybackDevice();
 
 			if (audioSource)
 			{
-				if (audioSource && !audioSource->GetPath().empty() && (audioSource->IsPlaying() || audioSource->IsPaused()))
+				if (device.GetEngine().GetID() != Wave::ID::Invalid && (device.GetSound().IsPlaying() || device.GetSound().IsPaused()))
 				{
-					Gui::BeginDisabled(!audioSource->IsPlaying());
-					Gui::ProgressBar(audioSource->GetAmountComplete());
+					Gui::BeginDisabled(!device.GetSound().IsPlaying());
+					const float fraction = device.GetSound().GetLength() / device.GetSound().GetSoundCursor();
+					Gui::ProgressBar(fraction);
 					Gui::EndDisabled();
 				}
 
-				Gui::BeginDisabled(audioSource == nullptr || audioSource->IsPlaying());
-				if (Gui::Button("Play"))
 				{
-					if (audioSource->GetProperties().PlayOneShot)
+					Gui::BeginDisabled(device.GetSound().IsPlaying());
+					if (Gui::Button("Play"))
 					{
-						audioSource->PlayOneShot();
-					}
-					else
-					{
-						audioSource->Play();
-					}
-				}
-				Gui::EndDisabled();
+						// TODO once Wave has PlayOneShot we need to handle it here
+						//if (audioSource->GetProperties().PlayOneShot)
+						//{
+							//audioSource->PlayOneShot();
+						//}
 
-				Gui::SameLine();
+						device.Play();
+					}
+					Gui::EndDisabled();
+					
+					Gui::SameLine();
 
-				if (audioSource)
-				{
-					Gui::BeginDisabled(!audioSource->IsPlaying());
+					Gui::BeginDisabled(!device.GetSound().IsPlaying());
 
 					if (Gui::Button("Pause"))
-						audioSource->Pause();
+						device.Pause();
 
 					Gui::SameLine();
 
 					if (Gui::Button("Restart"))
-						audioSource->Restart();
+						device.Restart();
 
 					Gui::SameLine();
 
 					if (Gui::Button("Stop"))
-						audioSource->Stop();
+						device.Stop();
 
 					Gui::EndDisabled();
 				}
 
 				UI::BeginPropertyGrid();
 
-				if (audioSource)
-				{
-					std::string audioSourcePath = audioSource->GetPath();
-					std::string relativePath = FileSystem::Relative(audioSourcePath, Project::GetAssetDirectory()).string();
-					UI::Property("Source", relativePath, true);
-				}
+				// TODO we also need to fix this before we can even test out the new library
+				// Wave doesn't have Sound::GetPath() yet
+				// While we're at it we should also implement GetDataSource()
+				// idea is we will store the path and or dataSource so that we can retrieve them later if need be like right now
+				
+				//std::string audioSourcePath = device.GetSound().GetPath();
+				//std::string relativePath = FileSystem::Relative(audioSourcePath, Project::GetAssetDirectory()).string();
+				//UI::Property("Source", relativePath, true);
 
 				// Accept a Audio File from the content browser
 				if (Gui::BeginDragDropTarget())
@@ -1849,12 +1839,12 @@ namespace Vortex {
 						// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
 						if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(audioSourcePath); type == AssetType::AudioAsset)
 						{
-							if (audioSource->IsPlaying())
-								audioSource->Stop();
+							if (device.GetSound().IsPlaying())
+								device.Stop();
 
 							if (FileSystem::GetFileExtension(audioSourcePath) != ".vsound")
 							{
-								SystemManager::GetAssetSystem<AudioSystem>()->CreateAsset(entity, audioSourcePath.string());
+								//SystemManager::GetAssetSystem<AudioSystem>()->CreateAsset(entity, audioSourcePath.string());
 							}
 							else
 							{
@@ -1873,56 +1863,73 @@ namespace Vortex {
 
 				Gui::BeginDisabled(audioSource == nullptr);
 
-				if (!audioSource->GetPath().empty())
+				// TODO Ditto
+				/*if (!audioSource->GetPath().empty())
 				{
 					Gui::BeginDisabled(true);
 					const AudioClip& audioClip = audioSource->GetAudioClip();
 					float length = audioClip.Length;
 					UI::Property("Length", length);
 					Gui::EndDisabled();
-				}
+				}*/
 
 				if (audioSource)
 				{
-					PlaybackDeviceProperties& props = audioSource->GetProperties();
+					// TODO
+					// might as well have something like Sound::GetSoundData()
+					// which return struct of SoundData similiar to PlaybackDeviceProperties
 
-					if (UI::Property("Pitch", props.Pitch, 0.01f, 0.2f, 2.0f))
-						audioSource->SetPitch(props.Pitch);
+					float pitch = device.GetSound().GetPitch();
+					if (UI::Property("Pitch", pitch, 0.01f, 0.2f, 2.0f))
+						device.GetSound().SetPitch(pitch);
 
-					if (UI::Property("Volume", props.Volume, 0.1f))
-						audioSource->SetVolume(props.Volume);
+					float volume = device.GetSound().GetVolume();
+					if (UI::Property("Volume", volume, 0.1f))
+						device.GetSound().SetVolume(volume);
 
-					if (UI::Property("Play On Start", props.PlayOnStart))
-						audioSource->SetPlayOnStart(props.PlayOnStart);
 
-					if (UI::Property("Play One Shot", props.PlayOneShot))
-						audioSource->SetPlayOneShot(props.PlayOneShot);
+					//if (UI::Property("Play On Start", props.PlayOnStart))
+						//audioSource->SetPlayOnStart(props.PlayOnStart);
 
-					if (UI::Property("Loop", props.Loop))
-						audioSource->SetLooping(props.Loop);
+					//if (UI::Property("Play One Shot", props.PlayOneShot))
+						//audioSource->SetPlayOneShot(props.PlayOneShot);
 
-					if (UI::Property("Spacialized", props.Spacialized))
-						audioSource->SetSpacialized(props.Spacialized);
+					bool loop = device.GetSound().IsLooping();
+					if (UI::Property("Loop", loop))
+						device.GetSound().SetLooping(loop);
+
+					bool spacialized = device.GetSound().IsSpacialized();
+					if (UI::Property("Spacialized", spacialized))
+						device.GetSound().SetSpacialized(spacialized);
 
 					UI::EndPropertyGrid();
 
-					if (props.Spacialized && UI::PropertyGridHeader("Spatialization", false))
+					if (device.GetSound().IsSpacialized() && UI::PropertyGridHeader("Spatialization", false))
 					{
 						UI::BeginPropertyGrid();
 
-						UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
+						Wave::Vec3 pos = device.GetSound().GetPosition();
+						Math::vec3 position = { pos.X, pos.Y, pos.Z };
+						UI::DrawVec3Controls("Position", position, 0.0f, 100.0f, [&]()
 						{
-							audioSource->SetPosition(props.Position);
+							Wave::Vec3 set = { position.x, position.y, position.z };
+							device.GetSound().SetPosition(set);
 						});
 
-						UI::DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
+						Wave::Vec3 dir = device.GetSound().GetDirection();
+						Math::vec3 direction = { dir.X,dir.Y,dir.Z };
+						UI::DrawVec3Controls("Direction", direction, 0.0f, 100.0f, [&]()
 						{
-							audioSource->SetDirection(props.Direction);
+							Wave::Vec3 set = { direction.x, direction.y, direction.z };
+							device.GetSound().SetDirection(set);
 						});
 
-						UI::DrawVec3Controls("Veloctiy", props.Velocity, 0.0f, 100.0f, [&]()
+						Wave::Vec3 vel = device.GetSound().GetVelocity();
+						Math::vec3 velocity = { vel.X, vel.Y, vel.Z };
+						UI::DrawVec3Controls("Veloctiy", velocity, 0.0f, 100.0f, [&]()
 						{
-							audioSource->SetVelocity(props.Velocity);
+							Wave::Vec3 set = { velocity.x, velocity.y, velocity.z };
+							device.GetSound().SetVelocity(set);
 						});
 
 						UI::EndPropertyGrid();
@@ -1931,49 +1938,58 @@ namespace Vortex {
 						{
 							UI::BeginPropertyGrid();
 
-							float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
+							Wave::AudioCone cone = device.GetSound().GetAudioCone();
+
+							float innerAngle = Math::Rad2Deg(cone.InnerAngle);
 							if (UI::Property("Inner Angle", innerAngle, 0.5f))
 							{
-								props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
-								audioSource->SetCone(props.Cone);
+								cone.InnerAngle = innerAngle;
+								device.GetSound().SetAudioCone(cone);
 							}
 
-							float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
+							float outerAngle = Math::Rad2Deg(cone.OuterAngle);
 							if (UI::Property("Outer Angle", outerAngle, 0.5f))
 							{
-								props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
-								audioSource->SetCone(props.Cone);
+								cone.OuterAngle = outerAngle;
+								device.GetSound().SetAudioCone(cone);
 							}
 
-							float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
+							float outerGain = Math::Rad2Deg(cone.OuterGain);
 							if (UI::Property("Outer Gain", outerGain, 0.5f))
 							{
-								props.Cone.OuterGain = Math::Deg2Rad(outerGain);
-								audioSource->SetCone(props.Cone);
+								cone.OuterGain = outerGain;
+								device.GetSound().SetAudioCone(cone);
 							}
 
-							if (UI::Property("Min Gain", props.MinGain))
-								audioSource->SetMinGain(props.MinGain);
-							if (UI::Property("Max Gain", props.MaxGain))
-								audioSource->SetMaxGain(props.MaxGain);
+							float minGain = device.GetSound().GetMinGain();
+							if (UI::Property("Min Gain", minGain))
+								device.GetSound().SetMinGain(minGain);
+							
+							float maxGain = device.GetSound().GetMaxGain();
+							if (UI::Property("Max Gain", maxGain))
+								device.GetSound().SetMaxGain(maxGain);
 
 							static const char* attenuationModels[] = { "None", "Inverse", "Linear", "Exponential" };
 
-							AttenuationModel currentAttenuationModel = props.AttenuationModel;
+							AttenuationModel currentAttenuationModel = (AttenuationModel)device.GetSound().GetAttenuationModel();
 							if (UI::PropertyDropdown("Attenuation Model", attenuationModels, VX_ARRAYCOUNT(attenuationModels), currentAttenuationModel))
-								audioSource->SetAttenuationModel(currentAttenuationModel);
+								device.GetSound().SetAttenuationModel((Wave::AttenuationModel)currentAttenuationModel);
 
-							if (UI::Property("Falloff", props.Falloff))
-								audioSource->SetFalloff(props.Falloff);
+							float falloff = device.GetSound().GetFalloff();
+							if (UI::Property("Falloff", falloff))
+								device.GetSound().SetFalloff(falloff);
 
-							if (UI::Property("Min Distance", props.MinDistance, 0.1f))
-								audioSource->SetMinDistance(props.MinDistance);
+							float minDistance = device.GetSound().GetMinDistance();
+							if (UI::Property("Min Distance", minDistance, 0.1f))
+								device.GetSound().SetMinDistance(minDistance);
 
-							if (UI::Property("Max Distance", props.MaxDistance, 0.1f))
-								audioSource->SetMaxDistance(props.MaxDistance);
+							float maxDistance = device.GetSound().GetMaxDistance();
+							if (UI::Property("Max Distance", maxDistance, 0.1f))
+								device.GetSound().SetMaxDistance(maxDistance);
 
-							if (UI::Property("Doppler Factor", props.DopplerFactor, 0.1f))
-								audioSource->SetDopplerFactor(props.DopplerFactor);
+							float dopplerFactor = device.GetSound().GetDopplerFactor();
+							if (UI::Property("Doppler Factor", dopplerFactor, 0.1f))
+								device.GetSound().SetDopplerFactor(dopplerFactor);
 
 							UI::EndPropertyGrid();
 							UI::EndTreeNode();
@@ -1991,66 +2007,7 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			SharedReference<AudioListener> audioListener = nullptr;
-			if (AssetManager::IsHandleValid(component.ListenerHandle))
-			{
-				audioListener = AssetManager::GetAsset<AudioListener>(component.ListenerHandle);
-			}
-
-			if (audioListener)
-			{
-				ListenerDeviceProperties& props = audioListener->GetProperties();
-
-				const uint32_t listenerIndex = audioListener->GetListenerIndex();
-				const bool invalidListener = listenerIndex < 0 || (listenerIndex > PlaybackDevice::MaxDeviceListeners - 1);
-				Gui::BeginDisabled(invalidListener);
-
-				UI::DrawVec3Controls("Position", props.Position, 0.0f, 100.0f, [&]()
-				{
-					audioListener->SetPosition(props.Position);
-				});
-
-				UI::DrawVec3Controls("Direction", props.Direction, 0.0f, 100.0f, [&]()
-				{
-					audioListener->SetDirection(props.Direction);
-				});
-
-				UI::DrawVec3Controls("Veloctiy", props.Veloctiy, 0.0f, 100.0f, [&]()
-				{
-					audioListener->SetVelocity(props.Veloctiy);
-				});
-
-				UI::EndPropertyGrid();
-
-				if (UI::PropertyGridHeader("Cone", false))
-				{
-					UI::BeginPropertyGrid();
-
-					float innerAngle = Math::Rad2Deg(props.Cone.InnerAngle);
-					if (UI::Property("Inner Angle", innerAngle, 0.5f))
-					{
-						props.Cone.InnerAngle = Math::Deg2Rad(innerAngle);
-						audioListener->SetCone(props.Cone);
-					}
-					float outerAngle = Math::Rad2Deg(props.Cone.OuterAngle);
-					if (UI::Property("Outer Angle", outerAngle, 0.5f))
-					{
-						props.Cone.OuterAngle = Math::Deg2Rad(outerAngle);
-						audioListener->SetCone(props.Cone);
-					}
-					float outerGain = Math::Rad2Deg(props.Cone.OuterGain);
-					if (UI::Property("Outer Gain", outerGain, 0.5f))
-					{
-						props.Cone.OuterGain = Math::Deg2Rad(outerGain);
-						audioListener->SetCone(props.Cone);
-					}
-
-					UI::EndPropertyGrid();
-					UI::EndTreeNode();
-				}
-
-				Gui::EndDisabled();
-			}
+			UI::EndPropertyGrid();
 		});
 
 		DrawComponent<RigidBodyComponent>("RigidBody", entity, [&, scene = m_ContextScene](auto& component)

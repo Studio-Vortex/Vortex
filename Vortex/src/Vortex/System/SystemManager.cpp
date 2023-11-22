@@ -19,8 +19,6 @@ namespace Vortex {
 
 	void SystemManager::RemoveContextScene()
 	{
-		VX_CORE_ASSERT(s_ContextScene, "Invalid scene!");
-
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
 			assetSystem->RemoveContextScene();

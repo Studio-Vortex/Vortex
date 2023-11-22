@@ -174,7 +174,7 @@ namespace Vortex {
 	{
 		SharedReference<Asset> asset = GetAssetFromFilepath(filepath);
 
-		if (IsHandleValid(asset->Handle));
+		if (IsHandleValid(asset->Handle))
 			return asset->Handle;
 
 		return 0;

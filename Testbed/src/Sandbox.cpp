@@ -9,7 +9,7 @@ Sandbox::Sandbox()
 
 void Sandbox::OnAttach()
 {
-	audioSource = SharedReference<AudioSource>::Create("Projects/Alterverse/Assets/Audio/imarealone.mp3");
+	audioSource = AudioSource::Create("Projects/Alterverse/Assets/Audio/darkdayroad.mp3");
 }
 
 void Sandbox::OnDetach()
@@ -39,17 +39,17 @@ void Sandbox::OnGuiRender()
 		| ImGuiWindowFlags_NoBringToFrontOnFocus;
 	Gui::Begin("Audio Test", nullptr, flags);
 
-	Gui::Text(audioSource->GetAudioClip().Name.c_str());
-	float len = audioSource->GetAudioClip().Length;
-	UI::BeginPropertyGrid();
-	UI::Property("Length", len);
-	UI::EndPropertyGrid();
+	Wave::PlaybackDevice device = audioSource->GetPlaybackDevice();
+	std::string path = audioSource->GetPath().string();
+	Gui::Text(path.c_str());
+	// TODO we also need to make Sound::GetLength() faster
+	//float len = device.GetSound().GetLength();
+	//UI::BeginPropertyGrid();
+	//UI::Property("Length", len);
+	//UI::EndPropertyGrid();
 
 	if (Gui::Button("Play")) {
-		if (!audioSource->IsPlaying())
-		{
-			audioSource->Play();
-		}
+		device.Play();
 	}
 
 	Gui::End();
@@ -57,6 +57,15 @@ void Sandbox::OnGuiRender()
 	Gui::PopStyleVar(3);
 }
 
+bool Sandbox::OnWindowClose(WindowCloseEvent& e)
+{
+	audioSource->GetPlaybackDevice().Shutdown(Audio::GetContext());
+	return false;
+}
+
 void Sandbox::OnEvent(Vortex::Event& e)
 {
+	EventDispatcher dispatcher(e);
+
+	dispatcher.Dispatch<WindowCloseEvent>(VX_BIND_CALLBACK(Sandbox::OnWindowClose));
 }

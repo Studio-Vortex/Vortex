@@ -85,7 +85,7 @@ namespace Vortex {
 				s_Data->AppAssemblyFilewatcher.reset();
 
 				ScriptEngine::ReloadAssembly();
-				s_Data->AppAssemblyReloadSound->Play();
+				s_Data->AppAssemblyReloadSound->GetPlaybackDevice().Play();
 			});
 		}
 	}
@@ -124,8 +124,8 @@ namespace Vortex {
 		ScriptRegistry::RegisterComponents();
 
 		s_Data->EntityClass = SharedReference<ScriptClass>::Create("Vortex", "Entity", true);
-		s_Data->AppAssemblyReloadSound = AudioSource::Create(APP_ASSEMBLY_RELOAD_SOUND_PATH, true);
-		s_Data->AppAssemblyReloadSound->SetSpacialized(false);
+		s_Data->AppAssemblyReloadSound = AudioSource::Create(APP_ASSEMBLY_RELOAD_SOUND_PATH);
+		s_Data->AppAssemblyReloadSound->GetPlaybackDevice().GetSound().SetSpacialized(false);
 
 		SubModuleProperties moduleProps;
 		moduleProps.ModuleName = "Script-Engine";
