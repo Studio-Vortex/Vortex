@@ -281,7 +281,7 @@ public class Untitled : Entity
 
 			m_CurrentDirectory = FileSystem::GetParentDirectory(m_CurrentDirectory);
 		}
-		UI::SetTooltip("back");
+		UI::SetTooltip("Back");
 		Gui::EndDisabled();
 
 		Gui::SameLine();

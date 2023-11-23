@@ -1750,13 +1750,15 @@ namespace Vortex {
 
 			if (animator)
 			{
-				if (Gui::Button("Play"))
+				if (Gui::Button((const char*)VX_ICON_PLAY))
 					animator->PlayAnimation();
+				UI::SetTooltip("Play");
 
 				Gui::SameLine();
 
-				if (Gui::Button("Stop"))
+				if (Gui::Button((const char*)VX_ICON_STOP))
 					animator->Stop();
+				UI::SetTooltip("Stop");
 			}
 		});
 
@@ -1784,7 +1786,7 @@ namespace Vortex {
 
 				{
 					Gui::BeginDisabled(device.GetSound().IsPlaying());
-					if (Gui::Button("Play"))
+					if (Gui::Button((const char*)VX_ICON_PLAY))
 					{
 						// TODO once Wave has PlayOneShot we need to handle it here
 						//if (audioSource->GetProperties().PlayOneShot)
@@ -1794,24 +1796,28 @@ namespace Vortex {
 
 						device.Play();
 					}
+					UI::SetTooltip("Play");
 					Gui::EndDisabled();
 					
 					Gui::SameLine();
 
 					Gui::BeginDisabled(!device.GetSound().IsPlaying());
 
-					if (Gui::Button("Pause"))
+					if (Gui::Button((const char*)VX_ICON_PAUSE))
 						device.Pause();
+					UI::SetTooltip("Pause");
 
 					Gui::SameLine();
 
-					if (Gui::Button("Restart"))
+					if (Gui::Button((const char*)VX_ICON_REPEAT))
 						device.Restart();
+					UI::SetTooltip("Restart");
 
 					Gui::SameLine();
 
-					if (Gui::Button("Stop"))
+					if (Gui::Button((const char*)VX_ICON_STOP))
 						device.Stop();
+					UI::SetTooltip("Stop");
 
 					Gui::EndDisabled();
 				}
