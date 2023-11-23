@@ -70,51 +70,83 @@ namespace Vortex {
 			return;
 		}
 
-		//const std::string& trackName = audioSource->GetAudioClip().Name;
-		//const PlaybackDeviceProperties& deviceProperties = audioSource->GetProperties();
+		const std::string path = audioSource->GetPath().string();
+		const std::string trackName = FileSystem::RemoveFileExtension(path);
 
-		//out << YAML::BeginMap;
+		Wave::PlaybackDevice device = audioSource->GetPlaybackDevice();
 
-		//out << YAML::Key << "AudioSource" << YAML::Value << trackName;
-		//out << YAML::Key << "Properties" << YAML::Value << YAML::BeginMap;
-		//{
-		//	VX_SERIALIZE_PROPERTY(AssetHandle, audioSource->Handle, out);
-		//	std::string filepath = "Audio/" + FileSystem::Relative(audioSource->GetPath(), FileSystem::GetParentDirectory(audioSource->GetPath())).string();
-		//	VX_SERIALIZE_PROPERTY(Filepath, filepath, out);
+		out << YAML::BeginMap;
 
-		//	out << YAML::Key << "DeviceProperties" << YAML::Value;
-		//	out << YAML::BeginMap; // SoundSettings
-		//	VX_SERIALIZE_PROPERTY(Position, deviceProperties.Position, out);
-		//	VX_SERIALIZE_PROPERTY(Direction, deviceProperties.Direction, out);
-		//	VX_SERIALIZE_PROPERTY(Velocity, deviceProperties.Velocity, out);
+		out << YAML::Key << "AudioSource" << YAML::Value << trackName;
+		out << YAML::Key << "Properties" << YAML::Value << YAML::BeginMap;
+		{
+			VX_SERIALIZE_PROPERTY(AssetHandle, audioSource->Handle, out);
+			const std::string filepath = "Audio/" + FileSystem::Relative(audioSource->GetPath(), FileSystem::GetParentDirectory(audioSource->GetPath())).string();
+			VX_SERIALIZE_PROPERTY(Filepath, filepath, out);
 
-		//	out << YAML::Key << "Cone" << YAML::Value;
-		//	out << YAML::BeginMap; // Cone
-		//	VX_SERIALIZE_PROPERTY(InnerAngle, deviceProperties.Cone.InnerAngle, out);
-		//	VX_SERIALIZE_PROPERTY(OuterAngle, deviceProperties.Cone.OuterAngle, out);
-		//	VX_SERIALIZE_PROPERTY(OuterGain, deviceProperties.Cone.OuterGain, out);
-		//	out << YAML::EndMap; // Cone
+			out << YAML::Key << "DeviceProperties" << YAML::Value;
+			out << YAML::BeginMap; // SoundSettings
+			
+			const Wave::Vec3 pos = device.GetSound().GetPosition();
+			const Math::vec3 position = { pos.X, pos.Y, pos.Z };
+			VX_SERIALIZE_PROPERTY(Position, position, out);
 
-		//	VX_SERIALIZE_PROPERTY(MinGain, deviceProperties.MinGain, out);
-		//	VX_SERIALIZE_PROPERTY(MaxGain, deviceProperties.MaxGain, out);
+			const Wave::Vec3 dir = device.GetSound().GetDirection();
+			const Math::vec3 direction = { dir.X, dir.Y, dir.Z };
+			VX_SERIALIZE_PROPERTY(Direction, direction, out);
+			
+			const Wave::Vec3 vel = device.GetSound().GetVelocity();
+			const Math::vec3 velocity = { vel.X, vel.Y, vel.Z };
+			VX_SERIALIZE_PROPERTY(Velocity, velocity, out);
 
-		//	VX_SERIALIZE_PROPERTY(AttenuationModel, Utils::AttenuationModelTypeToString(deviceProperties.AttenuationModel), out);
-		//	VX_SERIALIZE_PROPERTY(Falloff, deviceProperties.Falloff, out);
+			out << YAML::Key << "Cone" << YAML::Value;
+			out << YAML::BeginMap; // Cone
+			const Wave::AudioCone cone = device.GetSound().GetAudioCone();
+			VX_SERIALIZE_PROPERTY(InnerAngle, cone.InnerAngle, out);
+			VX_SERIALIZE_PROPERTY(OuterAngle, cone.OuterAngle, out);
+			VX_SERIALIZE_PROPERTY(OuterGain, cone.OuterGain, out);
+			out << YAML::EndMap; // Cone
 
-		//	VX_SERIALIZE_PROPERTY(MinDistance, deviceProperties.MinDistance, out);
-		//	VX_SERIALIZE_PROPERTY(MaxDistance, deviceProperties.MaxDistance, out);
-		//	VX_SERIALIZE_PROPERTY(Pitch, deviceProperties.Pitch, out);
-		//	VX_SERIALIZE_PROPERTY(DopplerFactor, deviceProperties.DopplerFactor, out);
-		//	VX_SERIALIZE_PROPERTY(Volume, deviceProperties.Volume, out);
+			const float minGain = device.GetSound().GetMinGain();
+			VX_SERIALIZE_PROPERTY(MinGain, minGain, out);
 
-		//	VX_SERIALIZE_PROPERTY(PlayOnStart, deviceProperties.PlayOnStart, out);
-		//	VX_SERIALIZE_PROPERTY(PlayOneShot, deviceProperties.PlayOneShot, out);
-		//	VX_SERIALIZE_PROPERTY(Spacialized, deviceProperties.Spacialized, out);
-		//	VX_SERIALIZE_PROPERTY(Loop, deviceProperties.Loop, out);
-		//	out << YAML::EndMap; // SoundSettings
-		//}
-		//out << YAML::EndMap;
-		//out << YAML::EndMap;
+			const float maxGain = device.GetSound().GetMaxGain();
+			VX_SERIALIZE_PROPERTY(MaxGain, maxGain, out);
+
+			const AttenuationModel model = (AttenuationModel)device.GetSound().GetAttenuationModel();
+			VX_SERIALIZE_PROPERTY(AttenuationModel, Utils::AttenuationModelTypeToString(model), out);
+
+			const float falloff = device.GetSound().GetFalloff();
+			VX_SERIALIZE_PROPERTY(Falloff, falloff, out);
+
+			const float minDistance = device.GetSound().GetMinDistance();
+			VX_SERIALIZE_PROPERTY(MinDistance, minDistance, out);
+
+			const float maxDistance = device.GetSound().GetMaxDistance();
+			VX_SERIALIZE_PROPERTY(MaxDistance, maxDistance, out);
+
+			const float pitch = device.GetSound().GetPitch();
+			VX_SERIALIZE_PROPERTY(Pitch, pitch, out);
+
+			const float dopplerFactor = device.GetSound().GetDopplerFactor();
+			VX_SERIALIZE_PROPERTY(DopplerFactor, dopplerFactor, out);
+
+			const float volume = device.GetSound().GetVolume();
+			VX_SERIALIZE_PROPERTY(Volume, volume, out);
+
+			// TODO: come back when Wave has PlayOneShot and potentially PlayOnStart
+			//VX_SERIALIZE_PROPERTY(PlayOnStart, deviceProperties.PlayOnStart, out);
+			//VX_SERIALIZE_PROPERTY(PlayOneShot, deviceProperties.PlayOneShot, out);
+			
+			const bool spacialized = device.GetSound().IsSpacialized();
+			VX_SERIALIZE_PROPERTY(Spacialized, spacialized, out);
+
+			const bool looping = device.GetSound().IsLooping();
+			VX_SERIALIZE_PROPERTY(Loop, looping, out);
+			out << YAML::EndMap; // SoundSettings
+		}
+		out << YAML::EndMap;
+		out << YAML::EndMap;
 
 		std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 		std::ofstream fout(outputFile);
@@ -143,40 +175,63 @@ namespace Vortex {
 
 		if (!deviceProps)
 			return false;
-		
-		/*PlaybackDeviceProperties deviceProperties;
-		deviceProperties.Position = deviceProps["Position"].as<Math::vec3>();
-		deviceProperties.Direction = deviceProps["Direction"].as<Math::vec3>();
-		deviceProperties.Velocity = deviceProps["Velocity"].as<Math::vec3>();
-
-		auto coneData = deviceProps["Cone"];
-		deviceProperties.Cone.InnerAngle = coneData["InnerAngle"].as<float>();
-		deviceProperties.Cone.OuterAngle = coneData["OuterAngle"].as<float>();
-		deviceProperties.Cone.OuterGain = coneData["OuterGain"].as<float>();
-
-		deviceProperties.MinGain = deviceProps["MinGain"].as<float>();
-		deviceProperties.MaxGain = deviceProps["MaxGain"].as<float>();
-
-		deviceProperties.AttenuationModel = Utils::AttenuationModelTypeFromString(deviceProps["AttenuationModel"].as<std::string>());
-		deviceProperties.Falloff = deviceProps["Falloff"].as<float>();
-
-		deviceProperties.MinDistance = deviceProps["MinDistance"].as<float>();
-		deviceProperties.MaxDistance = deviceProps["MaxDistance"].as<float>();
-
-		deviceProperties.Pitch = deviceProps["Pitch"].as<float>();
-		deviceProperties.DopplerFactor = deviceProps["DopplerFactor"].as<float>();
-		deviceProperties.Volume = deviceProps["Volume"].as<float>();
-
-		deviceProperties.PlayOnStart = deviceProps["PlayOnStart"].as<bool>();
-		deviceProperties.PlayOneShot = deviceProps["PlayOneShot"].as<bool>();
-		deviceProperties.Spacialized = deviceProps["Spacialized"].as<bool>();
-		deviceProperties.Loop = deviceProps["Loop"].as<bool>();*/
 
 		std::string fullPath = (Project::GetAssetDirectory() / filepath).string();
 		asset = AudioSource::Create(fullPath);
 		asset->Handle = metadata.Handle;
-		//SharedReference<AudioSource> audioSource = asset.Is<AudioSource>();
-		//audioSource->SetProperties(deviceProperties);
+
+		SharedReference<AudioSource> audioSource = asset.Is<AudioSource>();
+
+		Wave::PlaybackDevice device = audioSource->GetPlaybackDevice();
+		Wave::Sound sound = device.GetSound();
+
+		const Math::vec3 position = deviceProps["Position"].as<Math::vec3>();
+		sound.SetPosition(Wave::Vec3(position.x, position.y, position.z));
+
+		const Math::vec3 direction = deviceProps["Direction"].as<Math::vec3>();
+		sound.SetDirection(Wave::Vec3(direction.x, direction.y, direction.z));
+
+		const Math::vec3 velocity = deviceProps["Velocity"].as<Math::vec3>();
+		sound.SetVelocity(Wave::Vec3(velocity.x, velocity.y, velocity.z));
+
+		auto coneData = deviceProps["Cone"];
+		Wave::AudioCone cone;
+		cone.InnerAngle = coneData["InnerAngle"].as<float>();
+		cone.OuterAngle = coneData["OuterAngle"].as<float>();
+		cone.OuterGain = coneData["OuterGain"].as<float>();
+		sound.SetAudioCone(cone);
+
+		float minGain = deviceProps["MinGain"].as<float>();
+		sound.SetMinGain(minGain);
+		float maxGain = deviceProps["MaxGain"].as<float>();
+		sound.SetMaxGain(maxGain);
+
+		std::string modelStr = deviceProps["AttenuationModel"].as<std::string>();
+		Wave::AttenuationModel model = (Wave::AttenuationModel)Utils::AttenuationModelTypeFromString(modelStr);
+		sound.SetAttenuationModel(model);
+
+		float falloff = deviceProps["Falloff"].as<float>();
+		sound.SetFalloff(falloff);
+
+		float minDistance = deviceProps["MinDistance"].as<float>();
+		sound.SetMinDistance(minDistance);
+		float maxDistance = deviceProps["MaxDistance"].as<float>();
+		sound.SetMaxDistance(maxDistance);
+
+		float pitch = deviceProps["Pitch"].as<float>();
+		sound.SetPitch(pitch);
+		float dopplerFactor = deviceProps["DopplerFactor"].as<float>();
+		sound.SetDopplerFactor(dopplerFactor);
+		float volume = deviceProps["Volume"].as<float>();
+		sound.SetVolume(volume);
+
+		// TODO: ditto
+		//data.PlayOnStart = deviceProps["PlayOnStart"].as<bool>();
+		//data.PlayOneShot = deviceProps["PlayOneShot"].as<bool>();
+		bool spacialized = deviceProps["Spacialized"].as<bool>();
+		sound.SetSpacialized(spacialized);
+		bool isLooping = deviceProps["Loop"].as<bool>();
+		sound.SetLooping(isLooping);
 
 		return true;
 	}
