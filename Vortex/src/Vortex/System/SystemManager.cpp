@@ -5,23 +5,23 @@ namespace Vortex {
 
 	static Scene* s_ContextScene = nullptr;
 
-	void SystemManager::SubmitContextScene(Scene* context)
+	void SystemManager::OnContextSceneCreated(Scene* context)
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			assetSystem->SubmitContextScene(context);
+			assetSystem->OnContextSceneCreated(context);
 		}
 
 		s_ContextScene = context;
 	}
 
-	void SystemManager::RemoveContextScene()
+	void SystemManager::OnContextSceneDestroyed()
 	{
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			assetSystem->RemoveContextScene();
+			assetSystem->OnContextSceneDestroyed();
 		}
 
 		s_ContextScene = nullptr;

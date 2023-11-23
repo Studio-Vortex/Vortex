@@ -65,7 +65,7 @@
 /// Audio
 #include "Vortex/Audio/Audio.h"
 #include "Vortex/Audio/AudioSource.h"
-#include "Vortex/Audio/AttenuationModel.h"
+#include "Vortex/Audio/AudioTypes.h"
 /// ---------------------------------------------------
 
 /// Animation

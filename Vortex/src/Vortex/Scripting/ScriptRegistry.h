@@ -23,6 +23,8 @@ namespace Vortex {
 	enum class GamepadButton : uint16_t;
 	enum class GamepadAxis : uint16_t;
 	enum class AttenuationModel : uint8_t;
+	enum class PanMode : uint8_t;
+	enum class PositioningMode : uint8_t;
 	enum class MaterialFlag;
 	class Texture2D;
 	class Noise;

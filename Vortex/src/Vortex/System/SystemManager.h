@@ -10,8 +10,8 @@ namespace Vortex {
 	class SystemManager
 	{
 	public:
-		static void SubmitContextScene(Scene* context);
-		static void RemoveContextScene();
+		static void OnContextSceneCreated(Scene* context);
+		static void OnContextSceneDestroyed();
 
 		static void OnRuntimeStart();
 		static void OnRuntimeScenePaused();

@@ -38,7 +38,7 @@ namespace Vortex {
 
 		if (settings.EnumerateDevices)
 		{
-			VX_CONSOLE_LOG_INFO("Enumerating Devices:");
+			VX_CONSOLE_LOG_INFO("[Audio] Enumerating Devices:");
 
 			uint32_t i = 1;
 			for (const auto& deviceInfo : result.PlaybackDeviceInfos) {
@@ -54,6 +54,10 @@ namespace Vortex {
 				VX_CONSOLE_LOG_INFO("    Is Default: {}", deviceInfo.IsDefault ? "true" : "false");
 			}
 		}
+
+#ifdef VX_DEBUG
+		VX_CONSOLE_LOG_INFO("[Audio] Audio submodule initialized");
+#endif // VX_DEBUG
 
 		SubModuleProperties moduleProps;
 		moduleProps.ModuleName = "Audio";

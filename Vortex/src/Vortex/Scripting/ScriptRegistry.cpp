@@ -15,8 +15,10 @@
 #include "Vortex/Scripting/ScriptUtils.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
+#include "Vortex/Audio/Audio.h"
 #include "Vortex/Audio/AudioSource.h"
-#include "Vortex/Audio/AttenuationModel.h"
+#include "Vortex/Audio/AudioTypes.h"
+#include "Vortex/Audio/AudioUtils.h"
 
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
@@ -2038,7 +2040,7 @@ namespace Vortex {
 			StaticMeshRendererComponent& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
 			staticMeshRenderer.Type = meshType;
 
-			staticMeshRenderer.StaticMesh = DefaultMeshes::DefaultStaticMeshes[(uint32_t)meshType];
+			staticMeshRenderer.StaticMesh = DefaultMesh::DefaultStaticMeshes[(uint32_t)meshType];
 
 			if (AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh) && staticMeshRenderer.Materials->Empty())
 			{
@@ -3446,8 +3448,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			Wave::Vec3 position = audioSource->GetPlaybackDevice().GetSound().GetPosition();
-			*outPosition = { position.X, position.Y, position.Z };
+			*outPosition = Utils::FromWaveVector(audioSource->GetPlaybackDevice().GetSound().GetPosition());
 		}
 
 		void AudioSourceComponent_SetPosition(UUID entityUUID, Math::vec3* position)
@@ -3471,7 +3472,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->GetPlaybackDevice().GetSound().SetPosition(Wave::Vec3(position->x, position->y, position->z));
+			audioSource->GetPlaybackDevice().GetSound().SetPosition(Utils::ToWaveVector(*position));
 		}
 
 		void AudioSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outDirection)
@@ -3495,8 +3496,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			Wave::Vec3 direction = audioSource->GetPlaybackDevice().GetSound().GetDirection();
-			*outDirection = { direction.X, direction.Y, direction.Z };
+			*outDirection = Utils::FromWaveVector(audioSource->GetPlaybackDevice().GetSound().GetDirection());
 		}
 
 		void AudioSourceComponent_SetDirection(UUID entityUUID, Math::vec3* direction)
@@ -3520,7 +3520,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->GetPlaybackDevice().GetSound().SetDirection(Wave::Vec3(direction->x, direction->y, direction->z));
+			audioSource->GetPlaybackDevice().GetSound().SetDirection(Utils::ToWaveVector(*direction));
 		}
 
 		void AudioSourceComponent_GetVelocity(UUID entityUUID, Math::vec3* outVelocity)
@@ -3544,8 +3544,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			Wave::Vec3 velocity = audioSource->GetPlaybackDevice().GetSound().GetVelocity();
-			*outVelocity = { velocity.X, velocity.Y, velocity.Z };
+			*outVelocity = Utils::FromWaveVector(audioSource->GetPlaybackDevice().GetSound().GetVelocity());
 		}
 
 		void AudioSourceComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
@@ -3569,7 +3568,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->GetPlaybackDevice().GetSound().SetVelocity(Wave::Vec3(velocity->x, velocity->y, velocity->z));
+			audioSource->GetPlaybackDevice().GetSound().SetVelocity(Utils::ToWaveVector(*velocity));
 		}
 
         float AudioSourceComponent_GetMinGain(UUID entityUUID)
@@ -3689,7 +3688,7 @@ namespace Vortex {
 			if (!audioSource)
 				return AttenuationModel::None;
 
-			return (AttenuationModel)audioSource->GetPlaybackDevice().GetSound().GetAttenuationModel();
+			return Utils::FromWaveAttenuationModel(audioSource->GetPlaybackDevice().GetSound().GetAttenuationModel());
 		}
 
 		void AudioSourceComponent_SetAttenuationModel(UUID entityUUID, AttenuationModel model)
@@ -3713,7 +3712,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->GetPlaybackDevice().GetSound().SetAttenuationModel((Wave::AttenuationModel)model);
+			audioSource->GetPlaybackDevice().GetSound().SetAttenuationModel(Utils::ToWaveAttenuationModel(model));
         }
 
         float AudioSourceComponent_GetFalloff(UUID entityUUID)

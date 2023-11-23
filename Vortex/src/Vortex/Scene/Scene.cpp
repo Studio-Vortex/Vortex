@@ -110,7 +110,7 @@ namespace Vortex {
 	Scene::Scene(SharedReference<Framebuffer>& targetFramebuffer)
 		: m_TargetFramebuffer(targetFramebuffer)
 	{
-		SystemManager::SubmitContextScene(this);
+		SystemManager::OnContextSceneCreated(this);
 
 		m_Registry.on_construct<CameraComponent>().connect<&Scene::OnCameraConstruct>(this);
 		m_Registry.on_construct<StaticMeshRendererComponent>().connect<&Scene::OnStaticMeshConstruct>(this);
@@ -132,7 +132,7 @@ namespace Vortex {
 
 	Scene::~Scene()
 	{
-		SystemManager::RemoveContextScene();
+		SystemManager::OnContextSceneDestroyed();
 
 		// Shutdown all AudioSources
 		{
@@ -1201,7 +1201,7 @@ namespace Vortex {
 
 		if (staticMeshComponent.Type != MeshType::Custom)
 		{
-			DefaultMeshes::StaticMeshes staticMeshType = (DefaultMeshes::StaticMeshes)staticMeshComponent.Type;
+			DefaultMesh::StaticMeshType staticMeshType = (DefaultMesh::StaticMeshType)staticMeshComponent.Type;
 
 			staticMeshComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(staticMeshType);
 

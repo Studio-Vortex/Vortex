@@ -25,8 +25,8 @@ namespace Vortex {
 		static AssetType GetStaticType() { return AssetType::None; }
 		virtual AssetType GetAssetType() = 0;
 
-		virtual void SubmitContextScene(Scene* context) = 0;
-		virtual void RemoveContextScene() = 0;
+		virtual void OnContextSceneCreated(Scene* context) = 0;
+		virtual void OnContextSceneDestroyed() = 0;
 
 		virtual void CreateAsset(Entity& entity) = 0;
 		virtual void DestroyAsset(Entity& entity) = 0;

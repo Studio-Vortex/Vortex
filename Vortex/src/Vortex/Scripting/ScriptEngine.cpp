@@ -8,6 +8,9 @@
 
 #include "Vortex/Project/Project.h"
 
+#include "Vortex/Audio/Audio.h"
+#include "Vortex/Audio/AudioSource.h"
+
 #include "Vortex/Scene/Components.h"
 #include "Vortex/Scene/Entity.h"
 
@@ -16,7 +19,6 @@
 #include "Vortex/Scripting/ScriptFieldInstance.h"
 #include "Vortex/Scripting/ScriptClass.h"
 #include "Vortex/Scripting/ScriptUtils.h"
-#include "Vortex/Audio/AudioSource.h"
 
 #include "Vortex/Physics/3D/Physics.h"
 
@@ -139,6 +141,13 @@ namespace Vortex {
 	void ScriptEngine::Shutdown()
 	{
 		ShutdownMono();
+
+		// NOTE:
+		// We need to manually clean up this audio source because
+		// it is not attached to an entity in a scene, if it was,
+		// the scene would be responsible for cleaning it up
+		// as mentioned in AudioSource::~AudioSource()
+		s_Data->AppAssemblyReloadSound->GetPlaybackDevice().Shutdown(Audio::GetContext());
 
 		Application::Get().RemoveModule(s_Data->Module);
 		s_Data->Module.Shutdown();

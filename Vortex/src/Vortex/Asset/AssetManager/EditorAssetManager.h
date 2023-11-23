@@ -2,7 +2,7 @@
 
 #include "Vortex/Asset/AssetManager/IAssetManager.h"
 
-#include "Vortex/Editor/DefaultMeshes.h"
+#include "Vortex/Editor/DefaultMesh.h"
 
 #include "Vortex/Asset/AssetImporter.h"
 #include "Vortex/Asset/AssetRegistry.h"
@@ -52,7 +52,7 @@ namespace Vortex {
 
 		bool RenameAsset(SharedReference<Asset>& asset, const std::string& newName);
 
-		AssetHandle GetDefaultStaticMesh(DefaultMeshes::StaticMeshes defaultMesh);
+		AssetHandle GetDefaultStaticMesh(DefaultMesh::StaticMeshType defaultMesh);
 		bool IsDefaultStaticMesh(AssetHandle assetHandle);
 
 		template <typename TAsset, typename... Args>

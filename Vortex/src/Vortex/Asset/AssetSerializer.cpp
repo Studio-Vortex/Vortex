@@ -4,6 +4,8 @@
 #include "Vortex/Project/Project.h"
 
 #include "Vortex/Audio/AudioSource.h"
+#include "Vortex/Audio/AudioTypes.h"
+#include "Vortex/Audio/AudioUtils.h"
 
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Mesh.h"
@@ -87,16 +89,13 @@ namespace Vortex {
 			out << YAML::Key << "DeviceProperties" << YAML::Value;
 			out << YAML::BeginMap; // SoundSettings
 			
-			const Wave::Vec3 pos = device.GetSound().GetPosition();
-			const Math::vec3 position = { pos.X, pos.Y, pos.Z };
+			const Math::vec3 position = Utils::FromWaveVector(device.GetSound().GetPosition());
 			VX_SERIALIZE_PROPERTY(Position, position, out);
 
-			const Wave::Vec3 dir = device.GetSound().GetDirection();
-			const Math::vec3 direction = { dir.X, dir.Y, dir.Z };
+			const Math::vec3 direction = Utils::FromWaveVector(device.GetSound().GetDirection());
 			VX_SERIALIZE_PROPERTY(Direction, direction, out);
 			
-			const Wave::Vec3 vel = device.GetSound().GetVelocity();
-			const Math::vec3 velocity = { vel.X, vel.Y, vel.Z };
+			const Math::vec3 velocity = Utils::FromWaveVector(device.GetSound().GetVelocity());
 			VX_SERIALIZE_PROPERTY(Velocity, velocity, out);
 
 			out << YAML::Key << "Cone" << YAML::Value;
@@ -113,8 +112,17 @@ namespace Vortex {
 			const float maxGain = device.GetSound().GetMaxGain();
 			VX_SERIALIZE_PROPERTY(MaxGain, maxGain, out);
 
-			const AttenuationModel model = (AttenuationModel)device.GetSound().GetAttenuationModel();
-			VX_SERIALIZE_PROPERTY(AttenuationModel, Utils::AttenuationModelTypeToString(model), out);
+			const AttenuationModel attModel = Utils::FromWaveAttenuationModel(device.GetSound().GetAttenuationModel());
+			VX_SERIALIZE_PROPERTY(AttenuationModel, Utils::AttenuationModelTypeToString(attModel), out);
+
+			const float pan = device.GetSound().GetPan();
+			VX_SERIALIZE_PROPERTY(Pan, pan, out);
+
+			const PanMode panMode = Utils::FromWavePanMode(device.GetSound().GetPanMode());
+			VX_SERIALIZE_PROPERTY(PanMode, Utils::PanModeTypeToString(panMode), out);
+
+			const PositioningMode positioningMode = Utils::FromWavePositioningMode(device.GetSound().GetPositioning());
+			VX_SERIALIZE_PROPERTY(PositioningMode, Utils::PositioningModeTypeToString(positioningMode), out);
 
 			const float falloff = device.GetSound().GetFalloff();
 			VX_SERIALIZE_PROPERTY(Falloff, falloff, out);
@@ -130,6 +138,9 @@ namespace Vortex {
 
 			const float dopplerFactor = device.GetSound().GetDopplerFactor();
 			VX_SERIALIZE_PROPERTY(DopplerFactor, dopplerFactor, out);
+
+			const float directionalAttenuationFactor = device.GetSound().GetDirectionalAttenuationFactor();
+			VX_SERIALIZE_PROPERTY(DirectionalAttenuationFactor, directionalAttenuationFactor, out);
 
 			const float volume = device.GetSound().GetVolume();
 			VX_SERIALIZE_PROPERTY(Volume, volume, out);
@@ -186,13 +197,13 @@ namespace Vortex {
 		Wave::Sound sound = device.GetSound();
 
 		const Math::vec3 position = deviceProps["Position"].as<Math::vec3>();
-		sound.SetPosition(Wave::Vec3(position.x, position.y, position.z));
+		sound.SetPosition(Utils::ToWaveVector(position));
 
 		const Math::vec3 direction = deviceProps["Direction"].as<Math::vec3>();
-		sound.SetDirection(Wave::Vec3(direction.x, direction.y, direction.z));
+		sound.SetDirection(Utils::ToWaveVector(direction));
 
 		const Math::vec3 velocity = deviceProps["Velocity"].as<Math::vec3>();
-		sound.SetVelocity(Wave::Vec3(velocity.x, velocity.y, velocity.z));
+		sound.SetVelocity(Utils::ToWaveVector(velocity));
 
 		auto coneData = deviceProps["Cone"];
 		Wave::AudioCone cone;
@@ -206,9 +217,17 @@ namespace Vortex {
 		float maxGain = deviceProps["MaxGain"].as<float>();
 		sound.SetMaxGain(maxGain);
 
-		std::string modelStr = deviceProps["AttenuationModel"].as<std::string>();
-		Wave::AttenuationModel model = (Wave::AttenuationModel)Utils::AttenuationModelTypeFromString(modelStr);
-		sound.SetAttenuationModel(model);
+		std::string attModelStr = deviceProps["AttenuationModel"].as<std::string>();
+		sound.SetAttenuationModel(Utils::ToWaveAttenuationModel(Utils::AttenuationModelTypeFromString(attModelStr)));
+
+		float pan = deviceProps["Pan"].as<float>();
+		sound.SetPan(pan);
+
+		std::string panModeStr = deviceProps["PanMode"].as<std::string>();
+		sound.SetPanMode(Utils::ToWavePanMode(Utils::PanModeTypeFromString(panModeStr)));
+
+		std::string positioningModeStr = deviceProps["PositioningMode"].as<std::string>();
+		sound.SetPositioning(Utils::ToWavePositioningMode(Utils::PositioningModeTypeFromString(positioningModeStr)));
 
 		float falloff = deviceProps["Falloff"].as<float>();
 		sound.SetFalloff(falloff);
@@ -222,6 +241,8 @@ namespace Vortex {
 		sound.SetPitch(pitch);
 		float dopplerFactor = deviceProps["DopplerFactor"].as<float>();
 		sound.SetDopplerFactor(dopplerFactor);
+		float directionalAttenuationFactor = deviceProps["DirectionalAttenuationFactor"].as<float>();
+		sound.SetDirectionalAttenuationFactor(directionalAttenuationFactor);
 		float volume = deviceProps["Volume"].as<float>();
 		sound.SetVolume(volume);
 

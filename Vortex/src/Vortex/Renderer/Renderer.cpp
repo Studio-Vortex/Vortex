@@ -6,8 +6,18 @@
 
 #include "Vortex/Module/Module.h"
 
+#include "Vortex/Animation/Animator.h"
+
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/BloomPass.h"
+#include "Vortex/Renderer/Texture.h"
+#include "Vortex/Renderer/Skybox.h"
+#include "Vortex/Renderer/Mesh.h"
+#include "Vortex/Renderer/StaticMesh.h"
+#include "Vortex/Renderer/Material.h"
+#include "Vortex/Renderer/Framebuffer.h"
+
+#include "Vortex/Editor/EditorCamera.h"
 
 namespace Vortex {
 

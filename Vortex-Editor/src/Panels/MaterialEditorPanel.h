@@ -17,14 +17,14 @@ namespace Vortex {
 
 	private:
 		void RenderMeshMaterial(Entity selectedEntity);
-		void ParameterCallback(SharedReference<Material>& material, uint32_t materialIndex);
-		SharedReference<Texture2D> GetMaterialTexture(const SharedReference<Material>& material, uint32_t index);
-		void SetMaterialTexture(SharedReference<Material>& material, AssetHandle textureHandle, uint32_t index);
-		void RenderMaterialFlags(SharedReference<Material>& material);
-		void RenderMaterialProperties(SharedReference<Material>& material);
+		void ParameterCallback(SharedReference<Material> material, uint32_t materialIndex);
+		SharedReference<Texture2D> GetMaterialTexture(SharedReference<Material> material, uint32_t index);
+		void SetMaterialTexture(SharedReference<Material> material, AssetHandle textureHandle, uint32_t index);
+		void RenderMaterialFlags(SharedReference<Material> material);
+		void RenderMaterialProperties(SharedReference<Material> material);
 		bool MaterialTextureHasProperties(uint32_t index);
-		using MaterialParameterCallbackFunc = const std::function<void(SharedReference<Material>&, uint32_t)>&;
-		void RenderMaterialTexturesAndProperties(SharedReference<Material>& material, MaterialParameterCallbackFunc parameterCallback);
+		using MaterialParameterCallbackFunc = const std::function<void(SharedReference<Material>, uint32_t)>&;
+		void RenderMaterialTexturesAndProperties(SharedReference<Material> material, MaterialParameterCallbackFunc parameterCallback);
 
 	private:
 		ImGuiTextFilter m_ShaderDropdownTextFilter;

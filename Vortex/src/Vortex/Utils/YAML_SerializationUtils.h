@@ -5,7 +5,7 @@
 
 #include "Vortex/Scene/Components.h"
 
-#include "Vortex/Audio/AttenuationModel.h"
+#include "Vortex/Audio/AudioTypes.h"
 
 #include "Vortex/Physics/3D/PhysXTypes.h"
 
@@ -76,9 +76,9 @@ namespace Vortex {
 			return MeshType::Cube;
 		}
 
-		static std::string AttenuationModelTypeToString(AttenuationModel attenuationModel)
+		static std::string AttenuationModelTypeToString(AttenuationModel model)
 		{
-			switch (attenuationModel)
+			switch (model)
 			{
 				case AttenuationModel::None:        return "None";
 				case AttenuationModel::Inverse:     return "Inverse";
@@ -90,15 +90,57 @@ namespace Vortex {
 			return "None";
 		}
 
-		static AttenuationModel AttenuationModelTypeFromString(const std::string& attenuationModel)
+		static AttenuationModel AttenuationModelTypeFromString(const std::string& model)
 		{
-			if (attenuationModel == "None")        return AttenuationModel::None;
-			if (attenuationModel == "Inverse")     return AttenuationModel::Inverse;
-			if (attenuationModel == "Linear")      return AttenuationModel::Linear;
-			if (attenuationModel == "Exponential") return AttenuationModel::Exponential;
+			if (model == "None")        return AttenuationModel::None;
+			if (model == "Inverse")     return AttenuationModel::Inverse;
+			if (model == "Linear")      return AttenuationModel::Linear;
+			if (model == "Exponential") return AttenuationModel::Exponential;
 
 			VX_CORE_ASSERT(false, "Unknown Attenutation Model!");
 			return AttenuationModel::None;
+		}
+
+		static std::string PanModeTypeToString(PanMode mode)
+		{
+			switch (mode)
+			{
+				case PanMode::Balance: return "Balance";
+				case PanMode::Pan:     return "Pan";
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Pan Mode!");
+			return "None";
+		}
+
+		static PanMode PanModeTypeFromString(const std::string& mode)
+		{
+			if (mode == "Balance") return PanMode::Balance;
+			if (mode == "Pan")     return PanMode::Pan;
+
+			VX_CORE_ASSERT(false, "Unknown Pan Mode!");
+			return PanMode::Balance;
+		}
+
+		static std::string PositioningModeTypeToString(PositioningMode mode)
+		{
+			switch (mode)
+			{
+				case PositioningMode::Absolute: return "Absolute";
+				case PositioningMode::Relative: return "Relative";
+			}
+
+			VX_CORE_ASSERT(false, "Unknown Positioning Mode!");
+			return "None";
+		}
+
+		static PositioningMode PositioningModeTypeFromString(const std::string& mode)
+		{
+			if (mode == "Absolute") return PositioningMode::Absolute;
+			if (mode == "Relative") return PositioningMode::Relative;
+
+			VX_CORE_ASSERT(false, "Unknown Positioning Mode!");
+			return PositioningMode::Absolute;
 		}
 
 		static std::string RigidBody2DBodyTypeToString(RigidBody2DType bodyType)

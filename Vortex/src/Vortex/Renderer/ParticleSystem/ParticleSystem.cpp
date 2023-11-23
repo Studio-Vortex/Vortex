@@ -50,7 +50,7 @@ namespace Vortex {
 		s_Data.Module.Shutdown();
 	}
 
-	void ParticleSystem::SubmitContextScene(Scene* context)
+	void ParticleSystem::OnContextSceneCreated(Scene* context)
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
 		
@@ -58,10 +58,8 @@ namespace Vortex {
 		s_Data.ParticleData.clear();
 	}
 
-	void ParticleSystem::RemoveContextScene()
+	void ParticleSystem::OnContextSceneDestroyed()
 	{
-		VX_CORE_ASSERT(s_Data.ActiveScene, "Invalid scene!");
-
 		s_Data.ActiveScene = nullptr;
 		s_Data.ParticleData.clear();
 	}
