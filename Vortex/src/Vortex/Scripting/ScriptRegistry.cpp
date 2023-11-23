@@ -4324,7 +4324,7 @@ namespace Vortex {
 			if (!audioSource)
 				return 0.0f;
 
-			audioSource->GetPlaybackDevice().GetSound().GetLength();
+			audioSource->GetPlaybackDevice().GetSound().GetLengthInSeconds();
 		}
 
 #pragma endregion

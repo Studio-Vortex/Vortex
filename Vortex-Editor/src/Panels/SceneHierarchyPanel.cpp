@@ -1779,7 +1779,7 @@ namespace Vortex {
 				if (device.GetEngine().GetID() != Wave::ID::Invalid && (device.GetSound().IsPlaying() || device.GetSound().IsPaused()))
 				{
 					Gui::BeginDisabled(!device.GetSound().IsPlaying());
-					const float fraction = device.GetSound().GetSoundCursor() / device.GetSound().GetLength();
+					const float fraction = device.GetSound().GetCursorInSeconds() / device.GetSound().GetLengthInSeconds();
 					Gui::ProgressBar(fraction);
 					Gui::EndDisabled();
 				}
@@ -1872,7 +1872,7 @@ namespace Vortex {
 				if (!audioSource->GetPath().empty())
 				{
 					Gui::BeginDisabled(true);
-					float length = device.GetSound().GetLength();
+					float length = device.GetSound().GetLengthInSeconds();
 					UI::Property("Length", length);
 					Gui::EndDisabled();
 				}
