@@ -2,12 +2,15 @@
 
 #include "Vortex/Core/Base.h"
 #include "Vortex/Asset/Asset.h"
-#include "Vortex/Renderer/Shader.h"
-#include "Vortex/Renderer/Texture.h"
+
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <unordered_map>
 
 namespace Vortex {
+
+	class Shader;
+	class Texture;
 
 	enum class VORTEX_API MaterialFlag
 	{
@@ -48,14 +51,14 @@ namespace Vortex {
 	{
 	public:
 		Material() = default;
-		Material(const SharedReference<Shader>& shader, const MaterialProperties& props);
+		Material(SharedReference<Shader> shader, const MaterialProperties& props);
 		~Material() override = default;
 
 		void Bind() const;
 		void Unbind() const;
 
-		const SharedReference<Shader>& GetShader() const;
-		void SetShader(SharedReference<Shader>& shader);
+		SharedReference<Shader> GetShader() const;
+		void SetShader(SharedReference<Shader> shader);
 
 		const std::string& GetName() const;
 		void SetName(const std::string& name);
@@ -118,11 +121,21 @@ namespace Vortex {
 
 		ASSET_CLASS_TYPE(MaterialAsset)
 
+		static AssetHandle GetDefaultMaterialHandle();
 		static SharedReference<Material> Create(const SharedReference<Shader>& shader, const MaterialProperties& props);
 
-	protected:
+	private:
+		static void SetDefaultMaterialHandle(AssetHandle assetHandle);
+
+	private:
+		inline static AssetHandle s_DefaultMaterialHandle = 0;
+
+	private:
 		MaterialProperties m_Properties;
 		SharedReference<Shader> m_Shader = nullptr;
+
+	private:
+		friend class DefaultMesh;
 	};
 
 	class MaterialTable : public RefCounted

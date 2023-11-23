@@ -28,7 +28,6 @@ IncludeDir["glm"] = "Vortex/vendor/glm"
 IncludeDir["ImGui"] = "Vortex/vendor/imgui"
 IncludeDir["ImGuizmo"] = "Vortex/vendor/ImGuizmo"
 IncludeDir["ImGuiColorTextEdit"] = "Vortex/vendor/ImGuiColorTextEdit"
-IncludeDir["miniaudio"] = "Vortex/vendor/miniaudio"
 IncludeDir["mono"] = "%{wks.location}/Vortex/vendor/mono/include"
 IncludeDir["msdf_atlas_gen"] = "Vortex/vendor/msdf-atlas-gen/msdf-atlas-gen"
 IncludeDir["msdfgen"] = "Vortex/vendor/msdf-atlas-gen/msdfgen"
@@ -36,6 +35,7 @@ IncludeDir["PhysX"] = "Vortex/vendor/PhysX/include"
 IncludeDir["spdlog"] = "Vortex/vendor/spdlog/include"
 IncludeDir["stb_image"] = "Vortex/vendor/stb_image"
 IncludeDir["stb_image_write"] = "Vortex/vendor/stb_image_write"
+IncludeDir["Wave"] = "Vortex/vendor/Wave/Wave/src"
 IncludeDir["yaml_cpp"] = "Vortex/vendor/yaml-cpp/include"
 
 LibraryDir = {}
@@ -64,6 +64,10 @@ group "External Dependencies"
 	include "Vortex/vendor/Glad"
 	include "Vortex/vendor/imgui"
 	include "Vortex/vendor/yaml-cpp"
+
+	group "External Dependencies/Studio-Vortex"
+		include "Vortex/vendor/Wave/Wave/build-wave.lua"
+	group ""
 
 	group "External Dependencies/msdf"
 		include "Vortex/vendor/msdf-atlas-gen"
@@ -97,8 +101,6 @@ project "Vortex"
 		"%{prj.name}/vendor/stb_image_write/**.h",
 		"%{prj.name}/vendor/stb_image_write/**.cpp",
 
-		"%{prj.name}/vendor/miniaudio/miniaudio/miniaudio.h",
-
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
 		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp",
 
@@ -127,7 +129,6 @@ project "Vortex"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.ImGuiColorTextEdit}",
-		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.msdf_atlas_gen}",
 		"%{IncludeDir.msdfgen}",
@@ -135,6 +136,7 @@ project "Vortex"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.stb_image_write}",
+		"%{IncludeDir.Wave}",
 		"%{IncludeDir.yaml_cpp}",
 	}
 
@@ -157,7 +159,8 @@ project "Vortex"
     	"d3d11.lib",
 		"Shell32.lib",
 		"Ole32.lib",
-		"Ws2_32.lib",
+    	"Ws2_32.lib",
+		"Wave",
 		"yaml-cpp",
 	}
 
@@ -262,10 +265,10 @@ project "Vortex-Editor"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
 		"%{IncludeDir.ImGuiColorTextEdit}",
-		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.PhysX}/PhysX",
 		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.Wave}",
 	}
 	
 	defines
@@ -364,10 +367,10 @@ project "Vortex-Launcher"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.PhysX}/PhysX",
 		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.Wave}",
 	}
 
 	defines
@@ -469,10 +472,10 @@ project "Vortex-Runtime"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.PhysX}/PhysX",
-		"%{IncludeDir.spdlog}",
+    	"%{IncludeDir.spdlog}",
+    	"%{IncludeDir.Wave}",
 	}
 
 	defines
@@ -571,10 +574,10 @@ project "Testbed"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.miniaudio}",
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.PhysX}/PhysX",
 		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.Wave}",
 	}
 
 	defines

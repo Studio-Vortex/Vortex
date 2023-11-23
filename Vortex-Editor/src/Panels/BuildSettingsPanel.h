@@ -9,10 +9,11 @@ namespace Vortex {
 	class BuildSettingsPanel : public EditorPanel
 	{
 	public:
-		using LaunchRuntimeFn = std::function<void(const std::filesystem::path&)>;
+		using BuildAndRunFn = std::function<void()>;
+		using BuildFn = std::function<void()>;
 
 	public:
-		BuildSettingsPanel(const LaunchRuntimeFn& func);
+		BuildSettingsPanel(const BuildAndRunFn& func0, const BuildFn& func1);
 		~BuildSettingsPanel() override = default;
 
 		void OnEditorAttach() override;
@@ -28,7 +29,8 @@ namespace Vortex {
 		void FindBestHeight(float& height);
 
 	private:
-		LaunchRuntimeFn m_LaunchRuntimeFunc;
+		BuildAndRunFn m_BuildAndRunFn;
+		BuildFn m_BuildFn;
 
 		std::filesystem::path m_ProjectPath;
 		std::filesystem::path m_StartupScene;

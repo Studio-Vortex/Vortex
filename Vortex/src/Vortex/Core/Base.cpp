@@ -19,6 +19,8 @@ namespace Vortex {
 	void ShutdownEngine()
 	{
 		VX_CONSOLE_LOG_TRACE("Shutting down...");
+
+		Log::Shutdown();
 	}
 
 }

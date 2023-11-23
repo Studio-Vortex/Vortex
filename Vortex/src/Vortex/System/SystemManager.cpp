@@ -3,29 +3,33 @@
 
 namespace Vortex {
 
-	void SystemManager::SubmitContextScene(Scene* context)
+	static Scene* s_ContextScene = nullptr;
+
+	void SystemManager::OnContextSceneCreated(Scene* context)
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			assetSystem->SubmitContextScene(context);
+			assetSystem->OnContextSceneCreated(context);
 		}
+
+		s_ContextScene = context;
 	}
 
-	void SystemManager::RemoveContextScene(Scene* context)
+	void SystemManager::OnContextSceneDestroyed()
 	{
-		VX_CORE_ASSERT(context, "Invalid scene!");
-
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			assetSystem->RemoveContextScene(context);
+			assetSystem->OnContextSceneDestroyed();
 		}
+
+		s_ContextScene = nullptr;
 	}
 
-	void SystemManager::OnRuntimeStart(Scene* context)
+	void SystemManager::OnRuntimeStart()
 	{
-		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(s_ContextScene, "Invalid scene!");
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
@@ -33,13 +37,13 @@ namespace Vortex {
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 
-			assetSystem->OnRuntimeStart(context);
+			assetSystem->OnRuntimeStart();
 		}
 	}
 
-	void SystemManager::OnRuntimeScenePaused(Scene* context)
+	void SystemManager::OnRuntimeScenePaused()
 	{
-		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(s_ContextScene, "Invalid scene!");
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
@@ -47,13 +51,13 @@ namespace Vortex {
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 
-			assetSystem->OnRuntimeScenePaused(context);
+			assetSystem->OnRuntimeScenePaused();
 		}
 	}
 
-	void SystemManager::OnRuntimeSceneResumed(Scene* context)
+	void SystemManager::OnRuntimeSceneResumed()
 	{
-		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(s_ContextScene, "Invalid scene!");
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
@@ -61,13 +65,13 @@ namespace Vortex {
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 
-			assetSystem->OnRuntimeSceneResumed(context);
+			assetSystem->OnRuntimeSceneResumed();
 		}
 	}
 
-	void SystemManager::OnRuntimeStop(Scene* context)
+	void SystemManager::OnRuntimeStop()
 	{
-		VX_CORE_ASSERT(context, "Invalid scene!");
+		VX_CORE_ASSERT(s_ContextScene, "Invalid scene!");
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
@@ -75,7 +79,7 @@ namespace Vortex {
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 
-			assetSystem->OnRuntimeStop(context);
+			assetSystem->OnRuntimeStop();
 		}
 	}
 

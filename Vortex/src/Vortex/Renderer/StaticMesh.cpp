@@ -303,9 +303,9 @@ namespace Vortex {
 		// Get or Create Material
 		AssetHandle materialHandle = 0;
 		std::string materialName = m_MaterialNames[submeshIndex];
-
-		std::string filename = materialName + ".vmaterial";
+		std::string filename = materialName + ".vmaterial";;
 		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata("Materials/" + filename);
+
 		if (AssetManager::IsHandleValid(metadata.Handle))
 		{
 			materialHandle = metadata.Handle;
@@ -327,8 +327,7 @@ namespace Vortex {
 			VX_CORE_ASSERT(AssetManager::IsHandleValid(material->Handle), "Invalid asset handle!");
 			
 			material->SetName(materialName);
-			materialHandle = material->Handle;
-			m_InitialMaterialHandles[submeshIndex] = materialHandle;
+			m_InitialMaterialHandles[submeshIndex] = material->Handle;
 		}
 
 		submeshIndex++;

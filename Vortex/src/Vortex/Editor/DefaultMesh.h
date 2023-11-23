@@ -6,14 +6,14 @@
 
 namespace Vortex {
 
-	class DefaultMeshes
+	class DefaultMesh
 	{
 	public:
 		static void Init();
 
 		static bool IsDefaultStaticMesh(AssetHandle assetHandle);
 
-		enum class StaticMeshes
+		enum class StaticMeshType
 		{
 			Cube = 0, Sphere, Capsule, Cone, Cylinder, Plane, Torus,
 		};

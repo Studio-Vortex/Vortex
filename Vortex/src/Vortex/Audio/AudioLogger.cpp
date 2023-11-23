@@ -1,21 +1,25 @@
 #include "vxpch.h"
 #include "AudioLogger.h"
 
-#include <miniaudio/miniaudio.h>
+#include <Wave/Wave.h>
+
+#include <string>
 
 namespace Vortex {
 
-	void AudioLogger::AudioLogCallback(void* pUserData, uint32_t logLevel, const char* pMessage)
+	void AudioLogger::DebugLogCallback(void* pUserData, uint32_t logLevel, const char* pMessage)
 	{
 		std::string message(pMessage);
 		message.shrink_to_fit();
 
-		switch ((ma_log_level)logLevel)
+		using namespace Wave;
+
+		switch ((LogLevel)logLevel)
 		{
-			//case MA_LOG_LEVEL_INFO:    VX_CONSOLE_LOG_INFO("[Audio] {}", message);  break;
-			case MA_LOG_LEVEL_WARNING: VX_CONSOLE_LOG_WARN("[Audio] {}", message);  break;
-			case MA_LOG_LEVEL_ERROR:   VX_CONSOLE_LOG_ERROR("[Audio] {}", message); break;
-			case MA_LOG_LEVEL_DEBUG:   VX_CONSOLE_LOG_FATAL("[Audio] {}", message); break;
+			case LogLevel::Info:    VX_CONSOLE_LOG_INFO("[Audio] {}", message);  return;
+			case LogLevel::Warning: VX_CONSOLE_LOG_WARN("[Audio] {}", message);  return;
+			case LogLevel::Error:   VX_CONSOLE_LOG_ERROR("[Audio] {}", message); return;
+			case LogLevel::Debug:   VX_CONSOLE_LOG_FATAL("[Audio] {}", message); return;
 		}
 	}
 

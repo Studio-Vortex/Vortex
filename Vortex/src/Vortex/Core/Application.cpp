@@ -6,7 +6,7 @@
 
 #include "Vortex/Events/KeyEvent.h"
 
-#include "Vortex/Audio/AudioSystem.h"
+#include "Vortex/Audio/Audio.h"
 
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Font/Font.h"
@@ -47,6 +47,14 @@ namespace Vortex {
 	Application::~Application()
 	{
 		VX_PROFILE_FUNCTION();
+
+		// Note:
+		// We have to explicitly destroy the layer stack before
+		// the engine's submodules are shutdown. This is mainly because
+		// the Audio system needs to outlive the lifetime of the layer stack.
+		// It is also just a good idea to destroy all the layers before submodules
+		// get shutdown because something in the layers code may rely on a submodule
+		m_LayerStack.~LayerStack();
 
 		ShutdownSubModules();
 	}
@@ -100,7 +108,7 @@ namespace Vortex {
 		Renderer::Init();
 		SystemManager::RegisterAssetSystem<ParticleSystem>();
 		Physics::Init();
-		SystemManager::RegisterAssetSystem<AudioSystem>();
+		Audio::Init();
 		Random::Init();
 		Font::Init();
 		Input::Init();
@@ -117,7 +125,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Input::Shutdown();
-		SystemManager::UnregisterAssetSystem<AudioSystem>();
+		Audio::Shutdown();
 		Physics::Shutdown();
 		Font::Shutdown();
 		SystemManager::UnregisterAssetSystem<ParticleSystem>();
@@ -251,8 +259,7 @@ namespace Vortex {
 
 	bool Application::OnWindowCloseEvent(WindowCloseEvent& e)
 	{
-		m_Running = false;
-		g_ApplicationRunning = false;
+		Close();
 
 		return false;
 	}

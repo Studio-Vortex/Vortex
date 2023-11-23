@@ -30,6 +30,7 @@
 #include "Panels/SystemManagerPanel.h"
 #include "Panels/ShaderEditorPanel.h"
 #include "Panels/PerformancePanel.h"
+#include "Panels/AudioMixerPanel.h"
 #include "Panels/SubModulesPanel.h"
 #include "Panels/ECSDebugPanel.h"
 #include "Panels/AboutPanel.h"
@@ -79,10 +80,14 @@ namespace Vortex {
 		m_PanelManager->AddPanel<MaterialEditorPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<SceneRendererPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<AssetRegistryPanel>();
-		m_PanelManager->AddPanel<BuildSettingsPanel>(VX_BIND_CALLBACK(OnLaunchRuntime));
+		m_PanelManager->AddPanel<BuildSettingsPanel>(
+			VX_BIND_CALLBACK(BuildAndRunProject),
+			VX_BIND_CALLBACK(BuildProject)
+		);
 		m_PanelManager->AddPanel<SystemManagerPanel>();
 		m_PanelManager->AddPanel<ShaderEditorPanel>();
 		m_PanelManager->AddPanel<PerformancePanel>();
+		m_PanelManager->AddPanel<AudioMixerPanel>();
 		m_PanelManager->AddPanel<SubModulesPanel>();
 		m_PanelManager->AddPanel<ECSDebugPanel>();
 		m_PanelManager->AddPanel<ConsolePanel>()->IsOpen = true;
@@ -429,6 +434,7 @@ namespace Vortex {
 			m_PanelManager->OnGuiRender<BuildSettingsPanel>();
 			m_PanelManager->OnGuiRender<SystemManagerPanel>();
 			m_PanelManager->OnGuiRender<ShaderEditorPanel>();
+			m_PanelManager->OnGuiRender<AudioMixerPanel>();
 			m_PanelManager->OnGuiRender<SubModulesPanel>();
 			m_PanelManager->OnGuiRender<ECSDebugPanel>();
 			m_PanelManager->OnGuiRender<ConsolePanel>();
@@ -760,6 +766,8 @@ namespace Vortex {
 			
 			if (Gui::BeginMenu("Window"))
 			{
+				m_PanelManager->MainMenuBarItem<AudioMixerPanel>();
+				UI::Draw::Underline();
 				m_PanelManager->MainMenuBarItem<ConsolePanel>();
 				UI::Draw::Underline();
 				m_PanelManager->MainMenuBarItem<ContentBrowserPanel>();
@@ -1564,7 +1572,6 @@ namespace Vortex {
 
 	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& filepath)
 	{
-		SaveScene();
 		SaveProject();
 
 		std::string runtimeApplicationPath = Application::Get().GetRuntimeBinaryPath();
@@ -2701,6 +2708,8 @@ namespace Vortex {
 
 	void EditorLayer::SaveProject()
 	{
+		SaveScene();
+
 		if (m_CaptureFramebufferToDiskOnSave)
 		{
 			CaptureFramebufferImageToDisk();
@@ -2724,7 +2733,7 @@ namespace Vortex {
 
 	void EditorLayer::BuildAndRunProject()
 	{
-		// TODO build asset pack here
+		BuildProject();
 
 		OnLaunchRuntime(Project::GetProjectFilepath());
 	}

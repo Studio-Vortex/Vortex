@@ -8,6 +8,9 @@
 
 #include "Vortex/Project/Project.h"
 
+#include "Vortex/Audio/Audio.h"
+#include "Vortex/Audio/AudioSource.h"
+
 #include "Vortex/Scene/Components.h"
 #include "Vortex/Scene/Entity.h"
 
@@ -16,7 +19,6 @@
 #include "Vortex/Scripting/ScriptFieldInstance.h"
 #include "Vortex/Scripting/ScriptClass.h"
 #include "Vortex/Scripting/ScriptUtils.h"
-#include "Vortex/Audio/AudioSource.h"
 
 #include "Vortex/Physics/3D/Physics.h"
 
@@ -85,7 +87,7 @@ namespace Vortex {
 				s_Data->AppAssemblyFilewatcher.reset();
 
 				ScriptEngine::ReloadAssembly();
-				s_Data->AppAssemblyReloadSound->Play();
+				s_Data->AppAssemblyReloadSound->GetPlaybackDevice().Play();
 			});
 		}
 	}
@@ -124,8 +126,8 @@ namespace Vortex {
 		ScriptRegistry::RegisterComponents();
 
 		s_Data->EntityClass = SharedReference<ScriptClass>::Create("Vortex", "Entity", true);
-		s_Data->AppAssemblyReloadSound = AudioSource::Create(APP_ASSEMBLY_RELOAD_SOUND_PATH, true);
-		s_Data->AppAssemblyReloadSound->SetSpacialized(false);
+		s_Data->AppAssemblyReloadSound = AudioSource::Create(APP_ASSEMBLY_RELOAD_SOUND_PATH);
+		s_Data->AppAssemblyReloadSound->GetPlaybackDevice().GetSound().SetSpacialized(false);
 
 		SubModuleProperties moduleProps;
 		moduleProps.ModuleName = "Script-Engine";
@@ -139,6 +141,13 @@ namespace Vortex {
 	void ScriptEngine::Shutdown()
 	{
 		ShutdownMono();
+
+		// NOTE:
+		// We need to manually clean up this audio source because
+		// it is not attached to an entity in a scene, if it was,
+		// the scene would be responsible for cleaning it up
+		// as mentioned in AudioSource::~AudioSource()
+		s_Data->AppAssemblyReloadSound->GetPlaybackDevice().Shutdown(Audio::GetContext());
 
 		Application::Get().RemoveModule(s_Data->Module);
 		s_Data->Module.Shutdown();

@@ -11,9 +11,8 @@
 #include "Vortex/Scene/SceneRenderer.h"
 #include "Vortex/Scene/ScriptableEntity.h"
 
-#include "Vortex/Audio/AudioSystem.h"
+#include "Vortex/Audio/Audio.h"
 #include "Vortex/Audio/AudioSource.h"
-#include "Vortex/Audio/AudioListener.h"
 
 #include "Vortex/Animation/Animator.h"
 #include "Vortex/Animation/Animation.h"
@@ -111,7 +110,7 @@ namespace Vortex {
 	Scene::Scene(SharedReference<Framebuffer>& targetFramebuffer)
 		: m_TargetFramebuffer(targetFramebuffer)
 	{
-		SystemManager::SubmitContextScene(this);
+		SystemManager::OnContextSceneCreated(this);
 
 		m_Registry.on_construct<CameraComponent>().connect<&Scene::OnCameraConstruct>(this);
 		m_Registry.on_construct<StaticMeshRendererComponent>().connect<&Scene::OnStaticMeshConstruct>(this);
@@ -133,6 +132,28 @@ namespace Vortex {
 
 	Scene::~Scene()
 	{
+		SystemManager::OnContextSceneDestroyed();
+
+		// Shutdown all AudioSources
+		{
+			auto view = GetAllEntitiesWith<AudioSourceComponent>();
+
+			for (const auto& e : view)
+			{
+				Entity entity{ e, this };
+
+				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+				if (!AssetManager::IsHandleValid(asc.AudioHandle))
+					continue;
+
+				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+				if (!audioSource)
+					continue;
+
+				audioSource->GetPlaybackDevice().Shutdown(Audio::GetContext());
+			}
+		}
+
 		m_Registry.on_construct<CameraComponent>().disconnect();
 		m_Registry.on_construct<StaticMeshRendererComponent>().disconnect();
 
@@ -149,8 +170,6 @@ namespace Vortex {
 		
 		m_Registry.on_construct<AudioListenerComponent>().disconnect();
 		m_Registry.on_destroy<AudioListenerComponent>().disconnect();
-
-		SystemManager::RemoveContextScene(this);
 	}
 
 	Entity Scene::CreateEntity(const std::string& name, const std::string& marker)
@@ -331,8 +350,9 @@ namespace Vortex {
 
 		OnPhysicsSimulationStart();
 
-		SystemManager::SetAssetSystemEnabled<AudioSystem>(!muteAudio);
-		SystemManager::OnRuntimeStart(this);
+		// TODO: when we have AudioSources that play on
+		// start we need to stop them here if muteAudio is true
+		SystemManager::OnRuntimeStart();
 
 		CreateScriptInstancesRuntime();
 	}
@@ -346,7 +366,7 @@ namespace Vortex {
 		DestroyScriptInstancesRuntime();
 		ScriptEngine::OnRuntimeStop();
 
-		SystemManager::OnRuntimeStop(this);
+		SystemManager::OnRuntimeStop();
 
 		StopAnimatorsRuntime();
 		OnPhysicsSimulationStop();
@@ -385,13 +405,13 @@ namespace Vortex {
 		if (updateCurrentFrame)
 		{
 			// C++ Entity OnUpdate
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			GetAllEntitiesWith<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 			{
 				nsc.Instance->OnUpdate(delta);
 			});
 
 			// C# Entity OnUpdate
-			const auto view = m_Registry.view<ScriptComponent>();
+			auto view = GetAllEntitiesWith<ScriptComponent>();
 			for (const auto e : view)
 			{
 				Entity entity{ e, this };
@@ -446,8 +466,7 @@ namespace Vortex {
 		// Update Components
 		OnMeshUpdateRuntime();
 
-		SystemManager::GetAssetSystem<AudioSystem>()->OnUpdateRuntime(this);
-		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
+		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(delta);
 
 		if (updateCurrentFrame)
 		{
@@ -484,7 +503,7 @@ namespace Vortex {
 
 		// Update Components
 		OnMeshUpdateRuntime();
-		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
+		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(delta);
 	}
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera* camera)
@@ -517,7 +536,7 @@ namespace Vortex {
 
 		// Update Components
 		OnMeshUpdateRuntime();
-		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
+		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(delta);
 	}
 
 	void Scene::SubmitToPostUpdateQueue(const std::function<void()>& func)
@@ -550,7 +569,7 @@ namespace Vortex {
 		if (!m_IsRunning)
 			return;
 
-		auto view = m_Registry.view<ScriptComponent>();
+		auto view = GetAllEntitiesWith<ScriptComponent>();
 
 		for (const auto e : view)
 		{
@@ -568,13 +587,36 @@ namespace Vortex {
 
 		m_IsPaused = paused;
 
-		if (m_IsPaused)
+		switch (m_IsPaused)
 		{
-			SystemManager::OnRuntimeScenePaused(this);
+			case true:  SystemManager::OnRuntimeScenePaused();  break;
+			case false: SystemManager::OnRuntimeSceneResumed(); break;
 		}
-		else
+
+		// Pause/Unpause AudioSources
 		{
-			SystemManager::OnRuntimeSceneResumed(this);
+			auto view = GetAllEntitiesWith<AudioSourceComponent>();
+
+			for (const auto& e : view)
+			{
+				Entity entity{ e, this };
+
+				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+				if (!AssetManager::IsHandleValid(asc.AudioHandle))
+					continue;
+
+				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+				if (!audioSource)
+					continue;
+
+				Wave::PlaybackDevice device = audioSource->GetPlaybackDevice();
+
+				switch (m_IsPaused)
+				{
+					case true:  device.Pause(); continue;
+					case false: device.Play();  continue;
+				}
+			}
 		}
 	}
 
@@ -589,7 +631,7 @@ namespace Vortex {
 		m_ViewportHeight = height;
 
 		// Resize non-FixedAspectRatio cameras
-		auto view = m_Registry.view<CameraComponent>();
+		auto view = GetAllEntitiesWith<CameraComponent>();
 
 		for (const auto entity : view)
 		{
@@ -720,7 +762,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		auto view = m_Registry.view<CameraComponent>();
+		auto view = GetAllEntitiesWith<CameraComponent>();
 
 		for (const auto entity : view)
 		{
@@ -737,7 +779,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		auto view = m_Registry.view<LightSourceComponent>();
+		auto view = GetAllEntitiesWith<LightSourceComponent>();
 
 		for (const auto entity : view)
 		{
@@ -815,7 +857,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		auto view = m_Registry.view<TagComponent>();
+		auto view = GetAllEntitiesWith<TagComponent>();
 
 		for (const auto entity : view)
 		{
@@ -972,7 +1014,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		return first.IsAncesterOf(second) || second.IsAncesterOf(second);
+		return first.IsAncesterOf(second) || second.IsAncesterOf(first);
 	}
 
 	void Scene::SortEntities()
@@ -989,14 +1031,10 @@ namespace Vortex {
 
 	void Scene::SetSceneCameraViewportSize()
 	{
-		auto view = GetAllEntitiesWith<CameraComponent>();
-
-		for (const auto e : view)
+		if (Entity primaryCamera = GetPrimaryCameraEntity())
 		{
-			Entity entity{ e, this };
-			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			CameraComponent& cameraComponent = primaryCamera.GetComponent<CameraComponent>();
 			SceneCamera& sceneCamera = cameraComponent.Camera;
-
 			sceneCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
 	}
@@ -1009,7 +1047,7 @@ namespace Vortex {
 		{
 			ScriptEngine::OnRuntimeStart(this);
 
-			auto view = m_Registry.view<ScriptComponent>();
+			auto view = GetAllEntitiesWith<ScriptComponent>();
 
 			for (const auto e : view)
 			{
@@ -1032,7 +1070,7 @@ namespace Vortex {
 
 		// C++ Entity OnCreate
 		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			GetAllEntitiesWith<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 			{
 				nsc.Instance = nsc.InstantiateScript();
 				nsc.Instance->m_Entity = Entity{ entity, this };
@@ -1045,7 +1083,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		m_Registry.view<ScriptComponent>().each([=](auto entityID, auto& scriptComponent)
+		GetAllEntitiesWith<ScriptComponent>().each([=](auto entityID, auto& scriptComponent)
 		{
 			Entity entity{ entityID, this };
 			ScriptEngine::OnDestroyEntity(entity);
@@ -1056,7 +1094,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		auto view = m_Registry.view<TransformComponent, AnimatorComponent>();
+		auto view = GetAllEntitiesWith<TransformComponent, AnimatorComponent>();
 
 		for (const auto e : view)
 		{
@@ -1075,7 +1113,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		{
-			auto view = m_Registry.view<MeshRendererComponent>();
+			auto view = GetAllEntitiesWith<MeshRendererComponent>();
 
 			for (const auto e : view)
 			{
@@ -1095,7 +1133,7 @@ namespace Vortex {
 		}
 
 		{
-			auto view = m_Registry.view<StaticMeshRendererComponent>();
+			auto view = GetAllEntitiesWith<StaticMeshRendererComponent>();
 
 			for (const auto e : view)
 			{
@@ -1121,7 +1159,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		auto view = m_Registry.view<AnimatorComponent, AnimationComponent, MeshRendererComponent>();
+		auto view = GetAllEntitiesWith<AnimatorComponent, AnimationComponent, MeshRendererComponent>();
 
 		for (const auto e : view)
 		{
@@ -1163,7 +1201,7 @@ namespace Vortex {
 
 		if (staticMeshComponent.Type != MeshType::Custom)
 		{
-			DefaultMeshes::StaticMeshes staticMeshType = (DefaultMeshes::StaticMeshes)staticMeshComponent.Type;
+			DefaultMesh::StaticMeshType staticMeshType = (DefaultMesh::StaticMeshType)staticMeshComponent.Type;
 
 			staticMeshComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(staticMeshType);
 
@@ -1182,13 +1220,13 @@ namespace Vortex {
 		Entity entity = { e, this };
 		const ParticleEmitterComponent& pmc = entity.GetComponent<ParticleEmitterComponent>();
 		if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
-			SystemManager::GetAssetSystem<ParticleSystem>()->CreateAsset(entity, this);
+			SystemManager::GetAssetSystem<ParticleSystem>()->CreateAsset(entity);
 	}
 
 	void Scene::OnParticleEmitterDestruct(entt::registry& registry, entt::entity e)
 	{
 		Entity entity = { e, this };
-		SystemManager::GetAssetSystem<ParticleSystem>()->DestroyAsset(entity, this);
+		SystemManager::GetAssetSystem<ParticleSystem>()->DestroyAsset(entity);
 	}
 
 	void Scene::OnTextMeshConstruct(entt::registry& registry, entt::entity e)
@@ -1240,15 +1278,17 @@ namespace Vortex {
 	void Scene::OnAudioSourceConstruct(entt::registry& registry, entt::entity e)
 	{
 		Entity entity = { e, this };
-		const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+		AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 		if (!AssetManager::IsHandleValid(asc.AudioHandle))
-			SystemManager::GetAssetSystem<AudioSystem>()->CreateAsset(entity, this);
+		{
+			asc.AudioHandle = AssetManager::CreateMemoryOnlyAsset<AudioSource>();
+		}
 	}
 
 	void Scene::OnAudioSourceDestruct(entt::registry& registry, entt::entity e)
 	{
 		Entity entity = { e, this };
-		SystemManager::GetAssetSystem<AudioSystem>()->DestroyAsset(entity, this);
+		// TODO
 	}
 
 	void Scene::OnAudioListenerConstruct(entt::registry& registry, entt::entity e)
@@ -1256,13 +1296,15 @@ namespace Vortex {
 		Entity entity = { e, this };
 		const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
 		if (!AssetManager::IsHandleValid(alc.ListenerHandle))
-			SystemManager::GetAssetSystem<AudioSystem>()->CreateAudioListener(entity, this);
+		{
+			// TODO
+		}
 	}
 
 	void Scene::OnAudioListenerDestruct(entt::registry& registry, entt::entity e)
 	{
 		Entity entity = { e, this };
-		SystemManager::GetAssetSystem<AudioSystem>()->DestroyAudioListener(entity, this);
+		// TODO
 	}
 
 	void Scene::SubmitSceneToBuild(const std::string& sceneFilePath)

@@ -23,6 +23,7 @@ namespace Vortex {
 		SystemManager,
 		ShaderEditor,
 		Performance,
+		AudioMixer,
 		SubModules,
 		ECSDebug,
 		Console,

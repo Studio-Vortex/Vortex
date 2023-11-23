@@ -281,7 +281,7 @@ public class Untitled : Entity
 
 			m_CurrentDirectory = FileSystem::GetParentDirectory(m_CurrentDirectory);
 		}
-		UI::SetTooltip("back");
+		UI::SetTooltip("Back");
 		Gui::EndDisabled();
 
 		Gui::SameLine();
@@ -601,52 +601,63 @@ public class Untitled : Entity
 
 		switch (assetType)
 		{
-			case Vortex::AssetType::MeshAsset:            FindMeshIcon(extension, itemIcon); break;
-			case Vortex::AssetType::FontAsset:            itemIcon = EditorResources::FontIcon; break;
-			case Vortex::AssetType::AudioAsset:           itemIcon = EditorResources::AudioFileIcon; break;
-			case Vortex::AssetType::SceneAsset:           itemIcon = EditorResources::SceneIcon; break;
-			case Vortex::AssetType::PrefabAsset:          break;
-			case Vortex::AssetType::ScriptAsset:          itemIcon = EditorResources::CodeFileIcon; break;
-			case Vortex::AssetType::TextureAsset:         FindTextureFromAssetManager(currentItemPath, itemIcon); break;
-			case Vortex::AssetType::MaterialAsset:        break;
-			case Vortex::AssetType::AnimatorAsset:        break;
-			case Vortex::AssetType::AnimationAsset:       break;
-			case Vortex::AssetType::StaticMeshAsset:      FindMeshIcon(extension, itemIcon); break;
-			case Vortex::AssetType::EnvironmentAsset:     FindEnvironmentMapFromAssetManager(currentItemPath, itemIcon); break;
-			case Vortex::AssetType::PhysicsMaterialAsset: break;
+			case AssetType::MeshAsset:            itemIcon = FindMeshIcon(extension);                             break;
+			case AssetType::FontAsset:            itemIcon = EditorResources::FontIcon;                           break;
+			case AssetType::AudioAsset:           itemIcon = EditorResources::AudioFileIcon;                      break;
+			case AssetType::SceneAsset:           itemIcon = EditorResources::SceneIcon;                          break;
+			case AssetType::PrefabAsset:          break;
+			case AssetType::ScriptAsset:          itemIcon = EditorResources::CodeFileIcon;                       break;
+			case AssetType::TextureAsset:         itemIcon = FindTextureFromAssetManager(currentItemPath);        break;
+			case AssetType::MaterialAsset:        break;
+			case AssetType::AnimatorAsset:        break;
+			case AssetType::AnimationAsset:       break;
+			case AssetType::StaticMeshAsset:      itemIcon = FindMeshIcon(extension);                             break;
+			case AssetType::EnvironmentAsset:     itemIcon = FindEnvironmentMapFromAssetManager(currentItemPath); break;
+			case AssetType::PhysicsMaterialAsset: break;
 		}
 
 		// This means we either haven't implemented an Icon for this extension or it's just a random extension
-		if (!itemIcon)
+		if (itemIcon == nullptr)
+		{
 			itemIcon = EditorResources::FileIcon;
+		}
 
 		return itemIcon;
 	}
 
-	void ContentBrowserPanel::FindTextureFromAssetManager(const std::filesystem::path& currentItemPath, SharedReference<Texture2D>& itemIcon)
+	SharedReference<Texture2D> ContentBrowserPanel::FindTextureFromAssetManager(const std::filesystem::path& currentItemPath)
 	{
 		if (SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentItemPath))
 		{
 			VX_CORE_ASSERT(asset.Is<Texture2D>(), "Invalid Texture!");
-			itemIcon = asset.As<Texture2D>();
+			return asset.As<Texture2D>();
 		}
+
+		VX_CORE_ASSERT(false, "Unknown texture!");
+		return nullptr;
 	}
 
-	void ContentBrowserPanel::FindEnvironmentMapFromAssetManager(const std::filesystem::path& currentItemPath, SharedReference<Texture2D>& itemIcon)
+	SharedReference<Texture2D> ContentBrowserPanel::FindEnvironmentMapFromAssetManager(const std::filesystem::path& currentItemPath)
 	{
 		if (SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentItemPath))
 		{
 			VX_CORE_ASSERT(asset.Is<Skybox>(), "Invalid Environment!");
-			itemIcon = asset.As<Skybox>()->GetEnvironmentMap();
+			return asset.As<Skybox>()->GetEnvironmentMap();
 		}
+
+		VX_CORE_ASSERT(false, "Unknown environment map!");
+		return nullptr;
 	}
 
-	void ContentBrowserPanel::FindMeshIcon(const std::filesystem::path& extension, SharedReference<Texture2D>& itemIcon)
+	SharedReference<Texture2D> ContentBrowserPanel::FindMeshIcon(const std::filesystem::path& extension)
 	{
 		if (extension == ".obj")
-			itemIcon = EditorResources::OBJIcon;
+			return EditorResources::OBJIcon;
 		else if (extension == ".fbx")
-			itemIcon = EditorResources::FBXIcon;
+			return EditorResources::FBXIcon;
+
+		VX_CORE_ASSERT(false, "Unknown extension!");
+		return nullptr;
 	}
 
 }

@@ -152,7 +152,7 @@ namespace Vortex {
 		}
 	}
 
-	void MaterialEditorPanel::ParameterCallback(SharedReference<Material>& material, uint32_t materialIndex)
+	void MaterialEditorPanel::ParameterCallback(SharedReference<Material> material, uint32_t materialIndex)
 	{
 		switch (materialIndex)
 		{
@@ -207,7 +207,7 @@ namespace Vortex {
 		}
 	}
 
-	SharedReference<Texture2D> MaterialEditorPanel::GetMaterialTexture(const SharedReference<Material>& material, uint32_t index)
+	SharedReference<Texture2D> MaterialEditorPanel::GetMaterialTexture(SharedReference<Material> material, uint32_t index)
 	{
 		VX_CORE_ASSERT(index <= 6, "Index out of bounds!");
 
@@ -234,7 +234,7 @@ namespace Vortex {
 		return texture;
 	}
 
-	void MaterialEditorPanel::SetMaterialTexture(SharedReference<Material>& material, AssetHandle textureHandle, uint32_t index)
+	void MaterialEditorPanel::SetMaterialTexture(SharedReference<Material> material, AssetHandle textureHandle, uint32_t index)
 	{
 		VX_CORE_ASSERT(index <= 6, "Index out of bounds!");
 
@@ -250,7 +250,7 @@ namespace Vortex {
 		}
 	}
 
-	void MaterialEditorPanel::RenderMaterialFlags(SharedReference<Material>& material)
+	void MaterialEditorPanel::RenderMaterialFlags(SharedReference<Material> material)
 	{
 		static const char* displayNames[] = { "No Depth Test" };
 		static MaterialFlag flags[] = { MaterialFlag::NoDepthTest };
@@ -265,7 +265,7 @@ namespace Vortex {
 		}
 	}
 
-	void MaterialEditorPanel::RenderMaterialProperties(SharedReference<Material>& material)
+	void MaterialEditorPanel::RenderMaterialProperties(SharedReference<Material> material)
 	{
 		Math::vec2 uv = material->GetUV();
 		if (UI::Property("UV", uv, 0.05f))
@@ -295,7 +295,7 @@ namespace Vortex {
 		return -1;
 	}
 
-	void MaterialEditorPanel::RenderMaterialTexturesAndProperties(SharedReference<Material>& material, MaterialParameterCallbackFunc parameterCallback)
+	void MaterialEditorPanel::RenderMaterialTexturesAndProperties(SharedReference<Material> material, MaterialParameterCallbackFunc parameterCallback)
 	{
 		static const char* displayNames[] =
 		{

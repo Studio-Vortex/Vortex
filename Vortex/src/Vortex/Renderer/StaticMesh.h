@@ -113,6 +113,9 @@ namespace Vortex {
 		Math::AABB m_BoundingBox;
 
 		bool m_IsLoaded = false;
+
+	private:
+		friend class DefaultMesh;
 	};
 
 }

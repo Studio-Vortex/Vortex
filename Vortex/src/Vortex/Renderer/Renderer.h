@@ -6,22 +6,27 @@
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Components.h"
 
-#include "Vortex/Renderer/Camera.h"
 #include "Vortex/Renderer/Shader.h"
-#include "Vortex/Renderer/Skybox.h"
-#include "Vortex/Renderer/Mesh.h"
-#include "Vortex/Renderer/StaticMesh.h"
-#include "Vortex/Renderer/Material.h"
-#include "Vortex/Animation/Animator.h"
+#include "Vortex/Renderer/Camera.h"
 #include "Vortex/Renderer/RendererAPI.h"
-#include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Renderer/RenderCommand.h"
 
-#include "Vortex/Editor/EditorCamera.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include <vector>
 
 namespace Vortex {
+
+	class Texture2D;
+	class Skybox;
+	class Mesh;
+	class StaticMesh;
+	class Material;
+	class Framebuffer;
+
+	class Animator;
+
+	class EditorCamera;
 
 	struct VORTEX_API SceneLightDescription
 	{
