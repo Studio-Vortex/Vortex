@@ -23,6 +23,7 @@ namespace Vortex {
 				case EditorPanelType::SystemManager:         return "System Manager";
 				case EditorPanelType::ShaderEditor:          return "Shader Editor";
 				case EditorPanelType::Performance:           return "Performance";
+				case EditorPanelType::AudioMixer:            return "Audio Mixer";
 				case EditorPanelType::SubModules:            return "Sub Modules";
 				case EditorPanelType::ECSDebug:              return "ECS Registry View";
 				case EditorPanelType::Console:               return "Console";
