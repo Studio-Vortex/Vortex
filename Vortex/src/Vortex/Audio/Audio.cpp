@@ -26,9 +26,11 @@ namespace Vortex {
 		s_Data->Context = Wave::CreateContext();
 
 		Wave::ContextSettings settings;
+#ifdef VX_DEBUG
 		settings.EnumerateDevices = true;
 		settings.EnableDebugLogging = true;
 		settings.LogCallback = AudioLogger::DebugLogCallback;
+#endif
 		settings.pUserData = (void*)s_Data->Context.get();
 		
 		Wave::ContextResult result = s_Data->Context->Init(settings);
