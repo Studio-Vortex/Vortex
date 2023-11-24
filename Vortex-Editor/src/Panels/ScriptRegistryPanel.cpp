@@ -15,7 +15,7 @@ namespace Vortex {
 
 		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
-		std::vector<MonoAssemblyTypeInfo> coreAssemblyTypeInfo = ScriptEngine::GetCoreAssemblyTypeInfo();
+		static std::vector<MonoAssemblyTypeInfo> coreAssemblyTypeInfo = ScriptEngine::GetCoreAssemblyTypeInfo();
 
 		Gui::PushFont(boldFont);
 		Gui::Text("Core Assembly Classes: %u", (uint32_t)coreAssemblyTypeInfo.size());
