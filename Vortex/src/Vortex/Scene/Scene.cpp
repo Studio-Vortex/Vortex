@@ -52,6 +52,27 @@ namespace Vortex {
 
 					const auto& srcComponent = src.get<TComponent>(srcEntity);
 					dst.emplace_or_replace<TComponent>(dstEntity, srcComponent);
+
+					// NOTE: when meshes are copied over after hitting play,
+					// the material values are not also set meaning the material handle wasn't set properly,
+					// or the mesh could possibly have another random modified state of the material.
+					// Either case this needs to be fixed.
+
+					/*if (src.HasComponent<StaticMeshRendererComponent>())
+					{
+						const auto& srcMesh = src.GetComponent<StaticMeshRendererComponent>();
+						auto& dstMesh = dst.GetComponent<StaticMeshRendererComponent>();
+
+						uint32_t materialCount = srcMesh.Materials->GetMaterialCount();
+						for (uint32_t i = 0; i < materialCount; i++)
+						{
+							AssetHandle materialHandle = srcMesh.Materials->GetMaterial(i);
+							if (!AssetManager::IsHandleValid(materialHandle))
+								continue;
+
+							dstMesh.Materials->SetMaterial(i, materialHandle);
+						}
+					}*/
 				}
 			}(), ...);
 		}
@@ -73,27 +94,6 @@ namespace Vortex {
 				{
 					dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
 				}
-
-				// NOTE: when meshes are copied over after hitting play,
-				// the material values are not also set meaning the material handle wasn't set properly,
-				// or the mesh could possibly have another random modified state of the material.
-				// Either case this needs to be fixed.
-
-				/*if (src.HasComponent<StaticMeshRendererComponent>())
-				{
-					const auto& srcMesh = src.GetComponent<StaticMeshRendererComponent>();
-					auto& dstMesh = dst.GetComponent<StaticMeshRendererComponent>();
-
-					uint32_t materialCount = srcMesh.Materials->GetMaterialCount();
-					for (uint32_t i = 0; i < materialCount; i++)
-					{
-						AssetHandle materialHandle = srcMesh.Materials->GetMaterial(i);
-						if (!AssetManager::IsHandleValid(materialHandle))
-							continue;
-
-						dstMesh.Materials->SetMaterial(i, materialHandle);
-					}
-				}*/
 			}(), ...);
 		}
 
@@ -132,27 +132,9 @@ namespace Vortex {
 
 	Scene::~Scene()
 	{
-		SystemManager::OnContextSceneDestroyed();
+		SystemManager::OnContextSceneDestroyed(this);
 
-		// Shutdown all AudioSources
-		{
-			auto view = GetAllEntitiesWith<AudioSourceComponent>();
-
-			for (const auto& e : view)
-			{
-				Entity entity{ e, this };
-
-				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-				if (!AssetManager::IsHandleValid(asc.AudioHandle))
-					continue;
-
-				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
-				if (!audioSource)
-					continue;
-
-				audioSource->GetPlaybackDevice().Shutdown(Audio::GetContext());
-			}
-		}
+		//DestroyAudioSources();
 
 		m_Registry.on_construct<CameraComponent>().disconnect();
 		m_Registry.on_construct<StaticMeshRendererComponent>().disconnect();
@@ -352,7 +334,7 @@ namespace Vortex {
 
 		// TODO: when we have AudioSources that play on
 		// start we need to stop them here if muteAudio is true
-		SystemManager::OnRuntimeStart();
+		SystemManager::OnRuntimeStart(this);
 
 		CreateScriptInstancesRuntime();
 	}
@@ -366,7 +348,7 @@ namespace Vortex {
 		DestroyScriptInstancesRuntime();
 		ScriptEngine::OnRuntimeStop();
 
-		SystemManager::OnRuntimeStop();
+		SystemManager::OnRuntimeStop(this);
 
 		StopAnimatorsRuntime();
 		OnPhysicsSimulationStop();
@@ -466,7 +448,7 @@ namespace Vortex {
 		// Update Components
 		OnMeshUpdateRuntime();
 
-		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(delta);
+		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
 
 		if (updateCurrentFrame)
 		{
@@ -503,7 +485,7 @@ namespace Vortex {
 
 		// Update Components
 		OnMeshUpdateRuntime();
-		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(delta);
+		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
 	}
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera* camera)
@@ -536,7 +518,7 @@ namespace Vortex {
 
 		// Update Components
 		OnMeshUpdateRuntime();
-		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(delta);
+		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
 	}
 
 	void Scene::SubmitToPostUpdateQueue(const std::function<void()>& func)
@@ -589,34 +571,8 @@ namespace Vortex {
 
 		switch (m_IsPaused)
 		{
-			case true:  SystemManager::OnRuntimeScenePaused();  break;
-			case false: SystemManager::OnRuntimeSceneResumed(); break;
-		}
-
-		// Pause/Unpause AudioSources
-		{
-			auto view = GetAllEntitiesWith<AudioSourceComponent>();
-
-			for (const auto& e : view)
-			{
-				Entity entity{ e, this };
-
-				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-				if (!AssetManager::IsHandleValid(asc.AudioHandle))
-					continue;
-
-				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
-				if (!audioSource)
-					continue;
-
-				Wave::PlaybackDevice device = audioSource->GetPlaybackDevice();
-
-				switch (m_IsPaused)
-				{
-					case true:  device.Pause(); continue;
-					case false: device.Play();  continue;
-				}
-			}
+			case true:  SystemManager::OnRuntimeScenePaused(this);  break;
+			case false: SystemManager::OnRuntimeSceneResumed(this); break;
 		}
 	}
 
@@ -1184,6 +1140,8 @@ namespace Vortex {
 
 	void Scene::OnCameraConstruct(entt::registry& registry, entt::entity e)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Entity entity = { e, this };
 		CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
 
@@ -1196,6 +1154,8 @@ namespace Vortex {
 
 	void Scene::OnStaticMeshConstruct(entt::registry& registry, entt::entity e)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Entity entity = { e, this };
 		StaticMeshRendererComponent& staticMeshComponent = entity.GetComponent<StaticMeshRendererComponent>();
 
@@ -1217,6 +1177,8 @@ namespace Vortex {
 
 	void Scene::OnParticleEmitterConstruct(entt::registry& registry, entt::entity e)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Entity entity = { e, this };
 		const ParticleEmitterComponent& pmc = entity.GetComponent<ParticleEmitterComponent>();
 		if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
@@ -1225,12 +1187,16 @@ namespace Vortex {
 
 	void Scene::OnParticleEmitterDestruct(entt::registry& registry, entt::entity e)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Entity entity = { e, this };
 		SystemManager::GetAssetSystem<ParticleSystem>()->DestroyAsset(entity);
 	}
 
 	void Scene::OnTextMeshConstruct(entt::registry& registry, entt::entity e)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Entity entity = { e, this };
 		TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
 
@@ -1242,6 +1208,8 @@ namespace Vortex {
 
 	void Scene::OnAnimatorConstruct(entt::registry& registry, entt::entity e)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Entity entity = { e, this };
 		AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
 
@@ -1254,6 +1222,8 @@ namespace Vortex {
 
 	void Scene::OnAnimationConstruct(entt::registry& registry, entt::entity e)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Entity entity = { e, this };
 		const AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
 
@@ -1277,8 +1247,11 @@ namespace Vortex {
 
 	void Scene::OnAudioSourceConstruct(entt::registry& registry, entt::entity e)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Entity entity = { e, this };
 		AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+		
 		if (!AssetManager::IsHandleValid(asc.AudioHandle))
 		{
 			asc.AudioHandle = AssetManager::CreateMemoryOnlyAsset<AudioSource>();
@@ -1287,12 +1260,16 @@ namespace Vortex {
 
 	void Scene::OnAudioSourceDestruct(entt::registry& registry, entt::entity e)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Entity entity = { e, this };
 		// TODO
 	}
 
 	void Scene::OnAudioListenerConstruct(entt::registry& registry, entt::entity e)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Entity entity = { e, this };
 		const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
 		if (!AssetManager::IsHandleValid(alc.ListenerHandle))
@@ -1303,6 +1280,8 @@ namespace Vortex {
 
 	void Scene::OnAudioListenerDestruct(entt::registry& registry, entt::entity e)
 	{
+		VX_PROFILE_FUNCTION();
+
 		Entity entity = { e, this };
 		// TODO
 	}
@@ -1316,6 +1295,8 @@ namespace Vortex {
 
 	void Scene::RemoveIndexFromBuild(uint32_t buildIndex)
 	{
+		VX_PROFILE_FUNCTION();
+
 		BuildIndexMap& buildIndices = Project::GetScenesInBuild();
 
 		if (buildIndices.contains(buildIndex))
