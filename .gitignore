@@ -20,4 +20,6 @@ Vortex-Runtime/Resources/Logs
 *.sln
 *.json
 *.csproj
+Vortex-Editor/Resources/Scripts/Vortex-ScriptCore.dll
+Vortex-Editor/Resources/Scripts/Vortex-ScriptCore.pdb
 Testbed/imgui.ini
