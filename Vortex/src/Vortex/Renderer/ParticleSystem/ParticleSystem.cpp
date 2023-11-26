@@ -18,7 +18,6 @@ namespace Vortex {
 	struct ParticleSystemInternalData
 	{
 		using ParticleEmitterData = std::unordered_map<UUID, AssetHandle>;
-		Scene* ActiveScene = nullptr;
 		ParticleEmitterData ParticleData;
 
 		SubModule Module;
@@ -54,19 +53,18 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
 		
-		s_Data.ActiveScene = context;
 		s_Data.ParticleData.clear();
 	}
 
-	void ParticleSystem::OnContextSceneDestroyed()
+	void ParticleSystem::OnContextSceneDestroyed(Scene* context)
 	{
-		s_Data.ActiveScene = nullptr;
+		VX_CORE_ASSERT(context, "Invalid scene!");
+
 		s_Data.ParticleData.clear();
 	}
 
 	void ParticleSystem::CreateAsset(Entity& entity)
 	{
-		VX_CORE_ASSERT(s_Data.ActiveScene, "Invalid scene!");
 		VX_CORE_ASSERT(entity.HasComponent<ParticleEmitterComponent>(), "Entity doesn't have particle emitter component!");
 
 		std::string particleSystemDir = "Cache/ParticleSystem";
@@ -85,7 +83,6 @@ namespace Vortex {
 
 	void ParticleSystem::DestroyAsset(Entity& entity)
 	{
-		VX_CORE_ASSERT(s_Data.ActiveScene, "Invalid scene!");
 		VX_CORE_ASSERT(entity.HasComponent<ParticleEmitterComponent>(), "Entity doesn't have particle emitter component!");
 
 		VX_CORE_ASSERT(s_Data.ParticleData.contains(entity.GetUUID()), "Entity was not found in scene particle emitter map!");
@@ -93,17 +90,19 @@ namespace Vortex {
 		s_Data.ParticleData.erase(entity.GetUUID());
 	}
 
-	void ParticleSystem::OnRuntimeStart()
+	void ParticleSystem::OnRuntimeStart(Scene* context)
 	{
+		VX_CORE_ASSERT(context, "Invalid scene!");
 	}
 
-	void ParticleSystem::OnUpdateRuntime(TimeStep delta)
+	void ParticleSystem::OnUpdateRuntime(Scene* context, TimeStep delta)
 	{
 		VX_PROFILE_FUNCTION();
+		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		for (auto& [entityUUID, assetHandle] : s_Data.ParticleData)
 		{
-			Entity entity = s_Data.ActiveScene->TryGetEntityWithUUID(entityUUID);
+			Entity entity = context->TryGetEntityWithUUID(entityUUID);
 			if (!entity.IsActive())
 				continue;
 
@@ -116,7 +115,7 @@ namespace Vortex {
 				continue;
 
 			// Set the particle position to the entity's translation
-			Math::vec3 entityTranslation = s_Data.ActiveScene->GetWorldSpaceTransform(entity).Translation;
+			Math::vec3 entityTranslation = context->GetWorldSpaceTransform(entity).Translation;
 			particleEmitter->GetProperties().Position = entityTranslation;
 			particleEmitter->OnUpdate(delta);
 
@@ -127,16 +126,19 @@ namespace Vortex {
 		}
 	}
 
-	void ParticleSystem::OnRuntimeScenePaused()
+	void ParticleSystem::OnRuntimeScenePaused(Scene* context)
 	{
+		VX_CORE_ASSERT(context, "Invalid scene!");
 	}
 
-	void ParticleSystem::OnRuntimeSceneResumed()
+	void ParticleSystem::OnRuntimeSceneResumed(Scene* context)
 	{
+		VX_CORE_ASSERT(context, "Invalid scene!");
 	}
 
-	void ParticleSystem::OnRuntimeStop()
+	void ParticleSystem::OnRuntimeStop(Scene* context)
 	{
+		VX_CORE_ASSERT(context, "Invalid scene!");
 	}
 
 	void ParticleSystem::OnGuiRender()

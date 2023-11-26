@@ -1,12 +1,8 @@
 #include "vxpch.h"
 #include "Audio.h"
 
-#include "Vortex/Core/Application.h"
-
 #include "Vortex/Audio/AudioUtils.h"
 #include "Vortex/Audio/AudioLogger.h"
-
-#include "Vortex/Module/Module.h"
 
 #include <Wave/Wave.h>
 
@@ -15,15 +11,13 @@ namespace Vortex {
 	struct AudioInternalData
 	{
 		SharedRef<Wave::Context> Context;
-		SubModule Module;
 	};
 
-	static AudioInternalData* s_Data = nullptr;
+	static AudioInternalData s_Data;
 
 	void Audio::Init()
 	{
-		s_Data = new AudioInternalData();
-		s_Data->Context = Wave::CreateContext();
+		s_Data.Context = Wave::CreateContext();
 
 		Wave::ContextSettings settings;
 #ifdef VX_DEBUG
@@ -31,9 +25,9 @@ namespace Vortex {
 		settings.EnableDebugLogging = true;
 		settings.LogCallback = AudioLogger::DebugLogCallback;
 #endif
-		settings.pUserData = (void*)s_Data->Context.get();
+		settings.pUserData = (void*)s_Data.Context.get();
 		
-		Wave::ContextResult result = s_Data->Context->Init(settings);
+		Wave::ContextResult result = s_Data.Context->Init(settings);
 		VX_CORE_ASSERT(result.Success, "Failed to initialize Wave Audio!");
 
 		if (settings.EnumerateDevices)
@@ -59,32 +53,19 @@ namespace Vortex {
 		VX_CONSOLE_LOG_INFO("[Audio] Audio submodule initialized");
 #endif // VX_DEBUG
 
-		SubModuleProperties moduleProps;
-		moduleProps.ModuleName = "Audio";
-		moduleProps.APIVersion = Version(1, 3, 0);
-		moduleProps.RequiredModules = {};
-		s_Data->Module.Init(moduleProps);
-
-		Application::Get().AddModule(s_Data->Module);
 	}
 
 	void Audio::Shutdown()
 	{
-		const bool success = s_Data->Context->Shutdown();
+		const bool success = s_Data.Context->Shutdown();
 		VX_CORE_ASSERT(success, "Failed to shutdown Wave Audio!");
-		Wave::DestroyContext(s_Data->Context);
-
-		Application::Get().RemoveModule(s_Data->Module);
-		s_Data->Module.Shutdown();
-
-		delete s_Data;
-		s_Data = nullptr;
+		Wave::DestroyContext(s_Data.Context);
 	}
 
 	SharedRef<Wave::Context> Audio::GetContext()
 	{
-		VX_CORE_ASSERT(s_Data->Context != nullptr, "Audio submodule wasn't initialized!");
-		return s_Data->Context;
+		VX_CORE_ASSERT(s_Data.Context != nullptr, "Audio submodule wasn't initialized!");
+		return s_Data.Context;
 	}
 
 }
