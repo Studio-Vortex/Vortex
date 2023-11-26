@@ -555,11 +555,9 @@ namespace Vortex {
 		}
 	}
 
-	public class AudioSource: Component
+	public class AudioSource : Component
 	{
 		public AudioClip Clip => new AudioClip(this);
-
-		public bool IsPlaying => InternalCalls.AudioSourceComponent_GetIsPlaying(Entity.ID);
 
 		public Vector3 Position
 		{
@@ -608,10 +606,34 @@ namespace Vortex {
 			set => InternalCalls.AudioSourceComponent_SetMaxGain(Entity.ID, value);
 		}
 
-		public AttenuationModel Attenuation
+		public float DirectionalAttenuationFactor
+		{
+			get => InternalCalls.AudioSourceComponent_GetDirectionalAttenuationFactor(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetDirectionalAttenuationFactor(Entity.ID, value);
+		}
+
+		public AttenuationMode AttenuationModel
 		{
 			get => InternalCalls.AudioSourceComponent_GetAttenuationModel(Entity.ID);
 			set => InternalCalls.AudioSourceComponent_SetAttenuationModel(Entity.ID, value);
+		}
+
+		public float Pan
+		{
+			get => InternalCalls.AudioSourceComponent_GetPan(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetPan(Entity.ID, value);
+		}
+
+		public PanMode PanModel
+		{
+			get => InternalCalls.AudioSourceComponent_GetPanMode(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetPanMode(Entity.ID, value);
+		}
+
+		public PositioningMode PositioningModel
+		{
+			get => InternalCalls.AudioSourceComponent_GetPositioningMode(Entity.ID);
+			set => InternalCalls.AudioSourceComponent_SetPositioningMode(Entity.ID, value);
 		}
 
 		public float Falloff
@@ -656,6 +678,15 @@ namespace Vortex {
 			set => InternalCalls.AudioSourceComponent_SetPlayOnStart(Entity.ID, value);
 		}
 
+		public Vector3 DirectionToListener
+		{
+			get
+			{
+				InternalCalls.AudioSourceComponent_GetDirectionToListener(Entity.ID, out Vector3 result);
+				return result;
+			}
+		}
+
 		public bool IsSpacialized
 		{
 			get => InternalCalls.AudioSourceComponent_GetIsSpacialized(Entity.ID);
@@ -668,10 +699,70 @@ namespace Vortex {
 			set => InternalCalls.AudioSourceComponent_SetIsLooping(Entity.ID, value);
 		}
 
+		public float CurrentFadeVolume => InternalCalls.AudioSourceComponent_GetCurrentFadeVolume(Entity.ID);
+
+		public bool IsPlaying => InternalCalls.AudioSourceComponent_GetIsPlaying(Entity.ID);
+		public bool IsPaused => InternalCalls.AudioSourceComponent_GetIsPaused(Entity.ID);
+
 		public void Play() => InternalCalls.AudioSourceComponent_Play(Entity.ID);
+
+		public void SetStartTime(ulong delay, TimeMeasure measure = TimeMeasure.Seconds)
+		{
+			switch (measure)
+			{
+				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetStartTimeInMilliseconds(Entity.ID, delay);        break;
+				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetStartTimeInMilliseconds(Entity.ID, delay * 1000); break;
+				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetStartTimeInPCMFrames(Entity.ID, delay);           break;
+			}
+		}
+
+		public void SetFadeIn(float volumeStart, float volumeEnd, ulong length, TimeMeasure measure = TimeMeasure.Seconds)
+		{
+			switch (measure)
+			{
+				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetFadeInMilliseconds(Entity.ID, volumeStart, volumeEnd, length);        break;
+				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetFadeInMilliseconds(Entity.ID, volumeStart, volumeEnd, length * 1000); break;
+				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetFadeInPCMFrames(Entity.ID, volumeStart, volumeEnd, length);           break;
+			}
+		}
+		
+		public void SetFadeStart(float volumeStart, float volumeEnd, ulong length, ulong time, TimeMeasure measure = TimeMeasure.Seconds)
+		{
+			switch (measure)
+			{
+				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetFadeStartInMilliseconds(Entity.ID, volumeStart, volumeEnd, length, time);        break;
+				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetFadeStartInMilliseconds(Entity.ID, volumeStart, volumeEnd, length * 1000, time); break;
+				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetFadeStartInPCMFrames(Entity.ID, volumeStart, volumeEnd, length, time);           break;
+			}
+		}
+
 		public void PlayOneShot() => InternalCalls.AudioSourceComponent_PlayOneShot(Entity.ID);
+		
+		public void Pause() => InternalCalls.AudioSourceComponent_Pause(Entity.ID);
 		public void Restart() => InternalCalls.AudioSourceComponent_Restart(Entity.ID);
 		public void Stop() => InternalCalls.AudioSourceComponent_Stop(Entity.ID);
+
+		public void SetStopTime(ulong delay, TimeMeasure measure = TimeMeasure.Seconds)
+		{
+			switch (measure)
+			{
+				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetStopTimeInMilliseconds(Entity.ID, delay);        break;
+				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetStopTimeInMilliseconds(Entity.ID, delay * 1000); break;
+				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetStopTimeInMilliseconds(Entity.ID, delay);        break;
+			}
+		}
+
+		public void SetStopTimeWithFade(ulong stopTime, ulong fadeLength, TimeMeasure measure = TimeMeasure.Seconds)
+		{
+			switch (measure)
+			{
+				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(Entity.ID, stopTime, fadeLength); break;
+				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(Entity.ID, stopTime, fadeLength); break;
+				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetStopTimeWithFadeInPCMFrames(Entity.ID, stopTime, fadeLength);    break;
+			}
+		}
+
+		public bool Seek(ulong frameIndex) => InternalCalls.AudioSourceComponent_SeekToPCMFrame(Entity.ID, frameIndex);
 	}
 
 	public class AudioListener: Component

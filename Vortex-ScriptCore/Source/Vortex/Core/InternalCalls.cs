@@ -692,21 +692,6 @@ namespace Vortex {
 		#region AudioSource
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool AudioSourceComponent_GetIsPlaying(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void AudioSourceComponent_Play(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void AudioSourceComponent_PlayOneShot(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void AudioSourceComponent_Restart(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void AudioSourceComponent_Stop(ulong entityID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AudioSourceComponent_GetPosition(ulong entityID, out Vector3 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -737,10 +722,34 @@ namespace Vortex {
 		internal extern static void AudioSourceComponent_SetMaxGain(ulong entityID, float maxGain);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static AttenuationModel AudioSourceComponent_GetAttenuationModel(ulong entityID);
+		internal extern static float AudioSourceComponent_GetDirectionalAttenuationFactor(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void AudioSourceComponent_SetAttenuationModel(ulong entityID, AttenuationModel model);
+		internal extern static void AudioSourceComponent_SetDirectionalAttenuationFactor(ulong entityID, float factor);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static AttenuationMode AudioSourceComponent_GetAttenuationModel(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetAttenuationModel(ulong entityID, AttenuationMode mode);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetPan(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetPan(ulong entityID, float pan);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static PanMode AudioSourceComponent_GetPanMode(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetPanMode(ulong entityID, PanMode mode);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static PositioningMode AudioSourceComponent_GetPositioningMode(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetPositioningMode(ulong entityID, PositioningMode mode);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float AudioSourceComponent_GetFalloff(ulong entityID);
@@ -779,6 +788,9 @@ namespace Vortex {
 		internal extern static void AudioSourceComponent_SetVolume(ulong entityID, float volume);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_GetDirectionToListener(ulong entityID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool AudioSourceComponent_GetPlayOnStart(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -795,6 +807,72 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void AudioSourceComponent_SetIsLooping(ulong entityID, bool looping);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool AudioSourceComponent_GetIsPlaying(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool AudioSourceComponent_GetIsPaused(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong AudioSourceComponent_GetCursorInMilliseconds(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static uint AudioSourceComponent_GetPinnedListenerIndex(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetPinnedListenerIndex(ulong entityID, uint listenerIndex);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_Play(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetStartTimeInMilliseconds(ulong entityID, ulong millis);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetStartTimeInPCMFrames(ulong entityID, ulong frames);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetFadeInMilliseconds(ulong entityID, float volumeStart, float volumeEnd, ulong lengthInMillis);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetFadeStartInMilliseconds(ulong entityID, float volumeStart, float volumeEnd, ulong lengthInMillis, ulong absoluteGlobalTime);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetFadeInPCMFrames(ulong entityID, float volumeStart, float volumeEnd, ulong lengthInFrames);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetFadeStartInPCMFrames(ulong entityID, float volumeStart, float volumeEnd, ulong lengthInFrames, ulong absoluteGlobalTime);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float AudioSourceComponent_GetCurrentFadeVolume(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_PlayOneShot(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_Pause(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_Restart(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_Stop(ulong entityID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetStopTimeInMilliseconds(ulong entityID, ulong millis);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetStopTimeInPCMFrames(ulong entityID, ulong frames);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(ulong entityID, ulong stopTimeInMillis, ulong fadeLengthInMillis);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void AudioSourceComponent_SetStopTimeWithFadeInPCMFrames(ulong entityID, ulong stopTimeInFrames, ulong fadeLengthInFrames);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool AudioSourceComponent_SeekToPCMFrame(ulong entityID, ulong frameIndex);
 
 		#endregion
 

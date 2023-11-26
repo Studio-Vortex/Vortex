@@ -1,6 +1,6 @@
 ﻿namespace Vortex {
 
-	public enum AttenuationModel
+	public enum AttenuationMode
 	{
 		None = 0,
 		Inverse,
@@ -19,5 +19,13 @@
         Absolute = 0,
 		Relative,
     }
+
+	public enum TimeMeasure
+	{
+		None = 0,
+		Milliseconds,
+		Seconds,
+		PCMFrames,
+	}
 
 }
