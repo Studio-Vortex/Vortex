@@ -71,8 +71,6 @@ namespace Vortex {
 
 	void SystemManager::OnRuntimeStop()
 	{
-		VX_CORE_ASSERT(s_ContextScene, "Invalid scene!");
-
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
 			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "AssetType not found!");
