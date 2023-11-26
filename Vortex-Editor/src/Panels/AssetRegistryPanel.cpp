@@ -33,7 +33,8 @@ namespace Vortex {
 				VX_CONSOLE_LOG_INFO("All assets reloaded sucessfully");
 			}
 
-			UI::Draw::Underline();
+			RenderAssetTypeTable();
+
 			Gui::Spacing();
 
 			const bool searchedString = strlen(m_AssetSearchTextFilter.InputBuf) != 0;
@@ -70,6 +71,70 @@ namespace Vortex {
 			}
 
 			Gui::EndChild();
+		}
+	}
+
+	void AssetRegistryPanel::RenderAssetTypeTable()
+	{
+		if (Gui::BeginTable("Registry", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg, {}, 100))
+		{
+			Gui::TableNextColumn();
+			for (uint32_t i = 1; i < 5; i++)
+			{
+				std::string assetTypeStr = Utils::StringFromAssetType((AssetType)i);
+				ImVec2 buttonSize = ImVec2(Gui::GetColumnWidth(), 0);
+				if (Gui::Button(assetTypeStr.c_str(), buttonSize))
+				{
+					memset(m_AssetSearchTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_AssetSearchTextFilter.InputBuf));
+					VX_CORE_ASSERT(IM_ARRAYSIZE(m_AssetSearchTextFilter.InputBuf) > assetTypeStr.size(), "Asset type string is too long!");
+					memcpy(m_AssetSearchTextFilter.InputBuf, assetTypeStr.data(), assetTypeStr.size());
+					m_AssetSearchTextFilter.Build();
+				}
+			}
+
+			Gui::TableNextColumn();
+			for (uint32_t i = 5; i < 9; i++)
+			{
+				std::string assetTypeStr = Utils::StringFromAssetType((AssetType)i);
+				ImVec2 buttonSize = ImVec2(Gui::GetColumnWidth(), 0);
+				if (Gui::Button(assetTypeStr.c_str(), buttonSize))
+				{
+					memset(m_AssetSearchTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_AssetSearchTextFilter.InputBuf));
+					VX_CORE_ASSERT(IM_ARRAYSIZE(m_AssetSearchTextFilter.InputBuf) > assetTypeStr.size(), "Asset type string is too long!");
+					memcpy(m_AssetSearchTextFilter.InputBuf, assetTypeStr.data(), assetTypeStr.size());
+					m_AssetSearchTextFilter.Build();
+				}
+			}
+
+			Gui::TableNextColumn();
+			for (uint32_t i = 9; i < 13; i++)
+			{
+				std::string assetTypeStr = Utils::StringFromAssetType((AssetType)i);
+				ImVec2 buttonSize = ImVec2(Gui::GetColumnWidth(), 0);
+				if (Gui::Button(assetTypeStr.c_str(), buttonSize))
+				{
+					memset(m_AssetSearchTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_AssetSearchTextFilter.InputBuf));
+					VX_CORE_ASSERT(IM_ARRAYSIZE(m_AssetSearchTextFilter.InputBuf) > assetTypeStr.size(), "Asset type string is too long!");
+					memcpy(m_AssetSearchTextFilter.InputBuf, assetTypeStr.data(), assetTypeStr.size());
+					m_AssetSearchTextFilter.Build();
+				}
+			}
+
+			Gui::TableNextColumn();
+			for (uint32_t i = 13; i < 16; i++)
+			{
+				std::string assetTypeStr = Utils::StringFromAssetType((AssetType)i);
+				ImVec2 buttonSize = ImVec2(Gui::GetColumnWidth(), 0);
+				if (Gui::Button(assetTypeStr.c_str(), buttonSize))
+				{
+					memset(m_AssetSearchTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_AssetSearchTextFilter.InputBuf));
+					VX_CORE_ASSERT(IM_ARRAYSIZE(m_AssetSearchTextFilter.InputBuf) > assetTypeStr.size(), "Asset type string is too long!");
+					memcpy(m_AssetSearchTextFilter.InputBuf, assetTypeStr.data(), assetTypeStr.size());
+					m_AssetSearchTextFilter.Build();
+				}
+			}
+
+			Gui::EndTable();
 		}
 	}
 

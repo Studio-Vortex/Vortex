@@ -3667,20 +3667,68 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetMaxGain(maxGain);
         }
 
+		float AudioSourceComponent_GetDirectionalAttenuationFactor(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.DirectionalAttenuationFactor without a Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.DirectionalAttenuationFactor with an invalid asset handle!");
+				return 0.0f;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return 0.0f;
+
+			return audioSource->GetPlaybackDevice().GetSound().GetDirectionalAttenuationFactor();
+		}
+
+		void AudioSourceComponent_SetDirectionalAttenuationFactor(UUID entityUUID, float factor)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.DirectionalAttenuationFactor without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.DirectionalAttenuationFactor with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetDirectionalAttenuationFactor(factor);
+		}
+
         AttenuationModel AudioSourceComponent_GetAttenuationModel(UUID entityUUID)
         {
 			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Attenuation without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.AttenuationModel without a Audio Source!");
 				return AttenuationModel::None;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Attenuation with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.AttenuationModel with an invalid asset handle!");
 				return AttenuationModel::None;
 			}
 
@@ -3697,14 +3745,14 @@ namespace Vortex {
 
 			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Attenuation without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.AttenuationModel without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Attenuation with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.AttenuationModel with an invalid asset handle!");
 				return;
 			}
 
@@ -3714,6 +3762,150 @@ namespace Vortex {
 
 			audioSource->GetPlaybackDevice().GetSound().SetAttenuationModel(Utils::ToWaveAttenuationModel(model));
         }
+
+		float AudioSourceComponent_GetPan(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Pan without a Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Pan with an invalid asset handle!");
+				return 0.0f;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return 0.0f;
+
+			return audioSource->GetPlaybackDevice().GetSound().GetPan();
+		}
+
+		void AudioSourceComponent_SetPan(UUID entityUUID, float pan)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Pan without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Pan with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetPan(pan);
+		}
+
+		PanMode AudioSourceComponent_GetPanMode(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PanModel without a Audio Source!");
+				return PanMode::Balance;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PanModel with an invalid asset handle!");
+				return PanMode::Balance;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return PanMode::Balance;
+
+			return Utils::FromWavePanMode(audioSource->GetPlaybackDevice().GetSound().GetPanMode());
+		}
+
+		void AudioSourceComponent_SetPanMode(UUID entityUUID, PanMode mode)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PanModel without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PanModel with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetPanMode(Utils::ToWavePanMode(mode));
+		}
+
+		PositioningMode AudioSourceComponent_GetPositioningMode(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PositioningModel without a Audio Source!");
+				return PositioningMode::Absolute;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PositioningModel with an invalid asset handle!");
+				return PositioningMode::Absolute;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return PositioningMode::Absolute;
+
+			return Utils::FromWavePositioningMode(audioSource->GetPlaybackDevice().GetSound().GetPositioning());
+		}
+
+		void AudioSourceComponent_SetPositioningMode(UUID entityUUID, PositioningMode mode)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PositioningModel without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PositioningModel with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetPositioning(Utils::ToWavePositioningMode(mode));
+		}
 
         float AudioSourceComponent_GetFalloff(UUID entityUUID)
         {
@@ -4003,6 +4195,30 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetVolume(volume);
 		}
 
+		void AudioSourceComponent_GetDirectionToListener(UUID entityUUID, Math::vec3* outDirection)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.GetDirectionToListener without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.GetDirectionToListener with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			*outDirection = Utils::FromWaveVector(audioSource->GetPlaybackDevice().GetSound().GetDirectionToListener());
+		}
+
 		bool AudioSourceComponent_GetPlayOnStart(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
@@ -4174,6 +4390,103 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().IsPlaying();
 		}
 
+		bool AudioSourceComponent_GetIsPaused(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPaused without a Audio Source!");
+				return false;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPaused with an invalid asset handle!");
+				return false;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return false;
+
+			return audioSource->GetPlaybackDevice().GetSound().IsPaused();
+		}
+
+		uint64_t AudioSourceComponent_GetCursorInMilliseconds(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Cursor without a Audio Source!");
+				return 0;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Cursor with an invalid asset handle!");
+				return 0;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return 0;
+
+			float seconds = audioSource->GetPlaybackDevice().GetSound().GetCursorInSeconds();
+			return (uint64_t)(seconds * 1000);
+		}
+
+		uint32_t AudioSourceComponent_GetPinnedListenerIndex(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PinnedListenerIndex without a Audio Source!");
+				return 0;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PinnedListenerIndex with an invalid asset handle!");
+				return 0;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return 0;
+
+			return audioSource->GetPlaybackDevice().GetSound().GetPinnedListenerIndex();
+		}
+
+		void AudioSourceComponent_SetPinnedListenerIndex(UUID entityUUID, uint32_t listenerIndex)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PinnedListenerIndex without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PinnedListenerIndex with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetPinnedListenerIndex(listenerIndex);
+		}
+
 		void AudioSourceComponent_Play(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
@@ -4196,6 +4509,174 @@ namespace Vortex {
 				return;
 
 			audioSource->GetPlaybackDevice().Play();
+		}
+
+		void AudioSourceComponent_SetStartTimeInMilliseconds(UUID entityUUID, uint64_t millis)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStartTimeInMilliseconds without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStartTimeInMilliseconds with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetStartTimeInMilliseconds(millis);
+		}
+
+		void AudioSourceComponent_SetStartTimeInPCMFrames(UUID entityUUID, uint64_t frames)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStartTimeInPCMFrames without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStartTimeInPCMFrames with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetStartTimeInPCMFrames(frames);
+		}
+
+		void AudioSourceComponent_SetFadeInMilliseconds(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInMillis)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInMilliseconds without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInMilliseconds with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetFadeInMilliseconds(volumeStart, volumeEnd, lengthInMillis);
+		}
+
+		void AudioSourceComponent_SetFadeStartInMilliseconds(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInMillis, uint64_t absoluteGlobalTime)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeStartInMilliseconds without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeStartInMilliseconds with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetFadeStartInMilliseconds(volumeStart, volumeEnd, lengthInMillis, absoluteGlobalTime);
+		}
+
+		void AudioSourceComponent_SetFadeInPCMFrames(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInFrames)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInPCMFrames without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInPCMFrames with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetFadeInPCMFrames(volumeStart, volumeEnd, lengthInFrames);
+		}
+
+		void AudioSourceComponent_SetFadeStartInPCMFrames(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInFrames, uint64_t absoluteGlobalTime)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInPCMFrames without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInPCMFrames with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetFadeStartInPCMFrames(volumeStart, volumeEnd, lengthInFrames, absoluteGlobalTime);
+		}
+
+		float AudioSourceComponent_GetCurrentFadeVolume(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.GetCurrentFadeVolume without a Audio Source!");
+				return 0.0f;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.GetCurrentFadeVolume with an invalid asset handle!");
+				return 0.0f;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return 0.0f;
+
+			audioSource->GetPlaybackDevice().GetSound().GetCurrentFadeVolume();
 		}
 
 		void AudioSourceComponent_PlayOneShot(UUID entityUUID)
@@ -4221,6 +4702,30 @@ namespace Vortex {
 
 			// TODO: fix once Wave has PlayOneShot
 			//audioSource->PlayOneShot();
+		}
+
+		void AudioSourceComponent_Pause(UUID entityUUID)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Pause without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Pause with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().Pause();
 		}
 
 		void AudioSourceComponent_Restart(UUID entityUUID)
@@ -4269,6 +4774,126 @@ namespace Vortex {
 				return;
 
 			audioSource->GetPlaybackDevice().Stop();
+		}
+
+		void AudioSourceComponent_SetStopTimeInMilliseconds(UUID entityUUID, uint64_t millis)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeInMilliseconds without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeInMilliseconds with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetStopTimeInMilliseconds(millis);
+		}
+
+		void AudioSourceComponent_SetStopTimeInPCMFrames(UUID entityUUID, uint64_t frames)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeInPCMFrames without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeInPCMFrames with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetStopTimeInPCMFrames(frames);
+		}
+
+		void AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(UUID entityUUID, uint64_t stopTimeInMillis, uint64_t fadeLengthInMillis)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeWithFadeInMilliseconds without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeWithFadeInMilliseconds with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetStopTimeWithFadeInMilliseconds(stopTimeInMillis, fadeLengthInMillis);
+		}
+
+		void AudioSourceComponent_SetStopTimeWithFadeInPCMFrames(UUID entityUUID, uint64_t stopTimeInFrames, uint64_t fadeLengthInFrames)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeWithFadeInPCMFrames without a Audio Source!");
+				return;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeWithFadeInPCMFrames with an invalid asset handle!");
+				return;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
+
+			audioSource->GetPlaybackDevice().GetSound().SetStopTimeWithFadeInPCMFrames(stopTimeInFrames, fadeLengthInFrames);
+		}
+
+		bool AudioSourceComponent_SeekToPCMFrame(UUID entityUUID, uint64_t frameIndex)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<AudioSourceComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Seek without a Audio Source!");
+				return false;
+			}
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Seek with an invalid asset handle!");
+				return false;
+			}
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return false;
+
+			return audioSource->GetPlaybackDevice().GetSound().SeekToPCMFrame(frameIndex);
 		}
 
 #pragma endregion
@@ -8250,8 +8875,16 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetMinGain);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetMaxGain);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetMaxGain);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetDirectionalAttenuationFactor);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetDirectionalAttenuationFactor);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetAttenuationModel);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetAttenuationModel);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPan);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPan);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPanMode);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPanMode);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPositioningMode);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPositioningMode);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetFalloff);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetFalloff);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetMinDistance);
@@ -8264,6 +8897,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetDopplerFactor);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetVolume);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetVolume);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetDirectionToListener);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPlayOnStart);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPlayOnStart);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetIsSpacialized);
@@ -8271,10 +8905,27 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetIsLooping);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetIsLooping);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetIsPlaying);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetIsPaused);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetCursorInMilliseconds);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPinnedListenerIndex);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPinnedListenerIndex);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_Play);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetStartTimeInMilliseconds);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetStartTimeInPCMFrames);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetFadeInMilliseconds);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetFadeStartInMilliseconds);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetFadeInPCMFrames);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetFadeStartInPCMFrames);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetCurrentFadeVolume);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_PlayOneShot);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_Pause);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_Restart);
 		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_Stop);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetStopTimeInMilliseconds);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetStopTimeInPCMFrames);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetStopTimeWithFadeInMilliseconds);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetStopTimeWithFadeInPCMFrames);
+		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SeekToPCMFrame);
 
 		VX_REGISTER_INTERNAL_CALL(AudioClip_GetName);
 		VX_REGISTER_INTERNAL_CALL(AudioClip_GetLength);

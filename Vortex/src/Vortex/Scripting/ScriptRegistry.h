@@ -349,8 +349,16 @@ namespace Vortex {
 		void AudioSourceComponent_SetMinGain(UUID entityUUID, float minGain);
 		float AudioSourceComponent_GetMaxGain(UUID entityUUID);
 		void AudioSourceComponent_SetMaxGain(UUID entityUUID, float maxGain);
+		float AudioSourceComponent_GetDirectionalAttenuationFactor(UUID entityUUID);
+		void AudioSourceComponent_SetDirectionalAttenuationFactor(UUID entityUUID, float factor);
 		AttenuationModel AudioSourceComponent_GetAttenuationModel(UUID entityUUID);
 		void AudioSourceComponent_SetAttenuationModel(UUID entityUUID, AttenuationModel model);
+		float AudioSourceComponent_GetPan(UUID entityUUID);
+		void AudioSourceComponent_SetPan(UUID entityUUID, float pan);
+		PanMode AudioSourceComponent_GetPanMode(UUID entityUUID);
+		void AudioSourceComponent_SetPanMode(UUID entityUUID, PanMode mode);
+		PositioningMode AudioSourceComponent_GetPositioningMode(UUID entityUUID);
+		void AudioSourceComponent_SetPositioningMode(UUID entityUUID, PositioningMode mode);
 		float AudioSourceComponent_GetFalloff(UUID entityUUID);
 		void AudioSourceComponent_SetFalloff(UUID entityUUID, float falloff);
 		float AudioSourceComponent_GetMinDistance(UUID entityUUID);
@@ -363,6 +371,7 @@ namespace Vortex {
 		void AudioSourceComponent_SetDopplerFactor(UUID entityUUID, float dopplerFactor);
 		float AudioSourceComponent_GetVolume(UUID entityUUID);
 		void AudioSourceComponent_SetVolume(UUID entityUUID, float volume);
+		void AudioSourceComponent_GetDirectionToListener(UUID entityUUID, Math::vec3* outDirection);
 		bool AudioSourceComponent_GetPlayOnStart(UUID entityUUID);
 		void AudioSourceComponent_SetPlayOnStart(UUID entityUUID, bool playOnStart);
 		bool AudioSourceComponent_GetIsSpacialized(UUID entityUUID);
@@ -370,10 +379,27 @@ namespace Vortex {
 		bool AudioSourceComponent_GetIsLooping(UUID entityUUID);
 		void AudioSourceComponent_SetIsLooping(UUID entityUUID, bool loop);
 		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID);
+		bool AudioSourceComponent_GetIsPaused(UUID entityUUID);
+		uint64_t AudioSourceComponent_GetCursorInMilliseconds(UUID entityUUID);
+		uint32_t AudioSourceComponent_GetPinnedListenerIndex(UUID entityUUID);
+		void AudioSourceComponent_SetPinnedListenerIndex(UUID entityUUID, uint32_t listenerIndex);
 		void AudioSourceComponent_Play(UUID entityUUID);
+		void AudioSourceComponent_SetStartTimeInMilliseconds(UUID entityUUID, uint64_t millis);
+		void AudioSourceComponent_SetStartTimeInPCMFrames(UUID entityUUID, uint64_t frames);
+		void AudioSourceComponent_SetFadeInMilliseconds(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInMillis);
+		void AudioSourceComponent_SetFadeStartInMilliseconds(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInMillis, uint64_t absoluteGlobalTime);
+		void AudioSourceComponent_SetFadeInPCMFrames(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInFrames);
+		void AudioSourceComponent_SetFadeStartInPCMFrames(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInFrames, uint64_t absoluteGlobalTime);
+		float AudioSourceComponent_GetCurrentFadeVolume(UUID entityUUID);
 		void AudioSourceComponent_PlayOneShot(UUID entityUUID);
+		void AudioSourceComponent_Pause(UUID entityUUID);
 		void AudioSourceComponent_Restart(UUID entityUUID);
 		void AudioSourceComponent_Stop(UUID entityUUID);
+		void AudioSourceComponent_SetStopTimeInMilliseconds(UUID entityUUID, uint64_t millis);
+		void AudioSourceComponent_SetStopTimeInPCMFrames(UUID entityUUID, uint64_t frames);
+		void AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(UUID entityUUID, uint64_t stopTimeInMillis, uint64_t fadeLengthInMillis);
+		void AudioSourceComponent_SetStopTimeWithFadeInPCMFrames(UUID entityUUID, uint64_t stopTimeInFrames, uint64_t fadeLengthInFrames);
+		bool AudioSourceComponent_SeekToPCMFrame(UUID entityUUID, uint64_t frameIndex);
 
 #pragma endregion
 
