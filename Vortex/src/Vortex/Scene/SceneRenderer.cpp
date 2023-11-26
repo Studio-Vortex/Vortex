@@ -2,6 +2,7 @@
 #include "SceneRenderer.h"
 
 #include "Vortex/Asset/AssetManager.h"
+
 #include "Vortex/Project/Project.h"
 
 #include "Vortex/Scene/Scene.h"
@@ -11,9 +12,12 @@
 #include "Vortex/Animation/Animation.h"
 #include "Vortex/Animation/Animator.h"
 
+#include "Vortex/Renderer/Shader.h"
+#include "Vortex/Renderer/Skybox.h"
+#include "Vortex/Renderer/Texture.h"
+#include "Vortex/Renderer/Material.h"
 #include "Vortex/Renderer/Mesh.h"
 #include "Vortex/Renderer/StaticMesh.h"
-#include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Framebuffer.h"
 #include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
 

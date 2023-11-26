@@ -62,14 +62,41 @@ namespace Vortex {
 		void RecursiveEntitySearch(UUID topEntity, const EditorCamera* editorCamera, uint32_t& searchDepth);
 
 	private:
+		void TransformComponentOnGuiRender(TransformComponent& component, Entity entity);
+		void CameraComponentOnGuiRender(CameraComponent& component, Entity entity);
+		void SkyboxComponentOnGuiRender(SkyboxComponent& component, Entity entity);
+		void LightSourceComponentOnGuiRender(LightSourceComponent& component, Entity entity);
+		void MeshRendererComponentOnGuiRender(MeshRendererComponent& component, Entity entity);
+		void StaticMeshRendererComponentOnGuiRender(StaticMeshRendererComponent& component, Entity entity);
+		void SpriteRendererComponentOnGuiRender(SpriteRendererComponent& component, Entity entity);
+		void CircleRendererComponentOnGuiRender(CircleRendererComponent& component, Entity entity);
+		void ParticleEmitterComponentOnGuiRender(ParticleEmitterComponent& component, Entity entity);
+		void TextMeshComponentOnGuiRender(TextMeshComponent& component, Entity entity);
+		void AnimatorComponentOnGuiRender(AnimatorComponent& component, Entity entity);
+		void AnimationComponentOnGuiRender(AnimationComponent& component, Entity entity);
+		void AudioSourceComponentOnGuiRender(AudioSourceComponent& component, Entity entity);
+		void AudioListenerComponentOnGuiRender(AudioListenerComponent& component, Entity entity);
+		void RigidBodyComponentOnGuiRender(RigidBodyComponent& component, Entity entity);
+		void CharacterControllerComponentOnGuiRender(CharacterControllerComponent& component, Entity entity);
+		void FixedJointComponentOnGuiRender(FixedJointComponent& component, Entity entity);
+		void BoxColliderComponentOnGuiRender(BoxColliderComponent& component, Entity entity);
+		void SphereColliderComponentOnGuiRender(SphereColliderComponent& component, Entity entity);
+		void CapsuleColliderComponentOnGuiRender(CapsuleColliderComponent& component, Entity entity);
+		void MeshColliderComponentOnGuiRender(MeshColliderComponent& component, Entity entity);
+		void RigidBody2DComponentOnGuiRender(RigidBody2DComponent& component, Entity entity);
+		void BoxCollider2DComponentOnGuiRender(BoxCollider2DComponent& component, Entity entity);
+		void CircleCollider2DComponentOnGuiRender(CircleCollider2DComponent& component, Entity entity);
+		void NavMeshAgentComponentOnGuiRender(NavMeshAgentComponent& component, Entity entity);
+		void ScriptComponentOnGuiRender(ScriptComponent& component, Entity entity);
+
+	private:
 		inline static bool s_ShowInspectorPanel = true;
 
 	private:
 		SharedReference<Scene> m_ContextScene = nullptr;
 		
-		// TODO think of a better way of doing this
-		TransformComponent m_TransformToCopy;
-		ParticleEmitterProperties m_ParticleEmitterToCopy;
+		SharedReference<Scene> m_CopyScene = nullptr;
+		Entity m_CopyEntity = {};
 
 		ImGuiTextFilter m_EntitySearchInputTextFilter;
 		ImGuiTextFilter m_ComponentSearchInputTextFilter;

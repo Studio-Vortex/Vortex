@@ -30,10 +30,10 @@ namespace Vortex {
 		) {
 			switch (severity)
 			{
-				case GL_DEBUG_SEVERITY_HIGH:         VX_CONSOLE_LOG_ERROR("RendererAPI", message); return;
-				case GL_DEBUG_SEVERITY_MEDIUM:       VX_CONSOLE_LOG_ERROR("RendererAPI", message); return;
-				case GL_DEBUG_SEVERITY_LOW:          VX_CONSOLE_LOG_WARN("RendererAPI", message);  return;
-				case GL_DEBUG_SEVERITY_NOTIFICATION: VX_CONSOLE_LOG_TRACE("RendererAPI", message); return;
+				case GL_DEBUG_SEVERITY_HIGH:         VX_CONSOLE_LOG_ERROR("[RendererAPI] {}", message); return;
+				case GL_DEBUG_SEVERITY_MEDIUM:       VX_CONSOLE_LOG_ERROR("[RendererAPI] {}", message); return;
+				case GL_DEBUG_SEVERITY_LOW:          VX_CONSOLE_LOG_WARN("[RendererAPI] {}", message);  return;
+				case GL_DEBUG_SEVERITY_NOTIFICATION: VX_CONSOLE_LOG_TRACE("[RendererAPI] {}", message); return;
 			}
 
 			VX_CORE_ASSERT(false, "Unknown severity level!");

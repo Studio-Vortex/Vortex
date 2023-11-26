@@ -1,11 +1,15 @@
 #include "vxpch.h"
 #include "Material.h"
 
+#include "Vortex/Renderer/Renderer.h"
+#include "Vortex/Renderer/Shader.h"
+#include "Vortex/Renderer/Texture.h"
+
 #include "Vortex/Asset/AssetManager.h"
 
 namespace Vortex {
 
-	Material::Material(const SharedReference<Shader>& shader, const MaterialProperties& props)
+	Material::Material(SharedReference<Shader> shader, const MaterialProperties& props)
 		: m_Shader(shader), m_Properties(props) { }
 
 	void Material::Bind() const
@@ -97,12 +101,12 @@ namespace Vortex {
 
 	void Material::Unbind() const { }
 
-	const SharedReference<Shader>& Material::GetShader() const
+	SharedReference<Shader> Material::GetShader() const
 	{
 		return m_Shader;
 	}
 
-	void Material::SetShader(SharedReference<Shader>& shader)
+	void Material::SetShader(SharedReference<Shader> shader)
 	{
 		m_Shader = shader;
 	}
@@ -337,9 +341,19 @@ namespace Vortex {
 		dest->SetFlags(src->GetFlags());
 	}
 
+	AssetHandle Material::GetDefaultMaterialHandle()
+	{
+		return s_DefaultMaterialHandle;
+	}
+
 	SharedReference<Material> Material::Create(const SharedReference<Shader>& shader, const MaterialProperties& props)
 	{
 		return SharedReference<Material>::Create(shader, props);
+	}
+
+	void Material::SetDefaultMaterialHandle(AssetHandle assetHandle)
+	{
+		s_DefaultMaterialHandle = assetHandle;
 	}
 
     AssetHandle MaterialTable::GetMaterial(uint32_t submeshIndex) const

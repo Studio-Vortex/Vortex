@@ -15,8 +15,10 @@
 #include "Vortex/Scripting/ScriptUtils.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
+#include "Vortex/Audio/Audio.h"
 #include "Vortex/Audio/AudioSource.h"
-#include "Vortex/Audio/AudioListener.h"
+#include "Vortex/Audio/AudioTypes.h"
+#include "Vortex/Audio/AudioUtils.h"
 
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"
@@ -2038,7 +2040,7 @@ namespace Vortex {
 			StaticMeshRendererComponent& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
 			staticMeshRenderer.Type = meshType;
 
-			staticMeshRenderer.StaticMesh = DefaultMeshes::DefaultStaticMeshes[(uint32_t)meshType];
+			staticMeshRenderer.StaticMesh = DefaultMesh::DefaultStaticMeshes[(uint32_t)meshType];
 
 			if (AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh) && staticMeshRenderer.Materials->Empty())
 			{
@@ -3446,7 +3448,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			*outPosition = audioSource->GetProperties().Position;
+			*outPosition = Utils::FromWaveVector(audioSource->GetPlaybackDevice().GetSound().GetPosition());
 		}
 
 		void AudioSourceComponent_SetPosition(UUID entityUUID, Math::vec3* position)
@@ -3470,7 +3472,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetPosition(*position);
+			audioSource->GetPlaybackDevice().GetSound().SetPosition(Utils::ToWaveVector(*position));
 		}
 
 		void AudioSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outDirection)
@@ -3494,7 +3496,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			*outDirection = audioSource->GetProperties().Direction;
+			*outDirection = Utils::FromWaveVector(audioSource->GetPlaybackDevice().GetSound().GetDirection());
 		}
 
 		void AudioSourceComponent_SetDirection(UUID entityUUID, Math::vec3* direction)
@@ -3518,7 +3520,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetDirection(*direction);
+			audioSource->GetPlaybackDevice().GetSound().SetDirection(Utils::ToWaveVector(*direction));
 		}
 
 		void AudioSourceComponent_GetVelocity(UUID entityUUID, Math::vec3* outVelocity)
@@ -3542,7 +3544,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			*outVelocity = audioSource->GetProperties().Velocity;
+			*outVelocity = Utils::FromWaveVector(audioSource->GetPlaybackDevice().GetSound().GetVelocity());
 		}
 
 		void AudioSourceComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
@@ -3566,7 +3568,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetVelocity(*velocity);
+			audioSource->GetPlaybackDevice().GetSound().SetVelocity(Utils::ToWaveVector(*velocity));
 		}
 
         float AudioSourceComponent_GetMinGain(UUID entityUUID)
@@ -3590,7 +3592,7 @@ namespace Vortex {
 			if (!audioSource)
 				return 0.0f;
 
-			return audioSource->GetProperties().MinGain;
+			return audioSource->GetPlaybackDevice().GetSound().GetMinGain();
         }
 
         void AudioSourceComponent_SetMinGain(UUID entityUUID, float minGain)
@@ -3614,7 +3616,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetMinGain(minGain);
+			audioSource->GetPlaybackDevice().GetSound().SetMinGain(minGain);
         }
 
         float AudioSourceComponent_GetMaxGain(UUID entityUUID)
@@ -3638,7 +3640,7 @@ namespace Vortex {
 			if (!audioSource)
 				return 0.0f;
 
-			return audioSource->GetProperties().MaxGain;
+			return audioSource->GetPlaybackDevice().GetSound().GetMaxGain();
         }
 
         void AudioSourceComponent_SetMaxGain(UUID entityUUID, float maxGain)
@@ -3662,7 +3664,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetMaxGain(maxGain);
+			audioSource->GetPlaybackDevice().GetSound().SetMaxGain(maxGain);
         }
 
         AttenuationModel AudioSourceComponent_GetAttenuationModel(UUID entityUUID)
@@ -3686,7 +3688,7 @@ namespace Vortex {
 			if (!audioSource)
 				return AttenuationModel::None;
 
-			return audioSource->GetProperties().AttenuationModel;
+			return Utils::FromWaveAttenuationModel(audioSource->GetPlaybackDevice().GetSound().GetAttenuationModel());
 		}
 
 		void AudioSourceComponent_SetAttenuationModel(UUID entityUUID, AttenuationModel model)
@@ -3710,7 +3712,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetAttenuationModel(model);
+			audioSource->GetPlaybackDevice().GetSound().SetAttenuationModel(Utils::ToWaveAttenuationModel(model));
         }
 
         float AudioSourceComponent_GetFalloff(UUID entityUUID)
@@ -3734,7 +3736,7 @@ namespace Vortex {
 			if (!audioSource)
 				return 0.0f;
 
-			return audioSource->GetProperties().Falloff;
+			return audioSource->GetPlaybackDevice().GetSound().GetFalloff();
 		}
 
 		void AudioSourceComponent_SetFalloff(UUID entityUUID, float falloff)
@@ -3758,7 +3760,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetFalloff(falloff);
+			audioSource->GetPlaybackDevice().GetSound().SetFalloff(falloff);
         }
 
 		float AudioSourceComponent_GetMinDistance(UUID entityUUID)
@@ -3782,7 +3784,7 @@ namespace Vortex {
 			if (!audioSource)
 				return 0.0f;
 
-			return audioSource->GetProperties().MinDistance;
+			return audioSource->GetPlaybackDevice().GetSound().GetMinDistance();
 		}
 
 		void AudioSourceComponent_SetMinDistance(UUID entityUUID, float minDistance)
@@ -3806,7 +3808,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetMinDistance(minDistance);
+			audioSource->GetPlaybackDevice().GetSound().SetMinDistance(minDistance);
 		}
 
 		float AudioSourceComponent_GetMaxDistance(UUID entityUUID)
@@ -3830,7 +3832,7 @@ namespace Vortex {
 			if (!audioSource)
 				return 0.0f;
 
-			return audioSource->GetProperties().MaxDistance;
+			return audioSource->GetPlaybackDevice().GetSound().GetMaxDistance();
 		}
 
 		void AudioSourceComponent_SetMaxDistance(UUID entityUUID, float maxDistance)
@@ -3854,7 +3856,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetMaxDistance(maxDistance);
+			audioSource->GetPlaybackDevice().GetSound().SetMaxDistance(maxDistance);
 		}
 
 		float AudioSourceComponent_GetPitch(UUID entityUUID)
@@ -3878,7 +3880,7 @@ namespace Vortex {
 			if (!audioSource)
 				return 0.0f;
 
-			return audioSource->GetProperties().Pitch;
+			return audioSource->GetPlaybackDevice().GetSound().GetPitch();
 		}
 
 		void AudioSourceComponent_SetPitch(UUID entityUUID, float pitch)
@@ -3902,7 +3904,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetPitch(pitch);
+			audioSource->GetPlaybackDevice().GetSound().SetPitch(pitch);
 		}
 
 		float AudioSourceComponent_GetDopplerFactor(UUID entityUUID)
@@ -3926,7 +3928,7 @@ namespace Vortex {
 			if (!audioSource)
 				return 0.0f;
 
-			return audioSource->GetProperties().DopplerFactor;
+			return audioSource->GetPlaybackDevice().GetSound().GetDopplerFactor();
 		}
 
 		void AudioSourceComponent_SetDopplerFactor(UUID entityUUID, float dopplerFactor)
@@ -3950,7 +3952,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetDopplerFactor(dopplerFactor);
+			audioSource->GetPlaybackDevice().GetSound().SetDopplerFactor(dopplerFactor);
 		}
 
 		float AudioSourceComponent_GetVolume(UUID entityUUID)
@@ -3974,7 +3976,7 @@ namespace Vortex {
 			if (!audioSource)
 				return 0.0f;
 
-			return audioSource->GetProperties().Volume;
+			return audioSource->GetPlaybackDevice().GetSound().GetVolume();
 		}
 
 		void AudioSourceComponent_SetVolume(UUID entityUUID, float volume)
@@ -3998,7 +4000,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetVolume(volume);
+			audioSource->GetPlaybackDevice().GetSound().SetVolume(volume);
 		}
 
 		bool AudioSourceComponent_GetPlayOnStart(UUID entityUUID)
@@ -4022,7 +4024,9 @@ namespace Vortex {
 			if (!audioSource)
 				return false;
 
-			return audioSource->GetProperties().PlayOnStart;
+			// TODO fix this once we have PlayOnStart
+			//return audioSource->GetPlaybackDevice().GetSound().PlayOnStart;
+			return false;
 		}
 
 		void AudioSourceComponent_SetPlayOnStart(UUID entityUUID, bool playOnStart)
@@ -4046,7 +4050,8 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetPlayOnStart(playOnStart);
+			// TODO: Ditto
+			// audioSource->SetPlayOnStart(playOnStart);
 		}
 
 		bool AudioSourceComponent_GetIsSpacialized(UUID entityUUID)
@@ -4070,7 +4075,7 @@ namespace Vortex {
 			if (!audioSource)
 				return false;
 
-			return audioSource->GetProperties().Spacialized;
+			return audioSource->GetPlaybackDevice().GetSound().IsSpacialized();
 		}
 
 		void AudioSourceComponent_SetIsSpacialized(UUID entityUUID, bool spacialized)
@@ -4094,7 +4099,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetSpacialized(spacialized);
+			audioSource->GetPlaybackDevice().GetSound().SetSpacialized(spacialized);
 		}
 
 		bool AudioSourceComponent_GetIsLooping(UUID entityUUID)
@@ -4118,7 +4123,7 @@ namespace Vortex {
 			if (!audioSource)
 				return false;
 
-			return audioSource->GetProperties().Loop;
+			return audioSource->GetPlaybackDevice().GetSound().IsLooping();
 		}
 
 		void AudioSourceComponent_SetIsLooping(UUID entityUUID, bool loop)
@@ -4142,7 +4147,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->SetLooping(loop);
+			audioSource->GetPlaybackDevice().GetSound().SetLooping(loop);
 		}
 
 		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID)
@@ -4166,7 +4171,7 @@ namespace Vortex {
 			if (!audioSource)
 				return false;
 
-			return audioSource->IsPlaying();
+			return audioSource->GetPlaybackDevice().GetSound().IsPlaying();
 		}
 
 		void AudioSourceComponent_Play(UUID entityUUID)
@@ -4190,7 +4195,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->Play();
+			audioSource->GetPlaybackDevice().Play();
 		}
 
 		void AudioSourceComponent_PlayOneShot(UUID entityUUID)
@@ -4214,7 +4219,8 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->PlayOneShot();
+			// TODO: fix once Wave has PlayOneShot
+			//audioSource->PlayOneShot();
 		}
 
 		void AudioSourceComponent_Restart(UUID entityUUID)
@@ -4238,7 +4244,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->Restart();
+			audioSource->GetPlaybackDevice().Restart();
 		}
 
 		void AudioSourceComponent_Stop(UUID entityUUID)
@@ -4262,7 +4268,7 @@ namespace Vortex {
 			if (!audioSource)
 				return;
 
-			audioSource->Stop();
+			audioSource->GetPlaybackDevice().Stop();
 		}
 
 #pragma endregion
@@ -4290,10 +4296,10 @@ namespace Vortex {
 			if (!audioSource)
 				return mono_string_new(mono_domain_get(), "");
 
-			const AudioClip& audioClip = audioSource->GetAudioClip();
+			/*const AudioClip& audioClip = audioSource->GetAudioClip();
 			std::string clipName = audioClip.Name;
 
-			return mono_string_new(mono_domain_get(), clipName.c_str());
+			return mono_string_new(mono_domain_get(), clipName.c_str());*/
 		}
 
 		float AudioClip_GetLength(UUID entityUUID)
@@ -4317,9 +4323,7 @@ namespace Vortex {
 			if (!audioSource)
 				return 0.0f;
 
-			const AudioClip& audioClip = audioSource->GetAudioClip();
-
-			return audioClip.Length;
+			audioSource->GetPlaybackDevice().GetSound().GetLengthInSeconds();
 		}
 
 #pragma endregion
@@ -4330,265 +4334,150 @@ namespace Vortex {
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			if (!entity.HasAny<AudioSourceComponent, AudioListenerComponent>())
+			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.InnerAngle without a Audio Component!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.InnerAngle without a Audio Source!");
 				return 0.0f;
 			}
 
-			if (entity.HasComponent<AudioSourceComponent>())
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-				if (!AssetManager::IsHandleValid(asc.AudioHandle))
-				{
-					VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.InnerAngle with an invalid asset handle!");
-					return 0.0f;
-				}
-
-				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
-				if (!audioSource)
-					return 0.0f;
-
-				return audioSource->GetProperties().Cone.InnerAngle;
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.InnerAngle with an invalid asset handle!");
+				return 0.0f;
 			}
-			else
-			{
-				const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
-				if (!AssetManager::IsHandleValid(alc.ListenerHandle))
-				{
-					VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.InnerAngle with an invalid asset handle!");
-					return 0.0f;
-				}
 
-				SharedReference<AudioListener> audioListener = AssetManager::GetAsset<AudioListener>(alc.ListenerHandle);
-				if (!audioListener)
-					return 0.0f;
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return 0.0f;
 
-				return audioListener->GetProperties().Cone.InnerAngle;
-			}
+			return audioSource->GetPlaybackDevice().GetSound().GetAudioCone().InnerAngle;
 		}
 
 		void AudioCone_SetInnerAngle(UUID entityUUID, float innerAngle)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			if (!entity.HasAny<AudioSourceComponent, AudioListenerComponent>())
+			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.InnerAngle without a Audio Component!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.InnerAngle without a Audio Source!");
 				return;
 			}
 
-			if (entity.HasComponent<AudioSourceComponent>())
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-				if (!AssetManager::IsHandleValid(asc.AudioHandle))
-				{
-					VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.InnerAngle with an invalid asset handle!");
-					return;
-				}
-
-				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
-				if (!audioSource)
-					return;
-
-				AudioCone& cone = audioSource->GetProperties().Cone;
-				cone.InnerAngle = innerAngle;
-				audioSource->SetCone(cone);
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.InnerAngle with an invalid asset handle!");
 				return;
 			}
-			else
-			{
-				const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
-				if (!AssetManager::IsHandleValid(alc.ListenerHandle))
-				{
-					VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.InnerAngle with an invalid asset handle!");
-					return;
-				}
 
-				SharedReference<AudioListener> audioListener = AssetManager::GetAsset<AudioListener>(alc.ListenerHandle);
-				if (!audioListener)
-					return;
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
 
-				AudioCone& cone = audioListener->GetProperties().Cone;
-				cone.InnerAngle = innerAngle;
-				audioListener->SetCone(cone);
-			}
+			Wave::AudioCone cone = audioSource->GetPlaybackDevice().GetSound().GetAudioCone();
+			cone.InnerAngle = innerAngle;
+			audioSource->GetPlaybackDevice().GetSound().SetAudioCone(cone);
 		}
 
 		float AudioCone_GetOuterAngle(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			if (!entity.HasAny<AudioSourceComponent, AudioListenerComponent>())
+			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterAngle without a Audio Component!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterAngle without a Audio Source!");
 				return 0.0f;
 			}
 
-			if (entity.HasComponent<AudioSourceComponent>())
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-				if (!AssetManager::IsHandleValid(asc.AudioHandle))
-				{
-					VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterAngle with an invalid asset handle!");
-					return 0.0f;
-				}
-
-				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
-				if (!audioSource)
-					return 0.0f;
-
-				return audioSource->GetProperties().Cone.OuterAngle;
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterAngle with an invalid asset handle!");
+				return 0.0f;
 			}
-			else
-			{
-				const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
-				if (!AssetManager::IsHandleValid(alc.ListenerHandle))
-				{
-					VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterAngle with an invalid asset handle!");
-					return 0.0f;
-				}
 
-				SharedReference<AudioListener> audioListener = AssetManager::GetAsset<AudioListener>(alc.ListenerHandle);
-				if (!audioListener)
-					return 0.0f;
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return 0.0f;
 
-				return audioListener->GetProperties().Cone.OuterAngle;
-			}
+			return audioSource->GetPlaybackDevice().GetSound().GetAudioCone().OuterAngle;
 		}
 
 		void AudioCone_SetOuterAngle(UUID entityUUID, float outerAngle)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			if (!entity.HasAny<AudioSourceComponent, AudioListenerComponent>())
+			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterAngle without a Audio Component!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterAngle without a Audio Source!");
 				return;
 			}
 
-			if (entity.HasComponent<AudioSourceComponent>())
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-				if (!AssetManager::IsHandleValid(asc.AudioHandle))
-				{
-					VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterAngle with an invalid asset handle!");
-					return;
-				}
-
-				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
-				if (!audioSource)
-					return;
-
-				AudioCone& cone = audioSource->GetProperties().Cone;
-				cone.OuterAngle = outerAngle;
-				audioSource->SetCone(cone);
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterAngle with an invalid asset handle!");
+				return;
 			}
-			else
-			{
-				const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
-				if (!AssetManager::IsHandleValid(alc.ListenerHandle))
-				{
-					VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterAngle with an invalid asset handle!");
-					return;
-				}
 
-				SharedReference<AudioListener> audioListener = AssetManager::GetAsset<AudioListener>(alc.ListenerHandle);
-				if (!audioListener)
-					return;
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
 
-				AudioCone& cone = audioListener->GetProperties().Cone;
-				cone.OuterAngle = outerAngle;
-				audioListener->SetCone(cone);
-			}
+			Wave::AudioCone cone = audioSource->GetPlaybackDevice().GetSound().GetAudioCone();
+			cone.OuterAngle = outerAngle;
+			audioSource->GetPlaybackDevice().GetSound().SetAudioCone(cone);
 		}
 
 		float AudioCone_GetOuterGain(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			if (!entity.HasAny<AudioSourceComponent, AudioListenerComponent>())
+			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterGain without a Audio Component!");
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterGain without a Audio Source!");
 				return 0.0f;
 			}
 
-			if (entity.HasComponent<AudioSourceComponent>())
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-				if (!AssetManager::IsHandleValid(asc.AudioHandle))
-				{
-					VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterGain with an invalid asset handle!");
-					return 0.0f;
-				}
-
-				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
-				if (!audioSource)
-					return 0.0f;
-
-				return audioSource->GetProperties().Cone.OuterGain;
+				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterGain with an invalid asset handle!");
+				return 0.0f;
 			}
-			else
-			{
-				const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
-				if (!AssetManager::IsHandleValid(alc.ListenerHandle))
-				{
-					VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterGain with an invalid asset handle!");
-					return 0.0f;
-				}
 
-				SharedReference<AudioListener> audioListener = AssetManager::GetAsset<AudioListener>(alc.ListenerHandle);
-				if (!audioListener)
-					return 0.0f;
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return 0.0f;
 
-				return audioListener->GetProperties().Cone.OuterGain;
-			}
+			return audioSource->GetPlaybackDevice().GetSound().GetAudioCone().OuterGain;
 		}
 
 		void AudioCone_SetOuterGain(UUID entityUUID, float outerGain)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			if (!entity.HasAny<AudioSourceComponent, AudioListenerComponent>())
+			if (!entity.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterGain without a Audio Component!");
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterGain without a Audio Source!");
 				return;
 			}
 
-			if (entity.HasComponent<AudioSourceComponent>())
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
-				if (!AssetManager::IsHandleValid(asc.AudioHandle))
-				{
-					VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterGain with an invalid asset handle!");
-					return;
-				}
-
-				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
-				if (!audioSource)
-					return;
-
-				AudioCone& cone = audioSource->GetProperties().Cone;
-				cone.OuterGain = outerGain;
-				audioSource->SetCone(cone);
+				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterGain with an invalid asset handle!");
+				return;
 			}
-			else
-			{
-				const AudioListenerComponent& alc = entity.GetComponent<AudioListenerComponent>();
-				if (!AssetManager::IsHandleValid(alc.ListenerHandle))
-				{
-					VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterGain with an invalid asset handle!");
-					return;
-				}
 
-				SharedReference<AudioListener> audioListener = AssetManager::GetAsset<AudioListener>(alc.ListenerHandle);
-				if (!audioListener)
-					return;
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				return;
 
-				AudioCone& cone = audioListener->GetProperties().Cone;
-				cone.OuterGain = outerGain;
-				audioListener->SetCone(cone);
-			}
+			Wave::AudioCone cone = audioSource->GetPlaybackDevice().GetSound().GetAudioCone();
+			cone.OuterGain = outerGain;
+			audioSource->GetPlaybackDevice().GetSound().SetAudioCone(cone);
 		}
 
 #pragma endregion

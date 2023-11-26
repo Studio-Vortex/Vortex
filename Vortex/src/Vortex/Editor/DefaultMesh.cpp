@@ -1,12 +1,14 @@
 #include "vxpch.h"
-#include "DefaultMeshes.h"
+#include "DefaultMesh.h"
 
 #include "Vortex/Renderer/StaticMesh.h"
+#include "Vortex/Renderer/Material.h"
+
 #include "Vortex/Asset/AssetManager.h"
 
 namespace Vortex {
 
-	void DefaultMeshes::Init()
+	void DefaultMesh::Init()
 	{
 		std::string sourcePaths[] =
 		{
@@ -21,6 +23,8 @@ namespace Vortex {
 
 		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
 
+		bool firstIteration = true;
+
 		for (const auto& sourcePath : sourcePaths)
 		{
 			MeshImportOptions importOptions = MeshImportOptions();
@@ -32,6 +36,12 @@ namespace Vortex {
 
 			SharedReference<StaticMesh> staticMesh = StaticMesh::Create(sourcePath, TransformComponent(), importOptions);
 			
+			if (firstIteration) {
+				AssetHandle defaultMaterialHandle = staticMesh->m_MaterialHandles[0];
+				Material::SetDefaultMaterialHandle(defaultMaterialHandle);
+				firstIteration = false;
+			}
+
 			// Should we generate a handle here?
 			staticMesh->Handle = AssetHandle();
 
@@ -43,7 +53,7 @@ namespace Vortex {
 		}
 	}
 
-	bool DefaultMeshes::IsDefaultStaticMesh(AssetHandle assetHandle)
+	bool DefaultMesh::IsDefaultStaticMesh(AssetHandle assetHandle)
 	{
 		for (const auto& staticMeshHandle : DefaultStaticMeshes)
 		{

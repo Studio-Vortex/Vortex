@@ -25,3 +25,6 @@
 [submodule "Vortex/vendor/FastNoise"]
 	path = Vortex/vendor/FastNoise
 	url = https://github.com/Auburn/FastNoiseLite.git
+[submodule "Vortex/vendor/Wave"]
+	path = Vortex/vendor/Wave
+	url = https://github.com/Studio-Vortex/Wave

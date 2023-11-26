@@ -330,7 +330,7 @@ namespace Vortex {
 					{
 						const auto& submeshes = staticMesh->GetSubmeshes();
 
-						for (const auto& [submeshIndex, submesh] :submeshes)
+						for (const auto& [submeshIndex, submesh] : submeshes)
 						{
 							AssetHandle materialHandle = staticMeshRenderer.Materials->GetMaterial(submeshIndex);
 							if (!AssetManager::IsHandleValid(materialHandle))
@@ -911,7 +911,7 @@ namespace Vortex {
 
 				if (staticMeshRendererComponent.Type != MeshType::Custom)
 				{
-					DefaultMeshes::StaticMeshes defaultMesh = (DefaultMeshes::StaticMeshes)staticMeshRendererComponent.Type;
+					DefaultMesh::StaticMeshType defaultMesh = (DefaultMesh::StaticMeshType)staticMeshRendererComponent.Type;
 					staticMeshRendererComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(defaultMesh);
 				}
 				else

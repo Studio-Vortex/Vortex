@@ -48,6 +48,14 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		// Note:
+		// We have to explicitly destroy the layer stack before
+		// the engine's submodules are shutdown. This is mainly because
+		// the Audio system needs to outlive the lifetime of the layer stack.
+		// It is also just a good idea to destroy all the layers before submodules
+		// get shutdown because something in the layers code may rely on a submodule
+		m_LayerStack.~LayerStack();
+
 		ShutdownSubModules();
 	}
 
@@ -117,10 +125,10 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Input::Shutdown();
-		SystemManager::UnregisterAssetSystem<AudioSystem>();
+		SystemManager::UnRegisterAssetSystem<AudioSystem>();
 		Physics::Shutdown();
 		Font::Shutdown();
-		SystemManager::UnregisterAssetSystem<ParticleSystem>();
+		SystemManager::UnRegisterAssetSystem<ParticleSystem>();
 		Renderer::Shutdown();
 		Networking::Shutdown();
 		// ThreadPool::Shutdown();
@@ -251,8 +259,7 @@ namespace Vortex {
 
 	bool Application::OnWindowCloseEvent(WindowCloseEvent& e)
 	{
-		m_Running = false;
-		g_ApplicationRunning = false;
+		Close();
 
 		return false;
 	}

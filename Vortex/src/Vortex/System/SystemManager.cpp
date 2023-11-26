@@ -3,23 +3,23 @@
 
 namespace Vortex {
 
-	void SystemManager::SubmitContextScene(Scene* context)
+	void SystemManager::OnContextSceneCreated(Scene* context)
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			assetSystem->SubmitContextScene(context);
+			assetSystem->OnContextSceneCreated(context);
 		}
 	}
 
-	void SystemManager::RemoveContextScene(Scene* context)
+	void SystemManager::OnContextSceneDestroyed(Scene* context)
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			assetSystem->RemoveContextScene(context);
+			assetSystem->OnContextSceneDestroyed(context);
 		}
 	}
 
@@ -29,7 +29,7 @@ namespace Vortex {
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "AssetType not found!");
+			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 
@@ -43,7 +43,7 @@ namespace Vortex {
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "AssetType not found!");
+			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 
@@ -57,7 +57,7 @@ namespace Vortex {
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "AssetType not found!");
+			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 
@@ -71,7 +71,7 @@ namespace Vortex {
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "AssetType not found!");
+			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 
@@ -83,7 +83,7 @@ namespace Vortex {
 	{
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "AssetType not found!");
+			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 

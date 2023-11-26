@@ -4,8 +4,6 @@
 #include "Vortex/Project/Project.h"
 #include "Vortex/Scene/Components.h"
 
-#include "Vortex/Audio/AudioSystem.h"
-
 #include "Vortex/Physics/3D/Physics.h"
 
 #include "Vortex/Scripting/ScriptEngine.h"

@@ -14,11 +14,11 @@ namespace Vortex {
 		virtual void Init() override;
 		virtual void Shutdown() override;
 
-		virtual void SubmitContextScene(Scene* context) override;
-		virtual void RemoveContextScene(Scene* context) override;
+		virtual void OnContextSceneCreated(Scene* context) override;
+		virtual void OnContextSceneDestroyed(Scene* context) override;
 
-		virtual void CreateAsset(Entity& entity, Scene* context) override;
-		virtual void DestroyAsset(Entity& entity, Scene* context) override;
+		virtual void CreateAsset(Entity& entity) override;
+		virtual void DestroyAsset(Entity& entity) override;
 
 		virtual void OnRuntimeStart(Scene* context) override;
 		virtual void OnUpdateRuntime(Scene* context) override {}

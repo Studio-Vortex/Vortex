@@ -1,11 +1,13 @@
 #pragma once
 
+#include <cstdint>
+
 namespace Vortex {
 
 	class AudioLogger
 	{
 	public:
-		static void AudioLogCallback(void* pUserData, uint32_t logLevel, const char* pMessage);
+		static void DebugLogCallback(void* pUserData, uint32_t logLevel, const char* pMessage);
 	};
 
 }

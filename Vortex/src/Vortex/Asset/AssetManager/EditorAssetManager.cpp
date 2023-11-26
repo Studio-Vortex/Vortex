@@ -36,7 +36,7 @@ namespace Vortex {
 		ReloadAssets();
 
 		// Should we load default meshes here?
-		DefaultMeshes::Init();
+		DefaultMesh::Init();
 
 		return true;
 	}
@@ -174,7 +174,7 @@ namespace Vortex {
 	{
 		SharedReference<Asset> asset = GetAssetFromFilepath(filepath);
 
-		if (IsHandleValid(asset->Handle));
+		if (IsHandleValid(asset->Handle))
 			return asset->Handle;
 
 		return 0;
@@ -300,14 +300,14 @@ namespace Vortex {
 		return true;
 	}
 
-	AssetHandle EditorAssetManager::GetDefaultStaticMesh(DefaultMeshes::StaticMeshes defaultMesh)
+	AssetHandle EditorAssetManager::GetDefaultStaticMesh(DefaultMesh::StaticMeshType defaultMesh)
 	{
-		return DefaultMeshes::DefaultStaticMeshes[(uint32_t)defaultMesh];
+		return DefaultMesh::DefaultStaticMeshes[(size_t)defaultMesh];
 	}
 
 	bool EditorAssetManager::IsDefaultStaticMesh(AssetHandle assetHandle)
 	{
-		return DefaultMeshes::IsDefaultStaticMesh(assetHandle);
+		return DefaultMesh::IsDefaultStaticMesh(assetHandle);
 	}
 
 	void EditorAssetManager::LoadAssetRegistry()

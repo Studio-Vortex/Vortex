@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+
 #include "Vortex/System/IAssetSystem.h"
 
 #include <unordered_map>
@@ -10,8 +11,8 @@ namespace Vortex {
 	class SystemManager
 	{
 	public:
-		static void SubmitContextScene(Scene* context);
-		static void RemoveContextScene(Scene* context);
+		static void OnContextSceneCreated(Scene* context);
+		static void OnContextSceneDestroyed(Scene* context);
 
 		static void OnRuntimeStart(Scene* context);
 		static void OnRuntimeScenePaused(Scene* context);
@@ -38,7 +39,7 @@ namespace Vortex {
 		}
 
 		template <typename TSystemType>
-		VX_FORCE_INLINE static void UnregisterAssetSystem()
+		VX_FORCE_INLINE static void UnRegisterAssetSystem()
 		{
 			static_assert(std::is_base_of<IAssetSystem, TSystemType>::value, "UnregisterAssetSystem only works with types derived from IAssetSystem!");
 

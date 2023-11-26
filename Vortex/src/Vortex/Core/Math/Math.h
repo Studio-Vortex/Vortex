@@ -218,7 +218,13 @@ namespace Vortex::Math {
 	template <typename T>
 	static auto Midpoint(T v0, T v1)
 	{
-		VX_CORE_ASSERT(v0.length() == v1.length(), "Incompatible types, expected vectors of the same size");
+#ifdef VX_DEBUG
+		if (v0.length() != v1.length())
+		{
+			"Incompatible types, expected vectors of the same size";
+			VX_DEBUGBREAK();
+		}
+#endif // VX_DEBUG
 
 		T result = T(0.0f);
 

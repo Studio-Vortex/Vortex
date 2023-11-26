@@ -18,7 +18,7 @@ namespace Vortex {
 	struct ParticleSystemInternalData
 	{
 		using ParticleEmitterData = std::unordered_map<UUID, AssetHandle>;
-		std::unordered_map<Scene*, ParticleEmitterData> ActiveScenes;
+		ParticleEmitterData ParticleData;
 
 		SubModule Module;
 	};
@@ -43,36 +43,28 @@ namespace Vortex {
 
 	void ParticleSystem::Shutdown()
 	{
-		s_Data.ActiveScenes.clear();
+		s_Data.ParticleData.clear();
 
 		Application::Get().RemoveModule(s_Data.Module);
 		s_Data.Module.Shutdown();
 	}
 
-	void ParticleSystem::SubmitContextScene(Scene* context)
+	void ParticleSystem::OnContextSceneCreated(Scene* context)
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
-		VX_CORE_ASSERT(!s_Data.ActiveScenes.contains(context), "Scene was already added to particle system!");
-
-		s_Data.ActiveScenes[context] = ParticleSystemInternalData::ParticleEmitterData{};
-	}
-
-	void ParticleSystem::RemoveContextScene(Scene* context)
-	{
-		VX_CORE_ASSERT(context, "Invalid scene!");
-		VX_CORE_ASSERT(s_Data.ActiveScenes.contains(context), "Invalid scene!");
-
-		auto& particleData = s_Data.ActiveScenes[context];
 		
-		particleData.clear();
-
-		s_Data.ActiveScenes.erase(context);
+		s_Data.ParticleData.clear();
 	}
 
-	void ParticleSystem::CreateAsset(Entity& entity, Scene* context)
+	void ParticleSystem::OnContextSceneDestroyed(Scene* context)
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
-		VX_CORE_ASSERT(s_Data.ActiveScenes.contains(context), "Invalid Scene!");
+
+		s_Data.ParticleData.clear();
+	}
+
+	void ParticleSystem::CreateAsset(Entity& entity)
+	{
 		VX_CORE_ASSERT(entity.HasComponent<ParticleEmitterComponent>(), "Entity doesn't have particle emitter component!");
 
 		std::string particleSystemDir = "Cache/ParticleSystem";
@@ -89,32 +81,26 @@ namespace Vortex {
 		particleEmitter->SetName(filename);
 	}
 
-	void ParticleSystem::DestroyAsset(Entity& entity, Scene* context)
+	void ParticleSystem::DestroyAsset(Entity& entity)
 	{
-		VX_CORE_ASSERT(context, "Invalid scene!");
-		VX_CORE_ASSERT(s_Data.ActiveScenes.contains(context), "Invalid scene!");
 		VX_CORE_ASSERT(entity.HasComponent<ParticleEmitterComponent>(), "Entity doesn't have particle emitter component!");
 
-		auto& particleData = s_Data.ActiveScenes[context];
-		VX_CORE_ASSERT(particleData.contains(entity.GetUUID()), "Entity was not found in scene particle emitter map!");
+		VX_CORE_ASSERT(s_Data.ParticleData.contains(entity.GetUUID()), "Entity was not found in scene particle emitter map!");
 
-		particleData.erase(entity.GetUUID());
+		s_Data.ParticleData.erase(entity.GetUUID());
 	}
 
 	void ParticleSystem::OnRuntimeStart(Scene* context)
 	{
+		VX_CORE_ASSERT(context, "Invalid scene!");
 	}
 
 	void ParticleSystem::OnUpdateRuntime(Scene* context, TimeStep delta)
 	{
 		VX_PROFILE_FUNCTION();
-
 		VX_CORE_ASSERT(context, "Invalid scene!");
-		VX_CORE_ASSERT(s_Data.ActiveScenes.contains(context), "Invalid scene!");
 
-		auto& particleData = s_Data.ActiveScenes[context];
-
-		for (auto& [entityUUID, assetHandle] : particleData)
+		for (auto& [entityUUID, assetHandle] : s_Data.ParticleData)
 		{
 			Entity entity = context->TryGetEntityWithUUID(entityUUID);
 			if (!entity.IsActive())
@@ -142,14 +128,17 @@ namespace Vortex {
 
 	void ParticleSystem::OnRuntimeScenePaused(Scene* context)
 	{
+		VX_CORE_ASSERT(context, "Invalid scene!");
 	}
 
 	void ParticleSystem::OnRuntimeSceneResumed(Scene* context)
 	{
+		VX_CORE_ASSERT(context, "Invalid scene!");
 	}
 
 	void ParticleSystem::OnRuntimeStop(Scene* context)
 	{
+		VX_CORE_ASSERT(context, "Invalid scene!");
 	}
 
 	void ParticleSystem::OnGuiRender()
