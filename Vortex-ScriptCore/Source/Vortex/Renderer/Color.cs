@@ -39,6 +39,12 @@
 			G = g;
 		}
 
+		public Color2(float scalar)
+		{
+			R = scalar;
+			G = scalar;
+		}
+
 		public Color2 RR => new Color2(R, R);
 		public Color2 GG => new Color2(G, G);
 
@@ -54,6 +60,13 @@
 			R = r;
 			G = g;
 			B = b;
+		}
+
+		public Color3(float scalar)
+		{
+			R = scalar;
+			G = scalar;
+			B = scalar;
 		}
 
 		public Color2 RG
@@ -97,6 +110,14 @@
 			A = a;
 		}
 
+		public Color4(float scalar)
+		{
+			R = scalar;
+			G = scalar;
+			B = scalar;
+			A = scalar;
+		}
+
 		public Color3 RGB
 		{
 			get => new Color3(R, G, B);
@@ -123,8 +144,8 @@
 
 		public Color2 BG
 		{
-			get => new Color2(G, B);
-			set { G = value.R; B = value.G; }
+			get => new Color2(B, G);
+			set { B = value.R; G = value.G; }
 		}
 
 		public Color4 RRRR => new Color4(R, R, R, R);
@@ -140,6 +161,7 @@
 		public Color2 RR => new Color2(R, R);
 		public Color2 GG => new Color2(G, G);
 		public Color2 BB => new Color2(B, B);
+		public Color2 AA => new Color2(A, A);
 
 		public static implicit operator Vector4(Color4 color) => new Vector4(color.R, color.G, color.B, color.A);
 	}
