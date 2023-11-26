@@ -3,8 +3,6 @@
 
 namespace Vortex {
 
-	static Scene* s_ContextScene = nullptr;
-
 	void SystemManager::OnContextSceneCreated(Scene* context)
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
@@ -13,73 +11,71 @@ namespace Vortex {
 		{
 			assetSystem->OnContextSceneCreated(context);
 		}
-
-		s_ContextScene = context;
 	}
 
-	void SystemManager::OnContextSceneDestroyed()
+	void SystemManager::OnContextSceneDestroyed(Scene* context)
 	{
-		for (auto& [assetType, assetSystem] : s_AssetSystems)
-		{
-			assetSystem->OnContextSceneDestroyed();
-		}
-
-		s_ContextScene = nullptr;
-	}
-
-	void SystemManager::OnRuntimeStart()
-	{
-		VX_CORE_ASSERT(s_ContextScene, "Invalid scene!");
+		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "AssetType not found!");
-			if (!s_EnabledSystems.at(assetType))
-				continue;
-
-			assetSystem->OnRuntimeStart();
+			assetSystem->OnContextSceneDestroyed(context);
 		}
 	}
 
-	void SystemManager::OnRuntimeScenePaused()
+	void SystemManager::OnRuntimeStart(Scene* context)
 	{
-		VX_CORE_ASSERT(s_ContextScene, "Invalid scene!");
+		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "AssetType not found!");
+			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 
-			assetSystem->OnRuntimeScenePaused();
+			assetSystem->OnRuntimeStart(context);
 		}
 	}
 
-	void SystemManager::OnRuntimeSceneResumed()
+	void SystemManager::OnRuntimeScenePaused(Scene* context)
 	{
-		VX_CORE_ASSERT(s_ContextScene, "Invalid scene!");
+		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "AssetType not found!");
+			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 
-			assetSystem->OnRuntimeSceneResumed();
+			assetSystem->OnRuntimeScenePaused(context);
 		}
 	}
 
-	void SystemManager::OnRuntimeStop()
+	void SystemManager::OnRuntimeSceneResumed(Scene* context)
 	{
-		VX_CORE_ASSERT(s_ContextScene, "Invalid scene!");
+		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "AssetType not found!");
+			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 
-			assetSystem->OnRuntimeStop();
+			assetSystem->OnRuntimeSceneResumed(context);
+		}
+	}
+
+	void SystemManager::OnRuntimeStop(Scene* context)
+	{
+		VX_CORE_ASSERT(context, "Invalid scene!");
+    
+		for (auto& [assetType, assetSystem] : s_AssetSystems)
+		{
+			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
+			if (!s_EnabledSystems.at(assetType))
+				continue;
+
+			assetSystem->OnRuntimeStop(context);
 		}
 	}
 
@@ -87,7 +83,7 @@ namespace Vortex {
 	{
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "AssetType not found!");
+			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
 			if (!s_EnabledSystems.at(assetType))
 				continue;
 

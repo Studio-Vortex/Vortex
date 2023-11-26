@@ -6,7 +6,7 @@
 
 #include "Vortex/Events/KeyEvent.h"
 
-#include "Vortex/Audio/Audio.h"
+#include "Vortex/Audio/AudioSystem.h"
 
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Font/Font.h"
@@ -108,7 +108,7 @@ namespace Vortex {
 		Renderer::Init();
 		SystemManager::RegisterAssetSystem<ParticleSystem>();
 		Physics::Init();
-		Audio::Init();
+		SystemManager::RegisterAssetSystem<AudioSystem>();
 		Random::Init();
 		Font::Init();
 		Input::Init();
@@ -125,10 +125,10 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Input::Shutdown();
-		Audio::Shutdown();
+		SystemManager::UnRegisterAssetSystem<AudioSystem>();
 		Physics::Shutdown();
 		Font::Shutdown();
-		SystemManager::UnregisterAssetSystem<ParticleSystem>();
+		SystemManager::UnRegisterAssetSystem<ParticleSystem>();
 		Renderer::Shutdown();
 		Networking::Shutdown();
 		// ThreadPool::Shutdown();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+
 #include "Vortex/System/IAssetSystem.h"
 
 #include <unordered_map>
@@ -11,12 +12,12 @@ namespace Vortex {
 	{
 	public:
 		static void OnContextSceneCreated(Scene* context);
-		static void OnContextSceneDestroyed();
+		static void OnContextSceneDestroyed(Scene* context);
 
-		static void OnRuntimeStart();
-		static void OnRuntimeScenePaused();
-		static void OnRuntimeSceneResumed();
-		static void OnRuntimeStop();
+		static void OnRuntimeStart(Scene* context);
+		static void OnRuntimeScenePaused(Scene* context);
+		static void OnRuntimeSceneResumed(Scene* context);
+		static void OnRuntimeStop(Scene* context);
 
 		static void OnGuiRender();
 
@@ -38,7 +39,7 @@ namespace Vortex {
 		}
 
 		template <typename TSystemType>
-		VX_FORCE_INLINE static void UnregisterAssetSystem()
+		VX_FORCE_INLINE static void UnRegisterAssetSystem()
 		{
 			static_assert(std::is_base_of<IAssetSystem, TSystemType>::value, "UnregisterAssetSystem only works with types derived from IAssetSystem!");
 

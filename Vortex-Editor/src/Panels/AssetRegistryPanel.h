@@ -17,6 +17,7 @@ namespace Vortex {
 
 	private:
 		void RenderLoadedAssets();
+		void RenderAssetTypeTable();
 
 	private:
 		ImGuiTextFilter m_AssetSearchTextFilter;
