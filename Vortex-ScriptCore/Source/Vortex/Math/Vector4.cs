@@ -114,7 +114,7 @@ namespace Vortex {
 			return p1 + ((p2 - p1) * maxDistanceDelta);
 		}
 
-		public Vector4 Clamp(Vector4 value, Vector4 min, Vector4 max)
+		public static Vector4 Clamp(Vector4 value, Vector4 min, Vector4 max)
 		{
 			return new Vector4(
 				Mathf.Clamp(value.X, min.X, max.X),

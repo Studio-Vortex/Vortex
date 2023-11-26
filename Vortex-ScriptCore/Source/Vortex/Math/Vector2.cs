@@ -80,7 +80,7 @@
 
 		public static implicit operator Color2(Vector2 vector) => new Color2(vector.X, vector.Y);
 
-		public Vector2 Clamp(Vector2 value, Vector2 min, Vector2 max)
+		public static Vector2 Clamp(Vector2 value, Vector2 min, Vector2 max)
 		{
 			return new Vector2(
 				Mathf.Clamp(value.X, min.X, max.X),

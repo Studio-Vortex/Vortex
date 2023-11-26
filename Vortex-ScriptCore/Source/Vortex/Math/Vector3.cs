@@ -150,7 +150,7 @@ namespace Vortex {
 			return Mathf.Rad2Deg(Mathf.Acos(dot));
 		}
 
-		public Vector3 Clamp(Vector3 value, Vector3 min, Vector3 max)
+		public static Vector3 Clamp(Vector3 value, Vector3 min, Vector3 max)
 		{
 			return new Vector3(
 				Mathf.Clamp(value.X, min.X, max.X),
