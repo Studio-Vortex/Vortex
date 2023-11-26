@@ -150,6 +150,15 @@ namespace Vortex {
 			return Mathf.Rad2Deg(Mathf.Acos(dot));
 		}
 
+		public Vector3 Clamp(Vector3 value, Vector3 min, Vector3 max)
+		{
+			return new Vector3(
+				Mathf.Clamp(value.X, min.X, max.X),
+				Mathf.Clamp(value.Y, min.Y, max.Y),
+				Mathf.Clamp(value.Z, min.Z, max.Z)
+			);
+		}
+
 		public override string ToString() { return $"Vector3: {X}, {Y}, {Z}"; }
 
 		public static implicit operator Color3(Vector3 vector) => new Color3(vector.X, vector.Y, vector.Z);

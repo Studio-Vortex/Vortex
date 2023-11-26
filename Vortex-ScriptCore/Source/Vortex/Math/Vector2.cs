@@ -79,6 +79,25 @@
 		}
 
 		public static implicit operator Color2(Vector2 vector) => new Color2(vector.X, vector.Y);
+
+		public Vector2 Clamp(Vector2 value, Vector2 min, Vector2 max)
+		{
+			return new Vector2(
+				Mathf.Clamp(value.X, min.X, max.X),
+				Mathf.Clamp(value.Y, min.Y, max.Y)
+			);
+		}
+
+		public static Vector2 Lerp(Vector2 p1, Vector2 p2, float maxDistanceDelta)
+		{
+			if (maxDistanceDelta < 0.0f)
+				return p1;
+
+			if (maxDistanceDelta > 1.0f)
+				return p2;
+
+			return p1 + ((p2 - p1) * maxDistanceDelta);
+		}
 	}
 
 }

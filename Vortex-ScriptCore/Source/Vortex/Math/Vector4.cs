@@ -94,6 +94,8 @@ namespace Vortex {
 		public static bool operator ==(Vector4 left, Vector4 right) => left.Equals(right);
 		public static bool operator !=(Vector4 left, Vector4 right) => !(left == right);
 
+		public static implicit operator Color4(Vector4 vector) => new Color4(vector.X, vector.Y, vector.Z, vector.W);
+
 		public override bool Equals(object obj) => obj is Vector4 other && Equals(other);
 		public bool Equals(Vector4 right) => X == right.X && Y == right.Y && Z == right.Z && W == right.W;
 
@@ -101,7 +103,26 @@ namespace Vortex {
 
 		public float Length() => Mathf.Sqrt(X * X + Y * Y + Z * Z + W * W);
 
-		public static implicit operator Color4(Vector4 vector) => new Color4(vector.X, vector.Y, vector.Z, vector.W);
+		public static Vector4 Lerp(Vector4 p1, Vector4 p2, float maxDistanceDelta)
+		{
+			if (maxDistanceDelta < 0.0f)
+				return p1;
+
+			if (maxDistanceDelta > 1.0f)
+				return p2;
+
+			return p1 + ((p2 - p1) * maxDistanceDelta);
+		}
+
+		public Vector4 Clamp(Vector4 value, Vector4 min, Vector4 max)
+		{
+			return new Vector4(
+				Mathf.Clamp(value.X, min.X, max.X),
+				Mathf.Clamp(value.Y, min.Y, max.Y),
+				Mathf.Clamp(value.Z, min.Z, max.Z),
+				Mathf.Clamp(value.W, min.W, max.W)
+			);
+		}
 	}
 
 }
