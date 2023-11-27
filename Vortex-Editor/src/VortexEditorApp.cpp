@@ -19,13 +19,12 @@ namespace Vortex {
 	{
 		ApplicationProperties props;
 
-		// Just for convenience
 #ifdef VX_DEBUG
 		props.Name = fmt::format("Vortex Editor - (Debug devel - {})", VORTEX_BUILD_ID);
 #elif VX_RELEASE
-		props.Name = fmt::format("Vortex Editor - (Release - {0})", VORTEX_BUILD_ID);
+		props.Name = fmt::format("Vortex Editor - (Release - {})", VORTEX_BUILD_ID);
 #elif VX_DIST
-		props.Name = fmt::format("Vortex Editor ({0})", VORTEX_BUILD_ID);
+		props.Name = fmt::format("Vortex Editor (Dist - {})", VORTEX_BUILD_ID);
 #endif
 
 		props.WindowWidth = 1600;

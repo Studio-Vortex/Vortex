@@ -33,10 +33,9 @@ namespace Vortex {
 
 		// UI
 
-		void UI_GizmosToolbar();
-		void UI_CentralToolbar();
-		void UI_SceneSettingsToolbar();
-		void OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode);
+		void UIGizmosToolbar();
+		void UICentralToolbar();
+		void UIViewportSettingsToolbar();
 
 		// Popups
 
@@ -87,6 +86,8 @@ namespace Vortex {
 		void OnScaleToolSelected();
 
 		// Overlay
+
+		void OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode);
 
 		void OverlayRenderMeshBoundingBox(Entity entity, const Math::mat4& transform, const Math::vec4& boundingBoxColor);
 		void OverlayRenderMeshBoundingBoxes(const Math::vec4& boundingBoxColor);

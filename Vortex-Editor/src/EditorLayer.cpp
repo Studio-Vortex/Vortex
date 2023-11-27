@@ -403,7 +403,8 @@ namespace Vortex {
 
 		style.WindowMinSize.x = minWinSizeX;
 
-		if ((Gui::IsMouseClicked(ImGuiMouseButton_Left) || Gui::IsMouseClicked(ImGuiMouseButton_Right)) && (!m_StartedClickInViewport || !m_StartedClickInSecondViewport))
+		if ((Gui::IsMouseClicked(ImGuiMouseButton_Left) || Gui::IsMouseClicked(ImGuiMouseButton_Right))
+			&& (!m_StartedClickInViewport || !m_StartedClickInSecondViewport))
 		{
 			ImGuiWindow* hoveredWindow = GImGui->HoveredWindow;
 			if (hoveredWindow)
@@ -426,7 +427,6 @@ namespace Vortex {
 			m_PanelManager->OnGuiRender<ProjectSettingsPanel>();
 			m_PanelManager->OnGuiRender<NetworkManagerPanel>();
 			m_PanelManager->GetPanel<SceneHierarchyPanel>()->OnGuiRender(m_HoveredEntity, m_EditorCamera);
-			m_PanelManager->OnGuiRender<ContentBrowserPanel>();
 			m_PanelManager->OnGuiRender<ScriptRegistryPanel>();
 			m_PanelManager->OnGuiRender<MaterialEditorPanel>();
 			m_PanelManager->OnGuiRender<SceneRendererPanel>();
@@ -442,6 +442,7 @@ namespace Vortex {
 		}
 
 		// Always render if open
+		m_PanelManager->OnGuiRender<ContentBrowserPanel>();
 		m_PanelManager->OnGuiRender<PerformancePanel>();
 
 		// Update Engine Systems Gui
@@ -454,6 +455,7 @@ namespace Vortex {
 		{
 			OnScenePanelRender();
 		}
+
 		if (m_ShowSecondViewport)
 		{
 			OnSecondViewportPanelRender();
@@ -484,18 +486,18 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		ImGuiIO& io = Gui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
+		const ImGuiIO& io = Gui::GetIO();
+		const auto boldFont = io.Fonts->Fonts[0];
+		const auto largeFont = io.Fonts->Fonts[1];
 
 		SharedReference<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
 
 		if (Gui::BeginMenuBar())
 		{
-			bool inEditMode = m_SceneState == SceneState::Edit;
-			bool inPlayMode = m_SceneState == SceneState::Play;
-			bool inSimulateMode = m_SceneState == SceneState::Simulate;
+			const bool inEditMode = m_SceneState == SceneState::Edit;
+			const bool inPlayMode = m_SceneState == SceneState::Play;
+			const bool inSimulateMode = m_SceneState == SceneState::Simulate;
 
 			if (Gui::BeginMenu("File"))
 			{
@@ -561,21 +563,6 @@ namespace Vortex {
 			{
 				if (inEditMode)
 				{
-					Entity selectedEntity = SelectionManager::GetSelectedEntity();
-
-					if (selectedEntity)
-					{
-						if (Gui::MenuItem("Move To Camera Position"))
-						{
-							TransformComponent& transform = selectedEntity.GetTransform();
-							transform.Translation = m_EditorCamera->GetPosition();
-							transform.SetRotationEuler(Math::vec3(-m_EditorCamera->GetPitch(), -m_EditorCamera->GetYaw(), transform.GetRotationEuler().z));
-							Gui::CloseCurrentPopup();
-						}
-
-						UI::Draw::Underline();
-					}
-
 					if (Gui::MenuItem("Play Scene", "Ctrl+P"))
 					{
 						OnScenePlay();
@@ -589,10 +576,22 @@ namespace Vortex {
 						Gui::CloseCurrentPopup();
 					}
 
-					if (selectedEntity)
-					{
-						UI::Draw::Underline();
+					UI::Draw::Underline();
 
+					Entity selectedEntity = SelectionManager::GetSelectedEntity();
+
+					if (!selectedEntity)
+					{
+						if (Gui::BeginMenu("Create Entity"))
+						{
+							EditorCamera* camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
+							m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateEntityMenu(camera);
+
+							Gui::EndMenu();
+						}
+					}
+					else
+					{
 						if (Gui::MenuItem("Rename Entity", "F2"))
 						{
 							m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(true);
@@ -611,6 +610,40 @@ namespace Vortex {
 						{
 							SelectionManager::DeselectEntity();
 							m_ActiveScene->SubmitToDestroyEntity(selectedEntity);
+							Gui::CloseCurrentPopup();
+						}
+						UI::Draw::Underline();
+
+						if (Gui::MenuItem("Move To Camera Position"))
+						{
+							TransformComponent& transform = selectedEntity.GetTransform();
+							transform.Translation = m_EditorCamera->GetPosition();
+							transform.SetRotationEuler(Math::vec3(-m_EditorCamera->GetPitch(), -m_EditorCamera->GetYaw(), transform.GetRotationEuler().z));
+							Gui::CloseCurrentPopup();
+						}
+						UI::Draw::Underline();
+
+						if (Gui::MenuItem("Reset Translation", "Alt+W"))
+						{
+							TransformComponent& transformComponent = selectedEntity.GetTransform();
+							transformComponent.Translation = Math::vec3(0.0f);
+							Gui::CloseCurrentPopup();
+						}
+						UI::Draw::Underline();
+
+						if (Gui::MenuItem("Reset Rotation", "Alt+E"))
+						{
+							TransformComponent& transformComponent = selectedEntity.GetTransform();
+							Math::quaternion identity(1.0f, 0.0f, 0.0f, 0.0f);
+							transformComponent.SetRotation(identity);
+							Gui::CloseCurrentPopup();
+						}
+						UI::Draw::Underline();
+
+						if (Gui::MenuItem("Reset Scale", "Alt+R"))
+						{
+							TransformComponent& transformComponent = selectedEntity.GetTransform();
+							transformComponent.Scale = Math::vec3(1.0f);
 							Gui::CloseCurrentPopup();
 						}
 					}
@@ -654,24 +687,17 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("View"))
 			{
-				Gui::MenuItem("Maximize On Play", nullptr, &projectProps.EditorProps.MaximizeOnPlay);
+				if (Gui::MenuItem("Maximize On Play", nullptr, &projectProps.EditorProps.MaximizeOnPlay))
+				{
+					Gui::CloseCurrentPopup();
+				}
 				UI::Draw::Underline();
 
-				if (m_SceneViewportMaximized)
+				std::string itemLabel = m_SceneViewportMaximized ? "Minimize Scene" : "Maximize Scene";
+				if (Gui::MenuItem(itemLabel.c_str(), "Ctrl+Space"))
 				{
-					if (Gui::MenuItem("Minimize Scene", "Ctrl+Space"))
-					{
-						m_SceneViewportMaximized = false;
-						Gui::CloseCurrentPopup();
-					}
-				}
-				else
-				{
-					if (Gui::MenuItem("Maximize Scene", "Ctrl+Space"))
-					{
-						m_SceneViewportMaximized = true;
-						Gui::CloseCurrentPopup();
-					}
+					m_SceneViewportMaximized = !m_SceneViewportMaximized;
+					Gui::CloseCurrentPopup();
 				}
 
 				Gui::EndMenu();
@@ -679,7 +705,7 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Tools"))
 			{
-				if (Gui::MenuItem("No Selection", "Q"))
+				if (Gui::MenuItem("Select Tool", "Q"))
 				{
 					OnNoGizmoSelected();
 					Gui::CloseCurrentPopup();
@@ -759,55 +785,55 @@ namespace Vortex {
 				}
 				UI::Draw::Underline();
 
-				m_PanelManager->MainMenuBarItem<BuildSettingsPanel>("Ctrl+Shift+B");
+				m_PanelManager->MenuBarItem<BuildSettingsPanel>("Ctrl+Shift+B");
 
 				Gui::EndMenu();
 			}
 			
 			if (Gui::BeginMenu("Window"))
 			{
-				m_PanelManager->MainMenuBarItem<AudioMixerPanel>();
+				m_PanelManager->MenuBarItem<AudioMixerPanel>();
 				UI::Draw::Underline();
-				m_PanelManager->MainMenuBarItem<ConsolePanel>();
+				m_PanelManager->MenuBarItem<ConsolePanel>();
 				UI::Draw::Underline();
-				m_PanelManager->MainMenuBarItem<ContentBrowserPanel>();
+				m_PanelManager->MenuBarItem<ContentBrowserPanel>("Shift+Space");
 				UI::Draw::Underline();
 				Gui::MenuItem("Inspector", nullptr, &m_PanelManager->GetPanel<SceneHierarchyPanel>()->IsInspectorOpen());
 				UI::Draw::Underline();
-				m_PanelManager->MainMenuBarItem<MaterialEditorPanel>();
+				m_PanelManager->MenuBarItem<MaterialEditorPanel>();
 				UI::Draw::Underline();
-				m_PanelManager->MainMenuBarItem<PhysicsMaterialEditorPanel>();
+				m_PanelManager->MenuBarItem<PhysicsMaterialEditorPanel>();
 				UI::Draw::Underline();
 				Gui::MenuItem("Scene", nullptr, &m_ShowScenePanel);
 				UI::Draw::Underline();
-				m_PanelManager->MainMenuBarItem<SceneHierarchyPanel>();
+				m_PanelManager->MenuBarItem<SceneHierarchyPanel>();
 				UI::Draw::Underline();
-				m_PanelManager->MainMenuBarItem<SceneRendererPanel>();
+				m_PanelManager->MenuBarItem<SceneRendererPanel>();
 				UI::Draw::Underline();
 				Gui::MenuItem("Second Viewport", nullptr, &m_ShowSecondViewport);
 				UI::Draw::Underline();
-				m_PanelManager->MainMenuBarItem<ShaderEditorPanel>();
+				m_PanelManager->MenuBarItem<ShaderEditorPanel>();
 				UI::Draw::Underline();
-				m_PanelManager->MainMenuBarItem<ProjectSettingsPanel>();
+				m_PanelManager->MenuBarItem<ProjectSettingsPanel>();
 				UI::Draw::Underline();
 
 				if (Gui::BeginMenu("Debug"))
 				{
-					m_PanelManager->MainMenuBarItem<AssetRegistryPanel>();
+					m_PanelManager->MenuBarItem<AssetRegistryPanel>();
 					UI::Draw::Underline();
-					m_PanelManager->MainMenuBarItem<ECSDebugPanel>();
+					m_PanelManager->MenuBarItem<ECSDebugPanel>();
 					UI::Draw::Underline();
-					m_PanelManager->MainMenuBarItem<NetworkManagerPanel>();
+					m_PanelManager->MenuBarItem<NetworkManagerPanel>();
 					UI::Draw::Underline();
-					m_PanelManager->MainMenuBarItem<PerformancePanel>();
+					m_PanelManager->MenuBarItem<PerformancePanel>();
 					UI::Draw::Underline();
-					m_PanelManager->MainMenuBarItem<PhysicsStatisticsPanel>();
+					m_PanelManager->MenuBarItem<PhysicsStatisticsPanel>();
 					UI::Draw::Underline();
-					m_PanelManager->MainMenuBarItem<ScriptRegistryPanel>();
+					m_PanelManager->MenuBarItem<ScriptRegistryPanel>();
 					UI::Draw::Underline();
-					m_PanelManager->MainMenuBarItem<SubModulesPanel>();
+					m_PanelManager->MenuBarItem<SubModulesPanel>();
 					UI::Draw::Underline();
-					m_PanelManager->MainMenuBarItem<SystemManagerPanel>();
+					m_PanelManager->MenuBarItem<SystemManagerPanel>();
 
 					Gui::EndMenu();
 				}
@@ -817,7 +843,7 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Help"))
 			{
-				m_PanelManager->MainMenuBarItem<AboutPanel>();
+				m_PanelManager->MenuBarItem<AboutPanel>();
 
 				Gui::EndMenu();
 			}
@@ -858,9 +884,9 @@ namespace Vortex {
 
 		if (Gui::IsItemVisible())
 		{
-			UI_GizmosToolbar();
-			UI_CentralToolbar();
-			UI_SceneSettingsToolbar();
+			UIGizmosToolbar();
+			UICentralToolbar();
+			UIViewportSettingsToolbar();
 		}
 
 		if (m_SceneViewportHovered || !m_ShowSecondViewport)
@@ -1235,7 +1261,7 @@ namespace Vortex {
 		}
 	}
 
-	void EditorLayer::UI_GizmosToolbar()
+	void EditorLayer::UIGizmosToolbar()
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -1294,7 +1320,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void EditorLayer::UI_CentralToolbar()
+	void EditorLayer::UICentralToolbar()
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -1324,8 +1350,8 @@ namespace Vortex {
 		Gui::SetNextWindowBgAlpha(0.0f);
 		Gui::Begin("Central Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
 
-		const float desiredHeight = 26.0f;
-		ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
+		const const float desiredHeight = 26.0f;
+		const ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
 		Gui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
 
 		Gui::BeginVertical("##viewportCentralToolbarV", { backgroundWidth, Gui::GetContentRegionAvail().y });
@@ -1333,10 +1359,10 @@ namespace Vortex {
 		Gui::BeginHorizontal("##viewportCentralToolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
 
-		bool hasPlayButton = m_SceneState != SceneState::Simulate;
-		bool hasSimulateButton = m_SceneState != SceneState::Play;
-		bool hasPauseButton = m_SceneState != SceneState::Edit;
-		bool scenePaused = m_ActiveScene->IsPaused();
+		const bool hasPlayButton = m_SceneState != SceneState::Simulate;
+		const bool hasSimulateButton = m_SceneState != SceneState::Play;
+		const bool hasPauseButton = m_SceneState != SceneState::Edit;
+		const bool scenePaused = m_ActiveScene->IsPaused();
 
 		if (hasPlayButton)
 		{
@@ -1347,6 +1373,8 @@ namespace Vortex {
 					OnScenePlay();
 				else
 					OnSceneStop();
+
+				Gui::SetWindowFocus("Scene");
 			}
 
 			UI::SetTooltip((hasSimulateButton) ? "Play" : "Stop");
@@ -1371,7 +1399,7 @@ namespace Vortex {
 			SharedReference<Texture2D> icon = EditorResources::PauseIcon;
 			if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 			{
-				bool paused = !scenePaused;
+				const bool paused = !scenePaused;
 
 				if (paused)
 					OnScenePause();
@@ -1399,7 +1427,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void EditorLayer::UI_SceneSettingsToolbar()
+	void EditorLayer::UIViewportSettingsToolbar()
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -2369,7 +2397,8 @@ namespace Vortex {
 				if (altDown && selectedEntity)
 				{
 					TransformComponent& transformComponent = selectedEntity.GetTransform();
-					transformComponent.SetRotationEuler(Math::vec3(0.0f));
+					Math::quaternion identity(1.0f, 0.0f, 0.0f, 0.0f);
+					transformComponent.SetRotation(identity);
 				}
 
 				OnRotationToolSelected();
@@ -2510,11 +2539,6 @@ namespace Vortex {
 				Window& window = Application::Get().GetWindow();
 				window.SetMaximized(!window.IsMaximized());
 
-				if (!window.IsMaximized())
-				{
-					window.CenterWindow();
-				}
-
 				break;
 			}
 
@@ -2530,6 +2554,11 @@ namespace Vortex {
 			{
 				if (controlDown)
 					m_SceneViewportMaximized = !m_SceneViewportMaximized;
+				else if (shiftDown)
+				{
+					auto contentBrowserPanel = m_PanelManager->GetPanel<ContentBrowserPanel>();
+					contentBrowserPanel->IsOpen = !contentBrowserPanel->IsOpen;
+				}
 
 				break;
 			}
@@ -2696,12 +2725,11 @@ namespace Vortex {
 		std::filesystem::path startScenePath = Project::GetActive()->GetProperties().General.StartScene;
 		const AssetMetadata& sceneMetadata = editorAssetManager->GetMetadata(startScenePath);
 
-		auto relativePath = editorAssetManager->GetFileSystemPath(sceneMetadata);
+		std::filesystem::path relativePath = editorAssetManager->GetFileSystemPath(sceneMetadata);
 		OpenScene(relativePath);
 
-		SharedReference<Project> activeProject = Project::GetActive();
-		m_PanelManager->AddPanel<ProjectSettingsPanel>(activeProject);
-		m_PanelManager->AddPanel<ContentBrowserPanel>(Project::GetAssetDirectory())->IsOpen = true;
+		m_PanelManager->AddPanel<ProjectSettingsPanel>(Project::GetActive());
+		m_PanelManager->AddPanel<ContentBrowserPanel>(Project::GetAssetDirectory());
 		
 		return true;
 	}
@@ -2934,6 +2962,7 @@ namespace Vortex {
 
 	void EditorLayer::RestartScene()
 	{
+		OnSceneStop();
 		OnScenePlay();
 	}
 
@@ -2955,6 +2984,7 @@ namespace Vortex {
 
 	void EditorLayer::RestartSceneSimulation()
 	{
+		OnSceneStop();
 		OnSceneSimulate();
 	}
 

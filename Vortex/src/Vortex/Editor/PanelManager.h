@@ -93,7 +93,7 @@ namespace Vortex {
 		}
 
 		template <typename TPanel>
-		bool MainMenuBarItem(const std::string& shortcut = "")
+		bool MenuBarItem(const std::string& shortcut = "")
 		{
 			static_assert(std::is_base_of<EditorPanel, TPanel>::value, "MainMenuBarItem only works with type derived from EditorPanel!");
 

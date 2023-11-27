@@ -53,9 +53,9 @@
 
 #define BIT(x) (1 << x)
 
-namespace Vortex {
-
 #define VORTEX_BUILD_ID "v0.1a"
+
+namespace Vortex {
 
 	void InitalizeEngine();
 	void ShutdownEngine();
@@ -66,16 +66,25 @@ namespace Vortex {
 	template <typename T>
 	using SharedRef = std::shared_ptr<T>;
 
-	template <typename T, typename ... Args>
-	constexpr UniqueRef<T> CreateUnique(Args&& ... args)
+	template <typename T>
+	using WeakRef = std::weak_ptr<T>;
+
+	template <typename T, typename... Args>
+	constexpr UniqueRef<T> CreateUnique(Args&&... args)
 	{
 		return std::make_unique<T>(std::forward<Args>(args)...);
 	}
 
-	template <typename T, typename ... Args>
-	constexpr SharedRef<T> CreateShared(Args&& ... args)
+	template <typename T, typename... Args>
+	constexpr SharedRef<T> CreateShared(Args&&... args)
 	{
 		return std::make_shared<T>(std::forward<Args>(args)...);
+	}
+
+	template <typename T, typename... Args>
+	constexpr WeakRef<T> CreateWeak(SharedRef<T> ptr)
+	{
+		return WeakRef<T>(ptr);
 	}
 
 }
