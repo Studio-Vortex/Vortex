@@ -30,7 +30,7 @@ namespace Vortex {
 		return m_ClassNamespace;
 	}
 
-	const std::string& ScriptClass::GetClassName() const
+	const std::string& ScriptClass::GetClassNameV() const
 	{
 		return m_ClassName;
 	}
