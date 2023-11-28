@@ -1,5 +1,5 @@
 #include "vxpch.h"
-#include "StringUtils.h"
+#include "String.h"
 
 namespace Vortex {
 
@@ -29,6 +29,24 @@ namespace Vortex {
 	{
 		return SplitString(string, std::string(1, delimiter));
 	}
+
+    std::string String::ToUpper(std::string& string)
+    {
+		std::transform(string.begin(), string.end(), string.begin(),
+		[](const unsigned char c)
+		{
+			return std::toupper(c);
+		});
+
+		return string;
+    }
+
+    std::string String::ToUpperCopy(std::string_view& string)
+    {
+		std::string result(string);
+		ToUpper(result);
+		return result;
+    }
 
     std::string String::ToLower(std::string& string)
     {

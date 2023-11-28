@@ -3,7 +3,6 @@
 #include "Vortex/Core/Base.h"
 #include "Vortex/Project/Project.h"
 #include "Vortex/Utils/FileSystem.h"
-#include "Vortex/Utils/StringUtils.h"
 #include "Vortex/Asset/Asset.h"
 
 #include <unordered_map>

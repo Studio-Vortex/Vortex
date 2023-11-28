@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Math/Math.h"
+#include "Vortex/Core/String.h"
 #include "Vortex/Gui/Colors.h"
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"

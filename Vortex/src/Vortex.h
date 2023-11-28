@@ -5,6 +5,7 @@
 #include "Vortex/Core/Platform.h"
 #include "Vortex/Core/Layer.h"
 #include "Vortex/Core/Log.h"
+#include "Vortex/Core/String.h"
 #include "Vortex/Core/Buffer.h"
 #include "Vortex/Core/Window.h"
 #include "Vortex/Core/Platform.h"
@@ -112,7 +113,6 @@
 /// Utilities
 #include "Vortex/Utils/FileDialogue.h"
 #include "Vortex/Utils/FileSystem.h"
-#include "Vortex/Utils/StringUtils.h"
 #include "Vortex/Utils/Random.h"
 #include "Vortex/Utils/Time.h"
 /// ---------------------------------------------------
