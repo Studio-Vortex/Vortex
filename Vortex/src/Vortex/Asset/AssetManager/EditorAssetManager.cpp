@@ -2,8 +2,11 @@
 #include "EditorAssetManager.h"
 
 #include "Vortex/Project/Project.h"
+
+#include "Vortex/Core/String.h"
+
 #include "Vortex/Asset/AssetExtensions.h"
-#include "Vortex/Utils/StringUtils.h"
+
 #include "Vortex/Utils/YAML_SerializationUtils.h"
 
 #include <yaml-cpp/yaml.h>

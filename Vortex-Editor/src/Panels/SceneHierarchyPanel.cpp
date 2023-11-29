@@ -525,7 +525,7 @@ namespace Vortex {
 		}
 		else
 		{
-			const char* name = "None";
+			const char* name = "(null)";
 
 			if (m_ContextScene && hoveredEntity && hoveredEntity.HasComponent<TagComponent>())
 			{
@@ -1342,7 +1342,7 @@ namespace Vortex {
 			skybox = AssetManager::GetAsset<Skybox>(environmentHandle);
 		}
 
-		std::string relativeSkyboxPath = "None";
+		std::string relativeSkyboxPath = "(null)";
 
 		if (skybox && skybox->IsLoaded())
 		{
@@ -1995,7 +1995,9 @@ namespace Vortex {
 
 			UI::BeginPropertyGrid();
 			std::string ascPath = audioSource->GetPath().string();
-			std::string relativePath = FileSystem::Relative(ascPath, Project::GetAssetDirectory()).string();
+			std::string relativePath = "(null)";
+			if (!ascPath.empty())
+				relativePath = FileSystem::Relative(ascPath, Project::GetAssetDirectory()).string();
 			UI::Property("Source", relativePath, true);
 			UI::EndPropertyGrid();
 
@@ -2020,8 +2022,6 @@ namespace Vortex {
 							auto asset = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, audioSourcePath);
 
 							component.AudioHandle = asset->Handle;
-
-							//SystemManager::GetAssetSystem<AudioSystem>()->CreateAsset(entity, audioSourcePath.string());
 						}
 						else
 						{
@@ -2589,14 +2589,18 @@ namespace Vortex {
 		UI::BeginPropertyGrid();
 
 		std::vector<const char*> entityClassNameStrings;
-		bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
+		const bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
 
-		auto entityClasses = ScriptEngine::GetClasses();
+		std::unordered_map<std::string, SharedReference<ScriptClass>> entityClasses = ScriptEngine::GetClasses();
 
 		for (auto& [className, entityScriptClass] : entityClasses)
 			entityClassNameStrings.push_back(className.c_str());
 
-		std::string currentClassName = component.ClassName;
+		std::string currentClassName = "(null)";
+		if (!component.ClassName.empty())
+		{
+			currentClassName = component.ClassName;
+		}
 
 		// Display available entity classes to choose from
 		if (UI::PropertyDropdownSearch("Class", entityClassNameStrings.data(), entityClassNameStrings.size(), currentClassName, m_EntityClassNameInputTextFilter))

@@ -26,6 +26,7 @@ namespace Vortex {
 			constexpr auto text = IM_COL32(192, 192, 192, 255);
 			constexpr auto textBrighter = IM_COL32(210, 210, 210, 255);
 			constexpr auto textDarker = IM_COL32(128, 128, 128, 255);
+			constexpr auto textError = IM_COL32(230, 51, 51, 255);
 			constexpr auto muted = IM_COL32(77, 77, 77, 255);
 			constexpr auto groupHeader = IM_COL32(47, 47, 47, 255);
 			//constexpr auto selection				= IM_COL32(191, 177, 155, 255);

@@ -1,9 +1,12 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Project/Project.h"
-#include "Vortex/Utils/FileSystem.h"
+
 #include "Vortex/Asset/Asset.h"
+
+#include "Vortex/Project/Project.h"
+
+#include "Vortex/Utils/FileSystem.h"
 
 #include <unordered_map>
 #include <unordered_set>

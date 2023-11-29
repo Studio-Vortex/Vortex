@@ -731,6 +731,20 @@ namespace Vortex {
 		return Entity{};
 	}
 
+	Entity Scene::GetEnvironmentEntity()
+	{
+		VX_PROFILE_FUNCTION();
+
+		auto view = GetAllEntitiesWith<SkyboxComponent>();
+
+		for (const auto entity : view)
+		{
+			return { entity, this };
+		}
+
+		return Entity{};
+	}
+
 	Entity Scene::GetSkyLightEntity()
 	{
 		VX_PROFILE_FUNCTION();

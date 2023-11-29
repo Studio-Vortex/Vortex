@@ -1,12 +1,14 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include "Vortex/Asset/Asset.h"
 
 #include <filesystem>
 
 namespace Vortex {
 
-	struct AssetMetadata
+	struct VORTEX_API AssetMetadata
 	{
 		AssetHandle Handle = 0;
 		AssetType Type = AssetType::None;

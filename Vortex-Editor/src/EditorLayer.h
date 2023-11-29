@@ -119,6 +119,8 @@ namespace Vortex {
 		std::pair<float, float> GetMouseViewportSpace(bool mainViewport);
 		std::pair<Math::vec3, Math::vec3> CastRay(EditorCamera* editorCamera, float mx, float my);
 
+		Entity GetHoveredMeshEntityFromRaycast();
+
 	private:
 		struct SelectionData
 		{

@@ -47,7 +47,7 @@ namespace Vortex {
 		const auto& appProps = Application::Get().GetProperties();
 
 		FramebufferProperties framebufferProps;
-		
+
 		framebufferProps.Attachments = {
 			ImageFormat::RGBA16F,
 			ImageFormat::RED_INTEGER,
@@ -427,6 +427,7 @@ namespace Vortex {
 			m_PanelManager->OnGuiRender<ProjectSettingsPanel>();
 			m_PanelManager->OnGuiRender<NetworkManagerPanel>();
 			m_PanelManager->GetPanel<SceneHierarchyPanel>()->OnGuiRender(m_HoveredEntity, m_EditorCamera);
+			m_PanelManager->OnGuiRender<ContentBrowserPanel>();
 			m_PanelManager->OnGuiRender<ScriptRegistryPanel>();
 			m_PanelManager->OnGuiRender<MaterialEditorPanel>();
 			m_PanelManager->OnGuiRender<SceneRendererPanel>();
@@ -442,7 +443,6 @@ namespace Vortex {
 		}
 
 		// Always render if open
-		m_PanelManager->OnGuiRender<ContentBrowserPanel>();
 		m_PanelManager->OnGuiRender<PerformancePanel>();
 
 		// Update Engine Systems Gui
@@ -789,7 +789,7 @@ namespace Vortex {
 
 				Gui::EndMenu();
 			}
-			
+
 			if (Gui::BeginMenu("Window"))
 			{
 				m_PanelManager->MenuBarItem<AudioMixerPanel>();
@@ -918,10 +918,6 @@ namespace Vortex {
 
 				switch (assetType)
 				{
-					case AssetType::MeshAsset:
-					{
-						break;
-					}
 					case AssetType::FontAsset:
 					{
 						break;
@@ -942,11 +938,36 @@ namespace Vortex {
 					}
 					case AssetType::ScriptAsset:
 					{
+						if (!m_HoveredEntity)
+							m_HoveredEntity = GetHoveredMeshEntityFromRaycast();
+						if (!m_HoveredEntity)
+							break;
+
+						auto& scriptComponent = m_HoveredEntity.AddOrReplaceComponent<ScriptComponent>();
+						std::unordered_map<std::string, SharedReference<ScriptClass>> scriptClasses = ScriptEngine::GetClasses();
+
+						std::string droppedClassName = Project::GetEditorAssetManager()->GetRelativePath(filepath).string();
+
+						for (const auto& [className, instance] : scriptClasses)
+						{
+							if (className.find(droppedClassName) != std::string::npos)
+							{
+								scriptComponent.ClassName = className;
+							}
+						}
+
+						if (scriptComponent.ClassName.empty())
+						{
+							VX_CONSOLE_LOG_ERROR("Failed to locate class name for script '{}', the class and script name must match!", droppedClassName);
+						}
+
 						break;
 					}
 					case AssetType::TextureAsset:
 					{
-						if (!m_HoveredEntity.HasAny<SpriteRendererComponent, StaticMeshRendererComponent>())
+						if (!m_HoveredEntity)
+							m_HoveredEntity = GetHoveredMeshEntityFromRaycast();
+						if (!m_HoveredEntity || !m_HoveredEntity.HasAny<SpriteRendererComponent, StaticMeshRendererComponent, MeshRendererComponent>())
 							break;
 
 						std::filesystem::path textureFilepath = filepath;
@@ -957,11 +978,11 @@ namespace Vortex {
 						{
 							SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(textureHandle);
 
-							if (m_HoveredEntity && m_HoveredEntity.HasComponent<SpriteRendererComponent>())
+							if (m_HoveredEntity.HasComponent<SpriteRendererComponent>())
 							{
 								m_HoveredEntity.GetComponent<SpriteRendererComponent>().Texture = textureHandle;
 							}
-							else if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
+							else if (m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
 							{
 								auto& staticMeshRendererComponent = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>();
 								AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
@@ -1008,7 +1029,8 @@ namespace Vortex {
 					}
 					case AssetType::MaterialAsset:
 					{
-						if (!m_HoveredEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
+						m_HoveredEntity = GetHoveredMeshEntityFromRaycast();
+						if (!m_HoveredEntity || !m_HoveredEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
 							break;
 
 						std::filesystem::path materialFilepath = filepath;
@@ -1027,14 +1049,14 @@ namespace Vortex {
 								{
 									auto& meshRendererComponent = m_HoveredEntity.GetComponent<MeshRendererComponent>();
 									auto& materialTable = meshRendererComponent.Materials;
-									
+
 									materialTable->SetMaterial(0, materialHandle);
 								}
 								else if (m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
 								{
 									auto& staticMeshRendererComponent = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>();
 									auto& materialTable = staticMeshRendererComponent.Materials;
-									
+
 									materialTable->SetMaterial(0, materialHandle);
 								}
 
@@ -1056,21 +1078,34 @@ namespace Vortex {
 					{
 						break;
 					}
+					case AssetType::MeshAsset: // Fallthrough
 					case AssetType::StaticMeshAsset:
 					{
+						m_HoveredEntity = GetHoveredMeshEntityFromRaycast();
+						if (!m_HoveredEntity || !m_HoveredEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
+							break;
+
 						std::filesystem::path modelPath = filepath;
 
-						if (m_HoveredEntity && m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
-						{
-							m_OpenMeshImportPopup = true;
-							m_MeshFilepath = modelPath.string();
-							m_MeshEntityToEdit = m_HoveredEntity;
-						}
+						m_OpenMeshImportPopup = true;
+						m_MeshFilepath = modelPath.string();
+						m_MeshEntityToEdit = m_HoveredEntity;
 
 						break;
 					}
 					case AssetType::EnvironmentAsset:
 					{
+						std::filesystem::path environmentPath = filepath;
+						AssetHandle environmentHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(environmentPath);
+						if (!AssetManager::IsHandleValid(environmentHandle))
+							break;
+
+						if (Entity environmentEntity = m_ActiveScene->GetEnvironmentEntity())
+						{
+							SkyboxComponent& skyboxComponent = environmentEntity.GetComponent<SkyboxComponent>();
+							skyboxComponent.Skybox = environmentHandle;
+						}
+
 						break;
 					}
 					case AssetType::PhysicsMaterialAsset:
@@ -1130,7 +1165,7 @@ namespace Vortex {
 			// Snapping
 			const bool controlDown = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
 			const bool snapEnabled = projectProps.GizmoProps.SnapEnabled && controlDown;
-			
+
 			const float snapValue = m_GizmoType == ImGuizmo::ROTATE ? projectProps.GizmoProps.RotationSnapValue : projectProps.GizmoProps.SnapValue;
 			std::array<float, 3> snapValues{};
 			snapValues.fill(snapValue);
@@ -1588,7 +1623,7 @@ namespace Vortex {
 
 					UI::EndPropertyGrid();
 				}
-				
+
 				Gui::EndPopup();
 			}
 		}
@@ -1635,7 +1670,7 @@ namespace Vortex {
 		{
 			OverlayRenderGrid(projectProps.EditorProps.DrawEditorAxes);
 		}
-		
+
 		const auto colliderColor = projectProps.PhysicsProps.Physics3DColliderColor;
 		const auto spriteColliderColor = projectProps.PhysicsProps.Physics2DColliderColor;
 		const auto boundingBoxColor = ColorToVec4(Color::Orange);
@@ -1854,7 +1889,7 @@ namespace Vortex {
 			static ScriptingLanguage currentScriptingLanguage = ScriptingLanguage::CSharp;
 			const char* scriptingLanguages[] = { "C#", "C++" };
 			UI::PropertyDropdown("Language", scriptingLanguages, VX_ARRAYCOUNT(scriptingLanguages), currentScriptingLanguage);
-			
+
 			UI::EndPropertyGrid();
 
 			UI::ShiftCursorY(20.0f);
@@ -2134,12 +2169,16 @@ namespace Vortex {
 			switch (m_SelectionMode)
 			{
 				case SelectionMode::Entity:
+				{
 					Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, outlineColor);
 					break;
+				}
 				case SelectionMode::Submesh:
+				{
 					const auto& submesh = mesh->GetSubmesh();
 					Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, outlineColor);
 					break;
+				}
 			}
 		}
 
@@ -2158,15 +2197,19 @@ namespace Vortex {
 			switch (m_SelectionMode)
 			{
 				case SelectionMode::Entity:
+				{
 					Renderer2D::DrawAABB(staticMesh->GetBoundingBox(), transform, outlineColor);
 					break;
+				}
 				case SelectionMode::Submesh:
+				{
 					const auto& submeshes = staticMesh->GetSubmeshes();
 					for (const auto& [submeshIndex, submesh] : submeshes)
 					{
 						Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, outlineColor);
 					}
 					break;
+				}
 			}
 		}
 	}
@@ -2316,17 +2359,17 @@ namespace Vortex {
 		Renderer2D::Flush();
 	}
 
-    bool EditorLayer::OnWindowDragDropEvent(WindowDragDropEvent& e)
-    {
+	bool EditorLayer::OnWindowDragDropEvent(WindowDragDropEvent& e)
+	{
 		for (const auto& path : e.GetPaths())
 		{
 			Project::GetEditorAssetManager()->ImportAsset(path);
 		}
 
-        return true;
-    }
+		return true;
+	}
 
-    bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
+	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 	{
 		auto sceneHierarchyPanel = m_PanelManager->GetPanel<SceneHierarchyPanel>();
 		if (sceneHierarchyPanel->IsEditingEntityName())
@@ -2590,93 +2633,10 @@ namespace Vortex {
 			return false;
 		}
 
-		std::vector<SelectionData> selectionData;
-
-		auto [mouseX, mouseY] = GetMouseViewportSpace(m_SceneViewportHovered);
-		if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
+		if (Entity selected = GetHoveredMeshEntityFromRaycast())
 		{
-			const auto& camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
-			auto [origin, direction] = CastRay(camera, mouseX, mouseY);
-
-			auto meshView = m_ActiveScene->GetAllEntitiesWith<MeshRendererComponent>();
-			for (const auto e : meshView)
-			{
-				Entity entity{ e, m_ActiveScene.Raw() };
-
-				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
-			}
-
-			auto staticMeshView = m_ActiveScene->GetAllEntitiesWith<StaticMeshRendererComponent>();
-			for (const auto e : staticMeshView)
-			{
-				Entity entity{ e, m_ActiveScene.Raw() };
-
-				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(entity);
-				
-				const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
-				if (!AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh))
-					continue;
-
-				auto staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
-				if (!staticMesh)
-					continue;
-
-				const auto& submeshes = staticMesh->GetSubmeshes();
-				uint32_t submeshIndex = 0;
-
-				while (staticMesh->HasSubmesh(submeshIndex))
-				{
-					const auto& submesh = submeshes.at(submeshIndex++);
-
-					Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
-					Math::Ray ray{
-						Math::Inverse(transform) * Math::vec4(origin, 1.0f),
-						Math::Inverse((Math::mat3(transform))) * direction
-					};
-
-					const Math::AABB& aabb = submesh.GetBoundingBox();
-
-					float t;
-					const bool intersects = ray.IntersectsAABB(aabb, t);
-					if (intersects)
-					{
-						float distance = Math::Distance(camera->GetPosition(), worldSpaceTransform.Translation);
-						selectionData.emplace_back(SelectionData{ entity.GetUUID(), distance });
-						break;
-					}
-				}
-			}
-
-			if (selectionData.empty())
-			{
-				SelectionManager::DeselectEntity();
-				return false;
-			}
-
-			const bool anyViewportHovered = (m_SceneViewportHovered && m_SceneState != SceneState::Play) || m_SecondViewportHovered;
-			if (anyViewportHovered)
-			{
-				SelectionData selectedData = selectionData[0];
-
-				float closest = selectedData.Distance;
-				for (const auto& data : selectionData)
-				{
-					if (data.Distance < closest)
-					{
-						closest = data.Distance;
-						selectedData.SelectedUUID = data.SelectedUUID;
-						selectedData.Distance = data.Distance;
-					}
-				}
-
-				Entity selected = m_ActiveScene->TryGetEntityWithUUID(selectedData.SelectedUUID);
-				SelectionManager::SetSelectedEntity(selected);
-
-				if (SelectionManager::GetSelectedEntity() != Entity{})
-				{
-					m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(false);
-				}
-			}
+			SelectionManager::SetSelectedEntity(selected);
+			m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(false);
 		}
 
 		return false;
@@ -2720,7 +2680,7 @@ namespace Vortex {
 			VX_CORE_FATAL("Failed to open project: '{}'", filepath.string());
 			return false;
 		}
-		
+
 		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
 		std::filesystem::path startScenePath = Project::GetActive()->GetProperties().General.StartScene;
 		const AssetMetadata& sceneMetadata = editorAssetManager->GetMetadata(startScenePath);
@@ -2729,8 +2689,8 @@ namespace Vortex {
 		OpenScene(relativePath);
 
 		m_PanelManager->AddPanel<ProjectSettingsPanel>(Project::GetActive());
-		m_PanelManager->AddPanel<ContentBrowserPanel>(Project::GetAssetDirectory());
-		
+		m_PanelManager->AddPanel<ContentBrowserPanel>(Project::GetAssetDirectory())->IsOpen = true;
+
 		return true;
 	}
 
@@ -2840,7 +2800,7 @@ namespace Vortex {
 			{
 				if (sceneFilepath.find(sceneFilename) == std::string::npos)
 					continue;
-				
+
 				Scene::SetActiveSceneBuildIndex(buildIndex);
 
 				break;
@@ -2857,7 +2817,7 @@ namespace Vortex {
 			ReplaceSceneFileExtensionIfNeeded(filepath);
 
 			m_EditorScenePath = filepath;
-			
+
 			SerializeScene(m_ActiveScene, m_EditorScenePath);
 
 			SetWindowTitle(FileSystem::RemoveFileExtension(m_EditorScenePath.filename()));
@@ -2882,13 +2842,13 @@ namespace Vortex {
 
 	void EditorLayer::OnScenePlay()
 	{
-		SharedReference<Project> activeProject = Project::GetActive();
-		ProjectProperties projectProps = activeProject->GetProperties();
-
-		if (m_SceneState == SceneState::Simulate)
+		if (m_SceneState != SceneState::Edit)
 			OnSceneStop();
 
 		m_SceneState = SceneState::Play;
+
+		SharedReference<Project> activeProject = Project::GetActive();
+		ProjectProperties projectProps = activeProject->GetProperties();
 
 		if (projectProps.ScriptingProps.ReloadAssemblyOnPlay)
 			ScriptEngine::ReloadAssembly();
@@ -2962,13 +2922,12 @@ namespace Vortex {
 
 	void EditorLayer::RestartScene()
 	{
-		OnSceneStop();
 		OnScenePlay();
 	}
 
 	void EditorLayer::OnSceneSimulate()
 	{
-		if (m_SceneState == SceneState::Play)
+		if (m_SceneState != SceneState::Edit)
 			OnSceneStop();
 
 		m_SceneState = SceneState::Simulate;
@@ -2984,7 +2943,6 @@ namespace Vortex {
 
 	void EditorLayer::RestartSceneSimulation()
 	{
-		OnSceneStop();
 		OnSceneSimulate();
 	}
 
@@ -3051,7 +3009,7 @@ namespace Vortex {
 
 		Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
 		SelectionManager::SetSelectedEntity(duplicatedEntity);
-		
+
 		m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(true);
 	}
 
@@ -3077,7 +3035,7 @@ namespace Vortex {
 	void EditorLayer::CaptureFramebufferImageToDisk()
 	{
 		const std::string sceneImagePath = Project::GetProjectDirectory().string() + "/" + Project::GetActive()->GetName() + ".png";
-		
+
 		if (FileSystem::Exists(sceneImagePath))
 		{
 			FileSystem::Remove(sceneImagePath);
@@ -3108,7 +3066,7 @@ namespace Vortex {
 	void EditorLayer::ReplaceSceneFileExtensionIfNeeded(std::string& filepath)
 	{
 		std::filesystem::path copy = filepath;
-		
+
 		if (copy.extension() != ".vortex" || copy.extension().empty())
 		{
 			FileSystem::ReplaceExtension(copy, ".vortex");
@@ -3169,6 +3127,95 @@ namespace Vortex {
 		Math::vec3 rayDir = inverseView * Math::vec3(ray);
 
 		return { rayPos, rayDir };
+	}
+
+	Entity EditorLayer::GetHoveredMeshEntityFromRaycast()
+	{
+		std::vector<SelectionData> selectionData;
+
+		auto [mouseX, mouseY] = GetMouseViewportSpace(m_SceneViewportHovered);
+		if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
+		{
+			const auto& camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
+			auto [origin, direction] = CastRay(camera, mouseX, mouseY);
+
+			auto meshView = m_ActiveScene->GetAllEntitiesWith<MeshRendererComponent>();
+			for (const auto e : meshView)
+			{
+				Entity entity{ e, m_ActiveScene.Raw() };
+
+				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+			}
+
+			auto staticMeshView = m_ActiveScene->GetAllEntitiesWith<StaticMeshRendererComponent>();
+			for (const auto e : staticMeshView)
+			{
+				Entity entity{ e, m_ActiveScene.Raw() };
+
+				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(entity);
+
+				const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+				if (!AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh))
+					continue;
+
+				auto staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
+				if (!staticMesh)
+					continue;
+
+				const auto& submeshes = staticMesh->GetSubmeshes();
+				uint32_t submeshIndex = 0;
+
+				while (staticMesh->HasSubmesh(submeshIndex))
+				{
+					const auto& submesh = submeshes.at(submeshIndex++);
+
+					Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+					Math::Ray ray{
+						Math::Inverse(transform) * Math::vec4(origin, 1.0f),
+						Math::Inverse((Math::mat3(transform))) * direction
+					};
+
+					const Math::AABB& aabb = submesh.GetBoundingBox();
+
+					float t;
+					const bool intersects = ray.IntersectsAABB(aabb, t);
+					if (intersects)
+					{
+						float distance = Math::Distance(camera->GetPosition(), worldSpaceTransform.Translation);
+						selectionData.emplace_back(SelectionData{ entity.GetUUID(), distance });
+						break;
+					}
+				}
+			}
+
+			if (selectionData.empty())
+			{
+				SelectionManager::DeselectEntity();
+				return Entity{};
+			}
+
+			const bool anyViewportHovered = (m_SceneViewportHovered && m_SceneState != SceneState::Play) || m_SecondViewportHovered;
+			if (anyViewportHovered)
+			{
+				SelectionData selectedData = selectionData[0];
+
+				float closest = selectedData.Distance;
+				for (const auto& data : selectionData)
+				{
+					if (data.Distance < closest)
+					{
+						closest = data.Distance;
+						selectedData.SelectedUUID = data.SelectedUUID;
+						selectedData.Distance = data.Distance;
+					}
+				}
+
+				if (Entity hovered = m_ActiveScene->TryGetEntityWithUUID(selectedData.SelectedUUID))
+					return hovered;
+			}
+		}
+
+		return Entity{};
 	}
 
 	void EditorLayer::OnNoGizmoSelected()
