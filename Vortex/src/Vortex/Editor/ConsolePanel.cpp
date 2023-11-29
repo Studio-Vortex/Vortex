@@ -1,6 +1,7 @@
 #include "vxpch.h"
 #include "ConsolePanel.h"
 
+#include "Vortex/Core/Application.h"
 #include "Vortex/Core/Log.h"
 #include "Vortex/Scene/Scene.h"
 
@@ -19,7 +20,7 @@ namespace Vortex {
 		VX_CORE_ASSERT(s_Instance == nullptr, "Console Instance was already created!");
 		s_Instance = this;
 
-		m_MessageBuffer.reserve(500);
+		m_MessageBuffer.reserve(1000);
 	}
 
 	ConsolePanel::~ConsolePanel()
@@ -98,9 +99,9 @@ namespace Vortex {
 
 	void ConsolePanel::RenderConsole(const Math::vec2& size)
 	{
-		static const char* s_Columns[] = { "Type", "Timestamp", "Message" };
+		static const char* s_Columns[] = { "Type", "Time", "Message" };
 
-		UI::Table("Console", s_Columns, 3, { size.x, size.y }, [&]()
+		UI::Table("Console##internal", s_Columns, 3, { size.x, size.y }, [&]()
 		{
 			std::scoped_lock<std::mutex> lock(m_MessageBufferMutex);
 
@@ -143,7 +144,7 @@ namespace Vortex {
 				}
 				else
 				{
-					UI::Separator(ImVec2(4.0f, rowHeight), *(ImVec4*)&color);
+					UI::Draw::Separator(ImVec2(4.0f, rowHeight), *(ImVec4*)&color);
 					Gui::SameLine();
 					Gui::Text(GetMessageType(msg));
 				}
@@ -154,8 +155,15 @@ namespace Vortex {
 				std::stringstream timeString;
 				tm timeBuffer;
 				localtime_s(&timeBuffer, &msg.Time);
-				timeString << std::put_time(&timeBuffer, "%T");
-				Gui::Text(timeString.str().c_str());
+				timeString << std::put_time(&timeBuffer, "%I:%M:%S %p");
+
+				std::string&& fmt = timeString.str();
+				if (size_t pos = fmt.find("AM"); pos != std::string::npos)
+					fmt.replace(fmt.begin() + pos, fmt.end(), "am");
+				else if (size_t pos = fmt.find("PM"); pos != std::string::npos)
+					fmt.replace(fmt.begin() + pos, fmt.end(), "pm");
+
+				Gui::Text(fmt.c_str());
 
 				Gui::TableNextColumn();
 				UI::ShiftCursorX(4.0f);
@@ -170,9 +178,10 @@ namespace Vortex {
 				if (clicked)
 				{
 					Gui::OpenPopup("Detailed Message");
-					ImVec2 size = Gui::GetMainViewport()->Size;
-					Gui::SetNextWindowSize({ size.x * 0.5f, size.y * 0.5f });
-					Gui::SetNextWindowPos({ size.x / 2.0f, size.y / 2.5f }, 0, { 0.5, 0.5 });
+					const auto& size = Application::Get().GetWindow().GetSize();
+					const auto& position = Application::Get().GetWindow().GetPosition();
+					ImGui::SetNextWindowSize({ (float)size.x * 0.5f, (float)size.y * 0.5f });
+					ImGui::SetNextWindowPos({ position.x + (float)size.x / 2.0f, position.y + (float)size.y / 2.5f }, 0, { 0.5, 0.5 });
 					m_DetailedPanelOpen = true;
 				}
 
@@ -183,8 +192,12 @@ namespace Vortex {
 
 					if (Gui::BeginPopupModal("Detailed Message", &m_DetailedPanelOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
 					{
-						Gui::TextWrapped(msg.LongMessage.c_str());
-						Gui::EndPopup();
+						ImGui::TextWrapped(msg.LongMessage.c_str());
+						if (ImGui::Button("Copy To Clipboard", ImVec2(120.0f, 28.0f)))
+						{
+							ImGui::SetClipboardText(msg.LongMessage.c_str());
+						}
+						ImGui::EndPopup();
 					}
 				}
 
