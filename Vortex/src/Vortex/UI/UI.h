@@ -2,10 +2,18 @@
 
 #include "Vortex/Core/Math/Math.h"
 #include "Vortex/Core/String.h"
+#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
 #include "Vortex/Gui/Colors.h"
+
+#include "Vortex/Renderer/Texture.h"
+
+#include "Vortex/Asset/AssetTypes.h"
+#include "Vortex/Asset/AssetRegistry.h"
+
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"
-#include "Vortex/Renderer/Texture.h"
+
 #include "Vortex/Editor/FontAwesome.h"
 #include "Vortex/Editor/EditorResources.h"
 
@@ -147,6 +155,40 @@ namespace Vortex::UI {
 		}
 	};
 
+	// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+	// Colours
+
+	inline static ImColor ColorWithValue(const ImColor& color, float value)
+	{
+		const ImVec4& colRaw = color.Value;
+		float hue, sat, val;
+		ImGui::ColorConvertRGBtoHSV(colRaw.x, colRaw.y, colRaw.z, hue, sat, val);
+		return ImColor::HSV(hue, sat, std::min(value, 1.0f));
+	}
+
+	inline static ImColor ColorWithSaturation(const ImColor& color, float saturation)
+	{
+		const ImVec4& colRaw = color.Value;
+		float hue, sat, val;
+		ImGui::ColorConvertRGBtoHSV(colRaw.x, colRaw.y, colRaw.z, hue, sat, val);
+		return ImColor::HSV(hue, std::min(saturation, 1.0f), val);
+	}
+
+	inline static ImColor ColorWithHue(const ImColor& color, float hue)
+	{
+		const ImVec4& colRaw = color.Value;
+		float h, s, v;
+		ImGui::ColorConvertRGBtoHSV(colRaw.x, colRaw.y, colRaw.z, h, s, v);
+		return ImColor::HSV(std::min(hue, 1.0f), s, v);
+	}
+
+	inline static ImColor ColorWithAlpha(const ImColor& color, float multiplier)
+	{
+		ImVec4 colRaw = color.Value;
+		colRaw.w = multiplier;
+		return colRaw;
+	}
+
 	inline static ImColor ColorWithMultipliedValue(const ImColor& color, float multiplier)
 	{
 		const ImVec4& colRaw = color.Value;
@@ -155,18 +197,41 @@ namespace Vortex::UI {
 		return ImColor::HSV(hue, sat, std::min(val * multiplier, 1.0f));
 	}
 
+	inline static ImColor ColorWithMultipliedSaturation(const ImColor& color, float multiplier)
+	{
+		const ImVec4& colRaw = color.Value;
+		float hue, sat, val;
+		ImGui::ColorConvertRGBtoHSV(colRaw.x, colRaw.y, colRaw.z, hue, sat, val);
+		return ImColor::HSV(hue, std::min(sat * multiplier, 1.0f), val);
+	}
+
+	inline static ImColor ColorWithMultipliedHue(const ImColor& color, float multiplier)
+	{
+		const ImVec4& colRaw = color.Value;
+		float hue, sat, val;
+		ImGui::ColorConvertRGBtoHSV(colRaw.x, colRaw.y, colRaw.z, hue, sat, val);
+		return ImColor::HSV(std::min(hue * multiplier, 1.0f), sat, val);
+	}
+
+	inline static ImColor ColorWithMultipliedAlpha(const ImColor& color, float multiplier)
+	{
+		ImVec4 colRaw = color.Value;
+		colRaw.w *= multiplier;
+		return colRaw;
+	}
+
 	inline static const char* GenerateLabelID(std::string_view label)
 	{
 		*fmt::format_to_n(s_LabelIDBuffer, std::size(s_LabelIDBuffer), "{}##{}", label, s_Counter++).out = 0;
 		return s_LabelIDBuffer;
 	}
 
-	static inline ImRect GetItemRect()
+	inline static ImRect GetItemRect()
 	{
 		return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
 	}
 
-	static inline ImRect RectExpanded(const ImRect& rect, float x, float y)
+	inline static ImRect RectExpanded(const ImRect& rect, float x, float y)
 	{
 		ImRect result = rect;
 		result.Min.x -= x;
@@ -176,7 +241,7 @@ namespace Vortex::UI {
 		return result;
 	}
 
-	static inline ImRect RectOffset(const ImRect& rect, float x, float y)
+	inline static ImRect RectOffset(const ImRect& rect, float x, float y)
 	{
 		ImRect result = rect;
 		result.Min.x += x;
@@ -186,14 +251,14 @@ namespace Vortex::UI {
 		return result;
 	}
 
-	static inline ImRect RectOffset(const ImRect& rect, ImVec2 xy)
+	inline static ImRect RectOffset(const ImRect& rect, ImVec2 xy)
 	{
 		return RectOffset(rect, xy.x, xy.y);
 	}
 
 	namespace Draw {
 
-		static void Underline(bool fullWidth = false, float offsetX = 0.0f, float offsetY = -1.0f)
+		inline static void Underline(bool fullWidth = false, float offsetX = 0.0f, float offsetY = -1.0f)
 		{
 			if (fullWidth)
 			{
@@ -216,6 +281,14 @@ namespace Vortex::UI {
 				else if (ImGui::GetCurrentTable() != nullptr)
 					ImGui::TablePopBackgroundChannel();
 			}
+		}
+
+		inline static void Separator(ImVec2 size, ImVec4 color)
+		{
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, color);
+			ImGui::BeginChild("sep", size);
+			ImGui::EndChild();
+			ImGui::PopStyleColor();
 		}
 	}
 
@@ -246,6 +319,27 @@ namespace Vortex::UI {
 			Gui::EndTooltip();
 		}
 	}
+
+	inline static void DrawItemActivityOutline(float rounding = 0.0f, bool drawWhenInactive = false, ImColor colourWhenActive = ImColor(80, 80, 80))
+	{
+		auto* drawList = ImGui::GetWindowDrawList();
+		const ImRect rect = RectExpanded(GetItemRect(), 1.0f, 1.0f);
+		if (ImGui::IsItemHovered() && !ImGui::IsItemActive())
+		{
+			drawList->AddRect(rect.Min, rect.Max,
+				ImColor(60, 60, 60), rounding, 0, 1.5f);
+		}
+		if (ImGui::IsItemActive())
+		{
+			drawList->AddRect(rect.Min, rect.Max,
+				colourWhenActive, rounding, 0, 1.0f);
+		}
+		else if (!ImGui::IsItemHovered() && drawWhenInactive)
+		{
+			drawList->AddRect(rect.Min, rect.Max,
+				ImColor(50, 50, 50), rounding, 0, 1.0f);
+		}
+	};
 
 	inline static void DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f, std::function<void()> uiCallback = nullptr)
 	{
@@ -282,6 +376,7 @@ namespace Vortex::UI {
 		Gui::SameLine();
 		if (Gui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f") && uiCallback != nullptr)
 			uiCallback();
+		DrawItemActivityOutline();
 		Gui::PopItemWidth();
 		Gui::SameLine();
 
@@ -302,6 +397,7 @@ namespace Vortex::UI {
 		Gui::SameLine();
 		if (Gui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f") && uiCallback != nullptr)
 			uiCallback();
+		DrawItemActivityOutline();
 		Gui::PopItemWidth();
 		Gui::SameLine();
 
@@ -322,6 +418,7 @@ namespace Vortex::UI {
 		Gui::SameLine();
 		if (Gui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f") && uiCallback != nullptr)
 			uiCallback();
+		DrawItemActivityOutline();
 		Gui::PopItemWidth();
 
 		Gui::PopStyleVar();
@@ -329,18 +426,18 @@ namespace Vortex::UI {
 		Gui::PopID();
 	}
 
-	inline void PushID()
+	inline static void PushID()
 	{
 		Gui::PushID(s_UIContextID++);
 	}
 
-	inline void PopID()
+	inline static void PopID()
 	{
 		Gui::PopID();
 		s_UIContextID--;
 	}
 
-	inline void PushFont(const char* fontName)
+	inline static void PushFont(const char* fontName)
 	{
 		if (fontName == "Bold")
 			Gui::PushFont(Gui::GetIO().Fonts->Fonts[0]);
@@ -348,18 +445,18 @@ namespace Vortex::UI {
 			Gui::PushFont(Gui::GetIO().Fonts->Fonts[1]);
 	}
 
-	inline void PopFont()
+	inline static void PopFont()
 	{
 		Gui::PopFont();
 	}
 
-	inline bool IsInputEnabled()
+	inline static bool IsInputEnabled()
 	{
 		const auto& io = ImGui::GetIO();
 		return (io.ConfigFlags & ImGuiConfigFlags_NoMouse) == 0 && (io.ConfigFlags & ImGuiConfigFlags_NavNoCaptureKeyboard) == 0;
 	}
 
-	inline void SetInputEnabled(bool enabled)
+	inline static void SetInputEnabled(bool enabled)
 	{
 		auto& io = ImGui::GetIO();
 
@@ -375,17 +472,17 @@ namespace Vortex::UI {
 		}
 	}
 
-	inline void ShiftCursorX(float distance)
+	inline static void ShiftCursorX(float distance)
 	{
 		Gui::SetCursorPosX(Gui::GetCursorPosX() + distance);
 	}
 
-	inline void ShiftCursorY(float distance)
+	inline static void ShiftCursorY(float distance)
 	{
 		Gui::SetCursorPosY(Gui::GetCursorPosY() + distance);
 	}
 
-	inline void ShiftCursor(float x, float y)
+	inline static void ShiftCursor(float x, float y)
 	{
 		ImVec2 cursorPos = Gui::GetCursorPos();
 		Gui::SetCursorPos(ImVec2{ cursorPos.x + x, cursorPos.y + y });
@@ -503,6 +600,8 @@ namespace Vortex::UI {
 		if (Gui::Checkbox(GenerateID(), &value))
 			modified = true;
 
+		DrawItemActivityOutline();
+
 		return modified;
 	}
 
@@ -520,6 +619,8 @@ namespace Vortex::UI {
 		{
 			modified = true;
 		}
+
+		DrawItemActivityOutline();
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
@@ -543,6 +644,8 @@ namespace Vortex::UI {
 			modified = true;
 		}
 
+		DrawItemActivityOutline();
+
 		Gui::PopItemWidth();
 		Gui::NextColumn();
 		Draw::Underline();
@@ -564,6 +667,8 @@ namespace Vortex::UI {
 		{
 			modified = true;
 		}
+
+		DrawItemActivityOutline();
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
@@ -587,6 +692,8 @@ namespace Vortex::UI {
 			modified = true;
 		}
 
+		DrawItemActivityOutline();
+
 		Gui::PopItemWidth();
 		Gui::NextColumn();
 		Draw::Underline();
@@ -608,6 +715,8 @@ namespace Vortex::UI {
 		{
 			modified = true;
 		}
+
+		DrawItemActivityOutline();
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
@@ -631,6 +740,8 @@ namespace Vortex::UI {
 			modified = true;
 		}
 
+		DrawItemActivityOutline();
+
 		Gui::PopItemWidth();
 		Gui::NextColumn();
 		Draw::Underline();
@@ -652,6 +763,8 @@ namespace Vortex::UI {
 		{
 			modified = true;
 		}
+
+		DrawItemActivityOutline();
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
@@ -675,6 +788,8 @@ namespace Vortex::UI {
 			modified = true;
 		}
 
+		DrawItemActivityOutline();
+
 		Gui::PopItemWidth();
 		Gui::NextColumn();
 		Draw::Underline();
@@ -696,6 +811,8 @@ namespace Vortex::UI {
 		{
 			modified = true;
 		}
+
+		DrawItemActivityOutline();
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
@@ -719,6 +836,8 @@ namespace Vortex::UI {
 			modified = true;
 		}
 
+		DrawItemActivityOutline();
+
 		Gui::PopItemWidth();
 		Gui::NextColumn();
 		Draw::Underline();
@@ -740,6 +859,8 @@ namespace Vortex::UI {
 		{
 			modified = true;
 		}
+
+		DrawItemActivityOutline();
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
@@ -763,6 +884,8 @@ namespace Vortex::UI {
 			modified = true;
 		}
 
+		DrawItemActivityOutline();
+
 		Gui::PopItemWidth();
 		Gui::NextColumn();
 		Draw::Underline();
@@ -784,6 +907,8 @@ namespace Vortex::UI {
 		{
 			modified = true;
 		}
+
+		DrawItemActivityOutline();
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
@@ -807,6 +932,8 @@ namespace Vortex::UI {
 			modified = true;
 		}
 
+		DrawItemActivityOutline();
+
 		Gui::PopItemWidth();
 		Gui::NextColumn();
 		Draw::Underline();
@@ -829,6 +956,8 @@ namespace Vortex::UI {
 			modified = true;
 		}
 
+		DrawItemActivityOutline();
+
 		Gui::PopItemWidth();
 		Gui::NextColumn();
 		Draw::Underline();
@@ -850,6 +979,8 @@ namespace Vortex::UI {
 		{
 			modified = true;
 		}
+
+		DrawItemActivityOutline();
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
@@ -879,6 +1010,8 @@ namespace Vortex::UI {
 			modified = true;
 		}
 
+		DrawItemActivityOutline();
+
 		Gui::PopItemWidth();
 		Gui::NextColumn();
 		Draw::Underline();
@@ -900,6 +1033,8 @@ namespace Vortex::UI {
 		{
 			modified = true;
 		}
+
+		DrawItemActivityOutline();
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
@@ -929,6 +1064,8 @@ namespace Vortex::UI {
 			modified = true;
 		}
 
+		DrawItemActivityOutline();
+
 		Gui::PopItemWidth();
 		Gui::NextColumn();
 		Draw::Underline();
@@ -936,7 +1073,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	inline bool ColoredButton(const char* label, const ImVec4& backgroundColor, const ImVec4& foregroundColor, ImVec2 buttonSize)
+	inline static bool ColoredButton(const char* label, const ImVec4& backgroundColor, const ImVec4& foregroundColor, ImVec2 buttonSize)
 	{
 		ScopedColour textColor(ImGuiCol_Text, foregroundColor);
 		ScopedColour buttonColor(ImGuiCol_Button, backgroundColor);
@@ -983,6 +1120,8 @@ namespace Vortex::UI {
 
 			Gui::EndCombo();
 		}
+
+		DrawItemActivityOutline();
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
@@ -1046,6 +1185,8 @@ namespace Vortex::UI {
 			Gui::EndCombo();
 		}
 
+		DrawItemActivityOutline();
+
 		Gui::PopItemWidth();
 		Gui::NextColumn();
 		Draw::Underline();
@@ -1097,7 +1238,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	static void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed,
+	inline static void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
 		ImVec2 rectMin, ImVec2 rectMax)
 	{
@@ -1110,21 +1251,21 @@ namespace Vortex::UI {
 			drawList->AddImage((ImTextureID)imageNormal->GetRendererID(), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintNormal);
 	};
 
-	static void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed,
+	inline static void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
 		ImRect rectangle)
 	{
 		DrawButtonImage(imageNormal, imageHovered, imagePressed, tintNormal, tintHovered, tintPressed, rectangle.Min, rectangle.Max);
 	};
 
-	static void DrawButtonImage(const SharedReference<Texture2D>& image,
+	inline static void DrawButtonImage(const SharedReference<Texture2D>& image,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
 		ImVec2 rectMin, ImVec2 rectMax)
 	{
 		DrawButtonImage(image, image, image, tintNormal, tintHovered, tintPressed, rectMin, rectMax);
 	};
 
-	static void DrawButtonImage(const SharedReference<Texture2D>& image,
+	inline static void DrawButtonImage(const SharedReference<Texture2D>& image,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
 		ImRect rectangle)
 	{
@@ -1132,487 +1273,17 @@ namespace Vortex::UI {
 	};
 
 
-	static void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed,
+	inline static void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed)
 	{
 		DrawButtonImage(imageNormal, imageHovered, imagePressed, tintNormal, tintHovered, tintPressed, ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
 	};
 
-	static void DrawButtonImage(const SharedReference<Texture2D>& image,
+	inline static void DrawButtonImage(const SharedReference<Texture2D>& image,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed)
 	{
 		DrawButtonImage(image, image, image, tintNormal, tintHovered, tintPressed, ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
 	};
-
-	inline static void DrawItemActivityOutline(float rounding = 0.0f, bool drawWhenInactive = false, ImColor colourWhenActive = ImColor(80, 80, 80))
-	{
-		auto* drawList = ImGui::GetWindowDrawList();
-		const ImRect rect = RectExpanded(GetItemRect(), 1.0f, 1.0f);
-		if (ImGui::IsItemHovered() && !ImGui::IsItemActive())
-		{
-			drawList->AddRect(rect.Min, rect.Max,
-				ImColor(60, 60, 60), rounding, 0, 1.5f);
-		}
-		if (ImGui::IsItemActive())
-		{
-			drawList->AddRect(rect.Min, rect.Max,
-				colourWhenActive, rounding, 0, 1.0f);
-		}
-		else if (!ImGui::IsItemHovered() && drawWhenInactive)
-		{
-			drawList->AddRect(rect.Min, rect.Max,
-				ImColor(50, 50, 50), rounding, 0, 1.0f);
-		}
-	};
-
-	template <typename StringType, typename... OtherReplacements>
-	inline static std::string Replace(StringType textToSearch, std::string_view firstToReplace, std::string_view firstReplacement,
-		OtherReplacements&&... otherPairsOfStringsToReplace)
-	{
-		static_assert ((sizeof... (otherPairsOfStringsToReplace) & 1u) == 0,
-			"This function expects a list of pairs of strings as its arguments");
-
-		if constexpr (std::is_same<const StringType, const std::string_view>::value || std::is_same<const StringType, const char* const>::value)
-		{
-			return Replace(std::string(textToSearch), firstToReplace, firstReplacement,
-				std::forward<OtherReplacements>(otherPairsOfStringsToReplace)...);
-		}
-		else if constexpr (sizeof... (otherPairsOfStringsToReplace) == 0)
-		{
-			size_t pos = 0;
-
-			for (;;)
-			{
-				pos = textToSearch.find(firstToReplace, pos);
-
-				if (pos == std::string::npos)
-					return textToSearch;
-
-				textToSearch.replace(pos, firstToReplace.length(), firstReplacement);
-				pos += firstReplacement.length();
-			}
-		}
-		else
-		{
-			return Replace(Replace(std::move(textToSearch), firstToReplace, firstReplacement),
-				std::forward<OtherReplacements>(otherPairsOfStringsToReplace)...);
-		}
-	}
-
-	template <typename CharStartsDelimiter, typename CharIsInDelimiterBody>
-	inline static std::vector<std::string> SplitString(std::string_view source,
-		CharStartsDelimiter&& isDelimiterStart,
-		CharIsInDelimiterBody&& isDelimiterBody,
-		bool keepDelimiters)
-	{
-		std::vector<std::string> tokens;
-		auto tokenStart = source.begin();
-		auto pos = tokenStart;
-
-		while (pos != source.end())
-		{
-			if (isDelimiterStart(*pos))
-			{
-				auto delimiterStart = pos++;
-
-				while (pos != source.end() && isDelimiterBody(*pos))
-					++pos;
-
-				if (pos != source.begin())
-					tokens.push_back({ tokenStart, keepDelimiters ? pos : delimiterStart });
-
-				tokenStart = pos;
-			}
-			else
-			{
-				++pos;
-			}
-		}
-
-		if (pos != source.begin())
-			tokens.push_back({ tokenStart, pos });
-
-		return tokens;
-	}
-
-	inline static bool IsWhitespace(char c) { return c == ' ' || (c <= 13 && c >= 9); }
-
-	inline static std::vector<std::string> SplitAtWhitespace(std::string_view text, bool keepDelimiters = false)
-	{
-		return SplitString(text,
-			[](char c) { return IsWhitespace(c); },
-			[](char c) { return IsWhitespace(c); },
-			keepDelimiters);
-	}
-
-	inline static std::string& ToLower(std::string& string)
-	{
-		std::transform(string.begin(), string.end(), string.begin(),
-			[](const unsigned char c) { return std::tolower(c); });
-
-		return string;
-	}
-
-	inline static bool IsMatchingSearch(const std::string& item, std::string_view searchQuery, bool caseSensitive = false, bool stripWhiteSpaces = false, bool stripUnderscores = false)
-	{
-		if (searchQuery.empty())
-			return true;
-
-		if (item.empty())
-			return false;
-
-		std::string itemSanitized = stripUnderscores ? Replace(item, "_", " ") : item;
-
-		if (stripWhiteSpaces)
-			itemSanitized = Replace(itemSanitized, " ", "");
-
-		std::string searchString = stripWhiteSpaces ? Replace(searchQuery, " ", "") : std::string(searchQuery);
-
-		if (!caseSensitive)
-		{
-			itemSanitized = ToLower(itemSanitized);
-			searchString = ToLower(searchString);
-		}
-
-		bool result = false;
-		if (searchString.find(" ") != std::string::npos)
-		{
-			std::vector<std::string> searchTerms = SplitAtWhitespace(searchString);
-			for (const auto& searchTerm : searchTerms)
-			{
-				if (!searchTerm.empty() && itemSanitized.find(searchTerm) != std::string::npos)
-					result = true;
-				else
-				{
-					result = false;
-					break;
-				}
-			}
-		}
-		else
-		{
-			result = itemSanitized.find(searchString) != std::string::npos;
-		}
-
-		return result;
-	}
-
-	template<uint32_t BuffSize = 256, typename StringType>
-	inline static bool SearchWidget(StringType& searchString, const char* hint = "Search...", bool* grabFocus = nullptr)
-	{
-		PushID();
-
-		ShiftCursorY(1.0f);
-
-		const bool layoutSuspended = []
-		{
-			ImGuiWindow* window = ImGui::GetCurrentWindow();
-			if (window->DC.CurrentLayout)
-			{
-				ImGui::SuspendLayout();
-				return true;
-			}
-			return false;
-		}();
-
-		bool modified = false;
-		bool searching = false;
-
-		const float areaPosX = ImGui::GetCursorPosX();
-		const float framePaddingY = ImGui::GetStyle().FramePadding.y;
-
-		UI::ScopedStyle rounding(ImGuiStyleVar_FrameRounding, 3.0f);
-		UI::ScopedStyle padding(ImGuiStyleVar_FramePadding, ImVec2(28.0f, framePaddingY));
-
-		if constexpr (std::is_same<StringType, std::string>::value)
-		{
-			char searchBuffer[BuffSize]{};
-			strcpy_s<BuffSize>(searchBuffer, searchString.c_str());
-			if (ImGui::InputText(GenerateID(), searchBuffer, BuffSize))
-			{
-				searchString = searchBuffer;
-				modified = true;
-			}
-			else if (ImGui::IsItemDeactivatedAfterEdit())
-			{
-				searchString = searchBuffer;
-				modified = true;
-			}
-
-			searching = searchBuffer[0] != 0;
-		}
-		else
-		{
-			static_assert(std::is_same<decltype(&searchString[0]), char*>::value,
-				"searchString paramenter must be std::string& or char*");
-
-			if (ImGui::InputText(GenerateID(), searchString, BuffSize))
-			{
-				modified = true;
-			}
-			else if (ImGui::IsItemDeactivatedAfterEdit())
-			{
-				modified = true;
-			}
-
-			searching = searchString[0] != 0;
-		}
-
-		if (grabFocus && *grabFocus)
-		{
-			if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)
-				&& !ImGui::IsAnyItemActive()
-				&& !ImGui::IsMouseClicked(0))
-			{
-				ImGui::SetKeyboardFocusHere(-1);
-			}
-
-			if (ImGui::IsItemFocused())
-				*grabFocus = false;
-		}
-
-		UI::DrawItemActivityOutline(3.0f, true, Colors::Theme::accent);
-		ImGui::SetItemAllowOverlap();
-
-		ImGui::SameLine(areaPosX + 5.0f);
-
-		if (layoutSuspended)
-			ImGui::ResumeLayout();
-
-		ImGui::BeginHorizontal(GenerateID(), ImGui::GetItemRectSize());
-		const ImVec2 iconSize(ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight());
-
-		// Search icon
-		{
-			const float iconYOffset = framePaddingY - 3.0f;
-			UI::ShiftCursorY(iconYOffset);
-			UI::ImageEx(EditorResources::SearchIcon, iconSize, ImVec4(1.0f, 1.0f, 1.0f, 0.2f), ImVec4(1.0f, 1.0f, 1.0f, 0.2f));
-			UI::ShiftCursorY(-iconYOffset);
-
-			// Hint
-			if (!searching)
-			{
-				UI::ShiftCursorY(-framePaddingY + 1.0f);
-				UI::ScopedColour text(ImGuiCol_Text, Colors::Theme::textDarker);
-				UI::ScopedStyle padding(ImGuiStyleVar_FramePadding, ImVec2(0.0f, framePaddingY));
-				ImGui::TextUnformatted(hint);
-				UI::ShiftCursorY(-1.0f);
-			}
-		}
-
-		ImGui::Spring();
-
-		// Clear icon
-		if (searching)
-		{
-			const float spacingX = 4.0f;
-			const float lineHeight = ImGui::GetItemRectSize().y - framePaddingY / 2.0f;
-
-			if (ImGui::InvisibleButton(GenerateID(), ImVec2{ lineHeight, lineHeight }))
-			{
-				if constexpr (std::is_same<StringType, std::string>::value)
-					searchString.clear();
-				else
-					memset(searchString, 0, BuffSize);
-
-				modified = true;
-			}
-
-			if (ImGui::IsMouseHoveringRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()))
-				ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-
-			UI::DrawButtonImage(EditorResources::ClearIcon, IM_COL32(160, 160, 160, 200),
-				IM_COL32(170, 170, 170, 255),
-				IM_COL32(160, 160, 160, 150),
-				UI::RectExpanded(UI::GetItemRect(), -2.0f, -2.0f));
-
-			ImGui::Spring(-1.0f, spacingX * 2.0f);
-		}
-
-		ImGui::EndHorizontal();
-		UI::ShiftCursorY(-1.0f);
-		UI::PopID();
-		return modified;
-	}
-
-	inline static bool EntitySearchPopup(const char* ID, SharedReference<Scene>& scene, UUID& selected, bool* cleared = nullptr, const char* hint = "Search Entities", ImVec2 size = { 250.0f, 350.0f })
-	{
-		UI::ScopedColour popupBG(ImGuiCol_PopupBg, UI::ColorWithMultipliedValue(Colors::Theme::background, 1.6f));
-
-		bool modified = false;
-
-		auto entities = scene->GetAllEntitiesWith<IDComponent, TagComponent>();
-		UUID current = selected;
-
-		ImGui::SetNextWindowSize({ size.x, 0.0f });
-
-		static bool s_GrabFocus = true;
-
-		if (UI::BeginPopup(ID, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
-		{
-			static std::string searchString;
-
-			if (ImGui::GetCurrentWindow()->Appearing)
-			{
-				s_GrabFocus = true;
-				searchString.clear();
-			}
-
-			// Search widget
-			UI::ShiftCursor(3.0f, 2.0f);
-			ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - ImGui::GetCursorPosX() * 2.0f);
-			SearchWidget(searchString, hint, &s_GrabFocus);
-
-			const bool searching = !searchString.empty();
-
-			// Clear property button
-			if (cleared != nullptr)
-			{
-				UI::ScopedColourStack buttonColours(
-					ImGuiCol_Button, UI::ColorWithMultipliedValue(Colors::Theme::background, 1.0f),
-					ImGuiCol_ButtonHovered, UI::ColorWithMultipliedValue(Colors::Theme::background, 1.2f),
-					ImGuiCol_ButtonActive, UI::ColorWithMultipliedValue(Colors::Theme::background, 0.9f));
-
-				UI::ScopedStyle border(ImGuiStyleVar_FrameBorderSize, 0.0f);
-
-				ImGui::SetCursorPosX(0);
-
-				ImGui::PushItemFlag(ImGuiItemFlags_NoNav, searching);
-
-				if (ImGui::Button("CLEAR", { ImGui::GetWindowWidth(), 0.0f }))
-				{
-					*cleared = true;
-					modified = true;
-				}
-
-				ImGui::PopItemFlag();
-			}
-
-			// List of entities
-			{
-				UI::ScopedColour listBoxBg(ImGuiCol_FrameBg, IM_COL32_DISABLE);
-				UI::ScopedColour listBoxBorder(ImGuiCol_Border, IM_COL32_DISABLE);
-
-				ImGuiID listID = ImGui::GetID("##SearchListBox");
-				if (ImGui::BeginListBox("##SearchListBox", ImVec2(-FLT_MIN, 0.0f)))
-				{
-					bool forwardFocus = false;
-
-					ImGuiContext& g = *GImGui;
-					if (g.NavJustMovedToId != 0)
-					{
-						if (g.NavJustMovedToId == listID)
-						{
-							forwardFocus = true;
-							// ActivateItem moves keyboard navigation focuse inside of the window
-							ImGui::ActivateItem(listID);
-							ImGui::SetKeyboardFocusHere(1);
-						}
-					}
-
-					for (auto enttID : entities)
-					{
-						const auto& idComponent = entities.get<IDComponent>(enttID);
-						const auto& tagComponent = entities.get<TagComponent>(enttID);
-
-						if (!searchString.empty() && !UI::IsMatchingSearch(tagComponent.Tag, searchString))
-							continue;
-
-						bool is_selected = current == idComponent.ID;
-						if (ImGui::Selectable(tagComponent.Tag.c_str(), is_selected))
-						{
-							current = selected = idComponent.ID;
-							modified = true;
-						}
-
-						if (forwardFocus)
-							forwardFocus = false;
-						else if (is_selected)
-							ImGui::SetItemDefaultFocus();
-					}
-
-					ImGui::EndListBox();
-				}
-			}
-			if (modified)
-				ImGui::CloseCurrentPopup();
-
-			UI::EndPopup();
-		}
-
-		return modified;
-	}
-
-	inline static bool PropertyEntityReference(const char* label, UUID& entityID, SharedReference<Scene>& currentScene)
-	{
-		bool receivedValidEntity = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		ImGui::Text(label);
-		ImGui::NextColumn();
-		ShiftCursorY(4.0f);
-		ImGui::PushItemWidth(-1);
-
-		ImVec2 originalButtonTextAlign = ImGui::GetStyle().ButtonTextAlign;
-		{
-			ImGui::GetStyle().ButtonTextAlign = { 0.0f, 0.5f };
-			float width = ImGui::GetContentRegionAvail().x;
-			float itemHeight = 28.0f;
-
-			std::string buttonText = "Null";
-
-			Entity entity = currentScene->TryGetEntityWithUUID(entityID);
-			if (entity)
-				buttonText = entity.GetComponent<TagComponent>().Tag;
-
-			// PropertyEntityReference could be called multiple times in same "context"
-			// and so we need a unique id for the asset search popup each time.
-			// notes
-			// - don't use GenerateID(), that's inviting id clashes, which would be super confusing.
-			// - don't store return from GenerateLabelId in a const char* here. Because its pointing to an internal
-			//   buffer which may get overwritten by the time you want to use it later on.
-			std::string assetSearchPopupID = GenerateLabelID("ARSP");
-			{
-				UI::ScopedColour buttonLabelColor(ImGuiCol_Text, ImGui::ColorConvertU32ToFloat4(Colors::Theme::text));
-				ImGui::Button(GenerateLabelID(buttonText), { width, itemHeight });
-
-				const bool isHovered = ImGui::IsItemHovered();
-				if (isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-					ImGui::OpenPopup(assetSearchPopupID.c_str());
-			}
-
-			ImGui::GetStyle().ButtonTextAlign = originalButtonTextAlign;
-
-			bool clear = false;
-			if (EntitySearchPopup(assetSearchPopupID.c_str(), currentScene, entityID, &clear))
-			{
-				if (clear)
-					entityID = 0;
-				receivedValidEntity = true;
-			}
-		}
-
-		if (!(ImGui::GetItemFlags() & ImGuiItemFlags_Disabled))
-		{
-			if (ImGui::BeginDragDropTarget())
-			{
-				auto data = ImGui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM");
-
-				if (data)
-				{
-					entityID = *(UUID*)data->Data;
-					receivedValidEntity = true;
-				}
-
-				ImGui::EndDragDropTarget();
-			}
-		}
-
-		ImGui::PopItemWidth();
-		ImGui::NextColumn();
-
-		return receivedValidEntity;
-	}
 
 	inline static bool FontSelector(const char* label, const char** options, uint32_t count, ImFont* selected)
 	{
@@ -1647,6 +1318,8 @@ namespace Vortex::UI {
 
 			Gui::EndCombo();
 		}
+
+		DrawItemActivityOutline();
 
 		Gui::PopItemWidth();
 		Gui::NextColumn();
@@ -1745,7 +1418,7 @@ namespace Vortex::UI {
 		ImGui::EndTable();
 	}
 
-	inline bool TableRowClickable(const char* id, float rowHeight)
+	inline static bool TableRowClickable(const char* id, float rowHeight)
 	{
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
 		window->DC.CurrLineSize.y = rowHeight;
@@ -1760,8 +1433,7 @@ namespace Vortex::UI {
 		ImGui::PushClipRect(rowAreaMin, rowAreaMax, false);
 
 		bool isRowHovered, held;
-		bool isRowClicked = ImGui::ButtonBehavior(ImRect(rowAreaMin, rowAreaMax), ImGui::GetID(id),
-			&isRowHovered, &held, ImGuiButtonFlags_AllowItemOverlap);
+		bool isRowClicked = ImGui::ButtonBehavior(ImRect(rowAreaMin, rowAreaMax), ImGui::GetID(id), &isRowHovered, &held, ImGuiButtonFlags_AllowItemOverlap);
 
 		ImGui::SetItemAllowOverlap();
 		ImGui::PopClipRect();

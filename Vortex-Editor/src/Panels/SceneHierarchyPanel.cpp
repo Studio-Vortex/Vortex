@@ -706,6 +706,8 @@ namespace Vortex {
 			TagComponent::AddMarker(buffer);
 			Gui::SetWindowFocus("Scene");
 		}
+
+		UI::DrawItemActivityOutline();
 	}
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity, const EditorCamera* editorCamera)
@@ -984,6 +986,8 @@ namespace Vortex {
 				m_IsEditingEntityName = false;
 			}
 
+			UI::DrawItemActivityOutline();
+
 			Gui::SameLine();
 			Gui::PushItemWidth(-1);
 
@@ -1070,6 +1074,8 @@ namespace Vortex {
 
 					Gui::EndCombo();
 				}
+
+				UI::DrawItemActivityOutline();
 			}
 			else
 			{
