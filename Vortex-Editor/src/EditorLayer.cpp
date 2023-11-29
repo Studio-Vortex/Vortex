@@ -1412,7 +1412,7 @@ namespace Vortex {
 				Gui::SetWindowFocus("Scene");
 			}
 
-			UI::SetTooltip((hasSimulateButton) ? "Play" : "Stop");
+			UI::SetTooltip(hasSimulateButton ? "Play" : "Stop");
 		}
 
 		if (hasSimulateButton)
@@ -1424,6 +1424,8 @@ namespace Vortex {
 					OnSceneSimulate();
 				else
 					OnSceneStop();
+
+				Gui::SetWindowFocus("Scene");
 			}
 
 			UI::SetTooltip(hasPlayButton ? "Simulate Physics" : "Stop");
@@ -1440,6 +1442,8 @@ namespace Vortex {
 					OnScenePause();
 				else
 					OnSceneResume();
+
+				Gui::SetWindowFocus("Scene");
 			}
 
 			UI::SetTooltip("Pause Scene");
@@ -1448,7 +1452,10 @@ namespace Vortex {
 			{
 				SharedReference<Texture2D> icon = EditorResources::StepIcon;
 				if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
+				{
 					m_ActiveScene->Step(projectProps.EditorProps.FrameStepCount);
+					Gui::SetWindowFocus("Scene");
+				}
 
 				UI::SetTooltip("Next Frame");
 			}
