@@ -13,11 +13,18 @@
 
 namespace Vortex {
 
+#define MAX_MARKER_SIZE 64
+
 #define MAX_CHILD_ENTITY_SEARCH_DEPTH 10
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const SharedReference<Scene>& context)
 	{
 		SetSceneContext(context);
+
+		// Create copy entity here so it will live the lifetime of the scene hierarchy panel
+		// This will allow us to copy components throughout different scenes
+		m_CopyScene = Scene::Create();
+		m_CopyEntity = m_CopyScene->CreateEntity("Copy Entity");
 	}
 
 	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera)
@@ -188,9 +195,6 @@ namespace Vortex {
 
 		memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
 		m_ComponentSearchInputTextFilter.Build();
-
-		m_CopyScene = Scene::Create();
-		m_CopyEntity = m_CopyScene->CreateEntity();
 	}
 
 	inline static Entity CreateDefaultMesh(const std::string& entityName, DefaultMesh::StaticMeshType defaultMesh, SharedReference<Scene>& contextScene, const EditorCamera* editorCamera)
@@ -517,9 +521,7 @@ namespace Vortex {
 	{
 		Gui::Begin("Inspector", &s_ShowInspectorPanel);
 
-		Entity selected = SelectionManager::GetSelectedEntity();
-
-		if (selected)
+		if (Entity selected = SelectionManager::GetSelectedEntity())
 		{
 			DrawComponents(selected);
 		}
@@ -544,7 +546,7 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::DisplayAddComponentPopup()
 	{
-		if (Gui::BeginPopup("AddComponent"))
+		if (Gui::BeginPopup("AddComponent", ImGuiWindowFlags_NoMove))
 		{
 			// Search Bar + Filtering
 			const bool isSearching = Gui::InputTextWithHint("##ComponentSearch", "Search", m_ComponentSearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
@@ -558,22 +560,77 @@ namespace Vortex {
 			Gui::Spacing();
 			UI::Draw::Underline();
 
-			if (!searchBarInUse)
+			if (searchBarInUse)
+			{
+				if (const char* componentName = "Camera"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<CameraComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Skybox"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<SkyboxComponent>(componentName, (const char*)VX_ICON_SKYATLAS);
+				if (const char* componentName = "Light Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<LightSourceComponent>(componentName, (const char*)VX_ICON_LIGHTBULB_O);
+				if (const char* componentName = "Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<MeshRendererComponent>(componentName, (const char*)VX_ICON_HOME);
+				if (const char* componentName = "Static Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<StaticMeshRendererComponent>(componentName, (const char*)VX_ICON_CUBE);
+				if (const char* componentName = "Light Source 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<LightSource2DComponent>(componentName, (const char*)VX_ICON_LIGHTBULB_O);
+				if (const char* componentName = "Sprite Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<SpriteRendererComponent>(componentName, (const char*)VX_ICON_SPINNER);
+				if (const char* componentName = "Circle Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<CircleRendererComponent>(componentName, (const char*)VX_ICON_CIRCLE);
+				if (const char* componentName = "Particle Emitter"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<ParticleEmitterComponent>(componentName, (const char*)VX_ICON_BOMB);
+				if (const char* componentName = "Text Mesh"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<TextMeshComponent>(componentName, (const char*)VX_ICON_TEXT_HEIGHT);
+				if (const char* componentName = "Animator"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<AnimatorComponent>(componentName, (const char*)VX_ICON_CLOCK_O);
+				if (const char* componentName = "Animation"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<AnimationComponent>(componentName, (const char*)VX_ICON_ADJUST);
+				if (const char* componentName = "RigidBody"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<RigidBodyComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Character Controller"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<CharacterControllerComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Fixed Joint"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<FixedJointComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Box Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<BoxColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Sphere Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<SphereColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Capsule Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<CapsuleColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Mesh Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<MeshColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Audio Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<AudioSourceComponent>(componentName, (const char*)VX_ICON_VOLUME_UP);
+				if (const char* componentName = "Audio Listener"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<AudioListenerComponent>(componentName, (const char*)VX_ICON_HEADPHONES);
+				if (const char* componentName = "RigidBody 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<RigidBody2DComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Box Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<BoxCollider2DComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Circle Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<CircleCollider2DComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
+				if (const char* componentName = "Nav Mesh Agent"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<NavMeshAgentComponent>(componentName, (const char*)VX_ICON_LAPTOP);
+				if (const char* componentName = "Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<ScriptComponent>(componentName, (const char*)VX_ICON_FILE_CODE_O);	
+			}
+			else
 			{
 				if (Gui::BeginMenu("Rendering"))
 				{
-					DisplayComponentMenuItem<CameraComponent>("Camera", (const char*)VX_ICON_VIDEO_CAMERA);
-					DisplayComponentMenuItem<SkyboxComponent>("Skybox", (const char*)VX_ICON_SKYATLAS);
-					DisplayComponentMenuItem<LightSourceComponent>("Light Source", (const char*)VX_ICON_LIGHTBULB_O);
-					DisplayComponentMenuItem<MeshRendererComponent>("Mesh Renderer", (const char*)VX_ICON_HOME);
-					DisplayComponentMenuItem<StaticMeshRendererComponent>("Static Mesh Renderer", (const char*)VX_ICON_CUBE);
-					DisplayComponentMenuItem<LightSource2DComponent>("Light Source 2D", (const char*)VX_ICON_LIGHTBULB_O);
-					DisplayComponentMenuItem<SpriteRendererComponent>("Sprite Renderer", (const char*)VX_ICON_SPINNER);
-					DisplayComponentMenuItem<CircleRendererComponent>("Circle Renderer", (const char*)VX_ICON_CIRCLE);
-					DisplayComponentMenuItem<ParticleEmitterComponent>("Particle Emitter", (const char*)VX_ICON_BOMB);
-					DisplayComponentMenuItem<TextMeshComponent>("Text Mesh", (const char*)VX_ICON_TEXT_HEIGHT);
-					DisplayComponentMenuItem<AnimatorComponent>("Animator", (const char*)VX_ICON_CLOCK_O);
-					DisplayComponentMenuItem<AnimationComponent>("Animation", (const char*)VX_ICON_ADJUST);
+					DisplayAddComponentMenuItem<CameraComponent>("Camera", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayAddComponentMenuItem<SkyboxComponent>("Skybox", (const char*)VX_ICON_SKYATLAS);
+					DisplayAddComponentMenuItem<LightSourceComponent>("Light Source", (const char*)VX_ICON_LIGHTBULB_O);
+					DisplayAddComponentMenuItem<MeshRendererComponent>("Mesh Renderer", (const char*)VX_ICON_HOME);
+					DisplayAddComponentMenuItem<StaticMeshRendererComponent>("Static Mesh Renderer", (const char*)VX_ICON_CUBE);
+					DisplayAddComponentMenuItem<LightSource2DComponent>("Light Source 2D", (const char*)VX_ICON_LIGHTBULB_O);
+					DisplayAddComponentMenuItem<SpriteRendererComponent>("Sprite Renderer", (const char*)VX_ICON_SPINNER);
+					DisplayAddComponentMenuItem<CircleRendererComponent>("Circle Renderer", (const char*)VX_ICON_CIRCLE);
+					DisplayAddComponentMenuItem<ParticleEmitterComponent>("Particle Emitter", (const char*)VX_ICON_BOMB);
+					DisplayAddComponentMenuItem<TextMeshComponent>("Text Mesh", (const char*)VX_ICON_TEXT_HEIGHT);
+					DisplayAddComponentMenuItem<AnimatorComponent>("Animator", (const char*)VX_ICON_CLOCK_O);
+					DisplayAddComponentMenuItem<AnimationComponent>("Animation", (const char*)VX_ICON_ADJUST, false);
 
 					Gui::EndMenu();
 				}
@@ -582,16 +639,16 @@ namespace Vortex {
 
 				if (Gui::BeginMenu("Physics"))
 				{
-					DisplayComponentMenuItem<RigidBodyComponent>("RigidBody", (const char*)VX_ICON_VIDEO_CAMERA);
-					DisplayComponentMenuItem<CharacterControllerComponent>("Character Controller", (const char*)VX_ICON_VIDEO_CAMERA);
-					DisplayComponentMenuItem<FixedJointComponent>("Fixed Joint", (const char*)VX_ICON_VIDEO_CAMERA);
-					DisplayComponentMenuItem<BoxColliderComponent>("Box Collider", (const char*)VX_ICON_VIDEO_CAMERA);
-					DisplayComponentMenuItem<SphereColliderComponent>("Sphere Collider", (const char*)VX_ICON_VIDEO_CAMERA);
-					DisplayComponentMenuItem<CapsuleColliderComponent>("Capsule Collider", (const char*)VX_ICON_VIDEO_CAMERA);
-					DisplayComponentMenuItem<MeshColliderComponent>("Mesh Collider", (const char*)VX_ICON_VIDEO_CAMERA);
-					DisplayComponentMenuItem<RigidBody2DComponent>("RigidBody 2D", (const char*)VX_ICON_VIDEO_CAMERA);
-					DisplayComponentMenuItem<BoxCollider2DComponent>("Box Collider 2D", (const char*)VX_ICON_VIDEO_CAMERA);
-					DisplayComponentMenuItem<CircleCollider2DComponent>("Circle Collider 2D", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayAddComponentMenuItem<RigidBodyComponent>("RigidBody", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayAddComponentMenuItem<CharacterControllerComponent>("Character Controller", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayAddComponentMenuItem<FixedJointComponent>("Fixed Joint", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayAddComponentMenuItem<BoxColliderComponent>("Box Collider", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayAddComponentMenuItem<SphereColliderComponent>("Sphere Collider", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayAddComponentMenuItem<CapsuleColliderComponent>("Capsule Collider", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayAddComponentMenuItem<MeshColliderComponent>("Mesh Collider", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayAddComponentMenuItem<RigidBody2DComponent>("RigidBody 2D", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayAddComponentMenuItem<BoxCollider2DComponent>("Box Collider 2D", (const char*)VX_ICON_VIDEO_CAMERA);
+					DisplayAddComponentMenuItem<CircleCollider2DComponent>("Circle Collider 2D", (const char*)VX_ICON_VIDEO_CAMERA, false);
 
 					Gui::EndMenu();
 				}
@@ -600,8 +657,8 @@ namespace Vortex {
 
 				if (Gui::BeginMenu("Audio"))
 				{
-					DisplayComponentMenuItem<AudioSourceComponent>("Audio Source", (const char*)VX_ICON_VOLUME_UP);
-					DisplayComponentMenuItem<AudioListenerComponent>("Audio Listener", (const char*)VX_ICON_HEADPHONES);
+					DisplayAddComponentMenuItem<AudioSourceComponent>("Audio Source", (const char*)VX_ICON_VOLUME_UP);
+					DisplayAddComponentMenuItem<AudioListenerComponent>("Audio Listener", (const char*)VX_ICON_HEADPHONES, false);
 
 					Gui::EndMenu();
 				}
@@ -610,69 +667,14 @@ namespace Vortex {
 
 				if (Gui::BeginMenu("AI"))
 				{
-					DisplayComponentMenuItem<NavMeshAgentComponent>("Nav Mesh Agent", (const char*)VX_ICON_LAPTOP);
+					DisplayAddComponentMenuItem<NavMeshAgentComponent>("Nav Mesh Agent", (const char*)VX_ICON_LAPTOP, false);
 
 					Gui::EndMenu();
 				}
 				UI::Draw::Underline();
 				Gui::Spacing();
 
-				DisplayComponentMenuItem<ScriptComponent>("Script", (const char*)VX_ICON_FILE_CODE_O);
-			}
-			else
-			{
-				if (const char* name = "Camera"; m_ComponentSearchInputTextFilter.PassFilter(name))
-					DisplayComponentMenuItem<CameraComponent>(name, (const char*)VX_ICON_VIDEO_CAMERA);
-				if (const char* componentName = "Skybox"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<SkyboxComponent>(componentName, (const char*)VX_ICON_SKYATLAS);
-				if (const char* componentName = "Light Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<LightSourceComponent>(componentName, (const char*)VX_ICON_LIGHTBULB_O);
-				if (const char* componentName = "Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<MeshRendererComponent>(componentName, (const char*)VX_ICON_HOME);
-				if (const char* componentName = "Static Mesh Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<StaticMeshRendererComponent>(componentName, (const char*)VX_ICON_CUBE);
-				if (const char* componentName = "Light Source 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<LightSource2DComponent>(componentName, (const char*)VX_ICON_LIGHTBULB_O);
-				if (const char* componentName = "Sprite Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<SpriteRendererComponent>(componentName, (const char*)VX_ICON_SPINNER);
-				if (const char* componentName = "Circle Renderer"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<CircleRendererComponent>(componentName, (const char*)VX_ICON_CIRCLE);
-				if (const char* componentName = "Particle Emitter"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<ParticleEmitterComponent>(componentName, (const char*)VX_ICON_BOMB);
-				if (const char* componentName = "Text Mesh"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<TextMeshComponent>(componentName, (const char*)VX_ICON_TEXT_HEIGHT);
-				if (const char* componentName = "Animator"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<AnimatorComponent>(componentName, (const char*)VX_ICON_CLOCK_O);
-				if (const char* componentName = "Animation"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<AnimationComponent>(componentName, (const char*)VX_ICON_ADJUST);
-				if (const char* componentName = "RigidBody"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<RigidBodyComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
-				if (const char* componentName = "Character Controller"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<CharacterControllerComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
-				if (const char* componentName = "Fixed Joint"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<FixedJointComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
-				if (const char* componentName = "Box Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<BoxColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
-				if (const char* componentName = "Sphere Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<SphereColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
-				if (const char* componentName = "Capsule Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<CapsuleColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
-				if (const char* componentName = "Mesh Collider"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<MeshColliderComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
-				if (const char* componentName = "Audio Source"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<AudioSourceComponent>(componentName, (const char*)VX_ICON_VOLUME_UP);
-				if (const char* componentName = "Audio Listener"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<AudioListenerComponent>(componentName, (const char*)VX_ICON_HEADPHONES);
-				if (const char* componentName = "RigidBody 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<RigidBody2DComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
-				if (const char* componentName = "Box Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<BoxCollider2DComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
-				if (const char* componentName = "Circle Collider 2D"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<CircleCollider2DComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
-				if (const char* componentName = "Nav Mesh Agent"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<NavMeshAgentComponent>(componentName, (const char*)VX_ICON_LAPTOP);
-				if (const char* componentName = "Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayComponentMenuItem<ScriptComponent>(componentName, (const char*)VX_ICON_FILE_CODE_O);
+				DisplayAddComponentMenuItem<ScriptComponent>("Script", (const char*)VX_ICON_FILE_CODE_O, false);
 			}
 
 			Gui::EndPopup();
@@ -686,25 +688,36 @@ namespace Vortex {
 		UI::Draw::Underline();
 		Gui::Spacing();
 
-		std::string buffer;
-		std::string& marker = tagComponent.Marker;
-		size_t markerSize = marker.size();
+		std::string tempBuffer;
+		std::string& entityMarker = tagComponent.Marker;
+		size_t markerSize = entityMarker.size();
 
-		if (marker.empty())
+		if (entityMarker.empty())
 		{
-			buffer.reserve(25);
+			tempBuffer.reserve(MAX_MARKER_SIZE);
 		}
 		else
 		{
-			buffer.resize(markerSize * 2);
-			memcpy(buffer.data(), marker.data(), markerSize * 2);
+			tempBuffer.resize(markerSize);
+			memcpy(tempBuffer.data(), entityMarker.data(), markerSize);
 		}
 
-		if (Gui::InputText("##Marker", buffer.data(), sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue) && !buffer.empty())
-		{
-			tagComponent.Marker = buffer;
-			TagComponent::AddMarker(buffer);
+		auto OnMarkerAddedFn = [&]() {
+			if (tempBuffer.empty())
+			{
+				return;
+			}
+
+			tagComponent.Marker = tempBuffer;
+			TagComponent::AddMarker(tempBuffer);
 			Gui::SetWindowFocus("Scene");
+		};
+
+		ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
+
+		if (Gui::InputText("##Marker", tempBuffer.data(), sizeof(tempBuffer), flags))
+		{
+			std::invoke(OnMarkerAddedFn);
 		}
 
 		UI::DrawItemActivityOutline();
@@ -834,14 +847,15 @@ namespace Vortex {
 	template <typename TComponent>
 	struct ComponentUICallbacks
 	{
-		using ConstType = std::function<void(const TComponent&, Entity)>;
-		using ReferenceType = std::function<void(TComponent&, Entity)>;
+		using ValueType = TComponent&;
+		using ReferenceType = std::function<void(ValueType, Entity)>;
+		using ConstType = std::function<void(const ValueType, Entity)>;
 
-		ReferenceType OnGuiRender = nullptr;
-		ReferenceType OnComponentReset = nullptr;
-		ConstType OnComponentCopied = nullptr;
-		ReferenceType OnComponentPasted = nullptr;
-		ReferenceType OnComponentRemoved = nullptr;
+		ReferenceType OnGuiRenderFn = nullptr;
+		ReferenceType OnComponentResetFn = nullptr;
+		ConstType OnComponentCopiedFn = nullptr;
+		ReferenceType OnComponentPastedFn = nullptr;
+		ReferenceType OnComponentRemovedFn = nullptr;
 
 		bool IsRemoveable = true;
 	};
@@ -867,12 +881,12 @@ namespace Vortex {
 			bool removeComponent = false;
 			if (Gui::BeginPopup("ComponentSettings"))
 			{
-				Gui::BeginDisabled(callbacks.OnComponentCopied == nullptr);
+				Gui::BeginDisabled(callbacks.OnComponentCopiedFn == nullptr);
 				if (Gui::MenuItem("Copy Component"))
 				{
-					if (callbacks.OnComponentCopied != nullptr)
+					if (callbacks.OnComponentCopiedFn != nullptr)
 					{
-						std::invoke(callbacks.OnComponentCopied, component, entity);
+						std::invoke(callbacks.OnComponentCopiedFn, component, entity);
 					}
 					Gui::CloseCurrentPopup();
 				}
@@ -880,12 +894,12 @@ namespace Vortex {
 
 				UI::Draw::Underline();
 
-				Gui::BeginDisabled(callbacks.OnComponentPasted == nullptr);
+				Gui::BeginDisabled(callbacks.OnComponentPastedFn == nullptr);
 				if (Gui::MenuItem("Paste Component"))
 				{
-					if (callbacks.OnComponentPasted != nullptr)
+					if (callbacks.OnComponentPastedFn != nullptr)
 					{
-						std::invoke(callbacks.OnComponentPasted, component, entity);
+						std::invoke(callbacks.OnComponentPastedFn, component, entity);
 					}
 					Gui::CloseCurrentPopup();
 				}
@@ -893,12 +907,12 @@ namespace Vortex {
 
 				UI::Draw::Underline();
 
-				Gui::BeginDisabled(callbacks.OnComponentReset == nullptr);
+				Gui::BeginDisabled(callbacks.OnComponentResetFn == nullptr);
 				if (Gui::MenuItem("Reset Component"))
 				{
-					if (callbacks.OnComponentReset != nullptr)
+					if (callbacks.OnComponentResetFn != nullptr)
 					{
-						std::invoke(callbacks.OnComponentReset, component, entity);
+						std::invoke(callbacks.OnComponentResetFn, component, entity);
 					}
 					Gui::CloseCurrentPopup();
 				}
@@ -921,16 +935,16 @@ namespace Vortex {
 
 			if (propertyGridHeaderOpen)
 			{
-				VX_CORE_ASSERT(callbacks.OnGuiRender != nullptr, "All components must have OnGuiRender callback!");
-				std::invoke(callbacks.OnGuiRender, component, entity);
+				VX_CORE_ASSERT(callbacks.OnGuiRenderFn != nullptr, "All components must have OnGuiRender callback!");
+				std::invoke(callbacks.OnGuiRenderFn, component, entity);
 				UI::EndTreeNode();
 			}
 
 			if (removeComponent)
 			{
-				if (callbacks.OnComponentRemoved != nullptr)
+				if (callbacks.OnComponentRemovedFn != nullptr)
 				{
-					std::invoke(callbacks.OnComponentRemoved, component, entity);
+					std::invoke(callbacks.OnComponentRemovedFn, component, entity);
 				}
 
 				entity.RemoveComponent<TComponent>();
@@ -991,8 +1005,8 @@ namespace Vortex {
 			Gui::SameLine();
 			Gui::PushItemWidth(-1);
 
-			bool controlPressed = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
-			bool shiftPressed = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
+			const bool controlPressed = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
+			const bool shiftPressed = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
 
 			if (Gui::Button("Add Component") || (Input::IsKeyDown(KeyCode::A) && controlPressed && shiftPressed && Gui::IsWindowHovered()))
 			{
@@ -1002,6 +1016,8 @@ namespace Vortex {
 				memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
 				m_ComponentSearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
 			}
+
+			UI::DrawItemActivityOutline();
 
 			UI::BeginPropertyGrid(100.0f);
 
@@ -1063,11 +1079,11 @@ namespace Vortex {
 								m_DisplayAddMarkerPopup = false;
 							}
 
-							if (Gui::BeginPopup("AddMarker"))
+							if (UI::BeginPopup("AddMarker", ImGuiWindowFlags_NoMove))
 							{
 								DisplayAddMarkerPopup(tagComponent);
 
-								Gui::EndPopup();
+								UI::EndPopup();
 							}
 						}
 					}
@@ -1085,20 +1101,29 @@ namespace Vortex {
 		}
 
 		Gui::PopItemWidth();
+
 		DisplayAddComponentPopup();
 
 		ComponentUICallbacks<TransformComponent> transformComponentCallbacks;
-		transformComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::TransformComponentOnGuiRender);
-		transformComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = TransformComponent(); };
-		// TODO
-		// transformComponentCallbacks.OnComponentCopied = [&](auto& component, auto entity) {  }
+		transformComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::TransformComponentOnGuiRender);
+		transformComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = TransformComponent(); };
+		// TODO!
+		transformComponentCallbacks.OnComponentCopiedFn = [&](auto& component, auto entity) {
+			if (!m_CopyEntity.HasComponent<TransformComponent>()) {
+				m_CopyEntity.AddComponent<TransformComponent>(component);
+			}
+		};
+		// DITTO!
+		transformComponentCallbacks.OnComponentPastedFn = [&](auto& component, auto entity) {
+			component = m_CopyEntity.GetComponent<TransformComponent>();
+		};
 		transformComponentCallbacks.IsRemoveable = false;
 		DrawComponent<TransformComponent>("Transform", entity, transformComponentCallbacks);
 
 		ComponentUICallbacks<CameraComponent> cameraComponentCallbacks;
-		cameraComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::CameraComponentOnGuiRender);
-		cameraComponentCallbacks.OnComponentReset = [](auto& component, auto entity) {
-			auto ResetCameraFunc = [&](auto type)
+		cameraComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::CameraComponentOnGuiRender);
+		cameraComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) {
+			auto ResetCameraFn = [&](auto type)
 			{
 				component = CameraComponent();
 				component.Camera.SetProjectionType(type);
@@ -1106,20 +1131,20 @@ namespace Vortex {
 
 			switch (component.Camera.GetProjectionType())
 			{
-				case SceneCamera::ProjectionType::Perspective:  ResetCameraFunc(SceneCamera::ProjectionType::Perspective);  break;
-				case SceneCamera::ProjectionType::Orthographic: ResetCameraFunc(SceneCamera::ProjectionType::Orthographic); break;
+				case SceneCamera::ProjectionType::Perspective:  ResetCameraFn(SceneCamera::ProjectionType::Perspective);  break;
+				case SceneCamera::ProjectionType::Orthographic: ResetCameraFn(SceneCamera::ProjectionType::Orthographic); break;
 			}
 		};
 		DrawComponent<CameraComponent>("Camera", entity, cameraComponentCallbacks);
 
 		ComponentUICallbacks<SkyboxComponent> skyboxComponentCallbacks;
-		skyboxComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::SkyboxComponentOnGuiRender);
-		skyboxComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = SkyboxComponent(); };
+		skyboxComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::SkyboxComponentOnGuiRender);
+		skyboxComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = SkyboxComponent(); };
 		DrawComponent<SkyboxComponent>("Skybox", entity, skyboxComponentCallbacks);
 
 		ComponentUICallbacks<LightSourceComponent> lightSourceComponentCallbacks;
-		lightSourceComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::LightSourceComponentOnGuiRender);
-		lightSourceComponentCallbacks.OnComponentReset = [](auto& component, auto entity) {
+		lightSourceComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::LightSourceComponentOnGuiRender);
+		lightSourceComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) {
 			switch (component.Type)
 			{
 				case LightType::Directional: component = LightSourceComponent(LightType::Directional); break;
@@ -1133,13 +1158,13 @@ namespace Vortex {
 		DrawComponent<LightSource2DComponent>("Light Source 2D", entity, lightSource2DComponentCallbacks);
 
 		ComponentUICallbacks<MeshRendererComponent> meshRendererComponentCallbacks;
-		meshRendererComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::MeshRendererComponentOnGuiRender);
-		meshRendererComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = MeshRendererComponent(); };
+		meshRendererComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::MeshRendererComponentOnGuiRender);
+		meshRendererComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = MeshRendererComponent(); };
 		DrawComponent<MeshRendererComponent>("Mesh Renderer", entity, meshRendererComponentCallbacks);
 
 		ComponentUICallbacks<StaticMeshRendererComponent> staticMeshRendererComponentCallbacks;
-		staticMeshRendererComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::StaticMeshRendererComponentOnGuiRender);
-		staticMeshRendererComponentCallbacks.OnComponentReset = [](auto& component, auto entity) {
+		staticMeshRendererComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::StaticMeshRendererComponentOnGuiRender);
+		staticMeshRendererComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) {
 			component = StaticMeshRendererComponent();
 			component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(DefaultMesh::StaticMeshType::Cube);
 			SharedReference<MaterialTable> materialTable = component.Materials;
@@ -1148,102 +1173,102 @@ namespace Vortex {
 		DrawComponent<StaticMeshRendererComponent>("Static Mesh Renderer", entity, staticMeshRendererComponentCallbacks);
 
 		ComponentUICallbacks<SpriteRendererComponent> spriteRendererComponentCallbacks;
-		spriteRendererComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::SpriteRendererComponentOnGuiRender);
-		spriteRendererComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = SpriteRendererComponent(); };
+		spriteRendererComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::SpriteRendererComponentOnGuiRender);
+		spriteRendererComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = SpriteRendererComponent(); };
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, spriteRendererComponentCallbacks);
 
 		ComponentUICallbacks<CircleRendererComponent> circleRendererComponentCallbacks;
-		circleRendererComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::CircleRendererComponentOnGuiRender);
+		circleRendererComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::CircleRendererComponentOnGuiRender);
 		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, circleRendererComponentCallbacks);
 
 		ComponentUICallbacks<ParticleEmitterComponent> particleEmitterComponentCallbacks;
-		particleEmitterComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::ParticleEmitterComponentOnGuiRender);
-		particleEmitterComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = ParticleEmitterComponent(); };
+		particleEmitterComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::ParticleEmitterComponentOnGuiRender);
+		particleEmitterComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = ParticleEmitterComponent(); };
 		DrawComponent<ParticleEmitterComponent>("Particle Emitter", entity, particleEmitterComponentCallbacks);
 
 		ComponentUICallbacks<TextMeshComponent> textMeshComponentCallbacks;
-		textMeshComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::TextMeshComponentOnGuiRender);
-		textMeshComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = TextMeshComponent(); };
+		textMeshComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::TextMeshComponentOnGuiRender);
+		textMeshComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = TextMeshComponent(); };
 		DrawComponent<TextMeshComponent>("Text Mesh", entity, textMeshComponentCallbacks);
 
 		ComponentUICallbacks<AnimatorComponent> animatorComponentCallbacks;
-		animatorComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::AnimatorComponentOnGuiRender);
-		animatorComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = AnimatorComponent(); };
+		animatorComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::AnimatorComponentOnGuiRender);
+		animatorComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = AnimatorComponent(); };
 		DrawComponent<AnimatorComponent>("Animator", entity, animatorComponentCallbacks);
 
 		ComponentUICallbacks<AnimationComponent> animationComponentCallbacks;
-		animationComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::AnimationComponentOnGuiRender);
-		animationComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = AnimationComponent(); };
+		animationComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::AnimationComponentOnGuiRender);
+		animationComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = AnimationComponent(); };
 		DrawComponent<AnimationComponent>("Animation", entity, animationComponentCallbacks);
 
 		ComponentUICallbacks<AudioSourceComponent> audioSourceComponentCallbacks;
-		audioSourceComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::AudioSourceComponentOnGuiRender);
-		audioSourceComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = AudioSourceComponent(); };
+		audioSourceComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::AudioSourceComponentOnGuiRender);
+		audioSourceComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = AudioSourceComponent(); };
 		DrawComponent<AudioSourceComponent>("Audio Source", entity, audioSourceComponentCallbacks);
 
 		ComponentUICallbacks<AudioListenerComponent> audioListenerComponentCallbacks;
-		audioListenerComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::AudioListenerComponentOnGuiRender);
-		audioListenerComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = AudioListenerComponent(); };
+		audioListenerComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::AudioListenerComponentOnGuiRender);
+		audioListenerComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = AudioListenerComponent(); };
 		DrawComponent<AudioListenerComponent>("Audio Listener", entity, audioListenerComponentCallbacks);
 
 		ComponentUICallbacks<RigidBodyComponent> rigidBodyComponentCallbacks;
-		rigidBodyComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::RigidBodyComponentOnGuiRender);
-		rigidBodyComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = RigidBodyComponent(); };
+		rigidBodyComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::RigidBodyComponentOnGuiRender);
+		rigidBodyComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = RigidBodyComponent(); };
 		DrawComponent<RigidBodyComponent>("RigidBody", entity, rigidBodyComponentCallbacks);
 
 		ComponentUICallbacks<CharacterControllerComponent> characterControllerComponentCallbacks;
-		characterControllerComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::CharacterControllerComponentOnGuiRender);
-		characterControllerComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = CharacterControllerComponent(); };
+		characterControllerComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::CharacterControllerComponentOnGuiRender);
+		characterControllerComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = CharacterControllerComponent(); };
 		DrawComponent<CharacterControllerComponent>("Character Controller", entity, characterControllerComponentCallbacks);
 
 		ComponentUICallbacks<FixedJointComponent> fixedJointComponentCallbacks;
-		fixedJointComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::FixedJointComponentOnGuiRender);
-		fixedJointComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = FixedJointComponent(); };
+		fixedJointComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::FixedJointComponentOnGuiRender);
+		fixedJointComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = FixedJointComponent(); };
 		DrawComponent<FixedJointComponent>("Fixed Joint", entity, fixedJointComponentCallbacks);
 
 		ComponentUICallbacks<BoxColliderComponent> boxColliderComponentCallbacks;
-		boxColliderComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::BoxColliderComponentOnGuiRender);
-		boxColliderComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = BoxColliderComponent(); };
+		boxColliderComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::BoxColliderComponentOnGuiRender);
+		boxColliderComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = BoxColliderComponent(); };
 		DrawComponent<BoxColliderComponent>("Box Collider", entity, boxColliderComponentCallbacks);
 
 		ComponentUICallbacks<SphereColliderComponent> sphereColliderComponentCallbacks;
-		sphereColliderComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::SphereColliderComponentOnGuiRender);
-		sphereColliderComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = SphereColliderComponent(); };
+		sphereColliderComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::SphereColliderComponentOnGuiRender);
+		sphereColliderComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = SphereColliderComponent(); };
 		DrawComponent<SphereColliderComponent>("Sphere Collider", entity, sphereColliderComponentCallbacks);
 
 		ComponentUICallbacks<CapsuleColliderComponent> capsuleColliderComponentCallbacks;
-		capsuleColliderComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::CapsuleColliderComponentOnGuiRender);
-		capsuleColliderComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = CapsuleColliderComponent(); };
+		capsuleColliderComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::CapsuleColliderComponentOnGuiRender);
+		capsuleColliderComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = CapsuleColliderComponent(); };
 		DrawComponent<CapsuleColliderComponent>("Capsule Collider", entity, capsuleColliderComponentCallbacks);
 
 		ComponentUICallbacks<MeshColliderComponent> meshColliderComponentCallbacks;
-		meshColliderComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::MeshColliderComponentOnGuiRender);
-		meshColliderComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = MeshColliderComponent(); };
+		meshColliderComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::MeshColliderComponentOnGuiRender);
+		meshColliderComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = MeshColliderComponent(); };
 		DrawComponent<MeshColliderComponent>("Mesh Collider", entity, meshColliderComponentCallbacks);
 
 		ComponentUICallbacks<RigidBody2DComponent> rigidBody2DComponentCallbacks;
-		rigidBody2DComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::RigidBody2DComponentOnGuiRender);
-		rigidBody2DComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = RigidBody2DComponent(); };
+		rigidBody2DComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::RigidBody2DComponentOnGuiRender);
+		rigidBody2DComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = RigidBody2DComponent(); };
 		DrawComponent<RigidBody2DComponent>("RigidBody 2D", entity, rigidBody2DComponentCallbacks);
 
 		ComponentUICallbacks<BoxCollider2DComponent> boxCollider2DComponentCallbacks;
-		boxCollider2DComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::BoxCollider2DComponentOnGuiRender);
-		boxCollider2DComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = BoxCollider2DComponent(); };
+		boxCollider2DComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::BoxCollider2DComponentOnGuiRender);
+		boxCollider2DComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = BoxCollider2DComponent(); };
 		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, boxCollider2DComponentCallbacks);
 
 		ComponentUICallbacks<CircleCollider2DComponent> circleCollider2DComponentCallbacks;
-		circleCollider2DComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::CircleCollider2DComponentOnGuiRender);
-		circleCollider2DComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = CircleCollider2DComponent(); };
+		circleCollider2DComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::CircleCollider2DComponentOnGuiRender);
+		circleCollider2DComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = CircleCollider2DComponent(); };
 		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, circleCollider2DComponentCallbacks);
 
 		ComponentUICallbacks<NavMeshAgentComponent> navMeshAgentComponentCallbacks;
-		navMeshAgentComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::NavMeshAgentComponentOnGuiRender);
-		navMeshAgentComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = NavMeshAgentComponent(); };
+		navMeshAgentComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::NavMeshAgentComponentOnGuiRender);
+		navMeshAgentComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = NavMeshAgentComponent(); };
 		DrawComponent<NavMeshAgentComponent>("Nav Mesh Agent", entity, navMeshAgentComponentCallbacks);
 
 		ComponentUICallbacks<ScriptComponent> scriptComponentCallbacks;
-		scriptComponentCallbacks.OnGuiRender = VX_BIND_CALLBACK(SceneHierarchyPanel::ScriptComponentOnGuiRender);
-		scriptComponentCallbacks.OnComponentReset = [](auto& component, auto entity) { component = ScriptComponent(); };
+		scriptComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::ScriptComponentOnGuiRender);
+		scriptComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = ScriptComponent(); };
 		DrawComponent<ScriptComponent>("Script", entity, scriptComponentCallbacks);
 
 		ComponentUICallbacks<NativeScriptComponent> nativeScriptComponentCallbacks;
@@ -1348,50 +1373,39 @@ namespace Vortex {
 			skybox = AssetManager::GetAsset<Skybox>(environmentHandle);
 		}
 
-		std::string relativeSkyboxPath = "(null)";
+		std::string relativePath = "(null)";
 
 		if (skybox && skybox->IsLoaded())
 		{
 			const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.Skybox);
-			relativeSkyboxPath = metadata.Filepath.string();
+			relativePath = metadata.Filepath.stem().string();
 		}
 
-		UI::BeginPropertyGrid();
-		UI::Property("Environment Map", relativeSkyboxPath, true);
-		UI::EndPropertyGrid();
-
-		// Accept a Skybox Directory from the content browser
-		if (Gui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		auto OnSkyboxDroppedFn = [&](const std::filesystem::path& filepath) {
+			// Make sure we are recieving an actual directory or hdr texture otherwise we will have trouble loading it
+			if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::EnvironmentAsset)
 			{
-				const wchar_t* path = (const wchar_t*)payload->Data;
-				std::filesystem::path skyboxPath = std::filesystem::path(path);
-
-				// Make sure we are recieving an actual directory or hdr texture otherwise we will have trouble loading it
-				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(skyboxPath); type == AssetType::EnvironmentAsset)
+				AssetHandle environmentHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
+				if (AssetManager::IsHandleValid(environmentHandle))
 				{
-					AssetHandle environmentHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(skyboxPath);
-					if (AssetManager::IsHandleValid(environmentHandle))
-					{
-						component.Skybox = environmentHandle;
-					}
-				}
-				else
-				{
-					VX_CONSOLE_LOG_WARN("Could not load skybox, not a '.hdr' - {}", skyboxPath.filename().string());
+					component.Skybox = environmentHandle;
 				}
 			}
+			else
+			{
+				VX_CONSOLE_LOG_WARN("Could not load skybox, not a '.hdr' - {}", filepath.filename().string());
+			}
+		};
 
-			Gui::EndDragDropTarget();
-		}
+		UI::BeginPropertyGrid();
+		UI::PropertyAssetReference<Skybox>("Environment Map", relativePath, component.Skybox, OnSkyboxDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry());
+		UI::EndPropertyGrid();
 
 		if (skybox && skybox->IsLoaded())
 		{
 			UI::BeginPropertyGrid();
 
 			UI::Property("Rotation", component.Rotation);
-
 			if (Gui::IsItemFocused())
 			{
 				// Nasty hack to reload skybox
@@ -1471,12 +1485,12 @@ namespace Vortex {
 
 		UI::Property("Visible", component.Visible);
 
-		std::string relativeMeshPath = "";
+		std::string relativeMeshPath = "(null)";
 
 		if (AssetManager::IsHandleValid(component.Mesh))
 		{
 			const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.Mesh);
-			relativeMeshPath = metadata.Filepath.string();
+			relativeMeshPath = metadata.Filepath.stem().string();
 		}
 
 		UI::Property("Mesh Source", relativeMeshPath, true);
@@ -1527,67 +1541,24 @@ namespace Vortex {
 
 		UI::Property("Visible", component.Visible);
 
-		std::string relativePath = "";
+		std::string relativePath = "(null)";
 
 		if (AssetManager::IsHandleValid(component.StaticMesh))
 		{
 			const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.StaticMesh);
-			relativePath = metadata.Filepath.string();
+			relativePath = metadata.Filepath.stem().string();
 		}
 
-		UI::Property("Mesh Source", relativePath, true);
-
-		UI::EndPropertyGrid();
-
-		// Accept a Model File from the content browser
-		if (Gui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		auto OnStaticMeshDroppedFn = [&](const std::filesystem::path& filepath) {
+			// Make sure we are recieving an actual model file otherwise we will have trouble opening it
+			if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::StaticMeshAsset || type == AssetType::MeshAsset)
 			{
-				const wchar_t* path = (const wchar_t*)payload->Data;
-				std::filesystem::path staticMeshFilepath = std::filesystem::path(path);
-
-				// Make sure we are recieving an actual model file otherwise we will have trouble opening it
-				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(staticMeshFilepath); type == AssetType::StaticMeshAsset || type == AssetType::MeshAsset)
+				AssetHandle staticMeshHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
+				if (AssetManager::IsHandleValid(staticMeshHandle))
 				{
-					AssetHandle staticMeshHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(staticMeshFilepath);
-					if (AssetManager::IsHandleValid(staticMeshHandle))
-					{
-						component.StaticMesh = staticMeshHandle;
-						component.Type = MeshType::Custom;
+					component.StaticMesh = staticMeshHandle;
+					component.Type = MeshType::Custom;
 
-						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
-						if (staticMesh)
-						{
-							component.Materials->Clear();
-							staticMesh->LoadMaterialTable(component.Materials);
-						}
-					}
-				}
-				else
-				{
-					VX_CONSOLE_LOG_WARN("Could not load model file - {}", staticMeshFilepath.filename().string());
-				}
-			}
-
-			Gui::EndDragDropTarget();
-		}
-
-		UI::BeginPropertyGrid();
-
-		static const char* meshTypes[] = { "Cube", "Sphere", "Capsule", "Cone", "Cylinder", "Plane", "Torus", "Custom" };
-		int32_t currentMeshType = (int32_t)component.Type;
-		if (UI::PropertyDropdown("Mesh Type", meshTypes, VX_ARRAYCOUNT(meshTypes), currentMeshType))
-		{
-			component.Type = (MeshType)currentMeshType;
-
-			if (component.Type == MeshType::Custom)
-			{
-				// Temporary
-				component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(DefaultMesh::StaticMeshType::Cube);
-
-				if (AssetManager::IsHandleValid(component.StaticMesh))
-				{
 					SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
 					if (staticMesh)
 					{
@@ -1598,20 +1569,11 @@ namespace Vortex {
 			}
 			else
 			{
-				component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh((DefaultMesh::StaticMeshType)component.Type);
-
-				VX_CORE_ASSERT(AssetManager::IsHandleValid(component.StaticMesh), "Invalid Default Mesh Handle!");
-
-				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
-				if (staticMesh)
-				{
-					component.Materials->Clear();
-					staticMesh->LoadMaterialTable(component.Materials);
-				}
+				VX_CONSOLE_LOG_WARN("Could not load model file - {}", filepath.filename().string());
 			}
-		}
+		};
 
-		UI::EndPropertyGrid();
+		UI::PropertyAssetReference<StaticMesh>("Mesh Source", relativePath, component.StaticMesh, OnStaticMeshDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry());
 
 		if (AssetManager::IsHandleValid(component.StaticMesh))
 		{
@@ -1620,6 +1582,33 @@ namespace Vortex {
 			SharedReference<MaterialTable>& materialTable = component.Materials;
 
 			uint32_t submeshIndex = 0;
+
+			auto OnMaterialDroppedFn = [&](const std::filesystem::path& filepath) {
+				// Make sure we are recieving an actual material otherwise we will have trouble opening it
+				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::MaterialAsset)
+				{
+					AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
+
+					if (AssetManager::IsHandleValid(materialHandle))
+					{
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (material)
+						{
+							materialTable->SetMaterial(submeshIndex, material->Handle);
+							material->SetName(FileSystem::RemoveFileExtension(filepath));
+						}
+					}
+					else
+					{
+						VX_CONSOLE_LOG_WARN("Could not load material {}", filepath.filename().string());
+					}
+				}
+				else
+				{
+					VX_CONSOLE_LOG_WARN("Could not load material", filepath.filename().string());
+				}
+			};
+			
 			for (;;)
 			{
 				if (!materialTable->HasMaterial(submeshIndex))
@@ -1639,81 +1628,17 @@ namespace Vortex {
 				}
 
 				AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex);
-				SharedReference<Material> material = nullptr;
-				if (AssetManager::IsHandleValid(materialHandle))
+				std::string relativePath = Project::GetEditorAssetManager()->GetMetadata(materialHandle).Filepath.stem().string();
+				if (UI::PropertyAssetReference<Material>("Material", relativePath, materialHandle, OnMaterialDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry()))
 				{
-					material = AssetManager::GetAsset<Material>(materialHandle);
-				}
-
-				const auto& allMaterials = AssetManager::GetAllAssetsWithType<Material>();
-				std::vector<const char*> options;
-				std::vector<std::string> filepaths;
-
-				for (const auto& materialHandle : allMaterials)
-				{
-					if (!AssetManager::IsHandleValid(materialHandle))
-						continue;
-
-					SharedReference<Material> mat = AssetManager::GetAsset<Material>(materialHandle);
-					if (!mat)
-						continue;
-
-					const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(mat->Handle);
-					if (!metadata.IsValid())
-						continue;
-
-					options.emplace_back(mat->GetName().c_str());
-					filepaths.emplace_back(metadata.Filepath.string());
-				}
-
-				UI::BeginPropertyGrid();
-				std::string currentMaterialName = material ? material->GetName() : "Default Material";
-				if (UI::PropertyDropdownSearch("Material", options.data(), options.size(), currentMaterialName, m_MaterialSearchInputTextFilter))
-				{
-					uint32_t index = std::find(options.begin(), options.end(), currentMaterialName) - options.begin();
-					material->Handle = *std::next(allMaterials.begin(), index);
-					materialTable->SetMaterial(submeshIndex, material->Handle);
-				}
-				UI::EndPropertyGrid();
-
-				if (Gui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-					{
-						const wchar_t* path = (const wchar_t*)payload->Data;
-						std::filesystem::path materialPath = std::filesystem::path(path);
-
-						// Make sure we are recieving an actual material otherwise we will have trouble opening it
-						if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(materialPath); type == AssetType::MaterialAsset)
-						{
-							AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(materialPath);
-
-							if (AssetManager::IsHandleValid(materialHandle))
-							{
-								SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-								if (material)
-								{
-									materialTable->SetMaterial(submeshIndex, material->Handle);
-									material->SetName(FileSystem::RemoveFileExtension(materialPath));
-								}
-							}
-							else
-							{
-								VX_CONSOLE_LOG_WARN("Could not load material {}", materialPath.filename().string());
-							}
-						}
-						else
-						{
-							VX_CONSOLE_LOG_WARN("Could not load material", materialPath.filename().string());
-						}
-					}
-
-					Gui::EndDragDropTarget();
+					materialTable->SetMaterial(submeshIndex, materialHandle);
 				}
 
 				submeshIndex++;
 			}
 		}
+
+		UI::EndPropertyGrid();
 	}
 
 	void SceneHierarchyPanel::SpriteRendererComponentOnGuiRender(SpriteRendererComponent& component, Entity entity)
@@ -1727,7 +1652,9 @@ namespace Vortex {
 		SharedReference<Texture2D> icon = EditorResources::CheckerboardIcon;
 
 		if (AssetManager::IsHandleValid(component.Texture))
+		{
 			icon = AssetManager::GetAsset<Texture2D>(component.Texture);
+		}
 
 		if (UI::ImageButton("Texture", icon, { 64, 64 }, { 0, 0, 0, 0 }, tintColor))
 		{
@@ -1736,7 +1663,7 @@ namespace Vortex {
 		else if (Gui::IsItemHovered())
 		{
 			Gui::BeginTooltip();
-			Gui::Text(icon->GetPath().c_str());
+			Gui::Text(std::filesystem::path(icon->GetPath()).stem().string().c_str());
 			Gui::EndTooltip();
 		}
 
@@ -1848,15 +1775,15 @@ namespace Vortex {
 
 		UI::Property("Visible", component.Visible);
 
-		std::string relativeFontPath = "Default Font";
+		std::string relativePath = "Default Font";
 
 		if (AssetManager::IsHandleValid(component.FontAsset))
 		{
 			const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.FontAsset);
-			relativeFontPath = metadata.Filepath.string();
+			relativePath = metadata.Filepath.stem().string();
 		}
 
-		UI::Property("Font Source", relativeFontPath, true);
+		UI::Property("Font Source", relativePath, true);
 
 		UI::EndPropertyGrid();
 
@@ -1999,50 +1926,56 @@ namespace Vortex {
 				Gui::EndDisabled();
 			}
 
-			UI::BeginPropertyGrid();
 			std::string ascPath = audioSource->GetPath().string();
 			std::string relativePath = "(null)";
 			if (!ascPath.empty())
-				relativePath = FileSystem::Relative(ascPath, Project::GetAssetDirectory()).string();
-			UI::Property("Source", relativePath, true);
-			UI::EndPropertyGrid();
-
-			// Accept a Audio File from the content browser
-			if (Gui::BeginDragDropTarget())
 			{
-				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				relativePath = FileSystem::Relative(ascPath, Project::GetAssetDirectory()).stem().string();
+			}
+
+			auto OnAudioSourceDroppedFn = [&](const std::filesystem::path& filepath) {
+				// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
+				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::AudioAsset)
 				{
-					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path audioSourcePath = std::filesystem::path(path);
+					if (device.GetSound().IsPlaying())
+						device.Stop();
 
-					// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
-					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(audioSourcePath); type == AssetType::AudioAsset)
+					if (FileSystem::GetFileExtension(filepath) != ".vsound")
 					{
-						if (device.GetSound().IsPlaying())
-							device.Stop();
+						std::string filename = FileSystem::RemoveFileExtension(filepath);
+						filename += ".vsound";
+						auto asset = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, filepath);
 
-						if (FileSystem::GetFileExtension(audioSourcePath) != ".vsound")
-						{
-							std::string filename = FileSystem::RemoveFileExtension(audioSourcePath);
-							filename += ".vsound";
-							auto asset = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, audioSourcePath);
-
-							component.AudioHandle = asset->Handle;
-						}
-						else
-						{
-							AssetHandle handle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(audioSourcePath);
-							component.AudioHandle = handle;
-						}
+						component.AudioHandle = asset->Handle;
 					}
 					else
 					{
-						VX_CONSOLE_LOG_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", audioSourcePath.filename().string());
+						AssetHandle handle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
+						component.AudioHandle = handle;
 					}
 				}
+				else
+				{
+					VX_CONSOLE_LOG_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", filepath.filename().string());
+				}
+			};
 
-				Gui::EndDragDropTarget();
+			UI::BeginPropertyGrid();
+			if (UI::PropertyAssetReference<AudioSource>("Source", relativePath, component.AudioHandle, OnAudioSourceDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry()))
+			{
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.AudioHandle);
+				if (component.AudioHandle != 0 && !metadata.Filepath.string().ends_with(".vsound"))
+				{
+					// TODO
+					// we need to check if theres another vsound before creating one, we don't need to keep creating them if one alreay exists
+					std::string filename = FileSystem::RemoveFileExtension(metadata.Filepath);
+					filename += ".vsound";
+					audioSource = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, metadata.Filepath);
+
+					component.AudioHandle = audioSource->Handle;
+				}
 			}
+			UI::EndPropertyGrid();
 
 			Gui::BeginDisabled(audioSource == nullptr);
 

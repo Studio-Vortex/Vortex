@@ -2,7 +2,10 @@
 #include "GuiLayer.h"
 
 #include "Vortex/Core/Application.h"
+
+#include "Vortex/UI/UI.h"
 #include "Vortex/Gui/Colors.h"
+
 #include "Vortex/Editor/FontAwesome.h"
 
 #include <imgui.h>
@@ -92,11 +95,15 @@ namespace Vortex {
 
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 460");
+
+		UI::Internal::Init();
 	}
 
 	void GuiLayer::OnDetach()
 	{
 		VX_PROFILE_FUNCTION();
+
+		UI::Internal::Shutdown();
 
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();

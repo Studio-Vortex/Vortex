@@ -973,10 +973,12 @@ namespace Vortex {
 
 	void Renderer::ConfigurePostProcessingPipeline(const PostProcessProperties& postProcessProps)
 	{
-		if (false)//should be checking if the framebuffer wasn't created yet
+		static bool init = false;
+		if (init == false)//should be checking if the framebuffer wasn't created yet
 		{
 			Viewport viewport = postProcessProps.ViewportSize;
 			CreateBlurFramebuffer(viewport.Width, viewport.Height);
+			init = true;
 		}
 	}
 

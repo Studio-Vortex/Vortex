@@ -27,11 +27,33 @@ namespace Vortex {
 
 namespace Vortex::UI {
 
+#define UI_MAX_TEXT_FILTERS 64
+
 	static int s_UIContextID = 0;
 	static uint32_t s_Counter = 0;
 	static uint32_t s_CheckboxCount = 0;
 	static char s_IDBuffer[16] = "##";
 	static char s_LabelIDBuffer[1024];
+	static ImGuiTextFilter s_TextFilters[UI_MAX_TEXT_FILTERS];
+
+	namespace Internal {
+
+		inline static void Init()
+		{
+			for (size_t i = 0; i < UI_MAX_TEXT_FILTERS; i++)
+			{
+				ImGuiTextFilter& filter = s_TextFilters[i];
+				memset(filter.InputBuf, 0, IM_ARRAYSIZE(filter.InputBuf));
+				filter.Build();
+			}
+		}
+
+		inline static void Shutdown()
+		{
+
+		}
+
+	}
 
 	class ScopedStyle
 	{
@@ -368,7 +390,9 @@ namespace Vortex::UI {
 			values.x = resetValue;
 
 			if (uiCallback != nullptr)
-				uiCallback();
+			{
+				std::invoke(uiCallback);
+			}
 		}
 		Gui::PopFont();
 		Gui::PopStyleColor(3);
@@ -389,7 +413,9 @@ namespace Vortex::UI {
 			values.y = resetValue;
 
 			if (uiCallback != nullptr)
-				uiCallback();
+			{
+				std::invoke(uiCallback);
+			}
 		}
 		Gui::PopFont();
 		Gui::PopStyleColor(3);
@@ -410,7 +436,9 @@ namespace Vortex::UI {
 			values.z = resetValue;
 
 			if (uiCallback != nullptr)
-				uiCallback();
+			{
+				std::invoke(uiCallback);
+			}
 		}
 		Gui::PopFont();
 		Gui::PopStyleColor(3);
@@ -552,7 +580,9 @@ namespace Vortex::UI {
 			| ImGuiTreeNodeFlags_FramePadding;
 
 		if (defaultOpen)
+		{
 			flags |= ImGuiTreeNodeFlags_DefaultOpen;
+		}
 
 		bool open = false;
 		const float framePaddingX = 6.0f;
@@ -1100,15 +1130,19 @@ namespace Vortex::UI {
 			for (uint32_t i = 0; i < count; i++)
 			{
 				const bool isSelected = current == options[i];
-				if (Gui::Selectable(options[i], isSelected))
+				if (Gui::Selectable(options[i], isSelected) || (Gui::IsItemFocused() && Gui::IsKeyPressed(ImGuiKey_Enter)))
 				{
 					current = options[i];
 					selected = (TEnum)i;
 					modified = true;
+
+					Gui::CloseCurrentPopup();
 				}
 
 				if (isSelected)
+				{
 					Gui::SetItemDefaultFocus();
+				}
 
 				// skip last item
 				if (i != count - 1)
@@ -1130,7 +1164,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	inline static bool PropertyDropdownSearch(const char* label, const char** options, uint32_t count, std::string& selected, ImGuiTextFilter& textFilter)
+	inline static bool PropertyDropdownSearch(const char* label, const char** options, uint32_t count, std::string& selected, ImGuiTextFilter& textFilter, const std::function<void()>& clearCallback = nullptr)
 	{
 		const char* current = selected.c_str();
 
@@ -1146,6 +1180,16 @@ namespace Vortex::UI {
 		if (Gui::BeginCombo(id.c_str(), current))
 		{
 			const bool isSearching = Gui::InputTextWithHint(id.c_str(), "Search", textFilter.InputBuf, IM_ARRAYSIZE(textFilter.InputBuf));
+			DrawItemActivityOutline();
+
+			if (clearCallback != nullptr)
+			{
+				Gui::SameLine();
+				if (Gui::Button("Clear"))
+				{
+					std::invoke(clearCallback);
+				}
+			}
 
 			if (isSearching)
 				textFilter.Build();
@@ -1159,7 +1203,7 @@ namespace Vortex::UI {
 				if (!textFilter.PassFilter(options[i]))
 					continue;
 
-				if (Gui::Selectable(options[i], isSelected))
+				if (Gui::Selectable(options[i], isSelected) || (Gui::IsItemFocused() && Gui::IsKeyPressed(ImGuiKey_Enter)))
 				{
 					current = options[i];
 					selected = options[i];
@@ -1167,6 +1211,7 @@ namespace Vortex::UI {
 
 					memset(textFilter.InputBuf, 0, IM_ARRAYSIZE(textFilter.InputBuf));
 					textFilter.Build();
+					Gui::CloseCurrentPopup();
 				}
 
 				if (isSelected)
@@ -1310,10 +1355,21 @@ namespace Vortex::UI {
 					selected = io.Fonts->Fonts[i];
 					io.FontDefault = selected;
 					modified = true;
+
+					Gui::CloseCurrentPopup();
 				}
 
 				if (isSelected)
+				{
 					Gui::SetItemDefaultFocus();
+				}
+
+				// skip last item
+				if (i != count - 1)
+				{
+					UI::Draw::Underline();
+					Gui::Spacing();
+				}
 			}
 
 			Gui::EndCombo();
@@ -1441,12 +1497,83 @@ namespace Vortex::UI {
 		return isRowClicked;
 	}
 
-	inline void Separator(ImVec2 size, ImVec4 color)
+	using AssetDropFn = std::function<void(const std::filesystem::path&)>;
+
+	template <typename TAssetType>
+	inline static bool PropertyAssetReference(const char* label, const std::string& filepath, AssetHandle& assetHandle, const AssetDropFn& assetDropFn, const AssetRegistry& registry)
 	{
-		ImGui::PushStyleColor(ImGuiCol_ChildBg, color);
-		ImGui::BeginChild("sep", size);
-		ImGui::EndChild();
-		ImGui::PopStyleColor();
+		bool modified = false;
+
+		AssetType assetType = TAssetType::GetStaticType();
+
+		std::vector<const char*> options;
+		std::vector<AssetHandle> handles;
+
+		std::vector<std::string> filepaths;
+
+		for (const auto& [assetHandle, metadata] : registry)
+		{
+			if (metadata.Type != assetType)
+				continue;
+
+			VX_CORE_ASSERT(metadata.Handle != 0, "Invalid asset handle!");
+
+			const std::filesystem::path& path = metadata.Filepath;
+
+			if (path.empty())
+				continue;
+
+			filepaths.push_back(path.string());
+			options.push_back(filepaths.back().c_str());
+			handles.push_back(assetHandle);
+		}
+
+		PushID();
+
+		auto OnClearedFn = [&] {
+			assetHandle = 0;
+			modified = true;
+			Gui::CloseCurrentPopup();
+		};
+
+		std::string current = filepath;
+		BeginPropertyGrid();
+		if (PropertyDropdownSearch(label, options.data(), options.size(), current, s_TextFilters[s_UIContextID - 1], OnClearedFn))
+		{
+			size_t pos = 0;
+			for (size_t i = 0; i < options.size(); i++)
+			{
+				if (current.find(options[i]) != std::string::npos)
+				{
+					pos = i;
+					break;
+				}
+			}
+
+			assetHandle = handles[pos];
+			modified = true;
+		}
+		EndPropertyGrid();
+
+		PopID();
+
+		if (Gui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+			{
+				if (assetDropFn != nullptr)
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path droppedFilepath = std::filesystem::path(path);
+
+					std::invoke(assetDropFn, droppedFilepath);
+				}
+			}
+
+			Gui::EndDragDropTarget();
+		}
+
+		return modified;
 	}
 
 }

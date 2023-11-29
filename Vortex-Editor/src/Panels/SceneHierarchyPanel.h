@@ -31,7 +31,7 @@ namespace Vortex {
 		void DisplayInsectorPanel(Entity hoveredEntity);
 
 		template <typename TComponent>
-		void DisplayComponentMenuItem(const std::string& name, const char* icon)
+		void DisplayAddComponentMenuItem(const std::string& name, const char* icon, bool drawUnderline = true)
 		{
 			Entity& selectedEntity = SelectionManager::GetSelectedEntity();
 
@@ -47,8 +47,11 @@ namespace Vortex {
 					Gui::CloseCurrentPopup();
 				}
 
-				UI::Draw::Underline();
-				Gui::Spacing();
+				if (drawUnderline)
+				{
+					UI::Draw::Underline();
+					Gui::Spacing();
+				}
 			}
 		}
 

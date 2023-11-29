@@ -470,7 +470,7 @@ namespace Vortex {
 		if (Gui::IsPopupOpen("SceneCreateEntityMenu"))
 			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
 
-		if (Gui::BeginPopup("SceneCreateEntityMenu"))
+		if (Gui::BeginPopup("SceneCreateEntityMenu", ImGuiWindowFlags_NoMove))
 		{
 			EditorCamera* camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
 			m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateEntityMenu(camera);
@@ -796,7 +796,7 @@ namespace Vortex {
 				UI::Draw::Underline();
 				m_PanelManager->MenuBarItem<ConsolePanel>();
 				UI::Draw::Underline();
-				m_PanelManager->MenuBarItem<ContentBrowserPanel>("Shift+Space");
+				m_PanelManager->MenuBarItem<ContentBrowserPanel>();
 				UI::Draw::Underline();
 				Gui::MenuItem("Inspector", nullptr, &m_PanelManager->GetPanel<SceneHierarchyPanel>()->IsInspectorOpen());
 				UI::Draw::Underline();
@@ -1537,12 +1537,15 @@ namespace Vortex {
 			UI::ScopedStyle cellPadding(ImGuiStyleVar_CellPadding, ImVec2(0.0f, 5.5f));
 
 			if (openSettingsPopup)
+			{
 				Gui::OpenPopup("ViewportSettingsPanel");
+			}
 
 			float columnWidth = 165.0f;
 			Gui::SetNextWindowSize({ popupWidth, 375.0f });
 			Gui::SetNextWindowPos({ (m_ViewportBounds[1].x - popupWidth) - 17, m_ViewportBounds[0].y + edgeOffset + windowHeight });
-			if (Gui::BeginPopup("ViewportSettingsPanel", ImGuiWindowFlags_NoMove))
+			const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar;
+			if (Gui::BeginPopup("ViewportSettingsPanel", windowFlags))
 			{
 				{
 					Gui::PushFont(boldFont);
@@ -2400,14 +2403,18 @@ namespace Vortex {
 			case KeyCode::N:
 			{
 				if (controlDown && m_SceneState == SceneState::Edit)
+				{
 					CreateNewScene();
+				}
 
 				break;
 			}
 			case KeyCode::O:
 			{
 				if (controlDown && m_SceneState == SceneState::Edit)
+				{
 					OpenExistingProject();
+				}
 
 				break;
 			}
@@ -2416,9 +2423,13 @@ namespace Vortex {
 				if (controlDown && m_SceneState == SceneState::Edit)
 				{
 					if (shiftDown)
+					{
 						SaveSceneAs();
+					}
 					else
+					{
 						SaveScene();
+					}
 				}
 
 				break;
@@ -2501,7 +2512,9 @@ namespace Vortex {
 			case KeyCode::A:
 			{
 				if (controlDown)
+				{
 					m_ShowSceneCreateEntityMenu = true;
+				}
 
 				break;
 			}
@@ -2525,7 +2538,9 @@ namespace Vortex {
 			case KeyCode::D:
 			{
 				if (controlDown)
+				{
 					DuplicateSelectedEntity();
+				}
 
 				break;
 			}
@@ -2542,11 +2557,13 @@ namespace Vortex {
 				if (controlDown)
 				{
 					if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
+					{
 						OnScenePlay();
+					}
 					else if (m_SceneState == SceneState::Play)
+					{
 						OnSceneStop();
-
-					break;
+					}
 				}
 
 				break;
@@ -2556,7 +2573,9 @@ namespace Vortex {
 				if (controlDown && shiftDown)
 				{
 					if (m_SceneState == SceneState::Simulate)
+					{
 						RestartSceneSimulation();
+					}
 
 					break;
 				}
@@ -2564,11 +2583,13 @@ namespace Vortex {
 				if (controlDown)
 				{
 					if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
+					{
 						OnSceneSimulate();
+					}
 					else if (m_SceneState == SceneState::Simulate)
+					{
 						OnSceneStop();
-
-					break;
+					}
 				}
 
 				break;
@@ -2595,7 +2616,9 @@ namespace Vortex {
 			case KeyCode::Delete:
 			{
 				if (selectedEntity)
+				{
 					m_ActiveScene->SubmitToDestroyEntity(selectedEntity);
+				}
 
 				break;
 			}
@@ -2603,11 +2626,8 @@ namespace Vortex {
 			case KeyCode::Space:
 			{
 				if (controlDown)
-					m_SceneViewportMaximized = !m_SceneViewportMaximized;
-				else if (shiftDown)
 				{
-					auto contentBrowserPanel = m_PanelManager->GetPanel<ContentBrowserPanel>();
-					contentBrowserPanel->IsOpen = !contentBrowserPanel->IsOpen;
+					m_SceneViewportMaximized = !m_SceneViewportMaximized;
 				}
 
 				break;
@@ -2666,7 +2686,9 @@ namespace Vortex {
 		std::string filepath = FileDialogue::OpenFileDialog("Vortex Project (*.vxproject)\0*.vxproject\0");
 
 		if (filepath.empty())
+		{
 			return false;
+		}
 
 		OpenProject(filepath);
 		return true;
@@ -2736,7 +2758,9 @@ namespace Vortex {
 	void EditorLayer::CreateNewScene()
 	{
 		if (m_SceneState != SceneState::Edit)
+		{
 			return;
+		}
 
 		m_EditorScenePath = ""; // No scene on disk yet
 
@@ -2768,7 +2792,9 @@ namespace Vortex {
 	void EditorLayer::OpenScene(const std::filesystem::path& filepath)
 	{
 		if (m_SceneState != SceneState::Edit)
+		{
 			OnSceneStop();
+		}
 
 		m_HoveredEntity = Entity{}; // Prevent an invalid entity from being used elsewhere in the editor
 
@@ -2836,9 +2862,13 @@ namespace Vortex {
 		m_ActiveScene->SortEntities();
 
 		if (!m_EditorScenePath.empty())
+		{
 			SerializeScene(m_ActiveScene, m_EditorScenePath);
+		}
 		else
+		{
 			SaveSceneAs();
+		}
 	}
 
 	void EditorLayer::SerializeScene(SharedReference<Scene>& scene, const std::filesystem::path& filepath)
@@ -2850,7 +2880,9 @@ namespace Vortex {
 	void EditorLayer::OnScenePlay()
 	{
 		if (m_SceneState != SceneState::Edit)
+		{
 			OnSceneStop();
+		}
 
 		m_SceneState = SceneState::Play;
 
@@ -2881,7 +2913,9 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "Scene must be running!");
 		if (m_SceneState == SceneState::Edit)
+		{
 			return;
+		}
 
 		m_ActiveScene->SetPaused(true);
 	}
@@ -2890,7 +2924,9 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "Scene must be running!");
 		if (m_SceneState == SceneState::Edit)
+		{
 			return;
+		}
 
 		m_ActiveScene->SetPaused(false);
 	}
@@ -2903,14 +2939,20 @@ namespace Vortex {
 		ProjectProperties& projectProps = activeProject->GetProperties();
 
 		if (m_SceneState == SceneState::Play)
+		{
 			m_ActiveScene->OnRuntimeStop();
+		}
 		else if (m_SceneState == SceneState::Simulate)
+		{
 			m_ActiveScene->OnPhysicsSimulationStop();
+		}
 
 		m_SceneState = SceneState::Edit;
 
 		if (projectProps.EditorProps.MaximizeOnPlay)
+		{
 			m_SceneViewportMaximized = false;
+		}
 
 		m_HoveredEntity = Entity{};
 
@@ -2935,12 +2977,16 @@ namespace Vortex {
 	void EditorLayer::OnSceneSimulate()
 	{
 		if (m_SceneState != SceneState::Edit)
+		{
 			OnSceneStop();
+		}
 
 		m_SceneState = SceneState::Simulate;
 
 		if (Project::GetActive()->GetProperties().EditorProps.MaximizeOnPlay)
+		{
 			m_SceneViewportMaximized = true;
+		}
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnPhysicsSimulationStart();
@@ -3001,18 +3047,23 @@ namespace Vortex {
 			originalTitle,
 			graphicsAPI
 		);
+
 		window.SetTitle(newTitle);
 	}
 
 	void EditorLayer::DuplicateSelectedEntity()
 	{
 		if (m_SceneState != SceneState::Edit)
+		{
 			return;
+		}
 
 		Entity selectedEntity = SelectionManager::GetSelectedEntity();
 
 		if (!selectedEntity)
+		{
 			return;
+		}
 
 		Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
 		SelectionManager::SetSelectedEntity(duplicatedEntity);
@@ -3032,6 +3083,7 @@ namespace Vortex {
 			m_EditorCamera->Focus({ 0, 0, 0 });
 			m_EditorCamera->SetDistance(10);
 		}
+
 		if (m_SecondEditorCamera)
 		{
 			m_EditorCamera->Focus({ 0, 0, 0 });
@@ -3233,7 +3285,9 @@ namespace Vortex {
 	void EditorLayer::OnTranslationToolSelected()
 	{
 		if (m_SceneState == SceneState::Play && !m_SecondViewportHovered)
+		{
 			return;
+		}
 
 		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
@@ -3241,7 +3295,9 @@ namespace Vortex {
 	void EditorLayer::OnRotationToolSelected()
 	{
 		if (m_SceneState == SceneState::Play && !m_SecondViewportHovered)
+		{
 			return;
+		}
 
 		m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 	}
@@ -3249,7 +3305,9 @@ namespace Vortex {
 	void EditorLayer::OnScaleToolSelected()
 	{
 		if (m_SceneState == SceneState::Play && !m_SecondViewportHovered)
+		{
 			return;
+		}
 
 		m_GizmoType = ImGuizmo::OPERATION::SCALE;
 	}
