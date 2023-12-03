@@ -5,15 +5,6 @@
 
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
-#include "Vortex/Utils/FileSystem.h"
-
-namespace YAML {
-	
-	class Emitter;
-	class Node;
-
-}
-
 namespace Vortex {
 
 	class AssetSerializer

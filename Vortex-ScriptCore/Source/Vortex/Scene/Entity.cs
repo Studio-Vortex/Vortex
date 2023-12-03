@@ -7,7 +7,12 @@ namespace Vortex {
 		public readonly ulong ID;
 		public Transform transform;
 
-		public string Tag => InternalCalls.Entity_GetTag(ID);
+		public string Tag
+		{
+			get => InternalCalls.Entity_GetTag(ID);
+			set => InternalCalls.Entity_SetTag(ID, value);
+		}
+
 		public string Marker
 		{
 			get => InternalCalls.Entity_GetMarker(ID);

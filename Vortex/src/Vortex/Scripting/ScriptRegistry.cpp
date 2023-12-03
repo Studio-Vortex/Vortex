@@ -379,9 +379,9 @@ namespace Vortex {
 				return 0;
 			}
 
-			Entity clonedEntity = contextScene->DuplicateEntity(entity);
+			Entity duplicate = contextScene->DuplicateEntity(entity);
 
-			return clonedEntity.GetUUID();
+			return duplicate.GetUUID();
 		}
 
 		uint64_t Scene_InstantiateAsChild(UUID entityUUID, UUID parentUUID)
@@ -579,6 +579,15 @@ namespace Vortex {
 			return mono_string_new(mono_domain_get(), entity.GetName().c_str());
 		}
 
+		void Entity_SetTag(UUID entityUUID, MonoString* tag)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			char* managedString = mono_string_to_utf8(tag);
+			entity.GetComponent<TagComponent>().Tag = std::string(managedString);
+			mono_free(managedString);
+		}
+
 		MonoString* Entity_GetMarker(UUID entityUUID)
 		{
 			Entity entity = GetEntity(entityUUID);
@@ -586,11 +595,11 @@ namespace Vortex {
 			return mono_string_new(mono_domain_get(), entity.GetMarker().c_str());
 		}
 
-		void Entity_SetMarker(UUID entityUUID, MonoString* monoString)
+		void Entity_SetMarker(UUID entityUUID, MonoString* marker)
 		{
 			Entity entity = GetEntity(entityUUID);
 
-			char* managedString = mono_string_to_utf8(monoString);
+			char* managedString = mono_string_to_utf8(marker);
 			entity.GetComponent<TagComponent>().Marker = std::string(managedString);
 			mono_free(managedString);
 		}
@@ -8716,6 +8725,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Entity_GetChildren);
 		VX_REGISTER_INTERNAL_CALL(Entity_GetChild);
 		VX_REGISTER_INTERNAL_CALL(Entity_GetTag);
+		VX_REGISTER_INTERNAL_CALL(Entity_SetTag);
 		VX_REGISTER_INTERNAL_CALL(Entity_GetMarker);
 		VX_REGISTER_INTERNAL_CALL(Entity_SetMarker);
 		VX_REGISTER_INTERNAL_CALL(Entity_AddChild);

@@ -15,7 +15,6 @@
 
 namespace Vortex {
 
-	class ScriptEngine;
 	struct Collision;
 
 	class VORTEX_API ScriptInstance : public RefCounted
@@ -38,6 +37,8 @@ namespace Vortex {
 		void InvokeOnEnabled();
 		void InvokeOnDisabled();
 		void InvokeOnGui();
+
+		bool MethodExists(ManagedMethod method) const;
 
 		VX_FORCE_INLINE SharedReference<ScriptClass> GetScriptClass() { return m_ScriptClass; }
 

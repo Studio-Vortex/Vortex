@@ -13,7 +13,8 @@ namespace Vortex {
 
 	MonoMethod* ScriptUtils::GetManagedMethodFromName(MonoClass* klass, const std::string& name, uint32_t parameterCount)
 	{
-		return mono_class_get_method_from_name(klass, name.c_str(), parameterCount);
+		MonoMethod* method = mono_class_get_method_from_name(klass, name.c_str(), parameterCount);
+		return method;
 	}
 
 	MonoObject* ScriptUtils::InstantiateClass(MonoClass* klass)
@@ -203,7 +204,7 @@ namespace Vortex {
 	void ManagedArray::SetValue(uintptr_t index, MonoClass* elementKlass, UUID value)
 	{
 		MonoObject* boxed = ScriptUtils::InstantiateClass(elementKlass);
-		ScriptEngine::ConstructEntityRuntime(value, boxed);
+		ScriptEngine::EntityConstructorRuntime(value, boxed);
 		SetValueInternal(index, boxed);
 	}
 

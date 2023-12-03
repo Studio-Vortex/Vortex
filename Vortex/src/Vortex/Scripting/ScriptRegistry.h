@@ -115,8 +115,9 @@ namespace Vortex {
 		MonoArray* Entity_GetChildren(UUID entityUUID);
 		uint64_t Entity_GetChild(UUID entityUUID, uint32_t index);
 		MonoString* Entity_GetTag(UUID entityUUID);
+		void Entity_SetTag(UUID entityUUID, MonoString* tag);
 		MonoString* Entity_GetMarker(UUID entityUUID);
-		void Entity_SetMarker(UUID entityUUID, MonoString* monoString);
+		void Entity_SetMarker(UUID entityUUID, MonoString* marker);
 		bool Entity_AddChild(UUID parentUUID, UUID childUUID);
 		bool Entity_RemoveChild(UUID parentUUID, UUID childUUID);
 		MonoObject* Entity_GetScriptInstance(UUID entityUUID);

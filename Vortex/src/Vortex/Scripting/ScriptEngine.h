@@ -51,7 +51,7 @@ namespace Vortex {
 
 		static bool EntityClassExists(const std::string& fullyQualifiedClassName);
 		static bool EntityInstanceExists(UUID entityUUID);
-		static void ConstructEntityRuntime(UUID entityUUID, MonoObject* instance);
+		static void EntityConstructorRuntime(UUID entityUUID, MonoObject* instance);
 		static void CreateEntityScriptInstanceRuntime(Entity entity);
 
 		static void OnAwakeEntity(Entity entity);
@@ -75,7 +75,7 @@ namespace Vortex {
 		static MonoDomain* GetAppDomain();
 		static MonoImage* GetAppAssemblyImage();
 
-		static void DuplicateScriptInstance(Entity entity, Entity targetEntity);
+		static void DuplicateScriptInstance(Entity src, Entity dst);
 
 		static SharedReference<ScriptInstance> GetEntityScriptInstance(UUID uuid);
 

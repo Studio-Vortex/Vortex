@@ -171,9 +171,6 @@ namespace Vortex {
 
 		void SetSceneCameraViewportSize();
 
-		void CreateScriptInstancesRuntime();
-		void DestroyScriptInstancesRuntime();
-
 		void StopAnimatorsRuntime();
 
 		void OnMeshUpdateRuntime();

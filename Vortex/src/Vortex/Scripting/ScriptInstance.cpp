@@ -29,12 +29,12 @@ namespace Vortex {
 		m_ManagedMethods[ManagedMethod::OnGui] = m_ScriptClass->GetMethod("OnGui", 0);
 
 		// Call C# Entity constructor
-		ScriptEngine::ConstructEntityRuntime(entity.GetUUID(), m_Instance);
+		ScriptEngine::EntityConstructorRuntime(entity.GetUUID(), m_Instance);
 	}
 
 	void ScriptInstance::InvokeOnAwake()
 	{
-		if (!m_ManagedMethods[ManagedMethod::OnAwake])
+		if (!MethodExists(ManagedMethod::OnAwake))
 			return;
 
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnAwake]);
@@ -42,7 +42,7 @@ namespace Vortex {
 
 	void ScriptInstance::InvokeOnCreate()
 	{
-		if (!m_ManagedMethods[ManagedMethod::OnCreate])
+		if (!MethodExists(ManagedMethod::OnCreate))
 			return;
 
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCreate]);
@@ -51,21 +51,29 @@ namespace Vortex {
 	void ScriptInstance::InvokeOnUpdate(float delta)
 	{
 		MonoMethod* onUpdateMethod = nullptr;
+		void* param = nullptr;
 
-		if (m_ManagedMethods[ManagedMethod::OnUpdateDelta])
+		if (MethodExists(ManagedMethod::OnUpdateDelta))
 		{
-			void* param = &delta;
-			ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnUpdateDelta], &param);
+			param = &delta;
+			onUpdateMethod = m_ManagedMethods[ManagedMethod::OnUpdateDelta];
 		}
-		else if (m_ManagedMethods[ManagedMethod::OnUpdate])
+		else if (MethodExists(ManagedMethod::OnUpdate))
 		{
-			ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnUpdate]);
+			onUpdateMethod = m_ManagedMethods[ManagedMethod::OnUpdate];
 		}
+
+		if (onUpdateMethod == nullptr)
+		{
+			return;
+		}
+
+		ScriptUtils::InvokeMethod(m_Instance, onUpdateMethod, &param);
 	}
 
 	void ScriptInstance::InvokeOnDestroy()
 	{
-		if (!m_ManagedMethods[ManagedMethod::OnDestroy])
+		if (!MethodExists(ManagedMethod::OnDestroy))
 			return;
 
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnDestroy]);
@@ -73,7 +81,7 @@ namespace Vortex {
 
 	void ScriptInstance::InvokeOnCollisionEnter(Collision& collision)
 	{
-		if (!m_ManagedMethods[ManagedMethod::OnCollisionEnter])
+		if (!MethodExists(ManagedMethod::OnCollisionEnter))
 			return;
 
 		void* param = &collision;
@@ -82,7 +90,7 @@ namespace Vortex {
 
 	void ScriptInstance::InvokeOnCollisionExit(Collision& collision)
 	{
-		if (!m_ManagedMethods[ManagedMethod::OnCollisionExit])
+		if (!MethodExists(ManagedMethod::OnCollisionExit))
 			return;
 
 		void* param = &collision;
@@ -91,7 +99,7 @@ namespace Vortex {
 
 	void ScriptInstance::InvokeOnTriggerEnter(Collision& collision)
 	{
-		if (!m_ManagedMethods[ManagedMethod::OnTriggerEnter])
+		if (!MethodExists(ManagedMethod::OnTriggerEnter))
 			return;
 
 		void* param = &collision;
@@ -100,7 +108,7 @@ namespace Vortex {
 
 	void ScriptInstance::InvokeOnTriggerExit(Collision& collision)
 	{
-		if (!m_ManagedMethods[ManagedMethod::OnTriggerExit])
+		if (!MethodExists(ManagedMethod::OnTriggerExit))
 			return;
 
 		void* param = &collision;
@@ -109,7 +117,7 @@ namespace Vortex {
 
 	void ScriptInstance::InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
 	{
-		if (!m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected])
+		if (!MethodExists(ManagedMethod::OnFixedJointDisconnected))
 			return;
 
 		void* params[] = { (void*)&forceAndTorque.first, (void*)&forceAndTorque.second };
@@ -118,7 +126,7 @@ namespace Vortex {
 
 	void ScriptInstance::InvokeOnRaycastCollision()
 	{
-		if (!m_ManagedMethods[ManagedMethod::OnRaycastCollision])
+		if (!MethodExists(ManagedMethod::OnRaycastCollision))
 			return;
 
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnRaycastCollision]);
@@ -126,7 +134,7 @@ namespace Vortex {
 
 	void ScriptInstance::InvokeOnEnabled()
 	{
-		if (!m_ManagedMethods[ManagedMethod::OnEnabled])
+		if (!MethodExists(ManagedMethod::OnEnabled))
 			return;
 
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnEnabled]);
@@ -134,7 +142,7 @@ namespace Vortex {
 
 	void ScriptInstance::InvokeOnDisabled()
 	{
-		if (!m_ManagedMethods[ManagedMethod::OnDisabled])
+		if (!MethodExists(ManagedMethod::OnDisabled))
 			return;
 
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnDisabled]);
@@ -142,11 +150,18 @@ namespace Vortex {
 
 	void ScriptInstance::InvokeOnGui()
 	{
-		if (!m_ManagedMethods[ManagedMethod::OnGui])
+		if (!MethodExists(ManagedMethod::OnGui))
 			return;
 
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnGui]);
 	}
+
+	bool ScriptInstance::MethodExists(ManagedMethod method) const
+	{
+		const bool contained = m_ManagedMethods.contains(method);
+		const bool ptr = (bool)m_ManagedMethods.at(method);
+		return contained && ptr;
+    }
 
 	bool ScriptInstance::GetFieldValueInternal(const std::string& fieldName, void* buffer)
 	{

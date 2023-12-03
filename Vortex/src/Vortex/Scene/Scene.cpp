@@ -214,7 +214,7 @@ namespace Vortex {
 
 		if (!entity || !m_EntityMap.contains(entity.GetUUID()))
 		{
-			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntity with invalid Entity!");
+			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntityInternal with invalid Entity!");
 			VX_CORE_ASSERT(false, "Trying to free invalid Entity!");
 			return;
 		}
@@ -235,6 +235,13 @@ namespace Vortex {
 				{
 					ScriptEngine::OnDestroyEntity(entity);
 				}
+			}
+
+			if (entity.HasComponent<NativeScriptComponent>())
+			{
+				NativeScriptComponent& nsc = entity.GetComponent<NativeScriptComponent>();
+				nsc.Instance->OnDestroy();
+				nsc.DestroyInstanceScript(&nsc);
 			}
 
 			Physics::DestroyPhysicsActor(entity);
@@ -286,7 +293,7 @@ namespace Vortex {
 		{
 			Entity entity = m_EntityMap[queueFreeData.EntityUUID];
 			SubmitToDestroyEntity(entity, queueFreeData.ExcludeChildren);
-			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntity with a wait time of 0, Use the regular method instead!");
+			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntityInternal with a wait time of 0, Use the regular method instead!");
 			return;
 		}
 
@@ -336,7 +343,40 @@ namespace Vortex {
 		// start we need to stop them here if muteAudio is true
 		SystemManager::OnRuntimeStart(this);
 
-		CreateScriptInstancesRuntime();
+		// C# Entity OnCreate
+		{
+			ScriptEngine::OnRuntimeStart(this);
+
+			auto view = GetAllEntitiesWith<ScriptComponent>();
+
+			for (const auto e : view)
+			{
+				Entity entity{ e, this };
+				ScriptEngine::CreateEntityScriptInstanceRuntime(entity);
+			}
+
+			for (const auto e : view)
+			{
+				Entity entity{ e, this };
+				ScriptEngine::OnAwakeEntity(entity);
+			}
+
+			for (const auto e : view)
+			{
+				Entity entity{ e, this };
+				ScriptEngine::OnCreateEntity(entity);
+			}
+		}
+
+		// C++ Entity OnCreate
+		{
+			GetAllEntitiesWith<NativeScriptComponent>().each([=](auto entityID, auto& nsc)
+			{
+				nsc.Instance = nsc.InstantiateScript();
+				nsc.Instance->m_Entity = Entity{ entityID, this };
+				nsc.Instance->OnCreate();
+			});
+		}
 	}
 
 	void Scene::OnRuntimeStop()
@@ -345,8 +385,18 @@ namespace Vortex {
 
 		m_IsRunning = false;
 
-		DestroyScriptInstancesRuntime();
+		GetAllEntitiesWith<ScriptComponent>().each([=](auto entityID, auto& scriptComponent)
+		{
+			Entity entity{ entityID, this };
+			ScriptEngine::OnDestroyEntity(entity);
+		});
 		ScriptEngine::OnRuntimeStop();
+
+		GetAllEntitiesWith<NativeScriptComponent>().each([=](auto entityID, auto& nsc)
+		{
+			nsc.Instance->OnDestroy();
+			nsc.DestroyInstanceScript(&nsc);
+		});
 
 		SystemManager::OnRuntimeStop(this);
 
@@ -771,56 +821,48 @@ namespace Vortex {
 		if (!entity)
 			return Entity{};
 
-		auto ParentNewEntityFunc = [&entity, scene = this](Entity newEntity)
+		if (entity.HasComponent<PrefabComponent>())
 		{
-			if (auto parent = entity.GetParent(); parent)
-			{
-				newEntity.SetParentUUID(parent.GetUUID());
-				parent.AddChild(newEntity.GetUUID());
-			}
-		};
-
-		// TODO: handle prefabs
-		/*if (src.HasComponent<PrefabComponent>())
-		{
-			auto prefabID = src.GetComponent<PrefabComponent>().PrefabUUID;
-		}*/
+			// TODO: handle prefabs
+			auto prefabID = entity.GetComponent<PrefabComponent>().PrefabUUID;
+		}
 		
-		Entity newEntity;
+		VX_CORE_ASSERT(entity.HasComponent<TagComponent>(), "all entities must have a tag component!");
 
-		if (entity.HasComponent<TagComponent>())
-		{
-			newEntity = CreateEntity(entity.GetName(), entity.GetMarker());
-		}
-		else
-		{
-			newEntity = CreateEntity();
-			TagComponent& tagComponent = newEntity.GetComponent<TagComponent>();
-			tagComponent.Tag = entity.GetName();
-			tagComponent.Marker = entity.GetMarker();
-		}
+		Entity duplicate = CreateEntity(entity.GetName(), entity.GetMarker());
 
 		// Copy components (except IDComponent and TagComponent)
-		Utils::CopyComponentIfExists(AllComponents{}, newEntity, entity);
+		Utils::CopyComponentIfExists(AllComponents{}, duplicate, entity);
 
-		// We must copy here because the vector is modified below
-		auto childIDs = entity.Children();
+		// Copy children entities
+		// We must create a copy here because the vector is modified below
+		std::vector<UUID> children = entity.Children();
 
-		for (auto childID : childIDs)
+		for (auto childID : children)
 		{
 			Entity child = TryGetEntityWithUUID(childID);
+			if (!child)
+				continue;
+
 			Entity childDuplicate = DuplicateEntity(child);
 
-			// at this point childDuplicate is a child of src, we need to remove it from src
+			// at this point childDuplicate is a child of entity, we need to remove it from entity
 			UnparentEntity(childDuplicate, false);
-			ParentEntity(childDuplicate, newEntity);
+			ParentEntity(childDuplicate, duplicate);
 		}
 
-		ParentNewEntityFunc(newEntity);
+		// if the entity has a parent we can make the duplicate a child also
+		if (Entity parent = entity.GetParent())
+		{
+			ParentEntity(duplicate, parent);
+		}
 
-		// TODO Duplicate script instance
+		if (m_IsRunning)
+		{
+			ScriptEngine::DuplicateScriptInstance(entity, duplicate);
+		}
 
-		return newEntity;
+		return duplicate;
 	}
 
 	Entity Scene::FindEntityByName(std::string_view name)
@@ -847,6 +889,8 @@ namespace Vortex {
 		{
 			if (e == entity)
 				return Entity{ e, this };
+
+			return Entity{};
 		});
 
 		return Entity{};
@@ -1007,57 +1051,6 @@ namespace Vortex {
 			SceneCamera& sceneCamera = cameraComponent.Camera;
 			sceneCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
-	}
-
-	void Scene::CreateScriptInstancesRuntime()
-	{
-		VX_PROFILE_FUNCTION();
-
-		// C# Entity OnCreate
-		{
-			ScriptEngine::OnRuntimeStart(this);
-
-			auto view = GetAllEntitiesWith<ScriptComponent>();
-
-			for (const auto e : view)
-			{
-				Entity entity{ e, this };
-				ScriptEngine::CreateEntityScriptInstanceRuntime(entity);
-			}
-
-			for (const auto e : view)
-			{
-				Entity entity{ e, this };
-				ScriptEngine::OnAwakeEntity(entity);
-			}
-
-			for (const auto e : view)
-			{
-				Entity entity{ e, this };
-				ScriptEngine::OnCreateEntity(entity);
-			}
-		}
-
-		// C++ Entity OnCreate
-		{
-			GetAllEntitiesWith<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-			{
-				nsc.Instance = nsc.InstantiateScript();
-				nsc.Instance->m_Entity = Entity{ entity, this };
-				nsc.Instance->OnCreate();
-			});
-		}
-	}
-
-	void Scene::DestroyScriptInstancesRuntime()
-	{
-		VX_PROFILE_FUNCTION();
-
-		GetAllEntitiesWith<ScriptComponent>().each([=](auto entityID, auto& scriptComponent)
-		{
-			Entity entity{ entityID, this };
-			ScriptEngine::OnDestroyEntity(entity);
-		});
 	}
 
 	void Scene::StopAnimatorsRuntime()

@@ -163,6 +163,9 @@ namespace Vortex {
 		internal extern static string Entity_GetTag(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_SetTag(ulong entityID, string value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static string Entity_GetMarker(ulong entityID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

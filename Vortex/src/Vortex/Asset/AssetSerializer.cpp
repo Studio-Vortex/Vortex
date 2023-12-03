@@ -16,6 +16,7 @@
 #include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
 
 #include "Vortex/Utils/YAML_SerializationUtils.h"
+#include "Vortex/Utils/FileSystem.h"
 
 #include <yaml-cpp/yaml.h>
 
