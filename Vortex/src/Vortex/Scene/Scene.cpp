@@ -197,10 +197,20 @@ namespace Vortex {
 
 	void Scene::SubmitToDestroyEntity(Entity entity, bool excludeChildren)
 	{
-		//DestroyEntityInternal(entity, excludeChildren);
+		// Temporary fix
+		// this immediately destroys the entity which is not ideal but works for now
+		DestroyEntityInternal(entity, excludeChildren);
 
 		// TODO figure out why this doesn't work
-		SubmitToPostUpdateQueue([&]() { DestroyEntityInternal(entity, excludeChildren); });
+		// When the lambda is passed over to the queue, all of the entity's information is lost,
+		// i.e. the scene pointer etc...
+		// This most likely has to do with the way the arguments are passed on the stack
+
+		// It would be safest to wait until the end of the current frame to delete the entity
+		// otherwise something may reference it later on during ::OnUpdateRuntime()
+		
+		//auto OnDestroyedFn = [&]() { DestroyEntityInternal(entity, excludeChildren); };
+		//SubmitToPostUpdateQueue(OnDestroyedFn);
 	}
 
 	void Scene::SubmitToDestroyEntity(const QueueFreeData& queueFreeData)
@@ -212,7 +222,17 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (!entity || !m_EntityMap.contains(entity.GetUUID()))
+#ifdef VX_DEBUG
+		uint32_t addr = (uint32_t)entity.GetContextScene();
+		uint32_t garbage = 0xcccccccc;
+		if (addr == garbage || (uint32_t)entity.operator entt::entity() == garbage)
+		{
+			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntityInternal with invalid Scene!");
+			return;
+		}
+#endif
+
+		if (!entity || !m_EntityMap.contains(entity))
 		{
 			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntityInternal with invalid Entity!");
 			VX_CORE_ASSERT(false, "Trying to free invalid Entity!");
@@ -248,12 +268,9 @@ namespace Vortex {
 			Physics2D::DestroyPhysicsBody(entity);
 		}
 
-		if (entity.HasParent())
+		if (Entity parent = entity.GetParent())
 		{
-			if (Entity parent = entity.GetParent())
-			{
-				parent.RemoveChild(entity.GetUUID());
-			}
+			parent.RemoveChild(entity.GetUUID());
 		}
 
 		if (!excludeChildren)
@@ -267,11 +284,16 @@ namespace Vortex {
 		}
 
 		auto it = m_EntityMap.find(entity.GetUUID());
-
 		VX_CORE_ASSERT(it != m_EntityMap.end(), "Enitiy was not found in Entity Map!");
 
+		if (it == m_EntityMap.end())
+		{
+			VX_CONSOLE_LOG_ERROR("Entity was not found in Entity Map!");
+			return;
+		}
+
 		// Remove the entity from our internal map
-		m_EntityMap.erase(it->second);
+		m_EntityMap.erase(it->first);
 		m_Registry.destroy(entity);
 
 		SortEntities();
@@ -309,16 +331,20 @@ namespace Vortex {
 		{
 			queueFreeData.WaitTime -= delta;
 
-			if (queueFreeData.WaitTime <= 0.0f)
-			{
-				auto it = std::find(m_EntitiesToBeRemovedFromQueue.begin(), m_EntitiesToBeRemovedFromQueue.end(), uuid);
-				if (it == m_EntitiesToBeRemovedFromQueue.end())
-				{
-					m_EntitiesToBeRemovedFromQueue.push_back(uuid);
-				}
-			}
+			// If the timer isn't finished just move on
+			const bool timerDone = queueFreeData.WaitTime <= 0.0f;
+			if (!timerDone)
+				continue;
+			
+			// Timer is done so lets add it to queue
+			auto it = std::find(m_EntitiesToBeRemovedFromQueue.begin(), m_EntitiesToBeRemovedFromQueue.end(), uuid);
+			if (it != m_EntitiesToBeRemovedFromQueue.end())
+				continue;
+
+			m_EntitiesToBeRemovedFromQueue.push_back(uuid);
 		}
 
+		// Destroy entities that are done waiting
 		for (const auto& uuid : m_EntitiesToBeRemovedFromQueue)
 		{
 			VX_CORE_ASSERT(m_EntityMap.contains(uuid), "Invalid Entity UUID!");
@@ -343,7 +369,7 @@ namespace Vortex {
 		// start we need to stop them here if muteAudio is true
 		SystemManager::OnRuntimeStart(this);
 
-		// C# Entity OnCreate
+		// C# Entity Lifecycle
 		{
 			ScriptEngine::OnRuntimeStart(this);
 
@@ -368,7 +394,7 @@ namespace Vortex {
 			}
 		}
 
-		// C++ Entity OnCreate
+		// C++ Entity Lifecycle
 		{
 			GetAllEntitiesWith<NativeScriptComponent>().each([=](auto entityID, auto& nsc)
 			{
@@ -385,6 +411,7 @@ namespace Vortex {
 
 		m_IsRunning = false;
 
+		// C# Entity Lifecycle
 		GetAllEntitiesWith<ScriptComponent>().each([=](auto entityID, auto& scriptComponent)
 		{
 			Entity entity{ entityID, this };
@@ -392,6 +419,7 @@ namespace Vortex {
 		});
 		ScriptEngine::OnRuntimeStop();
 
+		// C++ Entity Lifecycle
 		GetAllEntitiesWith<NativeScriptComponent>().each([=](auto entityID, auto& nsc)
 		{
 			nsc.Instance->OnDestroy();
@@ -436,13 +464,18 @@ namespace Vortex {
 
 		if (updateCurrentFrame)
 		{
-			// C++ Entity OnUpdate
-			GetAllEntitiesWith<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+			// Update C++ Entity
+			GetAllEntitiesWith<NativeScriptComponent>().each([=](auto entityID, auto& nsc)
 			{
+				Entity entity{ entityID, this };
+				
+				if (!entity.IsActive())
+					return;
+
 				nsc.Instance->OnUpdate(delta);
 			});
 
-			// C# Entity OnUpdate
+			// Update C# Entity
 			auto view = GetAllEntitiesWith<ScriptComponent>();
 			for (const auto e : view)
 			{
@@ -536,6 +569,8 @@ namespace Vortex {
 		// Update Components
 		OnMeshUpdateRuntime();
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
+
+		ExecutePostUpdateQueue();
 	}
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera* camera)
@@ -569,6 +604,8 @@ namespace Vortex {
 		// Update Components
 		OnMeshUpdateRuntime();
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
+
+		ExecutePostUpdateQueue();
 	}
 
 	void Scene::SubmitToPostUpdateQueue(const std::function<void()>& func)
