@@ -70,8 +70,8 @@ namespace Vortex {
 			}
 		}
 
-		uint32_t width = (uint32_t)m_ViewportSize.x;
-		uint32_t height = (uint32_t)m_ViewportSize.y;
+		const uint32_t width = (uint32_t)m_ViewportSize.x;
+		const uint32_t height = (uint32_t)m_ViewportSize.y;
 
 		if (width != 0 && height != 0)
 		{
@@ -79,18 +79,40 @@ namespace Vortex {
 		}
 	}
 
-	void SceneCamera::CalculateViewportSpaceFromScreenSpace(const ViewportBounds& viewportBounds, const Math::uvec2& viewportSize, bool mainViewport)
+	Math::Ray SceneCamera::CastRay(const Math::vec2& point, const Math::vec3& cameraPosition, float maxDistance, const Math::mat4& view) const
 	{
-		auto [mx, my] = Gui::GetMousePos();
+		const Math::vec4 mouseClipPos = { point.x, point.y, -1.0f, 1.0f };
 
-		mx -= viewportBounds.MinBound.x;
-		my -= viewportBounds.MinBound.y;
+		const auto inverseProj = Math::Inverse(m_ProjectionMatrix);
+		const auto inverseView = Math::Inverse(Math::mat3(view));
 
-		auto viewportWidth = viewportBounds.MaxBound.x - viewportBounds.MinBound.x;
-		auto viewportHeight = viewportBounds.MaxBound.y - viewportBounds.MinBound.y;
+		const Math::vec4 ray = inverseProj * mouseClipPos;
+		const Math::vec3 rayPos = cameraPosition;
+		const Math::vec3 rayDir = inverseView * Math::vec3(ray);
+		
+		return Math::Ray(rayPos, rayDir);
+	}
 
-		m_LastViewportSpacePosition.x = (mx / viewportWidth) * 2.0f - 1.0f;
-		m_LastViewportSpacePosition.y = ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f; // Flip y
+	Math::vec3 SceneCamera::ScreenPointToWorldPoint(const Math::vec2& point, const Math::vec2& viewportMinBound, const Math::vec3& cameraPosition, const float maxDistance, const Math::mat4& view) const
+	{
+		Math::vec2 viewSpace = ScreenPointToViewportPoint(point - viewportMinBound);
+
+		const Math::vec4 clipSpace = Math::vec4(viewSpace.x, viewSpace.y, 1.0f, 1.0f);
+
+		const Math::mat4 inverseViewProj = Math::Inverse(m_ProjectionMatrix * view);
+		const Math::vec4 worldPoint = inverseViewProj * clipSpace;
+
+		const Math::vec3 direction = Math::Normalize(Math::vec3(worldPoint) - cameraPosition);
+
+		return cameraPosition + (direction * maxDistance);
+	}
+
+	Math::vec2 SceneCamera::ScreenPointToViewportPoint(const Math::vec2& point) const
+	{
+		return Math::vec2{
+			(point.x / m_ViewportSize.x) * 2.0f - 1.0f,
+			((point.y / m_ViewportSize.y) * 2.0f - 1.0f)
+		};
 	}
 
 }

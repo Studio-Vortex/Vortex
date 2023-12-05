@@ -1448,6 +1448,62 @@ namespace Vortex {
 			cameraComponent.ClearColor = *color;
 		}
 
+		void CameraComponent_CastRay(UUID entityUUID, Math::vec3* position, float maxDistance, Math::Ray* outRay)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Camera.CastRay without a Camera!");
+				return;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const SceneCamera& sceneCamera = cameraComponent.Camera;
+
+			const TransformComponent& transform = entity.GetTransform();
+			Math::mat4 view = Math::Inverse(transform.GetTransform());
+
+			*outRay = sceneCamera.CastRay(*position, transform.Translation, maxDistance, view);
+		}
+
+		void CameraComponent_ScreenToWorldPoint(UUID entityUUID, Math::vec2* position, float maxDistance, Math::vec3* outWorldPoint)
+		{
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Camera.ScreenToWorldPoint without a Camera!");
+				return;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const SceneCamera& sceneCamera = cameraComponent.Camera;
+
+			const TransformComponent& transform = entity.GetTransform();
+			const Math::mat4 view = Math::Inverse(transform.GetTransform());
+
+			const ViewportBounds& viewportBounds = contextScene->GetViewportBounds();
+			*outWorldPoint = sceneCamera.ScreenPointToWorldPoint(*position, viewportBounds.MinBound, transform.Translation, maxDistance, view);
+		}
+
+		void CameraComponent_ScreenToViewportPoint(UUID entityUUID, Math::vec2* position, Math::vec2* outViewportPoint)
+		{
+			Entity entity = GetEntity(entityUUID);
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Camera.ScreenToViewportPoint without a Camera!");
+				return;
+			}
+
+			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const SceneCamera& sceneCamera = cameraComponent.Camera;
+
+			*outViewportPoint = sceneCamera.ScreenPointToViewportPoint(*position);
+		}
+
 #pragma endregion
 
 #pragma region Light Source Component
@@ -8780,6 +8836,9 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
 		VX_REGISTER_INTERNAL_CALL(CameraComponent_GetClearColor);
 		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetClearColor);
+		VX_REGISTER_INTERNAL_CALL(CameraComponent_CastRay);
+		VX_REGISTER_INTERNAL_CALL(CameraComponent_ScreenToWorldPoint);
+		VX_REGISTER_INTERNAL_CALL(CameraComponent_ScreenToViewportPoint);
 
 		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_GetLightType);
 		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetLightType);

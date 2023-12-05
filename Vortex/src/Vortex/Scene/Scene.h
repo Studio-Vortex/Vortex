@@ -86,8 +86,6 @@ namespace Vortex {
 		VX_FORCE_INLINE Math::uvec2 GetViewportSize() const { return Math::uvec2(m_ViewportWidth, m_ViewportHeight); }
 		VX_FORCE_INLINE const ViewportBounds& GetViewportBounds() const { return m_ViewportBounds; }
 		VX_FORCE_INLINE void SetViewportBounds(const ViewportBounds& viewportBounds) { m_ViewportBounds = viewportBounds; }
-		VX_FORCE_INLINE const ViewportBounds& GetSecondViewportBounds() const { return m_SecondViewportBounds; }
-		VX_FORCE_INLINE void SetSecondViewportBounds(const ViewportBounds& viewportBounds) { m_SecondViewportBounds = viewportBounds; }
 		VX_FORCE_INLINE size_t GetEntityCount() const { return m_Registry.alive(); }
 
 		void Step(uint32_t frames = 1) { m_StepFrames = frames; }
@@ -178,7 +176,6 @@ namespace Vortex {
 		void StopAnimatorsRuntime();
 
 		void OnMeshUpdateRuntime();
-		void OnSceneCameraUpdateRuntime();
 		void OnAnimatorUpdateRuntime(TimeStep delta);
 
 		void ClearSceneMeshes();
@@ -190,7 +187,6 @@ namespace Vortex {
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
 		ViewportBounds m_ViewportBounds;
-		ViewportBounds m_SecondViewportBounds;
 		uint32_t m_StepFrames = 0;
 
 		inline static uint32_t s_ActiveBuildIndex = 0;

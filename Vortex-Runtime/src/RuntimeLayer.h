@@ -35,6 +35,7 @@ namespace Vortex {
 		SharedReference<Framebuffer> m_Framebuffer = nullptr;
 		SharedReference<Scene> m_RuntimeScene = nullptr;
 		Math::vec2 m_ViewportSize = Math::vec2();
+		ViewportBounds m_ViewportBounds;
 		Entity m_HoveredEntity;
 	};
 

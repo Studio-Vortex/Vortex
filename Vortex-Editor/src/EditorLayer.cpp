@@ -180,11 +180,18 @@ namespace Vortex {
 		// Clear entityID attachment to -1
 		m_Framebuffer->ClearAttachment(1, -1);
 
-		m_EditorCamera->SetActive(m_AllowViewportCameraEvents);
-		m_EditorCamera->OnUpdate(delta);
+		if (m_SceneState != SceneState::Play)
+		{
+			m_EditorCamera->SetActive(m_AllowViewportCameraEvents);
+			m_EditorCamera->OnUpdate(delta);
+			m_AllowViewportCameraEvents = false;
+		}
 
-		m_SecondEditorCamera->SetActive(m_AllowSecondViewportCameraEvents);
-		m_SecondEditorCamera->OnUpdate(delta);
+		if (m_ShowSecondViewport)
+		{
+			m_SecondEditorCamera->SetActive(m_AllowSecondViewportCameraEvents);
+			m_SecondEditorCamera->OnUpdate(delta);
+		}
 
 		// Update Scene
 		switch (m_SceneState)
@@ -221,10 +228,10 @@ namespace Vortex {
 		// Scene Viewport Entity Selection
 		{
 			auto [mx, my] = Gui::GetMousePos();
-			const ViewportBounds& bounds = m_ActiveScene->GetViewportBounds();
-			mx -= bounds.MinBound.x;
-			my -= bounds.MinBound.y;
-			Math::vec2 viewportSize = bounds.MaxBound - bounds.MinBound;
+
+			mx -= m_ViewportBounds.MinBound.x;
+			my -= m_ViewportBounds.MinBound.y;
+			Math::vec2 viewportSize = m_ViewportBounds.MaxBound - m_ViewportBounds.MinBound;
 			my = viewportSize.y - my;
 
 			int mouseX = (int)mx;
@@ -285,10 +292,10 @@ namespace Vortex {
 			// Scene Viewport Entity Selection
 			{
 				auto [mx, my] = Gui::GetMousePos();
-				const ViewportBounds& secondViewportBounds = m_ActiveScene->GetSecondViewportBounds();
-				mx -= secondViewportBounds.MinBound.x;
-				my -= secondViewportBounds.MinBound.y;
-				Math::vec2 viewportSize = secondViewportBounds.MaxBound - secondViewportBounds.MinBound;
+
+				mx -= m_SecondViewportBounds.MinBound.x;
+				my -= m_SecondViewportBounds.MinBound.y;
+				Math::vec2 viewportSize = m_SecondViewportBounds.MaxBound - m_SecondViewportBounds.MinBound;
 				my = viewportSize.y - my;
 
 				int mouseX = (int)mx;
@@ -864,18 +871,18 @@ namespace Vortex {
 
 		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		Gui::Begin("Scene", &m_ShowScenePanel, ImGuiWindowFlags_NoCollapse);
-		auto viewportMinRegion = Gui::GetWindowContentRegionMin();
-		auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
-		auto viewportOffset = Gui::GetWindowPos();
 
-		ViewportBounds viewportPanelBounds;
-		viewportPanelBounds.MinBound = Math::vec2(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y);
-		viewportPanelBounds.MaxBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
+		const auto viewportMinRegion = Gui::GetWindowContentRegionMin();
+		const auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
+		const auto viewportOffset = Gui::GetWindowPos();
 
-		m_ActiveScene->SetViewportBounds(viewportPanelBounds);
+		m_ViewportBounds.MinBound = Math::vec2(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y);
+		m_ViewportBounds.MaxBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
 
-		ImVec2 minBound = { viewportPanelBounds.MinBound.x, viewportPanelBounds.MinBound.y };
-		ImVec2 maxBound = { viewportPanelBounds.MaxBound.x, viewportPanelBounds.MaxBound.y };
+		m_ActiveScene->SetViewportBounds(m_ViewportBounds);
+
+		const ImVec2 minBound = { m_ViewportBounds.MinBound.x, m_ViewportBounds.MinBound.y };
+		const ImVec2 maxBound = { m_ViewportBounds.MaxBound.x, m_ViewportBounds.MaxBound.y };
 
 		m_AllowViewportCameraEvents = (ImGui::IsMouseHoveringRect(minBound, maxBound) && m_SceneViewportFocused) || m_StartedClickInViewport;
 
@@ -883,10 +890,10 @@ namespace Vortex {
 		m_SceneViewportHovered = Gui::IsWindowHovered();
 		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportHovered && !m_SecondViewportFocused);
 
-		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
+		const ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
 		m_ViewportPanelSize = { scenePanelSize.x, scenePanelSize.y };
 
-		uint32_t sceneTextureID = m_Framebuffer->GetColorAttachmentRendererID();
+		const uint32_t sceneTextureID = m_Framebuffer->GetColorAttachmentRendererID();
 		UI::ImageEx(sceneTextureID, ImVec2{ m_ViewportPanelSize.x, m_ViewportPanelSize.y });
 
 		UIHandleAssetDrop();
@@ -901,7 +908,7 @@ namespace Vortex {
 
 		if (m_SceneViewportHovered || !m_ShowSecondViewport)
 		{
-			OnGizmosRender(m_EditorCamera, viewportPanelBounds, false);
+			OnGizmosRender(m_EditorCamera, m_ViewportBounds, false);
 		}
 
 		Gui::End();
@@ -1252,18 +1259,16 @@ namespace Vortex {
 
 		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		Gui::Begin("Second Viewport", &m_ShowSecondViewport, ImGuiWindowFlags_NoCollapse);
-		auto viewportMinRegion = Gui::GetWindowContentRegionMin();
-		auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
-		auto viewportOffset = Gui::GetWindowPos();
 
-		ViewportBounds secondViewportPanelBounds;
-		secondViewportPanelBounds.MinBound = Math::vec2(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y);
-		secondViewportPanelBounds.MaxBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
+		const auto viewportMinRegion = Gui::GetWindowContentRegionMin();
+		const auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
+		const auto viewportOffset = Gui::GetWindowPos();
 
-		m_ActiveScene->SetSecondViewportBounds(secondViewportPanelBounds);
+		m_SecondViewportBounds.MinBound = Math::vec2(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y);
+		m_SecondViewportBounds.MaxBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
 
-		ImVec2 minBound = { secondViewportPanelBounds.MinBound.x, secondViewportPanelBounds.MinBound.y };
-		ImVec2 maxBound = { secondViewportPanelBounds.MaxBound.x, secondViewportPanelBounds.MaxBound.y };
+		const ImVec2 minBound = { m_SecondViewportBounds.MinBound.x, m_SecondViewportBounds.MinBound.y };
+		const ImVec2 maxBound = { m_SecondViewportBounds.MaxBound.x, m_SecondViewportBounds.MaxBound.y };
 
 		m_AllowSecondViewportCameraEvents = (ImGui::IsMouseHoveringRect(minBound, maxBound) && m_SecondViewportFocused) || m_StartedClickInSecondViewport;
 
@@ -1271,15 +1276,15 @@ namespace Vortex {
 		m_SecondViewportHovered = Gui::IsWindowHovered();
 		Application::Get().GetGuiLayer()->BlockEvents(!m_SecondViewportHovered && !m_SceneViewportFocused);
 
-		ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
+		const ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
 		m_SecondViewportPanelSize = { scenePanelSize.x, scenePanelSize.y };
 
-		uint32_t sceneTextureID = m_SecondViewportFramebuffer->GetColorAttachmentRendererID();
+		const uint32_t sceneTextureID = m_SecondViewportFramebuffer->GetColorAttachmentRendererID();
 		UI::ImageEx(sceneTextureID, ImVec2{ m_SecondViewportPanelSize.x, m_SecondViewportPanelSize.y });
 
 		if (m_SecondViewportHovered)
 		{
-			OnGizmosRender(m_SecondEditorCamera, secondViewportPanelBounds, true);
+			OnGizmosRender(m_SecondEditorCamera, m_SecondViewportBounds, true);
 		}
 
 		Gui::End();
@@ -1331,9 +1336,7 @@ namespace Vortex {
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
 		const ImVec2 textureSize = { buttonSize, buttonSize };
 
-		const ViewportBounds& viewportBounds = m_ActiveScene->GetViewportBounds();
-
-		Gui::SetNextWindowPos(ImVec2(viewportBounds.MinBound.x + 14, viewportBounds.MinBound.y + edgeOffset));
+		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds.MinBound.x + 14, m_ViewportBounds.MinBound.y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
 		Gui::Begin("Gizmos Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
@@ -1395,10 +1398,8 @@ namespace Vortex {
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
 		const ImVec2 textureSize = { buttonSize, buttonSize };
 
-		const ViewportBounds& viewportBounds = m_ActiveScene->GetViewportBounds();
-
-		float toolbarX = (viewportBounds.MinBound.x + viewportBounds.MaxBound.x) / 2.0f;
-		Gui::SetNextWindowPos(ImVec2(toolbarX - (backgroundWidth / 2.0f), viewportBounds.MinBound.y + edgeOffset));
+		float toolbarX = (m_ViewportBounds.MinBound.x + m_ViewportBounds.MaxBound.x) / 2.0f;
+		Gui::SetNextWindowPos(ImVec2(toolbarX - (backgroundWidth / 2.0f), m_ViewportBounds.MinBound.y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
 		Gui::Begin("Central Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
@@ -1517,9 +1518,7 @@ namespace Vortex {
 		const ImVec4 bgColor = { 0.7f, 0.7f, 0.7f, 1.0f };
 		const ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		const ViewportBounds& viewportBounds = m_ActiveScene->GetViewportBounds();
-
-		Gui::SetNextWindowPos(ImVec2(viewportBounds.MaxBound.x - backgroundWidth - 14, viewportBounds.MinBound.y + edgeOffset));
+		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds.MaxBound.x - backgroundWidth - 14, m_ViewportBounds.MinBound.y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
 		Gui::Begin("Viewport Settings", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
@@ -1563,7 +1562,7 @@ namespace Vortex {
 
 			float columnWidth = 165.0f;
 			Gui::SetNextWindowSize({ popupWidth, 375.0f });
-			Gui::SetNextWindowPos({ (viewportBounds.MaxBound.x - popupWidth) - 17, viewportBounds.MinBound.y + edgeOffset + windowHeight });
+			Gui::SetNextWindowPos({ (m_ViewportBounds.MaxBound.x - popupWidth) - 17, m_ViewportBounds.MinBound.y + edgeOffset + windowHeight });
 			const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar;
 			if (Gui::BeginPopup("ViewportSettingsPanel", windowFlags))
 			{
@@ -2757,13 +2756,10 @@ namespace Vortex {
 
 	void EditorLayer::CloseProject()
 	{
-		Application::Get().SubmitToMainThreadQueue([=]()
-		{
-			if (m_ActiveScene->IsRunning())
-				OnSceneStop();
+		if (m_ActiveScene->IsRunning())
+			OnSceneStop();
 
-			ScriptEngine::Shutdown();
-		});
+		ScriptEngine::Shutdown();
 	}
 
 	void EditorLayer::BuildProject()
@@ -3161,7 +3157,7 @@ namespace Vortex {
 		Math::mat4 proj = sceneCamera.GetProjectionMatrix();
 		Math::mat4 view = Math::Inverse(transform.GetTransform());
 
-		Math::mat4 inverseViewProjection = Math::Inverse(proj * view);
+		Math::mat4 inverseViewProj = Math::Inverse(proj * view);
 
 		std::vector<Math::vec4> frustumCorners;
 		for (uint32_t x = 0; x < 2; x++)
@@ -3170,7 +3166,7 @@ namespace Vortex {
 			{
 				for (uint32_t z = 0; z < 2; z++)
 				{
-					const Math::vec4 pt = inverseViewProjection * Math::vec4(
+					const Math::vec4 pt = inverseViewProj * Math::vec4(
 						2.0f * x - 1.0f,
 						2.0f * y - 1.0f,
 						2.0f * z - 1.0f,
@@ -3189,7 +3185,7 @@ namespace Vortex {
 	{
 		auto [mx, my] = Gui::GetMousePos();
 
-		ViewportBounds viewportBounds = mainViewport ? m_ActiveScene->GetViewportBounds() : m_ActiveScene->GetSecondViewportBounds();
+		ViewportBounds viewportBounds = mainViewport ? m_ViewportBounds : m_SecondViewportBounds;
 
 		mx -= viewportBounds.MinBound.x;
 		my -= viewportBounds.MinBound.y;
@@ -3199,7 +3195,7 @@ namespace Vortex {
 		return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 	}
 
-	std::pair<Math::vec3, Math::vec3> EditorLayer::CastRay(EditorCamera* editorCamera, float mx, float my)
+	Math::Ray EditorLayer::CastRay(EditorCamera* editorCamera, float mx, float my)
 	{
 		Math::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
 
@@ -3210,7 +3206,7 @@ namespace Vortex {
 		Math::vec3 rayPos = editorCamera->GetPosition();
 		Math::vec3 rayDir = inverseView * Math::vec3(ray);
 
-		return { rayPos, rayDir };
+		return Math::Ray(rayPos, rayDir);
 	}
 
 	Entity EditorLayer::GetHoveredMeshEntityFromRaycast()

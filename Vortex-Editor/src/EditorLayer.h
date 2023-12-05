@@ -117,7 +117,7 @@ namespace Vortex {
 		std::vector<Math::vec4> GetFrustumCornersWorldSpace(const TransformComponent& transform, const SceneCamera& sceneCamera);
 
 		std::pair<float, float> GetEditorCameraMouseViewportSpace(bool mainViewport);
-		std::pair<Math::vec3, Math::vec3> CastRay(EditorCamera* editorCamera, float mx, float my);
+		Math::Ray CastRay(EditorCamera* editorCamera, float mx, float my);
 
 		Entity GetHoveredMeshEntityFromRaycast();
 
@@ -157,7 +157,9 @@ namespace Vortex {
 		MeshImportPopupData m_MeshImportPopupData;
 
 		Math::vec2 m_ViewportPanelSize{};
+		ViewportBounds m_ViewportBounds;
 		Math::vec2 m_SecondViewportPanelSize{};
+		ViewportBounds m_SecondViewportBounds;
 
 		int32_t m_GizmoType = -1;
 		uint32_t m_TranslationMode = 0; // Local mode

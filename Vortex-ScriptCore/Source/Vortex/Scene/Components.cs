@@ -201,6 +201,20 @@ namespace Vortex {
 			set => InternalCalls.CameraComponent_SetProjectionType(Entity.ID, value);
 		}
 
+		public static Camera Primary
+		{
+			get
+			{
+				ulong entityID = InternalCalls.Scene_GetPrimaryCamera();
+
+				if (entityID == 0)
+					return null;
+
+				Entity primaryCameraEntity = new Entity(entityID);
+				return primaryCameraEntity.GetComponent<Camera>();
+			}
+		}
+
 		public bool IsPrimary
 		{
 			get
@@ -268,6 +282,24 @@ namespace Vortex {
 			}
 
 			set => InternalCalls.CameraComponent_SetClearColor(Entity.ID, ref value);
+		}
+
+		public Ray CastRay(Vector2 position, float maxDistance)
+		{
+			InternalCalls.CameraComponent_CastRay(Entity.ID, ref position, maxDistance, out Ray result);
+			return result;
+		}
+
+		public Vector3 ScreenToWorldPoint(Vector2 position, float maxDistance)
+		{
+			InternalCalls.CameraComponent_ScreenToWorldPoint(Entity.ID, ref position, maxDistance, out Vector3 result);
+			return result;
+		}
+
+		public Vector2 ScreenToViewportPoint(Vector2 position)
+		{
+			InternalCalls.CameraComponent_ScreenToViewportPoint(Entity.ID, ref position, out Vector2 result);
+			return result;
 		}
 	}
 

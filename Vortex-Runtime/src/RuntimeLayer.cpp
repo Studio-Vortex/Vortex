@@ -136,29 +136,26 @@ namespace Vortex {
 		// Set the viewport size
 		m_ViewportSize = { viewport->WorkSize.x, viewport->WorkSize.y };
 
-		Gui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		Gui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
+		UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 0.0f);
+		UI::ScopedStyle windowBorderSize(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 
 		uint32_t flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus;
-		Gui::Begin("##Game", nullptr, flags);
+		Gui::Begin("##ApplicationViewport", nullptr, flags);
 
-		auto viewportMinRegion = Gui::GetWindowContentRegionMin();
-		auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
-		auto viewportOffset = Gui::GetWindowPos();
+		const auto viewportMinRegion = Gui::GetWindowContentRegionMin();
+		const auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
+		const auto viewportOffset = Gui::GetWindowPos();
 
-		ViewportBounds viewportPanelBounds;
-		viewportPanelBounds.MinBound = Math::vec2(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y);
-		viewportPanelBounds.MaxBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
+		m_ViewportBounds.MinBound = Math::vec2(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y);
+		m_ViewportBounds.MaxBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
 
-		m_RuntimeScene->SetViewportBounds(viewportPanelBounds);
+		m_RuntimeScene->SetViewportBounds(m_ViewportBounds);
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		Gui::Image(reinterpret_cast<void*>(textureID), Gui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 }); 
 		
 		Gui::End();
-
-		Gui::PopStyleVar(3);
 
 		// Update Engine System Gui
 		SystemManager::OnGuiRender();
@@ -225,13 +222,10 @@ namespace Vortex {
 
 	void RuntimeLayer::CloseProject()
 	{
-		Application::Get().SubmitToMainThreadQueue([=]()
-		{
-			if (m_RuntimeScene->IsRunning())
-				OnRuntimeSceneStop();
+		if (m_RuntimeScene->IsRunning())
+			OnRuntimeSceneStop();
 
-			ScriptEngine::Shutdown();
-		});
+		ScriptEngine::Shutdown();
 	}
 
 	bool RuntimeLayer::OpenScene(const AssetMetadata& sceneMetadata)

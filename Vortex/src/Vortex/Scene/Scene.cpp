@@ -503,9 +503,7 @@ namespace Vortex {
 		SceneCamera* primarySceneCamera = nullptr;
 		TransformComponent primarySceneCameraTransform;
 
-		Entity primaryCameraEntity = GetPrimaryCameraEntity();
-
-		if (primaryCameraEntity)
+		if (Entity primaryCameraEntity = GetPrimaryCameraEntity())
 		{
 			auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
 			primarySceneCamera = &cameraComponent.Camera;
@@ -530,7 +528,6 @@ namespace Vortex {
 
 		// Update Components
 		OnMeshUpdateRuntime();
-		OnSceneCameraUpdateRuntime();
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
 
 		if (updateCurrentFrame)
@@ -568,7 +565,6 @@ namespace Vortex {
 
 		// Update Components
 		OnMeshUpdateRuntime();
-		OnSceneCameraUpdateRuntime();
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
 
 		ExecutePostUpdateQueue();
@@ -604,7 +600,6 @@ namespace Vortex {
 
 		// Update Components
 		OnMeshUpdateRuntime();
-		OnSceneCameraUpdateRuntime();
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
 
 		ExecutePostUpdateQueue();
@@ -1153,22 +1148,6 @@ namespace Vortex {
 		}
 	}
 
-	void Scene::OnSceneCameraUpdateRuntime()
-	{
-		VX_PROFILE_FUNCTION();
-
-		auto view = GetAllEntitiesWith<CameraComponent>();
-
-		for (const auto e : view)
-		{
-			Entity entity{ e, this };
-			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
-
-			SceneCamera& sceneCamera = cameraComponent.Camera;
-			sceneCamera.CalculateViewportSpaceFromScreenSpace(m_ViewportBounds, { m_ViewportWidth, m_ViewportHeight }, true);
-		}
-	}
-
 	void Scene::OnAnimatorUpdateRuntime(TimeStep delta)
 	{
 		VX_PROFILE_FUNCTION();
@@ -1180,7 +1159,10 @@ namespace Vortex {
 			Entity entity{ e, this };
 			SharedRef<Animator> animator = entity.GetComponent<AnimatorComponent>().Animator;
 
-			if (!animator || !animator->IsPlaying())
+			if (!animator)
+				continue;
+
+			if (!animator->IsPlaying())
 				continue;
 
 			animator->UpdateAnimation(delta);

@@ -2,6 +2,7 @@
 
 #include "Vortex/Core/Base.h"
 
+#include "Vortex/Core/Math/Ray.h"
 #include "Vortex/Renderer/Camera.h"
 
 namespace Vortex {
@@ -38,8 +39,9 @@ namespace Vortex {
 		VX_FORCE_INLINE ProjectionType GetProjectionType() const { return m_ProjectionType; }
 		void SetProjectionType(ProjectionType type);
 
-		VX_FORCE_INLINE const Math::vec2& GetMouseViewportSpace() const { return m_LastViewportSpacePosition; }
-		void CalculateViewportSpaceFromScreenSpace(const ViewportBounds& viewportBounds, const Math::uvec2& viewportSize, bool mainViewport);
+		Math::Ray CastRay(const Math::vec2& point, const Math::vec3& cameraPosition, float maxDistance, const Math::mat4& view) const;
+		Math::vec3 ScreenPointToWorldPoint(const Math::vec2& point, const Math::vec2& viewportMinBound, const Math::vec3& cameraPosition, const float maxDistance, const Math::mat4& view) const;
+		Math::vec2 ScreenPointToViewportPoint(const Math::vec2& point) const;
 
 	private:
 		ProjectionType m_ProjectionType = ProjectionType::Orthographic;
@@ -51,7 +53,6 @@ namespace Vortex {
 		float m_OrthographicNear = -1.0f, m_OrthographicFar = 1.0f;
 
 		Math::vec2 m_ViewportSize = {};
-		Math::vec2 m_LastViewportSpacePosition = {};
 
 		float m_AspectRatio = 0.0f;
 	};
