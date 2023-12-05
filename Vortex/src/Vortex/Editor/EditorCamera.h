@@ -1,23 +1,27 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include "Vortex/Renderer/Camera.h"
+
 #include "Vortex/Core/TimeStep.h"
+#include "Vortex/Core/Math/Math.h"
+
 #include "Vortex/Events/Event.h"
 #include "Vortex/Events/MouseEvent.h"
 
-#include "Vortex/Core/Math/Math.h"
-
 namespace Vortex {
 
-	enum class CameraMode
+	enum class VORTEX_API CameraMode
 	{
 		None, FlyCam, ArcBall
 	};
 
-	class EditorCamera : public Camera
+	class VORTEX_API EditorCamera : public Camera
 	{
 	public:
 		EditorCamera(const float degFOV, const float width, const float height, const float nearP, const float farP);
+		
 		void Init();
 
 		void Focus(const Math::vec3& focusPoint);
@@ -62,15 +66,16 @@ namespace Vortex {
 
 		Math::quaternion GetOrientation() const;
 
-		[[nodiscard]] float GetVerticalFOV() const { return m_VerticalFOV; }
+		float GetVerticalFOV() const { return m_VerticalFOV; }
 		void SetVerticalFOV(float degFOV);
 
-		[[nodiscard]] float GetAspectRatio() const { return m_AspectRatio; }
-		[[nodiscard]] float GetNearClip() const { return m_NearClip; }
-		[[nodiscard]] float GetFarClip() const { return m_FarClip; }
-		[[nodiscard]] float GetPitch() const { return m_Pitch; }
-		[[nodiscard]] float GetYaw() const { return m_Yaw; }
-		[[nodiscard]] float GetCameraSpeed() const;
+		float GetAspectRatio() const { return m_AspectRatio; }
+		float GetNearClip() const { return m_NearClip; }
+		float GetFarClip() const { return m_FarClip; }
+		float GetPitch() const { return m_Pitch; }
+		float GetYaw() const { return m_Yaw; }
+		float GetCameraSpeed() const;
+
 	private:
 		void UpdateCameraView();
 
@@ -85,6 +90,10 @@ namespace Vortex {
 		std::pair<float, float> PanSpeed() const;
 		float RotationSpeed() const;
 		float ZoomSpeed() const;
+
+	private:
+		constexpr static float MIN_SPEED{ 0.0005f }, MAX_SPEED{ 2.0f };
+
 	private:
 		Math::mat4 m_ViewMatrix;
 		Math::vec3 m_Position, m_Direction, m_FocalPoint;
@@ -113,7 +122,7 @@ namespace Vortex {
 
 		uint32_t m_ViewportWidth{ 1280 }, m_ViewportHeight{ 720 };
 
-		constexpr static float MIN_SPEED{ 0.0005f }, MAX_SPEED{ 2.0f };
+	private:
 		friend class EditorLayer;
 	};
 

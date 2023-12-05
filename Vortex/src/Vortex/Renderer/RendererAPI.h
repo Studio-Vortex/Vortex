@@ -27,12 +27,20 @@ namespace Vortex {
 		uint32_t GetIndexCount() const { return QuadCount * INDICES_PER_QUAD + (LineCount * 2); }
 	};
 
+	struct VORTEX_API ViewportBounds
+	{
+		Math::vec2 MinBound;
+		Math::vec2 MaxBound;
+	};
+
 	struct VORTEX_API Viewport
 	{
 		uint32_t TopLeftXPos = 0;
 		uint32_t TopLeftYPos = 0;
 		uint32_t Width = 0;
 		uint32_t Height = 0;
+
+		ViewportBounds Bounds;
 	};
 
 	class VORTEX_API RendererAPI

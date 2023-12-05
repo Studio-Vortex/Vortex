@@ -13,7 +13,7 @@
 
 #include "Vortex/Gui/GuiLayer.h"
 
-int main(int argc, char* argv[]);
+int main(int argc, char** argv);
 
 namespace Vortex {
 
@@ -42,7 +42,7 @@ namespace Vortex {
 		bool EnableGUI = true;
 		bool IsRuntime = false;
 		RendererAPI::API GraphicsAPI = RendererAPI::API::OpenGL;
-		std::string WorkingDirectory;
+		std::string WorkingDirectory = "";
 		ApplicationCommandLineArgs CommandLineArgs;
 	};
 
@@ -59,12 +59,14 @@ namespace Vortex {
 
 		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
 
-		inline static Application& Get() { return *s_Instance; }
-		inline Window& GetWindow() { return *m_Window; }
+		VX_FORCE_INLINE static Application& Get() { return *s_Instance; }
+		VX_FORCE_INLINE Window& GetWindow() { return *m_Window; }
+		VX_FORCE_INLINE const Window& GetWindow() const { return *m_Window; }
 
 		const ApplicationProperties& GetProperties() const { return m_Properties; }
 
-		inline bool IsRuntime() { return m_Properties.IsRuntime; }
+		VX_FORCE_INLINE bool IsRuntime() const { return m_Properties.IsRuntime; }
+		VX_FORCE_INLINE bool IsMinimized() const { return m_ApplicationMinimized; }
 
 		void Close();
 
@@ -94,22 +96,24 @@ namespace Vortex {
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
 
 	private:
+		static Application* s_Instance;
+
+	private:
 		ApplicationProperties m_Properties;
-		UniqueRef<Window> m_Window;
-		GuiLayer* m_GuiLayer;
-		LayerStack m_LayerStack;
+		UniqueRef<Window> m_Window = nullptr;
+		GuiLayer* m_GuiLayer = nullptr;
+		LayerStack m_Layers;
 
 		ModuleLibrary m_ModuleLibrary;
 
 		std::vector<std::function<void()>> m_MainThreadQueue;
 		std::mutex m_MainThreadQueueMutex;
 
-		float m_LastFrameTime = 0.0f;
+		float m_LastFrameTimeStamp = 0.0f;
 		bool m_Running = false;
 		bool m_ApplicationMinimized = false;
 
 	private:
-		static Application* s_Instance;
 		friend int ::main(int argc, char** argv);
 	};
 

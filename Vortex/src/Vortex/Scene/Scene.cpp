@@ -530,7 +530,7 @@ namespace Vortex {
 
 		// Update Components
 		OnMeshUpdateRuntime();
-
+		OnSceneCameraUpdateRuntime();
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
 
 		if (updateCurrentFrame)
@@ -568,6 +568,7 @@ namespace Vortex {
 
 		// Update Components
 		OnMeshUpdateRuntime();
+		OnSceneCameraUpdateRuntime();
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
 
 		ExecutePostUpdateQueue();
@@ -603,6 +604,7 @@ namespace Vortex {
 
 		// Update Components
 		OnMeshUpdateRuntime();
+		OnSceneCameraUpdateRuntime();
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
 
 		ExecutePostUpdateQueue();
@@ -1148,6 +1150,22 @@ namespace Vortex {
 
 				staticMesh->OnUpdate(materialTable, (int)(entt::entity)e);
 			}
+		}
+	}
+
+	void Scene::OnSceneCameraUpdateRuntime()
+	{
+		VX_PROFILE_FUNCTION();
+
+		auto view = GetAllEntitiesWith<CameraComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, this };
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+
+			SceneCamera& sceneCamera = cameraComponent.Camera;
+			sceneCamera.CalculateViewportSpaceFromScreenSpace(m_ViewportBounds, { m_ViewportWidth, m_ViewportHeight }, true);
 		}
 	}
 

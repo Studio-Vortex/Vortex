@@ -24,7 +24,7 @@ namespace Vortex {
 		void OnScenePanelRender();
 		void UIHandleAssetDrop();
 		void UIOnPopupRender();
-		void OnGizmosRender(EditorCamera* editorCamera, Math::vec2 viewportBounds[2], bool allowInPlayMode = false);
+		void OnGizmosRender(EditorCamera* editorCamera, const ViewportBounds& viewportBounds, bool allowInPlayMode = false);
 		void OnSecondViewportPanelRender();
 		void OnEvent(Event& e) override;
 
@@ -116,7 +116,7 @@ namespace Vortex {
 
 		std::vector<Math::vec4> GetFrustumCornersWorldSpace(const TransformComponent& transform, const SceneCamera& sceneCamera);
 
-		std::pair<float, float> GetMouseViewportSpace(bool mainViewport);
+		std::pair<float, float> GetEditorCameraMouseViewportSpace(bool mainViewport);
 		std::pair<Math::vec3, Math::vec3> CastRay(EditorCamera* editorCamera, float mx, float my);
 
 		Entity GetHoveredMeshEntityFromRaycast();
@@ -147,14 +147,17 @@ namespace Vortex {
 
 		Entity m_HoveredEntity;
 
-		std::string m_MeshFilepath = "";
-		MeshImportOptions m_ModelImportOptions = MeshImportOptions();
-		Entity m_MeshEntityToEdit;
+		struct MeshImportPopupData
+		{
+			std::string MeshFilepath = "";
+			MeshImportOptions ModelImportOptions = MeshImportOptions();
+			Entity MeshEntityToEdit;
+		};
 
-		Math::vec2 m_ViewportSize{};
-		Math::vec2 m_ViewportBounds[2] = { Math::vec2() };
-		Math::vec2 m_SecondViewportSize{};
-		Math::vec2 m_SecondViewportBounds[2] = { Math::vec2() };
+		MeshImportPopupData m_MeshImportPopupData;
+
+		Math::vec2 m_ViewportPanelSize{};
+		Math::vec2 m_SecondViewportPanelSize{};
 
 		int32_t m_GizmoType = -1;
 		uint32_t m_TranslationMode = 0; // Local mode

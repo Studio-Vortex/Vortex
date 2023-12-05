@@ -84,17 +84,20 @@ namespace Vortex {
 		// Update Scene
 		m_RuntimeScene->OnUpdateRuntime(delta);
 
-		auto [mx, my] = ImGui::GetMousePos();
-		my = m_ViewportSize.y - my;
-
-		int mouseX = (int)mx;
-		int mouseY = (int)my;
-
-		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)m_ViewportSize.x && mouseY < (int)m_ViewportSize.y)
+		// Scene Viewport Entity Selection
 		{
-			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_RuntimeScene.Raw() };
-			ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
+			auto [mx, my] = Gui::GetMousePos();
+			my = m_ViewportSize.y - my;
+
+			int mouseX = (int)mx;
+			int mouseY = (int)my;
+
+			if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)m_ViewportSize.x && mouseY < (int)m_ViewportSize.y)
+			{
+				int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
+				m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_RuntimeScene.Raw() };
+				ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
+			}
 		}
 
 		m_Framebuffer->Unbind();
@@ -140,6 +143,16 @@ namespace Vortex {
 		uint32_t flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus;
 		Gui::Begin("##Game", nullptr, flags);
 
+		auto viewportMinRegion = Gui::GetWindowContentRegionMin();
+		auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
+		auto viewportOffset = Gui::GetWindowPos();
+
+		ViewportBounds viewportPanelBounds;
+		viewportPanelBounds.MinBound = Math::vec2(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y);
+		viewportPanelBounds.MaxBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
+
+		m_RuntimeScene->SetViewportBounds(viewportPanelBounds);
+
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		Gui::Image(reinterpret_cast<void*>(textureID), Gui::GetContentRegionAvail(), ImVec2{ 0, 1 }, ImVec2{ 1, 0 }); 
 		
@@ -164,6 +177,7 @@ namespace Vortex {
 	void RuntimeLayer::OnRuntimeScenePlay()
 	{
 		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "Scene must not be running!");
 
 		m_RuntimeScene->OnRuntimeStart();
@@ -174,6 +188,7 @@ namespace Vortex {
 	void RuntimeLayer::OnRuntimeSceneStop()
 	{
 		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "Scene must be running!");
 
 		m_RuntimeScene->OnRuntimeStop();
@@ -210,10 +225,13 @@ namespace Vortex {
 
 	void RuntimeLayer::CloseProject()
 	{
-		if (m_RuntimeScene->IsRunning())
-			OnRuntimeSceneStop();
+		Application::Get().SubmitToMainThreadQueue([=]()
+		{
+			if (m_RuntimeScene->IsRunning())
+				OnRuntimeSceneStop();
 
-		ScriptEngine::Shutdown();
+			ScriptEngine::Shutdown();
+		});
 	}
 
 	bool RuntimeLayer::OpenScene(const AssetMetadata& sceneMetadata)
@@ -266,6 +284,7 @@ namespace Vortex {
 	void RuntimeLayer::QueueSceneTransition()
 	{
 		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "Scene must be running to queue transition!");
 
 		Application::Get().SubmitToMainThreadQueue([=]()

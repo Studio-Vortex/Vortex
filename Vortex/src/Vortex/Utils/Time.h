@@ -11,6 +11,9 @@ namespace Vortex {
 	public:
 		static float GetTime();
 		static TimeStep GetDeltaTime();
+
+		// Internal use only
+
 		static void SetDeltaTime(TimeStep delta);
 	};
 

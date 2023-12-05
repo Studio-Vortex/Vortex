@@ -1,10 +1,14 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include "Vortex/Core/Math/Math.h"
+
+#include "Vortex/Renderer/RendererAPI.h"
 
 namespace Vortex {
 
-	class Camera
+	class VORTEX_API Camera
 	{
 	public:
 		Camera() = default;

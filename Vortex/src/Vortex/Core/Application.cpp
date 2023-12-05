@@ -54,7 +54,7 @@ namespace Vortex {
 		// the Audio system needs to outlive the lifetime of the layer stack.
 		// It is also just a good idea to destroy all the layers before submodules
 		// get shutdown because something in the layers code may rely on a submodule
-		m_LayerStack.~LayerStack();
+		m_Layers.~LayerStack();
 
 		ShutdownSubModules();
 	}
@@ -139,7 +139,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		layer->OnAttach();
-		m_LayerStack.PushLayer(layer);
+		m_Layers.PushLayer(layer);
 	}
 
 	void Application::PushOverlay(Layer* overlay)
@@ -147,7 +147,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		overlay->OnAttach();
-		m_LayerStack.PushOverlay(overlay);
+		m_Layers.PushOverlay(overlay);
 	}
 
 	void Application::Close()
@@ -166,7 +166,7 @@ namespace Vortex {
 
 		Input::OnEvent(e);
 
-		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
+		for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
 		{
 			if (e.Handled)
 				break;
@@ -218,10 +218,10 @@ namespace Vortex {
 		{
 			VX_PROFILE_SCOPE("Application Loop");
 
-			float time = Time::GetTime();
-			TimeStep delta = time - m_LastFrameTime;
-			Time::SetDeltaTime(delta);
-			m_LastFrameTime = time;
+			float currentTime = Time::GetTime();
+			TimeStep deltaTime = currentTime - m_LastFrameTimeStamp;
+			Time::SetDeltaTime(deltaTime);
+			m_LastFrameTimeStamp = currentTime;
 
 			ExecuteMainThreadQueue();
 
@@ -229,9 +229,9 @@ namespace Vortex {
 			{
 				VX_PROFILE_SCOPE("LayerStack OnUpdate");
 
-				for (Layer* layer : m_LayerStack)
+				for (Layer* layer : m_Layers)
 				{
-					layer->OnUpdate(delta);
+					layer->OnUpdate(deltaTime);
 				}
 			}
 
@@ -242,7 +242,7 @@ namespace Vortex {
 				{
 					VX_PROFILE_SCOPE("LayerStack OnGuiRender");
 
-					for (Layer* layer : m_LayerStack)
+					for (Layer* layer : m_Layers)
 					{
 						layer->OnGuiRender();
 					}

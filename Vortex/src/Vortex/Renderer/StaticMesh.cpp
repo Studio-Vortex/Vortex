@@ -480,19 +480,17 @@ namespace Vortex {
 
 		if (sizeMismatch)
 		{
+			const bool hasUserSetMaterials = !m_MaterialHandles.empty();
+
 			if (AssetManager::IsHandleValid(m_InitialMaterialHandles[0]))
 			{
 				m_MaterialHandles.clear();
 				materialCount = m_InitialMaterialHandles.size();
 			}
-			else
+			else if (hasUserSetMaterials)
 			{
-				const bool hasUserSetMaterials = !m_MaterialHandles.empty();
-				if (hasUserSetMaterials)
-				{
-					m_InitialMaterialHandles.clear();
-					materialCount = m_MaterialHandles.size();
-				}
+				m_InitialMaterialHandles.clear();
+				materialCount = m_MaterialHandles.size();
 			}
 		}
 

@@ -1,6 +1,8 @@
 #include "vxpch.h"
 #include "SceneCamera.h"
 
+#include "Vortex/Editor/UI/UI.h"
+
 namespace Vortex {
 
 	void SceneCamera::SetPerspective(float verticalFOV, float nearClip, float farClip)
@@ -33,9 +35,12 @@ namespace Vortex {
 		switch (m_ProjectionType)
 		{
 			case ProjectionType::Perspective:
+			{
 				SetPerspectiveProjectionMatrix(m_PerspectiveFOV, (float)width, (float)height, m_PerspectiveNear, m_PerspectiveFar);
 				break;
+			}
 			case ProjectionType::Orthographic:
+			{
 				float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;
 				float orthoRight = m_OrthographicSize * m_AspectRatio * 0.5f;
 				float orthoBottom = -m_OrthographicSize * 0.5f;
@@ -43,6 +48,7 @@ namespace Vortex {
 
 				m_ProjectionMatrix = Math::Ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, m_OrthographicNear, m_OrthographicFar);
 				break;
+			}
 		}
 	}
 
@@ -53,11 +59,15 @@ namespace Vortex {
 		switch (m_ProjectionType)
 		{
 			case ProjectionType::Perspective:
+			{
 				SetPerspective(m_PerspectiveFOV, m_PerspectiveNear, m_PerspectiveFar);
 				break;
+			}
 			case ProjectionType::Orthographic:
+			{
 				SetOrthographic(m_OrthographicSize, m_OrthographicNear, m_OrthographicFar);
 				break;
+			}
 		}
 
 		uint32_t width = (uint32_t)m_ViewportSize.x;
@@ -67,6 +77,20 @@ namespace Vortex {
 		{
 			SetViewportSize(width, height);
 		}
+	}
+
+	void SceneCamera::CalculateViewportSpaceFromScreenSpace(const ViewportBounds& viewportBounds, const Math::uvec2& viewportSize, bool mainViewport)
+	{
+		auto [mx, my] = Gui::GetMousePos();
+
+		mx -= viewportBounds.MinBound.x;
+		my -= viewportBounds.MinBound.y;
+
+		auto viewportWidth = viewportBounds.MaxBound.x - viewportBounds.MinBound.x;
+		auto viewportHeight = viewportBounds.MaxBound.y - viewportBounds.MinBound.y;
+
+		m_LastViewportSpacePosition.x = (mx / viewportWidth) * 2.0f - 1.0f;
+		m_LastViewportSpacePosition.y = ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f; // Flip y
 	}
 
 }
