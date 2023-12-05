@@ -5,7 +5,7 @@
 
 #include "Vortex/Editor/EditorPanel.h"
 
-#include "Vortex/UI/UI.h"
+#include "Vortex/Editor/UI/UI.h"
 
 #include <unordered_map>
 #include <functional>

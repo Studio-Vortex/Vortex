@@ -197,10 +197,10 @@ namespace Vortex {
 
 	void Scene::SubmitToDestroyEntity(Entity entity, bool excludeChildren)
 	{
-		DestroyEntityInternal(entity, excludeChildren);
+		//DestroyEntityInternal(entity, excludeChildren);
 
 		// TODO figure out why this doesn't work
-		//SubmitToPostUpdateQueue([&]() { DestroyEntityInternal(entity, excludeChildren); });
+		SubmitToPostUpdateQueue([&]() { DestroyEntityInternal(entity, excludeChildren); });
 	}
 
 	void Scene::SubmitToDestroyEntity(const QueueFreeData& queueFreeData)
@@ -573,17 +573,13 @@ namespace Vortex {
 
 	void Scene::SubmitToPostUpdateQueue(const std::function<void()>& func)
 	{
-		VX_PROFILE_FUNCTION();
-
 		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
 
-		m_PostUpdateQueue.push_back(func);
+		m_PostUpdateQueue.emplace_back(func);
 	}
 
 	void Scene::ExecutePostUpdateQueue()
 	{
-		VX_PROFILE_FUNCTION();
-
 		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
 
 		for (const auto& func : m_PostUpdateQueue)

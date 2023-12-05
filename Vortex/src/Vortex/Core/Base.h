@@ -57,8 +57,8 @@
 
 namespace Vortex {
 
-	void InitalizeEngine();
-	void ShutdownEngine();
+	VORTEX_API void InitalizeEngine();
+	VORTEX_API void ShutdownEngine();
 
 	template <typename T>
 	using UniqueRef = std::unique_ptr<T>;

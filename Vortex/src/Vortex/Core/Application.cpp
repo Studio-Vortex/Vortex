@@ -193,7 +193,7 @@ namespace Vortex {
 		m_ModuleLibrary.Remove(moduleName);
 	}
 
-	const ModuleLibrary& Application::GetModules() const
+	const ModuleLibrary& Application::GetModuleLibrary() const
 	{
 		return m_ModuleLibrary;
 	}

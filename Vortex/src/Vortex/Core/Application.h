@@ -76,7 +76,7 @@ namespace Vortex {
 
 		void AddModule(const SubModule& submodule);
 		void RemoveModule(const SubModule& submodule);
-		const ModuleLibrary& GetModules() const;
+		const ModuleLibrary& GetModuleLibrary() const;
 
 	private:
 		void SetWorkingDirectory();

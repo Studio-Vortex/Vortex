@@ -3,8 +3,8 @@
 
 #include "Vortex/Core/Application.h"
 
-#include "Vortex/UI/UI.h"
 #include "Vortex/Gui/Colors.h"
+#include "Vortex/Editor/UI/UI.h"
 
 #include "Vortex/Editor/FontAwesome.h"
 

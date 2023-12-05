@@ -5,7 +5,7 @@
 #include "Vortex/Core/Log.h"
 #include "Vortex/Scene/Scene.h"
 
-#include "Vortex/UI/UI.h"
+#include "Vortex/Editor/UI/UI.h"
 
 namespace Vortex {
 

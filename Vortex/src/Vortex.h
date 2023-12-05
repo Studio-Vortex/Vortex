@@ -45,9 +45,9 @@
 #include "Vortex/Network/Socket.h"
 /// ---------------------------------------------------
 
-/// Gui
+/// UI
 #include "Vortex/Gui/GuiLayer.h"
-#include "Vortex/UI/UI.h"
+#include "Vortex/Editor/UI/UI.h"
 /// ---------------------------------------------------
 
 /// Project
@@ -55,8 +55,9 @@
 /// ---------------------------------------------------
 
 /// Asset Manager
-#include "Vortex/Asset/AssetManager.h"
 #include "Vortex/Asset/Asset.h"
+#include "Vortex/Asset/AssetTypes.h"
+#include "Vortex/Asset/AssetManager.h"
 /// ---------------------------------------------------
 
 /// AI

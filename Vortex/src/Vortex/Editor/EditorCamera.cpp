@@ -3,7 +3,7 @@
 
 #include "Vortex/Core/Input/Input.h"
 
-#include "Vortex/UI/UI.h"
+#include "Vortex/Editor/UI/UI.h"
 
 namespace Vortex {
 

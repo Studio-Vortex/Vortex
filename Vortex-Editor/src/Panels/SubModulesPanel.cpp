@@ -13,7 +13,7 @@ namespace Vortex {
 
 		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
-		const ModuleLibrary& moduleLib = Application::Get().GetModules();
+		const ModuleLibrary& moduleLib = Application::Get().GetModuleLibrary();
 		Gui::PushFont(boldFont);
 		Gui::Text("Modules Loaded: %u", (uint32_t)moduleLib.Size());
 		Gui::PopFont();

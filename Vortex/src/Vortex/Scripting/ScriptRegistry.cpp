@@ -41,7 +41,7 @@
 #include "Vortex/Utils/Random.h"
 #include "Vortex/Utils/Time.h"
 
-#include "Vortex/UI/UI.h"
+#include "Vortex/Editor/UI/UI.h"
 
 #include <mono/metadata/object.h>
 #include <mono/jit/jit.h>
