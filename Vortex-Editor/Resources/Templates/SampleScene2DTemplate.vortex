@@ -1,0 +1,60 @@
+Scene: SampleScene
+Entities:
+  - Entity: 2545454841200058994
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sprite
+      Marker: Untagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRendererComponent:
+      TextureHandle: 0
+      Visible: true
+      Color: [1, 1, 1, 1]
+      TextureUV: [1, 1]
+    RigidbodyComponent:
+      Mass: 1
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      MaxAngularVelocity: 100
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      MaxLinearVelocity: 100
+      LinearVelocity: [0, 0, 0]
+      CollisionDetectionType: Discrete
+      ActorLockFlags: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 15750838411829069347
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Primary Camera
+      Marker: Untagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: true

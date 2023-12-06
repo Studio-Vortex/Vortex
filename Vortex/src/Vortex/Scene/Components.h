@@ -254,6 +254,26 @@ namespace Vortex {
 		ParticleEmitterComponent(const ParticleEmitterComponent&) = default;
 	};
 
+	struct VORTEX_API AnimatorComponent
+	{
+		SharedRef<Animator> Animator = nullptr;
+
+		AnimatorComponent() = default;
+		AnimatorComponent(const AnimatorComponent&) = default;
+	};
+
+	struct VORTEX_API AnimationComponent
+	{
+		SharedRef<Animation> Animation = nullptr;
+
+		AnimationComponent() = default;
+		AnimationComponent(const AnimationComponent&) = default;
+	};
+
+#pragma endregion
+
+#pragma region UI Components
+
 	struct VORTEX_API TextMeshComponent
 	{
 		AssetHandle FontAsset = 0;
@@ -274,20 +294,24 @@ namespace Vortex {
 		TextMeshComponent(const TextMeshComponent&) = default;
 	};
 
-	struct VORTEX_API AnimatorComponent
+	struct VORTEX_API ButtonComponent
 	{
-		SharedRef<Animator> Animator = nullptr;
+		UUID UI_ID = 0;
+		AssetHandle FontAsset = 0;
+		std::string TextString = "";
+		size_t TextHash = 0;
 
-		AnimatorComponent() = default;
-		AnimatorComponent(const AnimatorComponent&) = default;
-	};
+		// Font
+		Math::vec4 TextColor = Math::vec4(1.0f);
+		Math::vec4 BgColor = Math::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+		float LineSpacing = 0.0f;
+		float Kerning = 0.0f;
 
-	struct VORTEX_API AnimationComponent
-	{
-		SharedRef<Animation> Animation = nullptr;
+		// Layout
+		float MaxWidth = 10.0f;
 
-		AnimationComponent() = default;
-		AnimationComponent(const AnimationComponent&) = default;
+		ButtonComponent() = default;
+		ButtonComponent(const ButtonComponent&) = default;
 	};
 
 #pragma endregion

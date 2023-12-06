@@ -12,6 +12,9 @@
 
 namespace Vortex {
 
+#define EDITOR_PANEL_TYPE(type) static EditorPanelType GetStaticType() { return EditorPanelType::##type; }\
+								virtual EditorPanelType GetPanelType() const override { return GetStaticType(); }
+
 	class VORTEX_API EditorPanel : public RefCounted
 	{
 	public:

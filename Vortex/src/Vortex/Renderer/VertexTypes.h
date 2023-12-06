@@ -1,5 +1,10 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+#include "Vortex/Core/Math/Math.h"
+
+#include <cstdint>
+
 namespace Vortex {
 
 	struct VORTEX_API Vertex
@@ -32,9 +37,9 @@ namespace Vortex {
 		int EntityID;
 	};
 
-	struct VORTEX_API Index
+	struct VORTEX_API VertexIndex
 	{
-		uint32_t i0, i1, i2;
+		uint32_t I0, I1, I2;
 	};
 
 }

@@ -18,23 +18,46 @@ namespace Vortex {
 
 		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
+		RenderSceneEntityView();
+
 		if (Entity selected = SelectionManager::GetSelectedEntity())
 		{
 			RenderSelectedEntityView(selected);
 		}
-
-		RenderSceneEntityView();
 
 		Gui::End();
 	}
 
 	void ECSDebugPanel::RenderSelectedEntityView(Entity selectedEntity)
 	{
-		Gui::Text("Selected Entity");
+		if (!selectedEntity)
+		{
+			return;
+		}
+
+		Gui::Text("Selected Entity - %s (%llu)", selectedEntity.GetName(), selectedEntity.GetUUID());
+
+		Gui::SameLine();
+		Gui::BeginDisabled(m_ClickedEntities.empty());
+		if (Gui::Button((const char*)VX_ICON_CHEVRON_LEFT))
+		{
+			// pop uuid from the stack
+			UUID lastClickedUUID = m_ClickedEntities.top();
+			m_ClickedEntities.pop();
+
+			Entity lastClickedEntity = m_ContextScene->TryGetEntityWithUUID(lastClickedUUID);
+			SelectionManager::SetSelectedEntity(lastClickedEntity);
+		}
+		Gui::EndDisabled();
+		UI::SetTooltip("previous entity");
+
 		UI::Draw::Underline();
 		
 		static const char* columns[] = { "Property", "Value" };
-		UI::Table("Entity", columns, VX_ARRAYCOUNT(columns), { Gui::GetContentRegionAvail().x, 125.0f }, [&]()
+
+		const ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
+		const ImVec2 tableSize = { contentRegionAvail.x, 125.0f };
+		UI::Table("Entity", columns, VX_ARRAYCOUNT(columns), tableSize, [&]()
 		{
 			Gui::TableNextColumn();
 			Gui::Text("Entity");
@@ -57,6 +80,18 @@ namespace Vortex {
 			std::string parentName = selectedEntity.HasParent() ? selectedEntity.GetParent().GetName() : "None";
 			Gui::Text("%s (%llu)", parentName.c_str(), selectedEntity.GetParentUUID());
 
+			if (selectedEntity.HasParent())
+			{
+				UI::DrawItemActivityOutline();
+
+				if (Gui::IsItemClicked())
+				{
+					Entity parent = selectedEntity.GetParent();
+					SelectionManager::SetSelectedEntity(parent);
+					m_ClickedEntities.push(parent);
+				}
+			}
+
 			Gui::TableNextColumn();
 			Gui::Text("Scene Name");
 			Gui::TableNextColumn();
@@ -73,7 +108,18 @@ namespace Vortex {
 
 		for (const auto& child : children)
 		{
-			Gui::Text("  Handle: %llu", child);
+			Entity childEntity = m_ContextScene->TryGetEntityWithUUID(child);
+			if (!childEntity)
+				continue;
+
+			Gui::Text("  Handle: %s (%llu)", childEntity.GetName().c_str(), child);
+			UI::DrawItemActivityOutline();
+
+			if (Gui::IsItemClicked())
+			{
+				SelectionManager::SetSelectedEntity(childEntity);
+				m_ClickedEntities.push(childEntity);
+			}
 		}
 
 		UI::ShiftCursorY(10.0f);
@@ -94,7 +140,9 @@ namespace Vortex {
 	{
 		static const char* columns[] = { "Entity", "UUID" };
 
-		UI::Table("Entity List", columns, VX_ARRAYCOUNT(columns), Gui::GetContentRegionAvail(), [&]()
+		const ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
+		const ImVec2 tableSize = { contentRegionAvail.x, contentRegionAvail.y / 2.0f };
+		UI::Table("Entity List", columns, VX_ARRAYCOUNT(columns), tableSize, [&]()
 		{
 			m_ContextScene->m_Registry.each([&](auto& entityID)
 			{
@@ -102,6 +150,13 @@ namespace Vortex {
 
 				Gui::TableNextColumn();
 				Gui::Text(entity.GetName().c_str());
+				UI::DrawItemActivityOutline();
+
+				if (Gui::IsItemClicked())
+				{
+					SelectionManager::SetSelectedEntity(entity);
+					m_ClickedEntities.push(entity);
+				}
 				
 				Gui::TableNextColumn();
 				Gui::Text("%llu", entity.GetUUID());

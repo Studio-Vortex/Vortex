@@ -467,10 +467,12 @@ namespace Vortex::UI {
 
 	inline static void PushFont(const char* fontName)
 	{
-		if (fontName == "Bold")
+		if (String::FastCompare(fontName, "Bold"))
 			Gui::PushFont(Gui::GetIO().Fonts->Fonts[0]);
-		else if (fontName == "Large")
+		else if (String::FastCompare(fontName, "Large"))
 			Gui::PushFont(Gui::GetIO().Fonts->Fonts[1]);
+		else if (String::FastCompare(fontName, "Huge"))
+			Gui::PushFont(Gui::GetIO().Fonts->Fonts[2]);
 	}
 
 	inline static void PopFont()
@@ -1019,7 +1021,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 	
-	inline static bool Property(const char* label, std::string& value, bool readOnly = false, bool multiline = false)
+	inline static bool Property(const char* label, std::string& value, bool readOnly = false, bool multiline = false, bool enterReturnsTrue = false)
 	{
 		bool modified = false;
 
@@ -1032,9 +1034,57 @@ namespace Vortex::UI {
 		char buffer[256];
 		strcpy_s(buffer, sizeof(buffer), value.c_str());
 
-		const ImGuiInputTextFlags inputTextFlags = readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
+		ImGuiInputTextFlags flags = 0;
+		if (readOnly)
+			flags |= ImGuiInputTextFlags_ReadOnly;
+		if (enterReturnsTrue)
+			flags |= ImGuiInputTextFlags_EnterReturnsTrue;
 
-		if (Gui::InputText(fmt::format("##{}", label).c_str(), buffer, 256, inputTextFlags))
+		if (Gui::InputText(fmt::format("##{}", label).c_str(), buffer, 256, flags))
+		{
+			value = buffer;
+			modified = true;
+		}
+
+		DrawItemActivityOutline();
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+		Draw::Underline();
+
+		return modified;
+	}
+
+	inline static bool PropertyWithButton(const char* label, const char* buttonLabel, std::string& value, const std::function<void()>& onClickedFn, bool readOnly = false, bool multiline = false, bool enterReturnsTrue = false)
+	{
+		bool modified = false;
+
+		ShiftCursor(10.0f, 9.0f);
+		Gui::Text(label);
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		char buffer[256];
+		strcpy_s(buffer, sizeof(buffer), value.c_str());
+
+		ImGuiInputTextFlags flags = 0;
+		if (readOnly)
+			flags |= ImGuiInputTextFlags_ReadOnly;
+		if (enterReturnsTrue)
+			flags |= ImGuiInputTextFlags_EnterReturnsTrue;
+
+		if (Gui::Button(buttonLabel))
+		{
+			if (onClickedFn != nullptr)
+			{
+				std::invoke(onClickedFn);
+			}
+		}
+
+		Gui::SameLine();
+
+		if (Gui::InputText(fmt::format("##{}", label).c_str(), buffer, 256, flags))
 		{
 			value = buffer;
 			modified = true;
@@ -1192,7 +1242,9 @@ namespace Vortex::UI {
 			}
 
 			if (isSearching)
+			{
 				textFilter.Build();
+			}
 
 			UI::Draw::Underline();
 
@@ -1400,7 +1452,7 @@ namespace Vortex::UI {
 		return opened;
 	}
 
-	inline static bool ShowMessageBox(const char* title, const ImVec2& size)
+	inline static bool ShowMessageBox(const char* title, bool* open, const ImVec2& size)
 	{
 		bool opened = false;
 
@@ -1411,7 +1463,9 @@ namespace Vortex::UI {
 			Gui::SetNextWindowPos({ center.x - (size.x * 0.5f), center.y - (size.y * 0.5f) }, ImGuiCond_Appearing);
 		}
 
-		if (Gui::BeginPopupModal(title, nullptr, ImGuiWindowFlags_NoResize))
+		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize;
+
+		if (Gui::BeginPopupModal(title, open, flags))
 		{
 			opened = true;
 		}
@@ -1497,10 +1551,10 @@ namespace Vortex::UI {
 		return isRowClicked;
 	}
 
-	using AssetDropFn = std::function<void(const std::filesystem::path&)>;
+	using AssetDropFn = std::function<void(const Fs::Path&)>;
 
 	template <typename TAssetType>
-	inline static bool PropertyAssetReference(const char* label, const std::string& filepath, AssetHandle& assetHandle, const AssetDropFn& assetDropFn, const AssetRegistry& registry)
+	inline static bool PropertyAssetReference(const char* label, const std::string& filepath, AssetHandle& assetHandle, const AssetDropFn& onAssetDroppedFn, const AssetRegistry& registry)
 	{
 		bool modified = false;
 
@@ -1518,7 +1572,7 @@ namespace Vortex::UI {
 
 			VX_CORE_ASSERT(metadata.Handle != 0, "Invalid asset handle!");
 
-			const std::filesystem::path& path = metadata.Filepath;
+			const Fs::Path& path = metadata.Filepath;
 
 			if (path.empty())
 				continue;
@@ -1561,12 +1615,12 @@ namespace Vortex::UI {
 		{
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
-				if (assetDropFn != nullptr)
+				if (onAssetDroppedFn != nullptr)
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path droppedFilepath = std::filesystem::path(path);
+					Fs::Path droppedFilepath = Fs::Path(path);
 
-					std::invoke(assetDropFn, droppedFilepath);
+					std::invoke(onAssetDroppedFn, droppedFilepath);
 				}
 			}
 

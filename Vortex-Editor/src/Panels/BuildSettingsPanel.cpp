@@ -86,7 +86,7 @@ namespace Vortex {
 				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path filePath = std::filesystem::path(path);
+					const Fs::Path filePath = Fs::Path(path);
 
 					if (filePath.extension().string() == ".vortex")
 					{

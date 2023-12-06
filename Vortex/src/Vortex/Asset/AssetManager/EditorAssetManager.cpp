@@ -142,10 +142,10 @@ namespace Vortex {
 		return m_AssetRegistry;
 	}
 
-	std::filesystem::path EditorAssetManager::GetRelativePath(const std::filesystem::path& filepath)
+	Fs::Path EditorAssetManager::GetRelativePath(const Fs::Path& filepath)
 	{
-		std::filesystem::path relativePath = filepath.lexically_normal();
-		std::filesystem::path assetDirectory = m_ProjectAssetDirectory;
+		Fs::Path relativePath = filepath.lexically_normal();
+		const Fs::Path assetDirectory = m_ProjectAssetDirectory;
 		std::string temp = filepath.string();
 
 		if (temp.find(assetDirectory.string()) == std::string::npos)
@@ -163,7 +163,7 @@ namespace Vortex {
 		return relativePath;
 	}
 
-	SharedReference<Asset> EditorAssetManager::GetAssetFromFilepath(const std::filesystem::path& filepath)
+	SharedReference<Asset> EditorAssetManager::GetAssetFromFilepath(const Fs::Path& filepath)
 	{
 		const AssetMetadata& metadata = GetMetadata(filepath);
 
@@ -173,9 +173,9 @@ namespace Vortex {
 		return nullptr;
 	}
 
-	AssetHandle EditorAssetManager::GetAssetHandleFromFilepath(const std::filesystem::path& filepath)
+	AssetHandle EditorAssetManager::GetAssetHandleFromFilepath(const Fs::Path& filepath)
 	{
-		SharedReference<Asset> asset = GetAssetFromFilepath(filepath);
+		const SharedReference<Asset> asset = GetAssetFromFilepath(filepath);
 
 		if (IsHandleValid(asset->Handle))
 			return asset->Handle;
@@ -186,7 +186,7 @@ namespace Vortex {
 	AssetType EditorAssetManager::GetAssetTypeFromExtension(const std::string& extension)
 	{
 		std::string_view copy(extension.begin(), extension.end());
-		std::string ext = String::ToLowerCopy(copy);
+		const std::string ext = String::ToLowerCopy(copy);
 
 		if (!IsValidAssetExtension(ext))
 			return AssetType::None;
@@ -194,25 +194,27 @@ namespace Vortex {
 		return s_AssetExtensionMap.at(ext);
 	}
 
-	AssetType EditorAssetManager::GetAssetTypeFromFilepath(const std::filesystem::path& filepath)
+	AssetType EditorAssetManager::GetAssetTypeFromFilepath(const Fs::Path& filepath)
 	{
-		std::string extension = FileSystem::GetFileExtension(filepath);
+		const std::string extension = FileSystem::GetFileExtension(filepath);
 		return GetAssetTypeFromExtension(extension);
 	}
 
-	bool EditorAssetManager::IsValidAssetExtension(const std::filesystem::path& extension)
+	bool EditorAssetManager::IsValidAssetExtension(const Fs::Path& extension)
 	{
 		return s_AssetExtensionMap.contains(extension.string());
 	}
 
-	const AssetMetadata& EditorAssetManager::GetMetadata(const std::filesystem::path& filepath)
+	const AssetMetadata& EditorAssetManager::GetMetadata(const Fs::Path& filepath)
 	{
 		const auto relativePath = GetRelativePath(filepath);
 
 		for (const auto& [handle, metadata] : m_AssetRegistry)
 		{
-			if (metadata.Filepath == relativePath)
-				return metadata;
+			if (!String::FastCompare(metadata.Filepath.string(), relativePath.string()))
+				continue;
+
+			return metadata;
 		}
 
 		return s_NullMetadata;
@@ -239,14 +241,14 @@ namespace Vortex {
 		return s_NullMetadata;
 	}
 
-	std::filesystem::path EditorAssetManager::GetFileSystemPath(const AssetMetadata& metadata)
+	Fs::Path EditorAssetManager::GetFileSystemPath(const AssetMetadata& metadata)
 	{
 		return m_ProjectAssetDirectory / metadata.Filepath;
 	}
 
-	AssetHandle EditorAssetManager::ImportAsset(const std::filesystem::path& filepath)
+	AssetHandle EditorAssetManager::ImportAsset(const Fs::Path& filepath)
 	{
-		std::filesystem::path path = GetRelativePath(filepath);
+		Fs::Path path = GetRelativePath(filepath);
 
 		if (const auto& metadata = GetMetadata(path); metadata.IsValid())
 			return metadata.Handle;
@@ -364,7 +366,7 @@ namespace Vortex {
 
 				for (const auto& pathEntry : std::filesystem::recursive_directory_iterator(m_ProjectAssetDirectory))
 				{
-					const std::filesystem::path& path = pathEntry.path();
+					const Fs::Path& path = pathEntry.path();
 
 					if (path.filename() != metadata.Filepath.filename())
 					{
@@ -423,11 +425,11 @@ namespace Vortex {
 		VX_CONSOLE_LOG_INFO("[Asset Manager] Loaded {} asset entries", m_AssetRegistry.Count());
 	}
 
-	void EditorAssetManager::ProcessDirectory(const std::filesystem::path& directory)
+	void EditorAssetManager::ProcessDirectory(const Fs::Path& directory)
 	{
 		for (const auto& entry : std::filesystem::directory_iterator(directory))
 		{
-			std::filesystem::path path = entry.path();
+			Fs::Path path = entry.path();
 
 			if (path.string().find(".vxr") != std::string::npos)
 				continue;

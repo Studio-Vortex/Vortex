@@ -5,7 +5,7 @@
 
 namespace Vortex {
 
-	AudioSource::AudioSource(const std::filesystem::path& path)
+	AudioSource::AudioSource(const Fs::Path& path)
 	{
 		if (path.empty())
 			return;
@@ -22,13 +22,13 @@ namespace Vortex {
 		// it must be cleaned up manually by calling Shutdown() on the playback device
 	}
 
-	void AudioSource::SetPath(const std::filesystem::path& path)
+	void AudioSource::SetPath(const Fs::Path& path)
 	{
 		m_Device.Init(Audio::GetContext(), path);
-		m_Path = path;
+		m_Filepath = path;
 	}
 
-	SharedReference<AudioSource> AudioSource::Create(const std::filesystem::path& path)
+	SharedReference<AudioSource> AudioSource::Create(const Fs::Path& path)
 	{
 		return SharedReference<AudioSource>::Create(path);
 	}

@@ -8,6 +8,9 @@
 
 namespace Vortex {
 
+#define ASSET_CLASS_TYPE(type) static AssetType GetStaticType() { return AssetType::##type; }\
+								virtual AssetType GetAssetType() const override { return GetStaticType(); }
+
 	using VORTEX_API AssetHandle = UUID;
 
 	class VORTEX_API Asset : public RefCounted

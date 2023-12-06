@@ -10,6 +10,9 @@ namespace Vortex {
 	class EditorResources
 	{
 	public:
+		// Note: if we ever want to use EditorResources during Runtime
+		// we need to add EditorResources::Init() to RuntimeLayer::OnAttach
+
 		static void Init();
 		static void Shutdown();
 

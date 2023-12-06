@@ -11,6 +11,11 @@ namespace Vortex {
 		{
 			assetSystem->OnContextSceneCreated(context);
 		}
+
+		for (auto& [systemType, system] : s_Systems)
+		{
+			system->OnContextSceneCreated(context);
+		}
 	}
 
 	void SystemManager::OnContextSceneDestroyed(Scene* context)
@@ -21,6 +26,11 @@ namespace Vortex {
 		{
 			assetSystem->OnContextSceneDestroyed(context);
 		}
+
+		for (auto& [systemType, system] : s_Systems)
+		{
+			system->OnContextSceneDestroyed(context);
+		}
 	}
 
 	void SystemManager::OnRuntimeStart(Scene* context)
@@ -29,11 +39,20 @@ namespace Vortex {
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
-			if (!s_EnabledSystems.at(assetType))
+			VX_CORE_ASSERT(s_EnabledAssetSystems.contains(assetType), "Invalid asset type!");
+			if (s_EnabledAssetSystems.at(assetType) == 0)
 				continue;
 
 			assetSystem->OnRuntimeStart(context);
+		}
+
+		for (auto& [systemType, system] : s_Systems)
+		{
+			VX_CORE_ASSERT(s_EnabledSystems.contains(systemType), "Invalid system type!");
+			if (s_EnabledSystems.at(systemType) == 0)
+				continue;
+
+			system->OnRuntimeStart(context);
 		}
 	}
 
@@ -43,11 +62,20 @@ namespace Vortex {
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
-			if (!s_EnabledSystems.at(assetType))
+			VX_CORE_ASSERT(s_EnabledAssetSystems.contains(assetType), "Invalid asset type!");
+			if (s_EnabledAssetSystems.at(assetType) == 0)
 				continue;
 
 			assetSystem->OnRuntimeScenePaused(context);
+		}
+
+		for (auto& [systemType, system] : s_Systems)
+		{
+			VX_CORE_ASSERT(s_EnabledSystems.contains(systemType), "Invalid system type!");
+			if (s_EnabledSystems.at(systemType) == 0)
+				continue;
+
+			system->OnRuntimeScenePaused(context);
 		}
 	}
 
@@ -57,11 +85,20 @@ namespace Vortex {
 
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
-			if (!s_EnabledSystems.at(assetType))
+			VX_CORE_ASSERT(s_EnabledAssetSystems.contains(assetType), "Invalid asset type!");
+			if (s_EnabledAssetSystems.at(assetType) == 0)
 				continue;
 
 			assetSystem->OnRuntimeSceneResumed(context);
+		}
+
+		for (auto& [systemType, system] : s_Systems)
+		{
+			VX_CORE_ASSERT(s_EnabledSystems.contains(systemType), "Invalid system type!");
+			if (s_EnabledSystems.at(systemType) == 0)
+				continue;
+
+			system->OnRuntimeSceneResumed(context);
 		}
 	}
 
@@ -71,11 +108,20 @@ namespace Vortex {
     
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
-			if (!s_EnabledSystems.at(assetType))
+			VX_CORE_ASSERT(s_EnabledAssetSystems.contains(assetType), "Invalid asset type!");
+			if (s_EnabledAssetSystems.at(assetType) == 0)
 				continue;
 
 			assetSystem->OnRuntimeStop(context);
+		}
+
+		for (auto& [systemType, system] : s_Systems)
+		{
+			VX_CORE_ASSERT(s_EnabledSystems.contains(systemType), "Invalid system type!");
+			if (s_EnabledSystems.at(systemType) == 0)
+				continue;
+
+			system->OnRuntimeStop(context);
 		}
 	}
 
@@ -83,11 +129,20 @@ namespace Vortex {
 	{
 		for (auto& [assetType, assetSystem] : s_AssetSystems)
 		{
-			VX_CORE_ASSERT(s_EnabledSystems.contains(assetType), "Invalid asset type!");
-			if (!s_EnabledSystems.at(assetType))
+			VX_CORE_ASSERT(s_EnabledAssetSystems.contains(assetType), "Invalid asset type!");
+			if (s_EnabledAssetSystems.at(assetType) == 0)
 				continue;
 
 			assetSystem->OnGuiRender();
+		}
+
+		for (auto& [systemType, system] : s_Systems)
+		{
+			VX_CORE_ASSERT(s_EnabledSystems.contains(systemType), "Invalid asset type!");
+			if (s_EnabledSystems.at(systemType) == 0)
+				continue;
+
+			system->OnGuiRender();
 		}
 	}
 

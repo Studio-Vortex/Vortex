@@ -14,11 +14,6 @@
 
 namespace Vortex {
 
-	enum class VORTEX_API ProjectType : int32_t
-	{
-		e2D, e3D
-	};
-
 	using VORTEX_API BuildIndexMap = std::map<uint32_t, std::string>;
 
 	struct VORTEX_API ProjectProperties

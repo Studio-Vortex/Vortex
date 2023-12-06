@@ -54,11 +54,11 @@ namespace Vortex {
 		});
 	}
 
-	void PanelManager::ForEach(const EditorPanelFn& func)
+	void PanelManager::ForEach(const EditorPanelFn& fn)
 	{
 		for (auto& [type, panel] : m_Panels)
 		{
-			func(panel);
+			fn(panel);
 		}
 	}
 

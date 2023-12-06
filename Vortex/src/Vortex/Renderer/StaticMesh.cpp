@@ -377,7 +377,7 @@ namespace Vortex {
 		}
 	}
 
-	AssetHandle StaticMesh::GetMaterialTexture(aiMaterial* material, const std::filesystem::path& directory, uint32_t textureType, uint32_t index)
+	AssetHandle StaticMesh::GetMaterialTexture(aiMaterial* material, const Fs::Path& directory, uint32_t textureType, uint32_t index)
 	{
 		AssetHandle result = 0;
 		aiString textureFilepath;
@@ -386,9 +386,9 @@ namespace Vortex {
 			return result;
 
 		const char* pathCStr = textureFilepath.C_Str();
-		std::filesystem::path filepath = std::filesystem::path(pathCStr).filename();
-		std::filesystem::path relativePath = directory / filepath;
-		std::filesystem::path directoryName = directory.filename();
+		Fs::Path filepath = Fs::Path(pathCStr).filename();
+		Fs::Path relativePath = directory / filepath;
+		Fs::Path directoryName = directory.filename();
 
 		if (FileSystem::Exists(relativePath))
 		{
@@ -397,13 +397,13 @@ namespace Vortex {
 
 		if (!AssetManager::IsHandleValid(result))
 		{
-			std::filesystem::path texturesPath = "Assets/Textures" / filepath;
+			Fs::Path texturesPath = "Assets/Textures" / filepath;
 			if (FileSystem::Exists(texturesPath))
 				result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(texturesPath);
 
 			if (!AssetManager::IsHandleValid(result))
 			{
-				std::filesystem::path texturesPathWithDirectory = "Assets/Textures" / directoryName / filepath;
+				Fs::Path texturesPathWithDirectory = "Assets/Textures" / directoryName / filepath;
 				if (FileSystem::Exists(texturesPathWithDirectory))
 					result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(texturesPathWithDirectory);
 			}

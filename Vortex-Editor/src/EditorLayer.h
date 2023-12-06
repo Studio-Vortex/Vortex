@@ -53,7 +53,7 @@ namespace Vortex {
 
 		void CreateNewProject();
 		bool OpenExistingProject();
-		bool OpenProject(const std::filesystem::path& filepath);
+		bool OpenProject(const Fs::Path& filepath);
 		void SaveProject();
 		void CloseProject();
 		void BuildProject();
@@ -63,11 +63,11 @@ namespace Vortex {
 
 		void CreateNewScene();
 		void OpenExistingScene();
-		void OpenScene(const std::filesystem::path& filepath);
+		void OpenScene(const Fs::Path& filepath);
 		void SaveSceneAs();
 		void SaveScene();
 
-		void SerializeScene(SharedReference<Scene>& scene, const std::filesystem::path& filepath);
+		void SerializeScene(SharedReference<Scene>& scene, const Fs::Path& filepath);
 
 		void OnScenePlay();
 		void OnScenePause();
@@ -102,7 +102,7 @@ namespace Vortex {
 
 		// Editor Callbacks
 
-		void OnLaunchRuntime(const std::filesystem::path& filepath);
+		void OnLaunchRuntime(const Fs::Path& filepath);
 		void QueueSceneTransition();
 
 		// Helper
@@ -141,9 +141,9 @@ namespace Vortex {
 		SharedReference<Scene> m_ActiveScene = nullptr;
 		SharedReference<Scene> m_EditorScene = nullptr;
 		
-		std::filesystem::path m_EditorScenePath;
+		Fs::Path m_EditorScenePath;
 
-		std::filesystem::path m_StartScenePath;
+		Fs::Path m_StartScenePath;
 
 		Entity m_HoveredEntity;
 
@@ -178,13 +178,13 @@ namespace Vortex {
 		bool m_StartedClickInSecondViewport = false;
 		bool m_ShowSelectedEntityCollider = false;
 		bool m_ShowSelectedEntityOutline = true;
-		bool m_CaptureFramebufferToDiskOnSave = false;
+		bool m_CaptureFramebufferToDiskOnSave = true;
 		bool m_TransitionedFromStartScene = false;
 
 		// Popups
 
-		bool m_OpenCreateScriptPopup = false;
-		bool m_OpenMeshImportPopup = false;
+		bool m_CreateScriptPopupOpen = false;
+		bool m_MeshImportPopupOpen = false;
 
 		SharedReference<PanelManager> m_PanelManager = nullptr;
 

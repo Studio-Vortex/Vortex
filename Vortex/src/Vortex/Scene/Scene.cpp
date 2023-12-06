@@ -2,6 +2,8 @@
 #include "Scene.h"
 
 #include "Vortex/Core/Math/Math.h"
+#include "Vortex/Core/String.h"
+
 #include "Vortex/Asset/AssetManager.h"
 
 #include "Vortex/Project/Project.h"
@@ -910,9 +912,11 @@ namespace Vortex {
 
 		for (const auto entity : view)
 		{
-			const auto& tag = view.get<TagComponent>(entity).Tag;
-			if (strcmp(name.data(), tag.c_str()) == 0)
-				return Entity{ entity, this };
+			const std::string& tag = view.get<TagComponent>(entity).Tag;
+			if (!String::FastCompare(name, tag))
+				continue;
+
+			return Entity{ entity, this };
 		}
 
 		return Entity{};
@@ -925,9 +929,9 @@ namespace Vortex {
 		m_Registry.each([&](auto e)
 		{
 			if (e == entity)
+			{
 				return Entity{ e, this };
-
-			return Entity{};
+			}
 		});
 
 		return Entity{};
@@ -993,10 +997,14 @@ namespace Vortex {
 		return transformComponent;
 	}
 
+	// This is clearly a design flaw with the renderer, it should already have all of this data but yet we
+	// still need to go and gather it ourselves which is inefficient
     SharedReference<Scene::SceneGeometry>& Scene::GetSceneMeshes()
 	{
-		if (!m_SceneMeshes)
+		if (m_SceneMeshes == nullptr)
+		{
 			m_SceneMeshes = SharedReference<SceneGeometry>::Create();
+		}
 
 		ClearSceneMeshes();
 
@@ -1402,40 +1410,54 @@ namespace Vortex {
 		return destination;
 	}
 
-	void Scene::Create2DSampleScene(SharedReference<Scene>& context)
+	void Scene::CreateSampleScene(ProjectType type, SharedReference<Scene>& context)
 	{
-		// Starting Entities
-		Entity startingCamera = context->CreateEntity("Camera");
-		startingCamera.AddComponent<AudioListenerComponent>();
-		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
-		camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
-		TransformComponent& cameraTransform = startingCamera.GetTransform();
-		cameraTransform.Translation = { 0.0f, 0.0f, 0.0f };
-		cameraTransform.SetRotationEuler({ 0.0f, 0.0f, 0.0f });
-	}
+		switch (type)
+		{
+			case ProjectType::e2D:
+			{
+				// Starting Entities
+				Entity sprite = context->CreateEntity("Sprite");
+				sprite.AddComponent<SpriteRendererComponent>();
+				sprite.AddComponent<RigidBodyComponent>();
+				sprite.AddComponent<BoxColliderComponent>();
 
-	void Scene::Create3DSampleScene(SharedReference<Scene>& context)
-	{
-		// Starting Entities
-		Entity startingCube = context->CreateEntity("Cube");
-		startingCube.AddComponent<StaticMeshRendererComponent>();
-		startingCube.AddComponent<RigidBodyComponent>();
-		startingCube.AddComponent<BoxColliderComponent>();
+				Entity primaryCamera = context->CreateEntity("Camera");
+				// we can do this once audio is fixed
+				//startingCamera.AddComponent<AudioListenerComponent>();
+				SceneCamera& camera = primaryCamera.AddComponent<CameraComponent>().Camera;
+				camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
+				TransformComponent& cameraTransform = primaryCamera.GetTransform();
+				cameraTransform.Translation = { 0.0f, 0.0f, 0.0f };
+				cameraTransform.SetRotationEuler({ 0.0f, 0.0f, 0.0f });
+				break;
+			}
+			case ProjectType::e3D:
+			{
+				// Starting Entities
+				Entity cube = context->CreateEntity("Cube");
+				cube.AddComponent<StaticMeshRendererComponent>();
+				cube.AddComponent<RigidBodyComponent>();
+				cube.AddComponent<BoxColliderComponent>();
 
-		Entity startingSkyLight = context->CreateEntity("Sky Light");
-		LightSourceComponent& lightSource = startingSkyLight.AddComponent<LightSourceComponent>();
-		lightSource.Type = LightType::Directional;
-		startingSkyLight.GetTransform().SetRotationEuler({ 0.0f, Math::Deg2Rad(-57.0f), 0.0f });
-		startingSkyLight.GetTransform().Translation = { -1.0f, 5.0f, 1.0f };
+				Entity skylight = context->CreateEntity("Sky Light");
+				LightSourceComponent& lsc = skylight.AddComponent<LightSourceComponent>();
+				lsc.Type = LightType::Directional;
+				lsc.ShadowBias = 0.0f;
+				skylight.GetTransform().SetRotationEuler({ 0.0f, Math::Deg2Rad(-57.0f), 0.0f });
+				skylight.GetTransform().Translation = { -1.0f, 5.0f, 1.0f };
 
-		Entity startingCamera = context->CreateEntity("Camera");
-		// we can do this once audio is fixed
-		//startingCamera.AddComponent<AudioListenerComponent>();
-		SceneCamera& camera = startingCamera.AddComponent<CameraComponent>().Camera;
-		camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
-		TransformComponent& cameraTransform = startingCamera.GetTransform();
-		cameraTransform.Translation = { -4.0f, 3.0f, 4.0f };
-		cameraTransform.SetRotationEuler({ Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f });
+				Entity primaryCamera = context->CreateEntity("Primary Camera");
+				// ditto
+				//startingCamera.AddComponent<AudioListenerComponent>();
+				SceneCamera& camera = primaryCamera.AddComponent<CameraComponent>().Camera;
+				camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
+				TransformComponent& cameraTransform = primaryCamera.GetTransform();
+				cameraTransform.Translation = { -4.0f, 3.0f, 4.0f };
+				cameraTransform.SetRotationEuler({ Math::Deg2Rad(-25.0f), Math::Deg2Rad(-45.0f), 0.0f });
+				break;
+			}
+		}
 	}
 
 	SharedReference<Scene> Scene::Create(SharedReference<Framebuffer>& targetFramebuffer)

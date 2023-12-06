@@ -11,6 +11,8 @@
 
 #include "Vortex/Project/ProjectProperties.h"
 
+#include "Vortex/Utils/FileSystem.h"
+
 namespace Vortex {
 
 	class VORTEX_API Project : public RefCounted
@@ -22,19 +24,19 @@ namespace Vortex {
 
 		static SharedReference<Project> GetActive();
 
-		static const std::filesystem::path& GetProjectDirectory();
-		static const std::filesystem::path& GetProjectFilepath();
-		static std::filesystem::path GetAssetDirectory();
-		static std::filesystem::path GetAssetRegistryPath();
-		static std::filesystem::path GetCacheDirectory();
+		static const Fs::Path& GetProjectDirectory();
+		static const Fs::Path& GetProjectFilepath();
+		static Fs::Path GetAssetDirectory();
+		static Fs::Path GetAssetRegistryPath();
+		static Fs::Path GetCacheDirectory();
 
 		static SharedReference<IAssetManager> GetAssetManager();
 		static SharedReference<EditorAssetManager> GetEditorAssetManager();
 		static SharedReference<RuntimeAssetManager> GetRuntimeAssetManager();
 
 		static SharedReference<Project> New();
-		static SharedReference<Project> Load(const std::filesystem::path& filepath);
-		static SharedReference<Project> LoadRuntime(const std::filesystem::path& filepath);
+		static SharedReference<Project> Load(const Fs::Path& filepath);
+		static SharedReference<Project> LoadRuntime(const Fs::Path& filepath);
 		bool SaveToDisk();
 
 		static void SubmitSceneToBuild(const std::string& filepath);
@@ -46,8 +48,8 @@ namespace Vortex {
 
 	private:
 		ProjectProperties m_Properties;
-		std::filesystem::path m_ProjectDirectory = "";
-		std::filesystem::path m_ProjectFilepath = "";
+		Fs::Path m_ProjectDirectory = "";
+		Fs::Path m_ProjectFilepath = "";
 
 		inline static SharedReference<IAssetManager> s_AssetManager = nullptr;
 		inline static SharedReference<Project> s_ActiveProject = nullptr;

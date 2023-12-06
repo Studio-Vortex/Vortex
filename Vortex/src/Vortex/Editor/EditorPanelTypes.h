@@ -30,9 +30,6 @@ namespace Vortex {
 		About,
 	};
 
-#define EDITOR_PANEL_TYPE(type) static EditorPanelType GetStaticType() { return EditorPanelType::##type; }\
-								virtual EditorPanelType GetPanelType() const override { return GetStaticType(); }
-
 	namespace Utils {
 
 		std::string EditorPanelTypeToString(EditorPanelType type);

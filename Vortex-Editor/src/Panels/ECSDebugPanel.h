@@ -25,7 +25,9 @@ namespace Vortex {
 		{
 			static const char* columns[] = { "Component", "Value" };
 
-			UI::Table("Component Signature", columns, VX_ARRAYCOUNT(columns), { Gui::GetContentRegionAvail().x, 400.0f }, [&]()
+			const ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
+			const ImVec2 tableSize = { contentRegionAvail.x, 300.0f };
+			UI::Table("Component Signature", columns, VX_ARRAYCOUNT(columns), tableSize, [&]()
 			{
 				([&]()
 				{
@@ -35,6 +37,20 @@ namespace Vortex {
 					
 					Gui::TableNextColumn();
 					Gui::Text(componentName);
+					UI::DrawItemActivityOutline();
+
+					if (Gui::IsItemClicked())
+					{
+						if (entity.HasComponent<TComponent>())
+						{
+							entity.RemoveComponent<TComponent>();
+						}
+						else
+						{
+							entity.AddComponent<TComponent>();
+						}
+					}
+
 					Gui::TableNextColumn();
 					Gui::Text(hasComponent);
 				}(), ...);
@@ -48,6 +64,8 @@ namespace Vortex {
 		}
 
 	private:
+		std::stack<UUID> m_ClickedEntities;
+
 		bool m_ShowEntityComponentSignature = false;
 	};
 

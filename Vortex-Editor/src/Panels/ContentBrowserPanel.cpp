@@ -6,7 +6,7 @@
 
 namespace Vortex {
 
-	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path& assetDir)
+	ContentBrowserPanel::ContentBrowserPanel(const Fs::Path& assetDir)
 		: m_BaseDirectory(assetDir), m_CurrentDirectory(m_BaseDirectory) { }
 
 	void ContentBrowserPanel::OnGuiRender()
@@ -81,7 +81,7 @@ namespace Vortex {
 			{
 				if (Gui::MenuItem("Folder"))
 				{
-					m_ItemPathToRename = m_CurrentDirectory / std::filesystem::path("New Folder");
+					m_ItemPathToRename = m_CurrentDirectory / Fs::Path("New Folder");
 					std::filesystem::create_directory(m_ItemPathToRename);
 					Gui::CloseCurrentPopup();
 				}
@@ -89,7 +89,7 @@ namespace Vortex {
 
 				if (Gui::MenuItem("Scene"))
 				{
-					m_ItemPathToRename = m_CurrentDirectory / std::filesystem::path("Untitled.vortex");
+					m_ItemPathToRename = m_CurrentDirectory / Fs::Path("Untitled.vortex");
 					std::ofstream fout(m_ItemPathToRename);
 					fout << "Scene: Untitled\nEntities:";
 					fout.close();
@@ -100,7 +100,7 @@ namespace Vortex {
 
 				if (Gui::MenuItem("Material"))
 				{
-					std::filesystem::path materialsDirectory = Project::GetAssetDirectory() / "Materials";
+					Fs::Path materialsDirectory = Project::GetAssetDirectory() / "Materials";
 					if (!FileSystem::Exists(materialsDirectory))
 						FileSystem::CreateDirectoryV(materialsDirectory);
 
@@ -116,7 +116,7 @@ namespace Vortex {
 
 				if (Gui::MenuItem("C# Script"))
 				{
-					m_ItemPathToRename = m_CurrentDirectory / std::filesystem::path("Untitled.cs");
+					m_ItemPathToRename = m_CurrentDirectory / Fs::Path("Untitled.cs");
 					std::ofstream fout(m_ItemPathToRename);
 					fout << R"(using Vortex;
 
@@ -174,8 +174,8 @@ public class Untitled : Entity
 		for (const auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
 			const auto& currentPath = directoryEntry.path();
-			std::filesystem::path relativePath = currentPath;
-			std::string filenameString = relativePath.filename().string();
+			const Fs::Path relativePath = currentPath;
+			const std::string filenameString = relativePath.filename().string();
 			const bool skipDirectoryEntry = !m_SearchInputTextFilter.PassFilter(relativePath.string().c_str());
 			const bool isHiddenFile = !directoryEntry.is_directory()
 				&& !Project::GetEditorAssetManager()->IsValidAssetExtension(FileSystem::GetFileExtension(currentPath));
@@ -185,7 +185,7 @@ public class Untitled : Entity
 
 			Gui::PushID(filenameString.c_str());
 
-			SharedReference<Texture2D> itemIcon = FindSuitableItemIcon(directoryEntry, currentPath);
+			const SharedReference<Texture2D> itemIcon = FindSuitableItemIcon(directoryEntry, currentPath);
 
 			Gui::PushStyleColor(ImGuiCol_Button, { 0.0f, 0.0f, 0.0f, 0.0f });
 			UI::ImageButtonEx(itemIcon, { m_ThumbnailSize, m_ThumbnailSize }, { 0, 0, 0, 0 }, { 1, 1, 1, 1 });
@@ -200,15 +200,15 @@ public class Untitled : Entity
 				Gui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t), ImGuiCond_Once);
 				Gui::BeginTooltip();
 
-				SharedReference<Texture2D> icon = FindSuitableItemIcon(directoryEntry, currentPath);
+				const SharedReference<Texture2D> icon = FindSuitableItemIcon(directoryEntry, currentPath);
 
 				UI::ImageEx(icon, { 12.0f, 12.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 				Gui::SameLine();
 
-				std::string fullPath = directoryEntry.path().relative_path().string();
-				size_t lastSlashPos = fullPath.find_last_of("/\\") + 1;
-				std::string filenameWithExtension = fullPath.substr(lastSlashPos);
-				std::string filename = FileSystem::RemoveFileExtension(filenameWithExtension);
+				const std::string fullPath = directoryEntry.path().relative_path().string();
+				const size_t lastSlashPos = fullPath.find_last_of("/\\") + 1;
+				const std::string filenameWithExtension = fullPath.substr(lastSlashPos);
+				const std::string filename = FileSystem::RemoveFileExtension(filenameWithExtension);
 				Gui::Text("%s", filename.c_str());
 
 				Gui::EndTooltip();
@@ -234,8 +234,8 @@ public class Untitled : Entity
 			// If we are not renaming the current entry we can show the path
 			if (currentPath != m_ItemPathToRename)
 			{
-				size_t dotPos = filenameString.find('.');
-				std::string filenameWithoutExtension = filenameString.substr(0, dotPos);
+				const size_t dotPos = filenameString.find('.');
+				const std::string filenameWithoutExtension = filenameString.substr(0, dotPos);
 				Gui::TextWrapped(filenameWithoutExtension.c_str());
 			}
 
@@ -254,7 +254,7 @@ public class Untitled : Entity
 		{
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 			{
-				Entity& droppedEntity = *(Entity*)payload->Data;
+				const Entity& droppedEntity = *(Entity*)payload->Data;
 				VX_CONSOLE_LOG_INFO("Dropped Entity Name: {}", droppedEntity.GetName());
 				// Todo Create a new prefab here from the entity's uuid
 				//SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedEntity.GetName() / ".vprefab"));
@@ -286,9 +286,9 @@ public class Untitled : Entity
 
 		Gui::SameLine();
 
-		std::filesystem::path fullyQualifiedAssetDirectory = m_BaseDirectory;
-		size_t lastSlashPos = fullyQualifiedAssetDirectory.string().find_last_of("/\\") + 1;
-		std::string relativeProjectAssetDirectory = fullyQualifiedAssetDirectory.string().substr(lastSlashPos, fullyQualifiedAssetDirectory.string().size());
+		const Fs::Path fullyQualifiedAssetDirectory = m_BaseDirectory;
+		const size_t lastSlashPos = fullyQualifiedAssetDirectory.string().find_last_of("/\\") + 1;
+		const std::string relativeProjectAssetDirectory = fullyQualifiedAssetDirectory.string().substr(lastSlashPos, fullyQualifiedAssetDirectory.string().size());
 
 		if (FileSystem::Equivalent(m_CurrentDirectory, Project::GetAssetDirectory()))
 		{
@@ -304,7 +304,7 @@ public class Untitled : Entity
 
 		Gui::SameLine();
 
-		std::filesystem::path relativePath = FileSystem::Relative(m_CurrentDirectory, m_BaseDirectory);
+		Fs::Path relativePath = FileSystem::Relative(m_CurrentDirectory, m_BaseDirectory);
 		std::vector<std::string> splitPath = String::SplitString(relativePath.string(), "/\\");
 
 		if (splitPath[0] != ".")
@@ -322,7 +322,7 @@ public class Untitled : Entity
 			if (entry == ".")
 				continue;
 
-			std::string label = entry + "##" + std::to_string(i);
+			const std::string label = entry + "##" + std::to_string(i);
 			if (Gui::Button(label.c_str()))
 			{
 				// TODO fix this
@@ -339,7 +339,9 @@ public class Untitled : Entity
 			Gui::SameLine();
 
 			if (numPaths - 1 == i++)
+			{
 				break;
+			}
 
 			UI::ShiftCursorY(1.0f);
 			Gui::Text((const char*)VX_ICON_CHEVRON_RIGHT);
@@ -348,47 +350,49 @@ public class Untitled : Entity
 		}
 
 		// Search Bar + Filtering
-		float inputTextSize = Gui::GetWindowWidth() / 3.0f;
+		const float inputTextSize = Gui::GetWindowWidth() / 3.0f;
 		UI::ShiftCursorX(Gui::GetContentRegionAvail().x - inputTextSize);
 		Gui::SetNextItemWidth(inputTextSize);
 		const bool isSearching = Gui::InputTextWithHint("##ItemAssetSearch", "Search...", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
 		if (isSearching)
+		{
 			m_SearchInputTextFilter.Build();
+		}
 	}
 
-	void ContentBrowserPanel::RenderRightClickItemPopup(const std::filesystem::path& currentItemPath)
+	void ContentBrowserPanel::RenderRightClickItemPopup(const Fs::Path& currentPath)
 	{
-		static bool confirmDeletionPopupOpen = false;
-
 		// Right-click on directory or file for utilities popup
 		if (Gui::BeginPopupContextItem())
 		{
 			if (Gui::MenuItem("Rename"))
 			{
-				m_ItemPathToRename = currentItemPath;
+				m_ItemPathToRename = currentPath;
 				Gui::CloseCurrentPopup();
 			}
 			UI::Draw::Underline();
 
-			bool isCSharpFile = currentItemPath.filename().extension() == ".cs";
+			const bool isCSharpExtension = currentPath.filename().extension() == ".cs";
 
-			if (isCSharpFile && Gui::MenuItem("Open with VsCode"))
+			if (isCSharpExtension && Gui::MenuItem("Open with VsCode"))
 			{
-				Platform::LaunchProcess("code", std::format("{} {}", currentItemPath.parent_path().string(), currentItemPath.string()).c_str());
+				Platform::LaunchProcess("code", std::format("{} {}", currentPath.parent_path().string(), currentPath.string()).c_str());
 				Gui::CloseCurrentPopup();
 			}
-			if (isCSharpFile)
+			if (isCSharpExtension)
+			{
 				UI::Draw::Underline();
+			}
 
 			if (Gui::MenuItem("Open in Explorer"))
 			{
-				if (std::filesystem::is_directory(currentItemPath))
+				if (std::filesystem::is_directory(currentPath))
 				{
-					FileDialogue::OpenInFileExplorer(currentItemPath.string().c_str());
+					FileDialogue::OpenInFileExplorer(currentPath.string().c_str());
 				}
 				else
 				{
-					std::filesystem::path parentDirectory = FileSystem::GetParentDirectory(currentItemPath);
+					const Fs::Path parentDirectory = FileSystem::GetParentDirectory(currentPath);
 					FileDialogue::OpenInFileExplorer(parentDirectory.string().c_str());
 				}
 
@@ -398,170 +402,167 @@ public class Untitled : Entity
 
 			if (Gui::MenuItem("Delete"))
 			{
-				confirmDeletionPopupOpen = true;
+				m_ConfirmDeletionPopupOpen = true;
 				Gui::CloseCurrentPopup();
 			}
 
 			Gui::EndPopup();
 		}
 
-		if (confirmDeletionPopupOpen)
+		const Fs::Path filename = currentPath.filename();
+		const std::string currentFilename = filename.string();
+
+		UIOnPopupRender(currentFilename, currentPath);
+
+		if (String::FastCompare(currentPath.string(), m_ItemPathToRename.string()))
 		{
-			Gui::OpenPopup("Confirm");
-			confirmDeletionPopupOpen = false;
+			RenameItem(currentPath);
 		}
+	}
 
-		if (UI::ShowMessageBox("Confirm", { 500, 165 }))
+	void ContentBrowserPanel::RenameItem(const Fs::Path& currentPath)
+	{
+		// Find the last backslash in the path and copy the filename to the buffer
+		char buffer[256];
+		const size_t pos = currentPath.string().find_last_of('\\');
+		const std::string oldFilenameWithExtension = currentPath.string().substr(pos + 1, currentPath.string().length());
+		memcpy(buffer, oldFilenameWithExtension.c_str(), sizeof(buffer));
+
+		Gui::SetKeyboardFocusHere();
+		Gui::SetNextItemWidth(m_ThumbnailSize);
+		if (Gui::InputText("##RenameInputText", buffer, sizeof(buffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 		{
-			UI::Draw::Underline();
-			Gui::Spacing();
+			const bool inputTextEmpty = strlen(buffer) == 0;
+			const bool consistentPaths = (m_CurrentDirectory / Fs::Path(buffer)) == currentPath;
 
-			ImVec2 button_size(Gui::GetFontSize() * 8.65f, 0.0f);
-
-			Gui::TextCentered(fmt::format("Are you sure you want to permanently delete '{}' ?", currentItemPath.filename()).c_str(), 40.0f);
-			Gui::TextCentered("This cannot be undone.", 60.0f);
-
-			Gui::Spacing();
-			UI::Draw::Underline();
-
-			UI::ShiftCursorY(40.0f);
-
-			if (Gui::Button("Yes", button_size))
+			if (!inputTextEmpty && !consistentPaths)
 			{
-				FileSystem::Remove(currentItemPath);
-				Gui::CloseCurrentPopup();
-			}
+				// Get the new path from the input text buffer relative to the current directory
+				const Fs::Path newFilePath = m_CurrentDirectory / Fs::Path(buffer);
 
-			Gui::SameLine();
+				// Temporary until asset manager is sorted
+				FileSystem::Rename(currentPath, newFilePath);
 
-			if (Gui::Button("No", button_size))
-				Gui::CloseCurrentPopup();
+				if (FileSystem::IsDirectory(currentPath))
+					return;
+				
+				// TODO make this work
 
-			Gui::SameLine();
+				// Now we need to rename the asset
+				//const SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilenameWithExtension);
+				//Project::GetEditorAssetManager()->RenameAsset(asset, newFilePath.string());
 
-			if (Gui::Button("Cancel", button_size))
-				Gui::CloseCurrentPopup();
+				// TODO this should take place in asset manager
+				const Fs::Path extension = newFilePath.filename().extension();
 
-			Gui::EndPopup();
-		}
-
-		if (currentItemPath == m_ItemPathToRename)
-		{
-			// Find the last backslash in the path and copy the filename to the buffer
-			char buffer[256];
-			size_t pos = currentItemPath.string().find_last_of('\\');
-			std::string oldFilenameWithExtension = currentItemPath.string().substr(pos + 1, currentItemPath.string().length());
-			memcpy(buffer, oldFilenameWithExtension.c_str(), sizeof(buffer));
-
-			Gui::SetKeyboardFocusHere();
-			Gui::SetNextItemWidth(m_ThumbnailSize);
-			if (Gui::InputText("##RenameInputText", buffer, sizeof(buffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
-			{
-				const bool inputTextEmpty = strlen(buffer) == 0;
-				const bool consistentPaths = (m_CurrentDirectory / std::filesystem::path(buffer)) == currentItemPath;
-
-				if (!inputTextEmpty && !consistentPaths)
+				const bool isMaterialFile = extension == ".vmaterial";
+				if (isMaterialFile)
 				{
-					// Get the new path from the input text buffer relative to the current directory
-					std::filesystem::path newFilePath = m_CurrentDirectory / std::filesystem::path(buffer);
-
-					// Temporary until asset manager is sorted
-					std::filesystem::rename(currentItemPath, newFilePath);
-
-					if (FileSystem::HasFileExtension(currentItemPath))
-					{
-						SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilenameWithExtension);
-						// TODO make this work
-						//Project::GetEditorAssetManager()->RenameAsset(asset, newFilePath.string());
-
-						// TODO this should take place in asset manager
-						if (newFilePath.filename().extension() == ".vmaterial")
-						{
-							SharedReference<Material> material = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilenameWithExtension);
-							if (material)
-							{
-								material->SetName(FileSystem::RemoveFileExtension(newFilePath));
-							}
-						}
-
-						// TODO this should take place in asset manager
-						// Rename C# Class name in file
-						if (newFilePath.filename().extension() == ".cs")
-						{
-							std::ifstream cSharpScriptFile(newFilePath);
-
-							if (cSharpScriptFile.is_open())
-							{
-								// Make sure we start at the beginning of the file
-								cSharpScriptFile.seekg(0);
-
-								std::vector<std::string> fileLineBuffer;
-								std::string currentLine;
-
-								// Get the old class name from the old filename - i.e. "Player.cs" -> "Player"
-								std::string oldClassName = oldFilenameWithExtension.substr(0, oldFilenameWithExtension.find_last_of('.'));
-								bool classNameFound = false;
-
-								while (std::getline(cSharpScriptFile, currentLine))
-								{
-									fileLineBuffer.push_back(currentLine);
-
-									if (currentLine.find(oldClassName) != std::string::npos)
-										classNameFound = true;
-								}
-
-								cSharpScriptFile.close();
-
-								VX_CORE_ASSERT(classNameFound, "C# Class Name was not the same as filename!");
-
-								// Find the line with the class name and replace it
-								for (auto& line : fileLineBuffer)
-								{
-									if (line.find(oldClassName) != std::string::npos)
-									{
-										// Get the new name of the file to rename the C# class
-										std::string newClassName = newFilePath.filename().string().substr(0, newFilePath.filename().string().find_first_of('.'));
-										std::string formattedLine = std::format("public class {} : Entity", newClassName);
-										// Modify the class name line
-										line = formattedLine;
-
-										// Replace the contents of the file
-										std::ofstream fout(newFilePath, std::ios::trunc);
-
-										for (auto& editedLine : fileLineBuffer)
-											fout << editedLine << '\n';
-
-										// Close the edited file
-										fout.close();
-
-										// Since we edited the file already we can skip the rest of the lines;
-										break;
-									}
-								}
-							}
-						}
-
-						// Rename AudioSourceComponent Source path
-						if (newFilePath.filename().extension() == ".wav" || newFilePath.filename().extension() == ".mp3")
-						{
-							// TODO: Once we have an asset system, ask the asset system to rename an asset here otherwise the engine could crash by loading a non-existant file
-							// we have the old filename
-							//oldFilenameWithExtension
-							// we also have the newFilePath
-						}
-
-						// Rename SpriteRendererComponent Texture path
-						if (newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg" || newFilePath.filename().extension() == ".jpeg" || newFilePath.filename().extension() == ".tga" || newFilePath.filename().extension() == ".psd")
-						{
-							// TODO: Once we have an asset system, ask the asset system to rename an asset here otherwise the engine could crash by loading a non-existant file
-							// we have the old filename
-							//oldFilenameWithExtension
-							// we also have the newFilePath
-						}
-					}
+					OnMaterialFileRenamed(newFilePath, oldFilenameWithExtension);
 				}
 
-				m_ItemPathToRename.clear();
+				// TODO this should take place in asset manager
+				// Rename C# Class name in file
+				const bool isCSharpFile = newFilePath.filename().extension() == ".cs";
+				if (isCSharpFile)
+				{
+					OnCSharpFileRenamed(newFilePath, oldFilenameWithExtension);
+				}
+
+				// Rename AudioSourceComponent Source path
+				const bool isAudioFile = newFilePath.filename().extension() == ".wav" || newFilePath.filename().extension() == ".mp3";
+				if (isAudioFile)
+				{
+					// TODO
+				}
+
+				// Rename SpriteRendererComponent Texture path
+				const bool isTextureFile = newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg" || newFilePath.filename().extension() == ".jpeg" || newFilePath.filename().extension() == ".tga" || newFilePath.filename().extension() == ".psd";
+				if (isTextureFile)
+				{
+					// TODO
+				}
+			}
+
+			m_ItemPathToRename.clear();
+		}
+	}
+
+	void ContentBrowserPanel::OnMaterialFileRenamed(const Fs::Path& newFilepath, const std::string& oldFilepath)
+	{
+		SharedReference<Material> material = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilepath);
+		if (material)
+		{
+			material->SetName(FileSystem::RemoveFileExtension(newFilepath));
+		}
+	}
+
+	void ContentBrowserPanel::OnCSharpFileRenamed(const Fs::Path& newFilepath, const std::string& oldFilepath)
+	{
+		if (!FileSystem::Exists(newFilepath))
+			return;
+
+		std::ifstream file(newFilepath);
+
+		if (file.is_open())
+		{
+			// Make sure we start at the beginning of the file
+			file.seekg(0);
+
+			std::vector<std::string> lineBuffer;
+			std::string currentLine;
+
+			// Get the old class name from the old filename - i.e. "Player.cs" -> "Player"
+			const size_t lastDotPos = oldFilepath.find_last_of('.');
+			const std::string oldClassName = oldFilepath.substr(0, lastDotPos);
+			bool classNameFound = false;
+
+			while (std::getline(file, currentLine))
+			{
+				lineBuffer.push_back(currentLine);
+
+				if (currentLine.find(oldClassName) == std::string::npos)
+					continue;
+
+				classNameFound = true;
+			}
+
+			file.close();
+
+			VX_CORE_ASSERT(classNameFound, "C# Class Name was not the same as filename!");
+
+			// TODO we should count the indentations of the old line and add them to
+			// the new line so that we do not mess with the original code formatting
+			// - for example we need to count tabs and spaces then we find the first character and stop there
+
+			// Find the line with the class name and replace it
+			for (auto& line : lineBuffer)
+			{
+				// We didn't find the class name, move on to next line
+				if (line.find(oldClassName) == std::string::npos)
+					continue;
+				
+				// Get the new name of the file to rename the C# class
+				const std::string newPath = newFilepath.filename().string();
+				const size_t lastDotPos = newPath.find_first_of('.');
+				const std::string newClassName = newPath.substr(0, lastDotPos);
+				const std::string formattedLine = std::format("public class {} : Entity", newClassName);
+
+				// Set the new line
+				line = formattedLine;
+
+				// Replace the contents of the file
+				std::ofstream fout(newFilepath, std::ios::trunc);
+				for (auto& editedLine : lineBuffer)
+				{
+					fout << editedLine << '\n';
+				}
+
+				// don't forget to close it
+				fout.close();
+
+				// renaming class was successful
+				break;
 			}
 		}
 	}
@@ -578,9 +579,9 @@ public class Untitled : Entity
 		Gui::PopItemWidth();
 	}
 
-	SharedReference<Texture2D> ContentBrowserPanel::FindSuitableItemIcon(const std::filesystem::directory_entry& directoryEntry, const std::filesystem::path& currentItemPath)
+	SharedReference<Texture2D> ContentBrowserPanel::FindSuitableItemIcon(const std::filesystem::directory_entry& directoryEntry, const Fs::Path& currentItemPath)
 	{
-		std::string extension = FileSystem::GetFileExtension(currentItemPath);
+		const std::string extension = FileSystem::GetFileExtension(currentItemPath);
 		SharedReference<Texture2D> itemIcon = nullptr;
 
 		if (directoryEntry.is_directory())
@@ -590,8 +591,11 @@ public class Untitled : Entity
 		}
 
 		AssetType assetType = AssetType::None;
-		if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromExtension(extension); type != AssetType::None)
+		if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromExtension(extension);
+			type != AssetType::None)
+		{
 			assetType = type;
+		}
 		
 		if (assetType == AssetType::None)
 		{
@@ -625,7 +629,7 @@ public class Untitled : Entity
 		return itemIcon;
 	}
 
-	SharedReference<Texture2D> ContentBrowserPanel::FindTextureFromAssetManager(const std::filesystem::path& currentItemPath)
+	SharedReference<Texture2D> ContentBrowserPanel::FindTextureFromAssetManager(const Fs::Path& currentItemPath)
 	{
 		if (SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentItemPath))
 		{
@@ -637,7 +641,7 @@ public class Untitled : Entity
 		return nullptr;
 	}
 
-	SharedReference<Texture2D> ContentBrowserPanel::FindEnvironmentMapFromAssetManager(const std::filesystem::path& currentItemPath)
+	SharedReference<Texture2D> ContentBrowserPanel::FindEnvironmentMapFromAssetManager(const Fs::Path& currentItemPath)
 	{
 		if (SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentItemPath))
 		{
@@ -649,15 +653,68 @@ public class Untitled : Entity
 		return nullptr;
 	}
 
-	SharedReference<Texture2D> ContentBrowserPanel::FindMeshIcon(const std::filesystem::path& extension)
+	SharedReference<Texture2D> ContentBrowserPanel::FindMeshIcon(const Fs::Path& extension)
 	{
 		if (extension == ".obj")
+		{
 			return EditorResources::OBJIcon;
+		}
 		else if (extension == ".fbx")
+		{
 			return EditorResources::FBXIcon;
+		}
 
 		VX_CORE_ASSERT(false, "Unknown extension!");
 		return nullptr;
+	}
+
+	void ContentBrowserPanel::UIOnPopupRender(const std::string& currentFilename, const Fs::Path& currentPath)
+	{
+		OnConfirmDeletionPopupRender(currentFilename, currentPath);
+	}
+
+	void ContentBrowserPanel::OnConfirmDeletionPopupRender(const std::string& currentFilename, const Fs::Path& currentPath)
+	{
+		const std::string popupName = "Confirm##ContentBrowser";
+		if (m_ConfirmDeletionPopupOpen)
+		{
+			Gui::OpenPopup(popupName.c_str());
+			m_ConfirmDeletionPopupOpen = false;
+		}
+
+		if (UI::ShowMessageBox(popupName.c_str(), nullptr, { 500, 165 }))
+		{
+			UI::Draw::Underline();
+			Gui::Spacing();
+
+			const ImVec2 button_size(Gui::GetFontSize() * 8.65f, 0.0f);
+
+			Gui::TextCentered(fmt::format("Are you sure you want to permanently delete '{}' ?", currentFilename).c_str(), 40.0f);
+
+			Gui::Spacing();
+			UI::Draw::Underline();
+			UI::ShiftCursorY(60.0f);
+
+			if (Gui::Button("Yes", button_size))
+			{
+				FileSystem::Remove(currentPath);
+				Gui::CloseCurrentPopup();
+			}
+			Gui::SameLine();
+
+			if (Gui::Button("No", button_size))
+			{
+				Gui::CloseCurrentPopup();
+			}
+			Gui::SameLine();
+
+			if (Gui::Button("Cancel", button_size))
+			{
+				Gui::CloseCurrentPopup();
+			}
+
+			Gui::EndPopup();
+		}
 	}
 
 }

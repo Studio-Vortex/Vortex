@@ -245,7 +245,7 @@ namespace Vortex {
 			MaterialProperties materialProps;
 			materialProps.Name = std::string(mat->GetName().C_Str());
 
-			std::filesystem::path directoryPath = FileSystem::GetParentDirectory(std::filesystem::path(filepath));
+			Fs::Path directoryPath = FileSystem::GetParentDirectory(Fs::Path(filepath));
 
 			auto LoadMaterialTextureFunc = [&](auto textureType, auto index = 0)
 			{
@@ -257,8 +257,8 @@ namespace Vortex {
 					return result;
 
 				const char* pathCStr = textureFilepath.C_Str();
-				std::filesystem::path filepath = std::filesystem::path(pathCStr);
-				std::filesystem::path relativePath = directoryPath / filepath;
+				Fs::Path filepath = Fs::Path(pathCStr);
+				Fs::Path relativePath = directoryPath / filepath;
 
 				if (FileSystem::Exists(relativePath))
 				{

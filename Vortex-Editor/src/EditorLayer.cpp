@@ -97,7 +97,7 @@ namespace Vortex {
 		if (commandLineArgs.Count > 1)
 		{
 			auto projectFilepath = commandLineArgs[1];
-			OpenProject(std::filesystem::path(projectFilepath));
+			OpenProject(Fs::Path(projectFilepath));
 		}
 		else
 		{
@@ -481,7 +481,9 @@ namespace Vortex {
 		}
 
 		if (Gui::IsPopupOpen("SceneCreateEntityMenu"))
+		{
 			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
+		}
 
 		if (Gui::BeginPopup("SceneCreateEntityMenu", ImGuiWindowFlags_NoMove))
 		{
@@ -750,14 +752,14 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Script"))
 			{
-				auto projectSolutionFilename = std::filesystem::path(activeProject->GetName());
+				auto projectSolutionFilename = Fs::Path(activeProject->GetName());
 				projectSolutionFilename.replace_extension(".sln");
-				std::filesystem::path scriptsFolder = std::filesystem::path("Projects") / activeProject->GetName() / "Assets\\Scripts";
-				std::filesystem::path solutionPath = scriptsFolder / projectSolutionFilename;
+				Fs::Path scriptsFolder = Fs::Path("Projects") / activeProject->GetName() / "Assets\\Scripts";
+				Fs::Path solutionPath = scriptsFolder / projectSolutionFilename;
 
 				if (Gui::MenuItem("Create Script"))
 				{
-					m_OpenCreateScriptPopup = true;
+					m_CreateScriptPopupOpen = true;
 					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
@@ -922,9 +924,9 @@ namespace Vortex {
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				const wchar_t* path = (const wchar_t*)payload->Data;
-				std::filesystem::path filepath = std::filesystem::path(path);
+				const Fs::Path filepath = Fs::Path(path);
 
-				AssetType assetType = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath);
+				const AssetType assetType = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath);
 
 				if (assetType == AssetType::None)
 				{
@@ -960,10 +962,10 @@ namespace Vortex {
 						if (!m_HoveredEntity)
 							break;
 
-						auto& scriptComponent = m_HoveredEntity.AddOrReplaceComponent<ScriptComponent>();
-						std::unordered_map<std::string, SharedReference<ScriptClass>> scriptClasses = ScriptEngine::GetClasses();
+						ScriptComponent& scriptComponent = m_HoveredEntity.AddOrReplaceComponent<ScriptComponent>();
+						const std::unordered_map<std::string, SharedReference<ScriptClass>> scriptClasses = ScriptEngine::GetClasses();
 
-						std::string droppedClassName = Project::GetEditorAssetManager()->GetRelativePath(filepath).string();
+						const std::string droppedClassName = Project::GetEditorAssetManager()->GetRelativePath(filepath).string();
 
 						for (const auto& [className, instance] : scriptClasses)
 						{
@@ -987,7 +989,7 @@ namespace Vortex {
 						if (!m_HoveredEntity || !m_HoveredEntity.HasAny<SpriteRendererComponent, StaticMeshRendererComponent, MeshRendererComponent>())
 							break;
 
-						std::filesystem::path textureFilepath = filepath;
+						const Fs::Path textureFilepath = filepath;
 
 						AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(textureFilepath);
 
@@ -1050,7 +1052,7 @@ namespace Vortex {
 						if (!m_HoveredEntity || !m_HoveredEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
 							break;
 
-						std::filesystem::path materialFilepath = filepath;
+						const Fs::Path materialFilepath = filepath;
 
 						AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(materialFilepath);
 
@@ -1102,9 +1104,9 @@ namespace Vortex {
 						if (!m_HoveredEntity || !m_HoveredEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
 							break;
 
-						std::filesystem::path modelPath = filepath;
+						const Fs::Path modelPath = filepath;
 
-						m_OpenMeshImportPopup = true;
+						m_MeshImportPopupOpen = true;
 						m_MeshImportPopupData.MeshFilepath = modelPath.string();
 						m_MeshImportPopupData.MeshEntityToEdit = m_HoveredEntity;
 
@@ -1112,7 +1114,7 @@ namespace Vortex {
 					}
 					case AssetType::EnvironmentAsset:
 					{
-						std::filesystem::path environmentPath = filepath;
+						Fs::Path environmentPath = filepath;
 						AssetHandle environmentHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(environmentPath);
 						if (!AssetManager::IsHandleValid(environmentHandle))
 							break;
@@ -1662,7 +1664,7 @@ namespace Vortex {
 		UI::PopID();
 	}
 
-	void EditorLayer::OnLaunchRuntime(const std::filesystem::path& filepath)
+	void EditorLayer::OnLaunchRuntime(const Fs::Path& filepath)
 	{
 		SaveProject();
 
@@ -1886,13 +1888,13 @@ namespace Vortex {
 
 	void EditorLayer::OnCreateScriptPopupRender()
 	{
-		if (m_OpenCreateScriptPopup)
+		const std::string popupName = "Create Script";
+		if (m_CreateScriptPopupOpen)
 		{
-			Gui::OpenPopup("Create Script");
-			m_OpenCreateScriptPopup = false;
+			Gui::OpenPopup(popupName.c_str());
 		}
 
-		if (UI::ShowMessageBox("Create Script", { 500, 220 }))
+		if (UI::ShowMessageBox(popupName.c_str(), &m_CreateScriptPopupOpen, { 500, 220 }))
 		{
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -1924,9 +1926,10 @@ namespace Vortex {
 			UI::ShiftCursorY(20.0f);
 			UI::ShiftCursorX(7.0f);
 
-			auto resetPopup = []() {
+			auto resetPopup = [&]() {
 				currentScriptingLanguage = ScriptingLanguage::CSharp;
 				className = "Untitiled";
+				m_CreateScriptPopupOpen = false;
 			};
 
 			if (Gui::Button("Create", buttonSize))
@@ -1963,13 +1966,13 @@ namespace Vortex {
 
 	void EditorLayer::OnMeshImportPopupRender()
 	{
-		if (m_OpenMeshImportPopup)
+		const std::string popupName = "Import Mesh";
+		if (m_MeshImportPopupOpen)
 		{
-			Gui::OpenPopup("Mesh Import Options");
-			m_OpenMeshImportPopup = false;
+			Gui::OpenPopup(popupName.c_str());
 		}
 
-		if (UI::ShowMessageBox("Mesh Import Options", { 500, 285 }))
+		if (UI::ShowMessageBox(popupName.c_str(), &m_MeshImportPopupOpen, { 500, 285 }))
 		{
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -2041,6 +2044,7 @@ namespace Vortex {
 
 			if (Gui::Button("Cancel", buttonSize))
 			{
+				m_MeshImportPopupOpen = false;
 				m_MeshImportPopupData.MeshFilepath = "";
 				m_MeshImportPopupData.ModelImportOptions = MeshImportOptions();
 
@@ -2713,7 +2717,7 @@ namespace Vortex {
 		return true;
 	}
 
-	bool EditorLayer::OpenProject(const std::filesystem::path& filepath)
+	bool EditorLayer::OpenProject(const Fs::Path& filepath)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -2730,10 +2734,10 @@ namespace Vortex {
 		}
 
 		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
-		std::filesystem::path startScenePath = Project::GetActive()->GetProperties().General.StartScene;
+		Fs::Path startScenePath = Project::GetActive()->GetProperties().General.StartScene;
 		const AssetMetadata& sceneMetadata = editorAssetManager->GetMetadata(startScenePath);
 
-		std::filesystem::path relativePath = editorAssetManager->GetFileSystemPath(sceneMetadata);
+		Fs::Path relativePath = editorAssetManager->GetFileSystemPath(sceneMetadata);
 		OpenScene(relativePath);
 
 		m_PanelManager->AddPanel<ProjectSettingsPanel>(Project::GetActive());
@@ -2790,7 +2794,9 @@ namespace Vortex {
 
 		m_EditorScene = m_ActiveScene;
 
-		Scene::Create3DSampleScene(m_ActiveScene);
+		// TODO are we going to store the project type in the project?
+		ProjectType type = ProjectType::e3D;
+		Scene::CreateSampleScene(type, m_ActiveScene);
 
 		SetWindowTitle("UntitledScene");
 	}
@@ -2805,7 +2811,7 @@ namespace Vortex {
 		}
 	}
 
-	void EditorLayer::OpenScene(const std::filesystem::path& filepath)
+	void EditorLayer::OpenScene(const Fs::Path& filepath)
 	{
 		if (m_SceneState != SceneState::Edit)
 		{
@@ -2887,7 +2893,7 @@ namespace Vortex {
 		}
 	}
 
-	void EditorLayer::SerializeScene(SharedReference<Scene>& scene, const std::filesystem::path& filepath)
+	void EditorLayer::SerializeScene(SharedReference<Scene>& scene, const Fs::Path& filepath)
 	{
 		SceneSerializer serializer(scene);
 		serializer.Serialize(filepath.string());
@@ -3036,9 +3042,9 @@ namespace Vortex {
 				return;
 			}
 
-			std::filesystem::path scenePath = buildIndices.at(nextBuildIndex);
-			std::filesystem::path assetDirectory = Project::GetAssetDirectory();
-			std::filesystem::path nextSceneFilepath = assetDirectory / scenePath;
+			Fs::Path scenePath = buildIndices.at(nextBuildIndex);
+			Fs::Path assetDirectory = Project::GetAssetDirectory();
+			Fs::Path nextSceneFilepath = assetDirectory / scenePath;
 
 			OpenScene(nextSceneFilepath);
 			OnScenePlay();
@@ -3127,6 +3133,9 @@ namespace Vortex {
 
 		const uint32_t bufferSize = stride * (uint32_t)m_ViewportPanelSize.y;
 		Buffer buffer(bufferSize);
+
+		// TODO if the scene viewport isn't maximized we need to read
+		// at an offset into the framebuffer, offset by the viewport bounds?
 		m_Framebuffer->ReadAttachmentToBuffer(0, buffer.As<char>());
 
 		TextureProperties imageProps;
@@ -3143,7 +3152,7 @@ namespace Vortex {
 
 	void EditorLayer::ReplaceSceneFileExtensionIfNeeded(std::string& filepath)
 	{
-		std::filesystem::path copy = filepath;
+		Fs::Path copy = filepath;
 
 		if (copy.extension() != ".vortex" || copy.extension().empty())
 		{

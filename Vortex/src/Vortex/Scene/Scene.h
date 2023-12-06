@@ -5,6 +5,8 @@
 
 #include "Vortex/Asset/Asset.h"
 
+#include "Vortex/Project/ProjectType.h"
+
 #include "Vortex/Scene/Components.h"
 
 #include "Vortex/Renderer/Framebuffer.h"
@@ -150,8 +152,7 @@ namespace Vortex {
 		static void SetActiveSceneBuildIndex(uint32_t buildIndex);
 
 		static SharedReference<Scene> Copy(SharedReference<Scene>& source);
-		static void Create2DSampleScene(SharedReference<Scene>& context);
-		static void Create3DSampleScene(SharedReference<Scene>& context);
+		static void CreateSampleScene(ProjectType type, SharedReference<Scene>& context);
 
 		ASSET_CLASS_TYPE(SceneAsset)
 

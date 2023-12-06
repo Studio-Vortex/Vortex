@@ -32,8 +32,8 @@ namespace Vortex {
 		BuildAndRunFn m_BuildAndRunFn;
 		BuildFn m_BuildFn;
 
-		std::filesystem::path m_ProjectPath;
-		std::filesystem::path m_StartupScene;
+		Fs::Path m_ProjectPath;
+		Fs::Path m_StartupScene;
 	};
 
 }

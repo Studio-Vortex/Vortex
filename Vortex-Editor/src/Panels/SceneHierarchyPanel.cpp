@@ -1381,7 +1381,7 @@ namespace Vortex {
 			relativePath = metadata.Filepath.stem().string();
 		}
 
-		auto OnSkyboxDroppedFn = [&](const std::filesystem::path& filepath) {
+		auto OnSkyboxDroppedFn = [&](const Fs::Path& filepath) {
 			// Make sure we are recieving an actual directory or hdr texture otherwise we will have trouble loading it
 			if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::EnvironmentAsset)
 			{
@@ -1503,7 +1503,7 @@ namespace Vortex {
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				const wchar_t* path = (const wchar_t*)payload->Data;
-				std::filesystem::path meshFilepath = std::filesystem::path(path);
+				Fs::Path meshFilepath = Fs::Path(path);
 
 				// Make sure we are recieving an actual model file otherwise we will have trouble opening it
 				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(meshFilepath); type == AssetType::MeshAsset || type == AssetType::StaticMeshAsset)
@@ -1549,7 +1549,7 @@ namespace Vortex {
 			relativePath = metadata.Filepath.stem().string();
 		}
 
-		auto OnStaticMeshDroppedFn = [&](const std::filesystem::path& filepath) {
+		auto OnStaticMeshDroppedFn = [&](const Fs::Path& filepath) {
 			// Make sure we are recieving an actual model file otherwise we will have trouble opening it
 			if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::StaticMeshAsset || type == AssetType::MeshAsset)
 			{
@@ -1583,7 +1583,7 @@ namespace Vortex {
 
 			uint32_t submeshIndex = 0;
 
-			auto OnMaterialDroppedFn = [&](const std::filesystem::path& filepath) {
+			auto OnMaterialDroppedFn = [&](const Fs::Path& filepath) {
 				// Make sure we are recieving an actual material otherwise we will have trouble opening it
 				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::MaterialAsset)
 				{
@@ -1663,7 +1663,7 @@ namespace Vortex {
 		else if (Gui::IsItemHovered())
 		{
 			Gui::BeginTooltip();
-			Gui::Text(std::filesystem::path(icon->GetPath()).stem().string().c_str());
+			Gui::Text(Fs::Path(icon->GetPath()).stem().string().c_str());
 			Gui::EndTooltip();
 		}
 
@@ -1675,7 +1675,7 @@ namespace Vortex {
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				const wchar_t* path = (const wchar_t*)payload->Data;
-				std::filesystem::path texturePath = std::filesystem::path(path);
+				Fs::Path texturePath = Fs::Path(path);
 
 				// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(texturePath); type == AssetType::TextureAsset)
@@ -1793,7 +1793,7 @@ namespace Vortex {
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				const wchar_t* path = (const wchar_t*)payload->Data;
-				std::filesystem::path fontPath = std::filesystem::path(path);
+				Fs::Path fontPath = Fs::Path(path);
 
 				// Make sure we are recieving an actual font otherwise we will have trouble opening it
 				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(fontPath); type == AssetType::FontAsset)
@@ -1933,7 +1933,7 @@ namespace Vortex {
 				relativePath = FileSystem::Relative(ascPath, Project::GetAssetDirectory()).stem().string();
 			}
 
-			auto OnAudioSourceDroppedFn = [&](const std::filesystem::path& filepath) {
+			auto OnAudioSourceDroppedFn = [&](const Fs::Path& filepath) {
 				// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
 				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::AudioAsset)
 				{

@@ -346,7 +346,7 @@ namespace Vortex {
 					if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 					{
 						const wchar_t* path = (const wchar_t*)payload->Data;
-						std::filesystem::path texturePath = std::filesystem::path(path);
+						const Fs::Path texturePath = Fs::Path(path);
 
 						// Make sure we are recieving an actual texture otherwise we will have trouble opening it
 						if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(texturePath); type == AssetType::TextureAsset)

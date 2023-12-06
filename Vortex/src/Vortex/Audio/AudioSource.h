@@ -15,21 +15,21 @@ namespace Vortex {
 	class VORTEX_API AudioSource : public Asset
 	{
 	public:
-		AudioSource(const std::filesystem::path& path = "");
+		AudioSource(const Fs::Path& path = "");
 		~AudioSource();
 
-		const std::filesystem::path& GetPath() const { return m_Path; }
-		void SetPath(const std::filesystem::path& path);
+		const Fs::Path& GetPath() const { return m_Filepath; }
+		void SetPath(const Fs::Path& path);
 
 		inline PlaybackDevice GetPlaybackDevice() { return m_Device; }
 
 		ASSET_CLASS_TYPE(AudioAsset)
 
-		static SharedReference<AudioSource> Create(const std::filesystem::path& path = "");
+		static SharedReference<AudioSource> Create(const Fs::Path& path = "");
 
 	private:
 		PlaybackDevice m_Device;
-		std::filesystem::path m_Path; // TODO this shouldn't be here
+		Fs::Path m_Filepath; // TODO this shouldn't be here
 	};
 
 }

@@ -7,39 +7,49 @@
 
 namespace Vortex {
 
+	// FileSystem
+	namespace Fs {
+
+		using Path = std::filesystem::path;
+
+	}
+
 	class VORTEX_API FileSystem
 	{
 	public:
-		static Buffer ReadBinary(const std::filesystem::path& filepath);
-		static std::string ReadText(const std::filesystem::path& filepath);
+		static Buffer ReadBinary(const Fs::Path& filepath);
+		static std::string ReadText(const Fs::Path& filepath);
 
-		static bool Exists(const std::filesystem::path& filepath);
-		static bool Equivalent(const std::filesystem::path& first, const std::filesystem::path& second);
+		static bool Exists(const Fs::Path& filepath);
+		static bool Equivalent(const Fs::Path& first, const Fs::Path& second);
 
-		static bool IsDirectory(const std::filesystem::path& filepath);
+		static bool IsDirectory(const Fs::Path& filepath);
 
-		static bool CreateDirectoryV(const std::filesystem::path& directory);
-		static bool CreateDirectoriesV(const std::filesystem::path& directories);
-		static bool Remove(const std::filesystem::path& filepath);
+		static bool CreateDirectoryV(const Fs::Path& directory);
+		static bool CreateDirectoriesV(const Fs::Path& directories);
+		static bool Remove(const Fs::Path& filepath);
 
-		static bool CreateFileV(const std::filesystem::path& filepath);
+		static bool CreateFileV(const Fs::Path& filepath);
 
-		static void Copy(const std::filesystem::path& from, const std::filesystem::path& to);
-		static bool CopyFileV(const std::filesystem::path& from, const std::filesystem::path& to);
-		static void RecursiveDirectoryCopy(const std::filesystem::path& from, const std::filesystem::path& to);
+		static void Copy(const Fs::Path& from, const Fs::Path& to);
+		static bool CopyFileV(const Fs::Path& from, const Fs::Path& to);
 
-		static std::filesystem::path GetParentDirectory(const std::filesystem::path& filepath);
-		static std::filesystem::path Absolute(const std::filesystem::path& filepath);
-		static std::filesystem::path Relative(const std::filesystem::path& filepath);
-		static std::filesystem::path Relative(const std::filesystem::path& path, const std::filesystem::path& base);
+		static void Rename(const Fs::Path& old, const Fs::Path& _new);
 
-		static bool HasFileExtension(const std::filesystem::path& filepath);
-		static std::string GetFileExtension(const std::filesystem::path& filepath);
-		static std::string RemoveFileExtension(const std::filesystem::path& filepath);
-		static void ReplaceExtension(std::filesystem::path& filepath, std::string_view extension);
+		static void RecursiveDirectoryCopy(const Fs::Path& from, const Fs::Path& to);
 
-		static std::filesystem::path GetWorkingDirectory();
-		static void SetWorkingDirectory(const std::filesystem::path& filepath);
+		static Fs::Path GetParentDirectory(const Fs::Path& filepath);
+		static Fs::Path Absolute(const Fs::Path& filepath);
+		static Fs::Path Relative(const Fs::Path& filepath);
+		static Fs::Path Relative(const Fs::Path& path, const Fs::Path& base);
+
+		static bool HasFileExtension(const Fs::Path& filepath);
+		static std::string GetFileExtension(const Fs::Path& filepath);
+		static std::string RemoveFileExtension(const Fs::Path& filepath);
+		static void ReplaceExtension(Fs::Path& filepath, std::string_view extension);
+
+		static Fs::Path GetWorkingDirectory();
+		static void SetWorkingDirectory(const Fs::Path& filepath);
 	};
 
 }

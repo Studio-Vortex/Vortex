@@ -4,7 +4,7 @@
 
 #include "Vortex/Asset/Asset.h"
 
-#include <filesystem>
+#include "Vortex/Utils/FileSystem.h"
 
 namespace Vortex {
 
@@ -13,7 +13,7 @@ namespace Vortex {
 		AssetHandle Handle = 0;
 		AssetType Type = AssetType::None;
 
-		std::filesystem::path Filepath;
+		Fs::Path Filepath;
 
 		bool IsDataLoaded = false;
 		bool IsMemoryOnly = false;

@@ -52,6 +52,7 @@
 
 /// Project
 #include "Vortex/Project/Project.h"
+#include "Vortex/Project/ProjectType.h"
 /// ---------------------------------------------------
 
 /// Asset Manager

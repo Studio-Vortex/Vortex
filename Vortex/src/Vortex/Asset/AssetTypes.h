@@ -27,9 +27,6 @@ namespace Vortex {
 		PhysicsMaterialAsset,
 	};
 
-#define ASSET_CLASS_TYPE(type) static AssetType GetStaticType() { return AssetType::##type; }\
-								virtual AssetType GetAssetType() const override { return GetStaticType(); }
-
 	namespace Utils {
 
 		AssetType AssetTypeFromString(const std::string& type);
