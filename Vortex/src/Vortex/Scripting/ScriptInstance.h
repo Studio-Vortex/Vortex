@@ -2,7 +2,9 @@
 
 #include "Vortex/Core/Base.h"
 #include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
 #include "Vortex/Core/Math/Math.h"
+#include "Vortex/Core/TimeStep.h"
 
 #include "Vortex/Scene/Entity.h"
 
@@ -26,14 +28,13 @@ namespace Vortex {
 
 		void InvokeOnAwake();
 		void InvokeOnCreate();
-		void InvokeOnUpdate(float delta);
+		void InvokeOnUpdate(TimeStep delta);
 		void InvokeOnDestroy();
-		void InvokeOnCollisionEnter(Collision& collision);
-		void InvokeOnCollisionExit(Collision& collision);
-		void InvokeOnTriggerEnter(Collision& collision);
-		void InvokeOnTriggerExit(Collision& collision);
+		void InvokeOnCollisionEnter(const Collision& collision);
+		void InvokeOnCollisionExit(const Collision& collision);
+		void InvokeOnTriggerEnter(const Collision& collision);
+		void InvokeOnTriggerExit(const Collision& collision);
 		void InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque);
-		void InvokeOnRaycastCollision();
 		void InvokeOnEnabled();
 		void InvokeOnDisabled();
 		void InvokeOnGui();
@@ -76,10 +77,6 @@ namespace Vortex {
 		std::unordered_map<ManagedMethod, MonoMethod*> m_ManagedMethods;
 
 		inline static char s_FieldValueBuffer[VX_SCRIPT_FIELD_MAX_BYTES];
-
-#ifdef VX_DEBUG
-		std::string m_DebugName = "";
-#endif
 
 	private:
 		friend class ScriptEngine;

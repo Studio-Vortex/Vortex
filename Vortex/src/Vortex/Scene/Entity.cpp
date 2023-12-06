@@ -9,29 +9,32 @@ namespace Vortex {
 	{
 		GetComponent<TagComponent>().IsActive = active;
 
-		Entity self = *this;
+		const Entity self = *this;
 
-		const bool shouldCallActivationMethod = m_Scene->IsRunning()
-			&& self.HasComponent<ScriptComponent>()
-			&& ScriptEngine::EntityClassExists(self.GetComponent<ScriptComponent>().ClassName);
+		const bool sceneRunning = m_Scene->IsRunning();
+		const bool hasScript = self.HasComponent<ScriptComponent>();
+		const auto classExistsFn = [&](auto e) { return ScriptEngine::EntityClassExists(e.GetComponent<ScriptComponent>().ClassName); };
+		const bool callMethod = sceneRunning && hasScript && classExistsFn(self);
 
-		if (active)
+		if (!active)
 		{
-			m_Scene->ActiveateChildren(self);
+			m_Scene->DeactiveateChildren(self);
 
-			if (shouldCallActivationMethod)
+			if (callMethod)
 			{
-				ScriptEngine::OnEnabled(self);
+				// Call Entity.OnDisabled
+				ScriptEngine::CallMethod(ManagedMethod::OnDisabled, self);
 			}
 
 			return;
 		}
 
-		m_Scene->DeactiveateChildren(self);
+		m_Scene->ActiveateChildren(self);
 
-		if (shouldCallActivationMethod)
+		if (callMethod)
 		{
-			ScriptEngine::OnDisabled(self);
+			// Call Entity.OnEnabled
+			ScriptEngine::CallMethod(ManagedMethod::OnEnabled, self);
 		}
 	}
 

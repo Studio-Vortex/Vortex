@@ -2,7 +2,9 @@
 #include "PhysicsContactListener.h"
 
 #include "Vortex/Physics/3D/Physics.h"
+
 #include "Vortex/Scripting/ScriptEngine.h"
+#include "Vortex/Scripting/RuntimeMethodArgument.h"
 
 namespace Vortex {
 
@@ -65,14 +67,16 @@ namespace Vortex {
 				physx::PxFixedJoint* fixedJoint = nativeJoint->is<physx::PxFixedJoint>();
 				const std::pair<Math::vec3, Math::vec3>& forceAndTorque = Physics::GetLastReportedFixedJointForces(fixedJoint);
 
+				RuntimeMethodArgument arg0(forceAndTorque);
+
 				if (Utils::HasValidScriptInstance(entity))
 				{
-					ScriptEngine::OnFixedJointDisconnected(entity, forceAndTorque);
+					ScriptEngine::CallMethod(ManagedMethod::OnFixedJointDisconnected, entity, { &arg0 });
 				}
 
 				if (Utils::HasValidScriptInstance(connectedEntity))
 				{
-					ScriptEngine::OnFixedJointDisconnected(connectedEntity, forceAndTorque);
+					ScriptEngine::CallMethod(ManagedMethod::OnFixedJointDisconnected, connectedEntity, { &arg0 });
 				}
 			}
 		}
@@ -118,14 +122,16 @@ namespace Vortex {
 			{
 				Collision collision{};
 				collision.EntityID = entityB.GetUUID();
-				ScriptEngine::OnCollisionEnterEntity(entityA, collision);
+				RuntimeMethodArgument arg0(collision);
+				ScriptEngine::CallMethod(ManagedMethod::OnCollisionEnter, entityA, { &arg0 });
 			}
 
 			if (entityB.HasComponent<ScriptComponent>())
 			{
 				Collision collision{};
 				collision.EntityID = entityA.GetUUID();
-				ScriptEngine::OnCollisionEnterEntity(entityB, collision);
+				RuntimeMethodArgument arg0(collision);
+				ScriptEngine::CallMethod(ManagedMethod::OnCollisionEnter, entityB, { &arg0 });
 			}
 		}
 		else if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_LOST_TOUCH)
@@ -134,14 +140,16 @@ namespace Vortex {
 			{
 				Collision collision{};
 				collision.EntityID = entityB.GetUUID();
-				ScriptEngine::OnCollisionExitEntity(entityA, collision);
+				RuntimeMethodArgument arg0(collision);
+				ScriptEngine::CallMethod(ManagedMethod::OnCollisionExit, entityA, { &arg0 });
 			}
 
 			if (Utils::HasValidScriptInstance(entityB))
 			{
 				Collision collision{};
 				collision.EntityID = entityA.GetUUID();
-				ScriptEngine::OnCollisionExitEntity(entityB, collision);
+				RuntimeMethodArgument arg0(collision);
+				ScriptEngine::CallMethod(ManagedMethod::OnCollisionExit, entityB, { &arg0 });
 			}
 		}
 	}
@@ -182,14 +190,16 @@ namespace Vortex {
 				{
 					Collision collision{};
 					collision.EntityID = otherEntity.GetUUID();
-					ScriptEngine::OnTriggerEnterEntity(triggerEntity, collision);
+					RuntimeMethodArgument arg0(collision);
+					ScriptEngine::CallMethod(ManagedMethod::OnTriggerEnter, triggerEntity, { &arg0 });
 				}
 
 				if (Utils::HasValidScriptInstance(otherEntity))
 				{
 					Collision collision{};
 					collision.EntityID = triggerEntity.GetUUID();
-					ScriptEngine::OnTriggerEnterEntity(otherEntity, collision);
+					RuntimeMethodArgument arg0(collision);
+					ScriptEngine::CallMethod(ManagedMethod::OnTriggerEnter, otherEntity, { &arg0 });
 				}
 			}
 			else if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
@@ -198,14 +208,16 @@ namespace Vortex {
 				{
 					Collision collision{};
 					collision.EntityID = otherEntity.GetUUID();
-					ScriptEngine::OnTriggerExitEntity(triggerEntity, collision);
+					RuntimeMethodArgument arg0(collision);
+					ScriptEngine::CallMethod(ManagedMethod::OnTriggerExit, triggerEntity, { &arg0 });
 				}
 
 				if (Utils::HasValidScriptInstance(otherEntity))
 				{
 					Collision collision{};
 					collision.EntityID = triggerEntity.GetUUID();
-					ScriptEngine::OnTriggerExitEntity(otherEntity, collision);
+					RuntimeMethodArgument arg0(collision);
+					ScriptEngine::CallMethod(ManagedMethod::OnTriggerExit, otherEntity, { &arg0 });
 				}
 			}
 		}

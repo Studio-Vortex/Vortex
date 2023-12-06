@@ -44,11 +44,6 @@ namespace Vortex {
 			UUID entityUUID = physicsBodyData->EntityUUID;
 			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 			Tag = mono_string_new(mono_domain_get(), entity.GetName().c_str());
-
-			if (ScriptEngine::GetEntityScriptInstance(entityUUID))
-			{
-				ScriptEngine::OnRaycastCollisionEntity(entity); // Call the Entity's OnCollision Function
-			}
 		}
 		else
 		{

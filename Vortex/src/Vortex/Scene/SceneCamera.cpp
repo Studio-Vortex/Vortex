@@ -95,9 +95,9 @@ namespace Vortex {
 
 	Math::vec3 SceneCamera::ScreenPointToWorldPoint(const Math::vec2& point, const Math::vec2& viewportMinBound, const Math::vec3& cameraPosition, const float maxDistance, const Math::mat4& view) const
 	{
-		Math::vec2 viewSpace = ScreenPointToViewportPoint(point - viewportMinBound);
+		const Math::vec2 ndc = ScreenPointToViewportPoint(point - viewportMinBound);
 
-		const Math::vec4 clipSpace = Math::vec4(viewSpace.x, viewSpace.y, 1.0f, 1.0f);
+		const Math::vec4 clipSpace = Math::vec4(ndc.x, ndc.y, -1.0f, 1.0f);
 
 		const Math::mat4 inverseViewProj = Math::Inverse(m_ProjectionMatrix * view);
 		const Math::vec4 worldPoint = inverseViewProj * clipSpace;

@@ -7,9 +7,8 @@
 #include "Vortex/Scripting/MonoAssemblyTypeInfo.h"
 #include "Vortex/Scripting/ScriptFieldInstance.h"
 #include "Vortex/Scripting/ScriptFieldTypes.h"
-#include "Vortex/Scripting/ScriptInstance.h"
+#include "Vortex/Scripting/ManagedMethods.h"
 #include "Vortex/Scripting/ScriptField.h"
-#include "Vortex/Scripting/ScriptClass.h"
 
 #include "Vortex/Utils/FileSystem.h"
 
@@ -28,8 +27,9 @@ extern "C"
 
 namespace Vortex {
 
-	class TimeStep;
-	struct Collision;
+	class ScriptClass;
+	class ScriptInstance;
+	union RuntimeMethodArgument;
 
 	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
 
@@ -54,19 +54,8 @@ namespace Vortex {
 		static void EntityConstructorRuntime(UUID entityUUID, MonoObject* instance);
 		static void CreateEntityScriptInstanceRuntime(Entity entity);
 
-		static void OnAwakeEntity(Entity entity);
-		static void OnCreateEntity(Entity entity);
-		static void OnUpdateEntity(Entity entity, TimeStep delta);
-		static void OnDestroyEntity(Entity entity);
-		static void OnCollisionEnterEntity(Entity entity, Collision& collision);
-		static void OnCollisionExitEntity(Entity entity, Collision& collision);
-		static void OnTriggerEnterEntity(Entity entity, Collision& collision);
-		static void OnTriggerExitEntity(Entity entity, Collision& collision);
-		static void OnFixedJointDisconnected(Entity entity, const std::pair<Math::vec3, Math::vec3>& forceAndTorque);
-		static void OnRaycastCollisionEntity(Entity entity);
-		static void OnEnabled(Entity entity);
-		static void OnDisabled(Entity entity);
-		static void OnGuiEntity(Entity entity);
+		static bool CallMethod(const std::string& methodName, Entity entity, const std::initializer_list<RuntimeMethodArgument*>& argumentList);
+		static bool CallMethod(ManagedMethod method, Entity entity, const std::initializer_list<RuntimeMethodArgument*>& argumentList = {});
 
 		static SharedReference<ScriptClass> GetCoreEntityClass();
 
@@ -75,7 +64,7 @@ namespace Vortex {
 		static MonoDomain* GetAppDomain();
 		static MonoImage* GetAppAssemblyImage();
 
-		static void DuplicateScriptInstance(Entity src, Entity dst);
+		static void RuntimeInstantiateEntity(Entity entity);
 
 		static SharedReference<ScriptInstance> GetEntityScriptInstance(UUID uuid);
 
@@ -92,12 +81,7 @@ namespace Vortex {
 		static void InitMono();
 		static void ShutdownMono();
 
-		static MonoObject* InstantiateClass(MonoClass* monoClass);
-		static void LoadAssemblyClasses(bool displayClassNames = false);
-
-	private:
-		friend class ScriptClass;
-		friend class ScriptRegistry;
+		static void LoadAssemblyClasses(bool displayClasses = false);
 	};
 
 }

@@ -13,6 +13,7 @@
 #include "Vortex/Scene/Entity.h"
 
 #include "Vortex/Scripting/ScriptUtils.h"
+#include "Vortex/Scripting/ScriptClass.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
 #include "Vortex/Audio/Audio.h"

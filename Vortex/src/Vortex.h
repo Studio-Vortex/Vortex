@@ -91,6 +91,12 @@
 #include "Vortex/Scene/Components.h"
 /// ---------------------------------------------------
 
+/// Scripting
+#include "Vortex/Scripting/ScriptClass.h"
+#include "Vortex/Scripting/ScriptInstance.h"
+#include "Vortex/Scripting/ScriptField.h"
+/// ---------------------------------------------------
+
 /// Rendering
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"

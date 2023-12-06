@@ -74,7 +74,7 @@ namespace Vortex {
 
 		if (newEntity.HasComponent<ScriptComponent>())
 		{
-			ScriptEngine::DuplicateScriptInstance(entity, newEntity);
+			ScriptEngine::RuntimeInstantiateEntity(newEntity);
 		}
 
 		return newEntity;

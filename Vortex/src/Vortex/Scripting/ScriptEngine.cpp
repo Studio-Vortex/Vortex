@@ -11,14 +11,15 @@
 #include "Vortex/Audio/Audio.h"
 #include "Vortex/Audio/AudioSource.h"
 
-#include "Vortex/Scene/Components.h"
 #include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Components.h"
 
+#include "Vortex/Scripting/ScriptUtils.h"
+#include "Vortex/Scripting/ScriptClass.h"
 #include "Vortex/Scripting/ScriptRegistry.h"
 #include "Vortex/Scripting/ScriptInstance.h"
 #include "Vortex/Scripting/ScriptFieldInstance.h"
-#include "Vortex/Scripting/ScriptClass.h"
-#include "Vortex/Scripting/ScriptUtils.h"
+#include "Vortex/Scripting/RuntimeMethodArgument.h"
 
 #include "Vortex/Physics/3D/Physics.h"
 
@@ -295,10 +296,10 @@ namespace Vortex {
 
 	void ScriptEngine::EntityConstructorRuntime(UUID entityUUID, MonoObject* instance)
 	{
-		MonoMethod* constructor = s_Data->EntityClass->GetMethod(".ctor", 1);
+		MonoMethod* entityConstructor = s_Data->EntityClass->GetMethod(".ctor", 1);
 
-		void* param = &entityUUID;
-		ScriptUtils::InvokeMethod(instance, constructor, &param);
+		void* param = (void*)&entityUUID;
+		ScriptUtils::InvokeMethod(instance, entityConstructor, &param);
 	}
 
 	void ScriptEngine::CreateEntityScriptInstanceRuntime(Entity entity)
@@ -330,273 +331,135 @@ namespace Vortex {
 		}
 	}
 
-	void ScriptEngine::OnAwakeEntity(Entity entity)
+	bool ScriptEngine::CallMethod(const std::string& methodName, Entity entity, const std::initializer_list<RuntimeMethodArgument*>& argumentList)
 	{
-		VX_PROFILE_FUNCTION();
+		if (methodName.empty())
+		{
+			VX_CORE_ASSERT(false, "Trying to call non-existent method!");
+			return false;
+		}
 
-		UUID entityUUID = entity.GetUUID();
+		ManagedMethod method = Utils::ManagedMethodFromString(methodName);
 
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
-
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
-		VX_CORE_ASSERT(instance, "Invalid script instance!");
-
-		if (!instance)
-			return;
-
-		instance->InvokeOnAwake();
+		return CallMethod(method, entity, argumentList);
 	}
 
-	void ScriptEngine::OnCreateEntity(Entity entity)
+	bool ScriptEngine::CallMethod(ManagedMethod method, Entity entity, const std::initializer_list<RuntimeMethodArgument*>& argumentList)
 	{
 		VX_PROFILE_FUNCTION();
 
-		UUID entityUUID = entity.GetUUID();
-
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+		const UUID entityUUID = entity.GetUUID();
+		const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
 
 		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
 		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
 
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
-		VX_CORE_ASSERT(instance, "Invalid script instance!");
-
-		if (!instance)
-			return;
-
-		instance->InvokeOnCreate();
-	}
-
-	void ScriptEngine::OnUpdateEntity(Entity entity, TimeStep delta)
-	{
-		VX_PROFILE_FUNCTION();
-
-		UUID entityUUID = entity.GetUUID();
-
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-		
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
-		
 		if (!EntityInstanceExists(entityUUID))
 		{
 			VX_CONSOLE_LOG_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
-			return;
+			return false;
 		}
 
 		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
 		VX_CORE_ASSERT(instance, "Invalid script instance!");
 
 		if (!instance)
-			return;
-
-		instance->InvokeOnUpdate(delta);
-	}
-
-	void ScriptEngine::OnDestroyEntity(Entity entity)
-	{
-		VX_PROFILE_FUNCTION();
-
-		UUID entityUUID = entity.GetUUID();
-
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
-
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
-		VX_CORE_ASSERT(instance, "Invalid script instance!");
-
-		if (!instance)
-			return;
-
-		instance->InvokeOnDestroy();
-
-		// Remove the instance from the script instance map
-		s_Data->EntityInstances.erase(entityUUID);
-	}
-
-	void ScriptEngine::OnCollisionEnterEntity(Entity entity, Collision& collision)
-	{
-		VX_PROFILE_FUNCTION();
-
-		UUID entityUUID = entity.GetUUID();
-
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
-
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
-		VX_CORE_ASSERT(instance, "Invalid script instance!");
-
-		if (!instance)
-			return;
-
-		instance->InvokeOnCollisionEnter(collision);
-	}
-
-	void ScriptEngine::OnCollisionExitEntity(Entity entity, Collision& collision)
-	{
-		VX_PROFILE_FUNCTION();
-
-		UUID entityUUID = entity.GetUUID();
-
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
-
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
-		VX_CORE_ASSERT(instance, "Invalid script instance!");
-
-		if (!instance)
-			return;
-
-		instance->InvokeOnCollisionExit(collision);
-	}
-
-	void ScriptEngine::OnTriggerEnterEntity(Entity entity, Collision& collision)
-	{
-		VX_PROFILE_FUNCTION();
-
-		UUID entityUUID = entity.GetUUID();
-
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
-
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
-		VX_CORE_ASSERT(instance, "Invalid script instance!");
-
-		if (!instance)
-			return;
-
-		instance->InvokeOnTriggerEnter(collision);
-	}
-
-	void ScriptEngine::OnTriggerExitEntity(Entity entity, Collision& collision)
-	{
-		VX_PROFILE_FUNCTION();
-
-		UUID entityUUID = entity.GetUUID();
-
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
-
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
-		VX_CORE_ASSERT(instance, "Invalid script instance!");
-
-		if (!instance)
-			return;
-
-		instance->InvokeOnTriggerExit(collision);
-	}
-
-	void ScriptEngine::OnFixedJointDisconnected(Entity entity, const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
-	{
-		VX_PROFILE_FUNCTION();
-
-		UUID entityUUID = entity.GetUUID();
-
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
-
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
-		VX_CORE_ASSERT(instance, "Invalid script instance!");
-
-		if (!instance)
-			return;
-
-		instance->InvokeOnFixedJointDisconnected(forceAndTorque);
-	}
-
-	void ScriptEngine::OnRaycastCollisionEntity(Entity entity)
-	{
-		VX_PROFILE_FUNCTION();
-
-		UUID entityUUID = entity.GetUUID();
-
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
-
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
-		VX_CORE_ASSERT(instance, "Invalid script instance!");
-
-		if (!instance)
-			return;
-
-		instance->InvokeOnRaycastCollision();
-	}
-
-	void ScriptEngine::OnEnabled(Entity entity)
-	{
-		VX_PROFILE_FUNCTION();
-
-		UUID entityUUID = entity.GetUUID();
-
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
-
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
-		VX_CORE_ASSERT(instance, "Invalid script instance!");
-
-		if (!instance)
-			return;
-
-		instance->InvokeOnEnabled();
-	}
-
-	void ScriptEngine::OnDisabled(Entity entity)
-	{
-		VX_PROFILE_FUNCTION();
-
-		UUID entityUUID = entity.GetUUID();
-
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
-
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
-		VX_CORE_ASSERT(instance, "Invalid script instance!");
-
-		if (!instance)
-			return;
-
-		instance->InvokeOnDisabled();
-	}
-
-	void ScriptEngine::OnGuiEntity(Entity entity)
-	{
-		VX_PROFILE_FUNCTION();
-
-		UUID entityUUID = entity.GetUUID();
-
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
-
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
-		VX_CORE_ASSERT(instance, "Invalid script instance!");
-
-		if (!instance)
-			return;
-
-		instance->InvokeOnGui();
+		{
+			return false;
+		}
+
+		switch (method)
+		{
+			case ManagedMethod::OnAwake:  instance->InvokeOnAwake();  break;
+			case ManagedMethod::OnCreate: instance->InvokeOnCreate(); break;
+			case ManagedMethod::OnUpdateDelta:
+			case ManagedMethod::OnUpdate:
+			{
+				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
+				if (argumentList.size() < 1)
+				{
+					return false;
+				}
+
+				const RuntimeMethodArgument* arg0 = (const RuntimeMethodArgument*)argumentList.begin() + (0 * sizeof uint64_t);
+				instance->InvokeOnUpdate(arg0->Delta);
+				break;
+			}
+			case ManagedMethod::OnDestroy:
+			{
+				instance->InvokeOnDestroy();
+				
+				// Remove the instance from the script instance map
+				s_Data->EntityInstances.erase(entityUUID);
+
+				break;
+			}
+			case ManagedMethod::OnCollisionEnter:
+			{
+				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
+				if (argumentList.size() < 1)
+				{
+					return false;
+				}
+
+				const RuntimeMethodArgument* arg0 = (const RuntimeMethodArgument*)argumentList.begin() + (0 * sizeof uint64_t);
+				instance->InvokeOnCollisionEnter(arg0->CollisionArg);
+				break;
+			}
+			case ManagedMethod::OnCollisionExit:
+			{
+				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
+				if (argumentList.size() < 1)
+				{
+					return false;
+				}
+
+				const RuntimeMethodArgument* arg0 = (const RuntimeMethodArgument*)argumentList.begin() + (0 * sizeof uint64_t);
+				instance->InvokeOnCollisionExit(arg0->CollisionArg);
+				break;
+			}
+			case ManagedMethod::OnTriggerEnter:
+			{
+				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
+				if (argumentList.size() < 1)
+				{
+					return false;
+				}
+
+				const RuntimeMethodArgument* arg0 = (const RuntimeMethodArgument*)argumentList.begin() + (0 * sizeof uint64_t);
+				instance->InvokeOnTriggerEnter(arg0->CollisionArg);
+				break;
+			}
+			case ManagedMethod::OnTriggerExit:
+			{
+				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
+				if (argumentList.size() < 1)
+				{
+					return false;
+				}
+
+				const RuntimeMethodArgument* arg0 = (const RuntimeMethodArgument*)argumentList.begin() + (0 * sizeof uint64_t);
+				instance->InvokeOnTriggerExit(arg0->CollisionArg);
+				break;
+			}
+			case ManagedMethod::OnFixedJointDisconnected:
+			{
+				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
+				if (argumentList.size() < 1)
+				{
+					return false;
+				}
+
+				const RuntimeMethodArgument* arg0 = (const RuntimeMethodArgument*)argumentList.begin() + (0 * sizeof uint64_t);
+				instance->InvokeOnFixedJointDisconnected(arg0->ForceAndTorque);
+				break;
+			}
+			case ManagedMethod::OnEnabled:  instance->InvokeOnEnabled();  break;
+			case ManagedMethod::OnDisabled: instance->InvokeOnDisabled(); break;
+			case ManagedMethod::OnGui:      instance->InvokeOnGui();      break;
+		}
+
+		return true;
 	}
 
 	SharedReference<ScriptClass> ScriptEngine::GetCoreEntityClass()
@@ -607,7 +470,9 @@ namespace Vortex {
 	SharedReference<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
 	{
 		if (EntityInstanceExists(uuid))
+		{
 			return s_Data->EntityInstances[uuid];
+		}
 
 		return nullptr;
 	}
@@ -615,7 +480,9 @@ namespace Vortex {
 	SharedReference<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
 	{
 		if (EntityClassExists(name))
+		{
 			return s_Data->EntityClasses[name];
+		}
 
 		return nullptr;
 	}
@@ -671,24 +538,37 @@ namespace Vortex {
 		return s_Data->AppAssemblyImage;
 	}
 
-	void ScriptEngine::DuplicateScriptInstance(Entity src, Entity dst)
+	void ScriptEngine::RuntimeInstantiateEntity(Entity entity)
 	{
+		if (!entity)
+		{
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate invalid Entity!");
+			return;
+		}
+
 		Scene* contextScene = GetContextScene();
 		VX_CORE_ASSERT(contextScene, "Invalid scene");
 
 		if (!contextScene->IsRunning())
 			return;
 
-		if (!src.HasComponent<ScriptComponent>() || !dst.HasComponent<ScriptComponent>())
+		if (!entity.HasComponent<ScriptComponent>())
+		{
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate Entity '{}' without script component!", entity.GetName());
 			return;
+		}
 
-		ScriptEngine::CreateEntityScriptInstanceRuntime(dst);
-		VX_CORE_ASSERT(s_Data->EntityInstances.contains(dst.GetUUID()), "Duplicate not instantiated properly!");
-		ScriptEngine::OnAwakeEntity(dst);
-		ScriptEngine::OnCreateEntity(dst);
+		// Create the script instance
+		ScriptEngine::CreateEntityScriptInstanceRuntime(entity);
+		VX_CORE_ASSERT(s_Data->EntityInstances.contains(entity.GetUUID()), "Entity script instance not instantiated properly!");
+
+		// Call Entity.OnAwake
+		ScriptEngine::CallMethod(ManagedMethod::OnAwake, entity);
+		// Call Entity.OnCreate
+		ScriptEngine::CallMethod(ManagedMethod::OnCreate, entity);
 	}
 
-	void ScriptEngine::LoadAssemblyClasses(bool displayClassNames)
+	void ScriptEngine::LoadAssemblyClasses(bool displayClasses)
 	{
 		s_Data->EntityClasses.clear();
 
@@ -703,18 +583,19 @@ namespace Vortex {
 
 			const char* nameSpace = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
 			const char* className = mono_metadata_string_heap(s_Data->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
-			std::string fullName;
+			
+			std::string fullName = className;
 			if (strlen(nameSpace) != 0)
+			{
 				fullName = fmt::format("{}.{}", nameSpace, className);
-			else
-				fullName = className;
+			}
 
 			MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, className);
 
 			if (!monoClass || monoClass == entityClass)
 				continue;
 
-			bool isEntityClass = mono_class_is_subclass_of(monoClass, entityClass, false);
+			const bool isEntityClass = mono_class_is_subclass_of(monoClass, entityClass, false);
 
 			if (!isEntityClass)
 				continue;
@@ -722,10 +603,12 @@ namespace Vortex {
 			SharedReference<ScriptClass> scriptClass = SharedReference<ScriptClass>::Create(nameSpace, className);
 			s_Data->EntityClasses[fullName] = scriptClass;
 
-			int fieldCount = mono_class_num_fields(monoClass);
+			const int fieldCount = mono_class_num_fields(monoClass);
 
-			if (displayClassNames)
+			if (displayClasses)
+			{
 				VX_CONSOLE_LOG_INFO("{} has {} fields: ", className, fieldCount);
+			}
 
 			void* iterator = nullptr;
 
@@ -739,19 +622,16 @@ namespace Vortex {
 					MonoType* type = mono_field_get_type(classField);
 					ScriptFieldType fieldType = ScriptUtils::MonoTypeToScriptFieldType(type);
 
-					if (displayClassNames)
+					if (displayClasses)
+					{
 						VX_CONSOLE_LOG_INFO("  {} ({})", fieldName, ScriptUtils::ScriptFieldTypeToString(fieldType));
+					}
 
 					ScriptField scriptField = { fieldType, fieldName, classField };
 					scriptClass->SetField(fieldName, scriptField);
 				}
 			}
 		}
-	}
-
-	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
-	{
-		return ScriptUtils::InstantiateClass(monoClass);
 	}
 
 }

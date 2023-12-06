@@ -1,8 +1,12 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
+#include <string>
+
 namespace Vortex {
 
-	enum class ManagedMethod
+	enum class VORTEX_API ManagedMethod
 	{
 		OnAwake,
 		OnCreate,
@@ -14,10 +18,16 @@ namespace Vortex {
 		OnTriggerEnter,
 		OnTriggerExit,
 		OnFixedJointDisconnected,
-		OnRaycastCollision,
 		OnEnabled,
 		OnDisabled,
 		OnGui,
 	};
+
+	namespace Utils {
+
+		ManagedMethod ManagedMethodFromString(const std::string& str);
+		std::string StringFromManagedMethod(ManagedMethod method);
+
+	}
 
 }

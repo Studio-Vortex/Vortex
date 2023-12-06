@@ -21,6 +21,7 @@
 #include <atomic>
 #include <future>
 
+#include <initializer_list>
 #include <unordered_map>
 #include <unordered_set>
 #include <string>

@@ -23,7 +23,6 @@ namespace Vortex {
 		m_ManagedMethods[ManagedMethod::OnTriggerEnter] = m_ScriptClass->GetMethod("OnTriggerEnter", 1);
 		m_ManagedMethods[ManagedMethod::OnTriggerExit] = m_ScriptClass->GetMethod("OnTriggerExit", 1);
 		m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected] = m_ScriptClass->GetMethod("OnFixedJointDisconnected", 2);
-		m_ManagedMethods[ManagedMethod::OnRaycastCollision] = m_ScriptClass->GetMethod("OnRaycastCollision", 0);
 		m_ManagedMethods[ManagedMethod::OnEnabled] = m_ScriptClass->GetMethod("OnEnabled", 0);
 		m_ManagedMethods[ManagedMethod::OnDisabled] = m_ScriptClass->GetMethod("OnDisabled", 0);
 		m_ManagedMethods[ManagedMethod::OnGui] = m_ScriptClass->GetMethod("OnGui", 0);
@@ -48,14 +47,15 @@ namespace Vortex {
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCreate]);
 	}
 
-	void ScriptInstance::InvokeOnUpdate(float delta)
+	void ScriptInstance::InvokeOnUpdate(TimeStep delta)
 	{
 		MonoMethod* onUpdateMethod = nullptr;
 		void* param = nullptr;
 
 		if (MethodExists(ManagedMethod::OnUpdateDelta))
 		{
-			param = &delta;
+			float dt = delta.GetDeltaTime();
+			param = &dt;
 			onUpdateMethod = m_ManagedMethods[ManagedMethod::OnUpdateDelta];
 		}
 		else if (MethodExists(ManagedMethod::OnUpdate))
@@ -63,6 +63,7 @@ namespace Vortex {
 			onUpdateMethod = m_ManagedMethods[ManagedMethod::OnUpdate];
 		}
 
+		// No OnUpdate method was found so just leave
 		if (onUpdateMethod == nullptr)
 		{
 			return;
@@ -79,39 +80,39 @@ namespace Vortex {
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnDestroy]);
 	}
 
-	void ScriptInstance::InvokeOnCollisionEnter(Collision& collision)
+	void ScriptInstance::InvokeOnCollisionEnter(const Collision& collision)
 	{
 		if (!MethodExists(ManagedMethod::OnCollisionEnter))
 			return;
 
-		void* param = &collision;
+		void* param = (void*)&collision;
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCollisionEnter], &param);
 	}
 
-	void ScriptInstance::InvokeOnCollisionExit(Collision& collision)
+	void ScriptInstance::InvokeOnCollisionExit(const Collision& collision)
 	{
 		if (!MethodExists(ManagedMethod::OnCollisionExit))
 			return;
 
-		void* param = &collision;
+		void* param = (void*)&collision;
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCollisionExit], &param);
 	}
 
-	void ScriptInstance::InvokeOnTriggerEnter(Collision& collision)
+	void ScriptInstance::InvokeOnTriggerEnter(const Collision& collision)
 	{
 		if (!MethodExists(ManagedMethod::OnTriggerEnter))
 			return;
 
-		void* param = &collision;
+		void* param = (void*)&collision;
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnTriggerEnter], &param);
 	}
 
-	void ScriptInstance::InvokeOnTriggerExit(Collision& collision)
+	void ScriptInstance::InvokeOnTriggerExit(const Collision& collision)
 	{
 		if (!MethodExists(ManagedMethod::OnTriggerExit))
 			return;
 
-		void* param = &collision;
+		void* param = (void*)&collision;
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnTriggerExit], &param);
 	}
 
@@ -122,14 +123,6 @@ namespace Vortex {
 
 		void* params[] = { (void*)&forceAndTorque.first, (void*)&forceAndTorque.second };
 		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected], params);
-	}
-
-	void ScriptInstance::InvokeOnRaycastCollision()
-	{
-		if (!MethodExists(ManagedMethod::OnRaycastCollision))
-			return;
-
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnRaycastCollision]);
 	}
 
 	void ScriptInstance::InvokeOnEnabled()

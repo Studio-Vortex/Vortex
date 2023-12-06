@@ -39,7 +39,6 @@ namespace Vortex {
 		protected virtual void OnTriggerEnter(Collision other) { }
 		protected virtual void OnTriggerExit(Collision other) { }
 		protected virtual void OnFixedJointDisconnected(Vector3 linearForce, Vector3 angularForce) { }
-		protected virtual void OnRaycastCollision() { }
 		protected virtual void OnEnabled() { }
 		protected virtual void OnDisabled() { }
 		protected virtual void OnGui() { }

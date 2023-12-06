@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include <cstdint>
 
 namespace Vortex {
 
-	struct MonoAssemblyTypeInfo
+	struct VORTEX_API MonoAssemblyTypeInfo
 	{
 		const char* Namespace = "";
 		const char* Name = "";

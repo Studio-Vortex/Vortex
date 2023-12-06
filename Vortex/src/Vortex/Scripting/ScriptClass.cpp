@@ -17,7 +17,7 @@ namespace Vortex {
 
 	MonoObject* ScriptClass::Instantiate()
 	{
-		return ScriptEngine::InstantiateClass(m_MonoClass);
+		return ScriptUtils::InstantiateClass(m_MonoClass);
 	}
 
 	MonoMethod* ScriptClass::GetMethod(const std::string& name, int parameterCount)

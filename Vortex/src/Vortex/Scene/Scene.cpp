@@ -28,6 +28,7 @@
 #include "Vortex/System/SystemManager.h"
 
 #include "Vortex/Scripting/ScriptEngine.h"
+#include "Vortex/Scripting/RuntimeMethodArgument.h"
 
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Physics/2D/Physics2D.h"
@@ -246,14 +247,14 @@ namespace Vortex {
 
 		if (m_IsRunning)
 		{
-			// Destroy script instance
+			// Call Entity.OnDestroy
 			if (entity.HasComponent<ScriptComponent>() && ScriptEngine::GetContextScene() != nullptr)
 			{
 				const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
 
 				if (ScriptEngine::EntityClassExists(scriptComponent.ClassName))
 				{
-					ScriptEngine::OnDestroyEntity(entity);
+					ScriptEngine::CallMethod(ManagedMethod::OnDestroy, entity);
 				}
 			}
 
@@ -375,22 +376,25 @@ namespace Vortex {
 
 			auto view = GetAllEntitiesWith<ScriptComponent>();
 
+			// Create all script instances
 			for (const auto e : view)
 			{
 				Entity entity{ e, this };
 				ScriptEngine::CreateEntityScriptInstanceRuntime(entity);
 			}
 
+			// Call Entity.OnAwake
 			for (const auto e : view)
 			{
 				Entity entity{ e, this };
-				ScriptEngine::OnAwakeEntity(entity);
+				ScriptEngine::CallMethod(ManagedMethod::OnAwake, entity);
 			}
 
+			// Call Entity.OnCreate
 			for (const auto e : view)
 			{
 				Entity entity{ e, this };
-				ScriptEngine::OnCreateEntity(entity);
+				ScriptEngine::CallMethod(ManagedMethod::OnCreate, entity);
 			}
 		}
 
@@ -411,11 +415,11 @@ namespace Vortex {
 
 		m_IsRunning = false;
 
-		// C# Entity Lifecycle
+		// Call Entity.OnDestroy
 		GetAllEntitiesWith<ScriptComponent>().each([=](auto entityID, auto& scriptComponent)
 		{
 			Entity entity{ entityID, this };
-			ScriptEngine::OnDestroyEntity(entity);
+			ScriptEngine::CallMethod(ManagedMethod::OnDestroy, entity);
 		});
 		ScriptEngine::OnRuntimeStop();
 
@@ -475,7 +479,7 @@ namespace Vortex {
 				nsc.Instance->OnUpdate(delta);
 			});
 
-			// Update C# Entity
+			// Call Entity.OnUpdate
 			auto view = GetAllEntitiesWith<ScriptComponent>();
 			for (const auto e : view)
 			{
@@ -484,7 +488,8 @@ namespace Vortex {
 				if (!entity.IsActive())
 					continue;
 
-				ScriptEngine::OnUpdateEntity(entity, delta);
+				RuntimeMethodArgument arg0(delta);
+				ScriptEngine::CallMethod(ManagedMethod::OnUpdate, entity, { &arg0 });
 			}
 
 			// Update Physics Bodies
@@ -633,10 +638,11 @@ namespace Vortex {
 
 		auto view = GetAllEntitiesWith<ScriptComponent>();
 
+		// Call Entity.OnGui
 		for (const auto e : view)
 		{
 			Entity entity{ e, this };
-			ScriptEngine::OnGuiEntity(entity);
+			ScriptEngine::CallMethod(ManagedMethod::OnGui, entity);
 		}
 	}
 
@@ -887,9 +893,10 @@ namespace Vortex {
 			ParentEntity(duplicate, parent);
 		}
 
-		if (m_IsRunning)
+		if (m_IsRunning && entity.HasComponent<ScriptComponent>())
 		{
-			ScriptEngine::DuplicateScriptInstance(entity, duplicate);
+			// Create a new Script Instance for the duplicate
+			ScriptEngine::RuntimeInstantiateEntity(duplicate);
 		}
 
 		return duplicate;

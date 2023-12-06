@@ -24,6 +24,7 @@
 
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Scripting/ScriptUtils.h"
+#include "Vortex/Scripting/ScriptClass.h"
 
 #include "Vortex/Editor/EditorResources.h"
 

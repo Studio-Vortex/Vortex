@@ -243,44 +243,28 @@ namespace Vortex {
 	bool Physics::Raycast(const Math::vec3& origin, const Math::vec3& direction, float maxDistance, RaycastHit* outHitInfo)
 	{
 		physx::PxRaycastBuffer hitInfo;
-		bool result = s_Data->PhysicsScene->raycast(ToPhysXVector(origin), ToPhysXVector(Math::Normalize(direction)), maxDistance, hitInfo);
+		const bool result = s_Data->PhysicsScene->raycast(ToPhysXVector(origin), ToPhysXVector(Math::Normalize(direction)), maxDistance, hitInfo);
 
-		if (result)
+		if (!result)
+			return false;
+		
+		void* userData = hitInfo.block.actor->userData;
+
+		if (userData == nullptr)
 		{
-			void* userData = hitInfo.block.actor->userData;
-
-			if (!userData)
-			{
-				*outHitInfo = RaycastHit();
-				return false;
-			}
-
-			PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)userData;
-			UUID entityUUID = physicsBodyData->EntityUUID;
-
-			// Call Hit Entity's OnRaycastCollision Method
-			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity hitEntity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(hitEntity, "Entity UUID was Invalid!");
-
-			if (hitEntity.HasComponent<ScriptComponent>())
-			{
-				const ScriptComponent& scriptComponent = hitEntity.GetComponent<ScriptComponent>();
-
-				if (ScriptEngine::EntityClassExists(scriptComponent.ClassName))
-				{
-					ScriptEngine::OnRaycastCollisionEntity(hitEntity);
-				}
-			}
-
-			outHitInfo->EntityID = entityUUID;
-			outHitInfo->Position = FromPhysXVector(hitInfo.block.position);
-			outHitInfo->Normal = FromPhysXVector(hitInfo.block.normal);
-			outHitInfo->Distance = hitInfo.block.distance;
+			*outHitInfo = RaycastHit();
+			return false;
 		}
 
-		return result;
+		PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)userData;
+		UUID entityUUID = physicsBodyData->EntityUUID;
+
+		outHitInfo->EntityID = entityUUID;
+		outHitInfo->Position = FromPhysXVector(hitInfo.block.position);
+		outHitInfo->Normal = FromPhysXVector(hitInfo.block.normal);
+		outHitInfo->Distance = hitInfo.block.distance;
+
+		return true;
 	}
 
 	bool Physics::IsConstraintBroken(UUID entityUUID)
