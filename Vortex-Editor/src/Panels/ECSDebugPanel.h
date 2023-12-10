@@ -27,7 +27,7 @@ namespace Vortex {
 
 			const ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
 			const ImVec2 tableSize = { contentRegionAvail.x, 300.0f };
-			UI::Table("Component Signature", columns, VX_ARRAYCOUNT(columns), tableSize, [&]()
+			UI::Table("Component Signature", columns, VX_ARRAYSIZE(columns), tableSize, [&]()
 			{
 				([&]()
 				{

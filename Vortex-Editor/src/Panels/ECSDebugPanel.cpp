@@ -57,7 +57,7 @@ namespace Vortex {
 
 		const ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
 		const ImVec2 tableSize = { contentRegionAvail.x, 125.0f };
-		UI::Table("Entity", columns, VX_ARRAYCOUNT(columns), tableSize, [&]()
+		UI::Table("Entity", columns, VX_ARRAYSIZE(columns), tableSize, [&]()
 		{
 			Gui::TableNextColumn();
 			Gui::Text("Entity");
@@ -142,7 +142,7 @@ namespace Vortex {
 
 		const ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
 		const ImVec2 tableSize = { contentRegionAvail.x, contentRegionAvail.y / 2.0f };
-		UI::Table("Entity List", columns, VX_ARRAYCOUNT(columns), tableSize, [&]()
+		UI::Table("Entity List", columns, VX_ARRAYSIZE(columns), tableSize, [&]()
 		{
 			m_ContextScene->m_Registry.each([&](auto& entityID)
 			{

@@ -1,21 +1,5 @@
 #include "EditorLayer.h"
 
-#include <Vortex/Serialization/SceneSerializer.h>
-#include <Vortex/Project/ProjectLoader.h>
-
-#include <Vortex/Scripting/ScriptEngine.h>
-#include <Vortex/Scripting/ScriptRegistry.h>
-
-#include <Vortex/Editor/EditorCamera.h>
-#include <Vortex/Editor/EditorResources.h>
-#include <Vortex/Editor/SelectionManager.h>
-
-#include <Vortex/Gui/Colors.h>
-
-#include <ImGuizmo.h>
-
-#include <Vortex/Editor/ConsolePanel.h>
-
 #include "Panels/PhysicsMaterialEditorPanel.h"
 #include "Panels/PhysicsStatisticsPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
@@ -35,7 +19,25 @@
 #include "Panels/ECSDebugPanel.h"
 #include "Panels/AboutPanel.h"
 
+#include <Vortex/Serialization/SceneSerializer.h>
+#include <Vortex/Project/ProjectLoader.h>
+
+#include <Vortex/Scripting/ScriptEngine.h>
+#include <Vortex/Scripting/ScriptRegistry.h>
+
+#include <Vortex/Editor/EditorCamera.h>
+#include <Vortex/Editor/EditorResources.h>
+#include <Vortex/Editor/SelectionManager.h>
+
+#include <Vortex/Editor/ConsolePanel.h>
+
+#include <Vortex/Gui/Colors.h>
+
+#include <ImGuizmo.h>
+
 namespace Vortex {
+
+#define VX_EDITOR_MAX_CAMERAS 2
 
 	EditorLayer::EditorLayer()
 		: Layer("EditorLayer") { }
@@ -44,7 +46,10 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		const auto& appProps = Application::Get().GetProperties();
+		const Application& app = Application::Get();
+		const ApplicationProperties& applicationProperties = app.GetProperties();
+
+		m_RuntimeAppFilepath = app.GetRuntimeBinaryPath();
 
 		FramebufferProperties framebufferProps;
 
@@ -57,8 +62,7 @@ namespace Vortex {
 
 		framebufferProps.Width = 1600;
 		framebufferProps.Height = 900;
-		framebufferProps.Samples = appProps.SampleCount;
-
+		framebufferProps.Samples = applicationProperties.SampleCount;
 		m_Framebuffer = Framebuffer::Create(framebufferProps);
 		m_SecondViewportFramebuffer = Framebuffer::Create(framebufferProps);
 
@@ -67,8 +71,8 @@ namespace Vortex {
 		m_EditorScene = nullptr;
 		m_ActiveScene = m_EditorScene;
 
-		m_ViewportPanelSize = { appProps.WindowWidth, appProps.WindowHeight };
-		m_SecondViewportPanelSize = { appProps.WindowWidth, appProps.WindowHeight };
+		m_ViewportPanelSize = { applicationProperties.WindowWidth, applicationProperties.WindowHeight };
+		m_SecondViewportPanelSize = { applicationProperties.WindowWidth, applicationProperties.WindowHeight };
 
 		m_PanelManager = PanelManager::Create();
 
@@ -93,11 +97,13 @@ namespace Vortex {
 		m_PanelManager->AddPanel<ConsolePanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<AboutPanel>();
 
-		auto commandLineArgs = appProps.CommandLineArgs;
-		if (commandLineArgs.Count > 1)
+		const ApplicationCommandLineArgs& arguments = applicationProperties.CommandLineArgs;
+		if (arguments.Count > 1)
 		{
-			auto projectFilepath = commandLineArgs[1];
-			OpenProject(Fs::Path(projectFilepath));
+			const char* arg1 = arguments[1];
+			const Fs::Path projectFilepath = Fs::Path(arg1);
+			const bool success = OpenProject(projectFilepath);
+			VX_CORE_ASSERT(success, "Failed to open project!");
 		}
 		else
 		{
@@ -110,28 +116,27 @@ namespace Vortex {
 			}
 		}
 
-		SharedReference<Project> activeProject = Project::GetActive();
-		const ProjectProperties& projectProps = activeProject->GetProperties();
+		VX_CORE_ASSERT(Project::GetActive(), "Failed to open project!");
+		VX_CORE_ASSERT(m_ActiveScene, "Failed to open a scene!");
 
-		m_EditorCamera = new EditorCamera(
-			projectProps.EditorProps.EditorCameraFOV,
-			m_ViewportPanelSize.x,
-			m_ViewportPanelSize.y,
-			0.1f,
-			1000.0f
-		);
+		SharedReference<Project> project = Project::GetActive();
+		const ProjectProperties& projectProperties = project->GetProperties();
 
-		m_SecondEditorCamera = new EditorCamera(
-			projectProps.EditorProps.EditorCameraFOV,
-			m_SecondViewportPanelSize.x,
-			m_SecondViewportPanelSize.y,
-			0.1f,
-			1000.0f
-		);
+		EditorCameraProperties editorCameraProperties;
+		editorCameraProperties.ViewportSize = m_ViewportPanelSize;
+		editorCameraProperties.FOV = projectProperties.EditorProps.EditorCameraFOV;
+		editorCameraProperties.NearPlane = 0.1f;
+		editorCameraProperties.FarPlane = 1000.0f;
+
+		m_EditorCamera = CreateEditorCamera(editorCameraProperties);
+
+		editorCameraProperties.ViewportSize = m_SecondViewportPanelSize;
+
+		m_SecondEditorCamera = CreateEditorCamera(editorCameraProperties);
 
 		m_PanelManager->OnEditorAttach();
 		m_PanelManager->SetSceneContext(m_ActiveScene);
-		m_PanelManager->SetProjectContext(activeProject);
+		m_PanelManager->SetProjectContext(project);
 	}
 
 	void EditorLayer::OnDetach()
@@ -158,7 +163,7 @@ namespace Vortex {
 		// Shadow pass
 		if (Entity skyLightEntity = m_ActiveScene->GetSkyLightEntity())
 		{
-			const auto& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
 			if (lsc.CastShadows)
 			{
 				InstrumentationTimer timer("Shadow Pass");
@@ -187,7 +192,7 @@ namespace Vortex {
 			m_AllowViewportCameraEvents = false;
 		}
 
-		if (m_ShowSecondViewport)
+		if (m_SecondViewportPanelOpen)
 		{
 			m_SecondEditorCamera->SetActive(m_AllowSecondViewportCameraEvents);
 			m_SecondEditorCamera->OnUpdate(delta);
@@ -231,15 +236,15 @@ namespace Vortex {
 
 			mx -= m_ViewportBounds.MinBound.x;
 			my -= m_ViewportBounds.MinBound.y;
-			Math::vec2 viewportSize = m_ViewportBounds.MaxBound - m_ViewportBounds.MinBound;
+			const Math::vec2 viewportSize = m_ViewportBounds.CalculateViewportSize();
 			my = viewportSize.y - my;
 
-			int mouseX = (int)mx;
-			int mouseY = (int)my;
+			const int mouseX = (int)mx;
+			const int mouseY = (int)my;
 
 			if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 			{
-				int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
+				const int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 				m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.Raw() };
 				ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 			}
@@ -256,22 +261,24 @@ namespace Vortex {
 			if (m_SceneState == SceneState::Play)
 			{
 				if (Entity primaryCamera = m_ActiveScene->GetPrimaryCameraEntity())
+				{
 					cameraPos = primaryCamera.GetTransform().Translation;
+				}
 			}
 
 			PostProcessProperties postProcessProps{};
 			postProcessProps.TargetFramebuffer = m_Framebuffer;
 
 			postProcessProps.CameraPosition = cameraPos;
-			postProcessProps.ViewportSize = Viewport{ 0, 0, (uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y };
+			postProcessProps.ViewportInfo = Viewport{ 0, 0, (uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y };
 			PostProcessStage stages[] = { PostProcessStage::Bloom };
 			postProcessProps.Stages = stages;
-			postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
+			postProcessProps.StageCount = VX_ARRAYSIZE(stages);
 			Renderer::BeginPostProcessingStages(postProcessProps);
 			renderTime.BloomPassRenderTime += timer.ElapsedMS();
 		}
 
-		if (m_ShowSecondViewport)
+		if (m_SecondViewportPanelOpen)
 		{
 			// Second Viewport
 			m_SecondViewportFramebuffer->Bind();
@@ -295,15 +302,15 @@ namespace Vortex {
 
 				mx -= m_SecondViewportBounds.MinBound.x;
 				my -= m_SecondViewportBounds.MinBound.y;
-				Math::vec2 viewportSize = m_SecondViewportBounds.MaxBound - m_SecondViewportBounds.MinBound;
+				const Math::vec2 viewportSize = m_SecondViewportBounds.CalculateViewportSize();
 				my = viewportSize.y - my;
 
-				int mouseX = (int)mx;
-				int mouseY = (int)my;
+				const int mouseX = (int)mx;
+				const int mouseY = (int)my;
 
 				if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 				{
-					int pixelData = m_SecondViewportFramebuffer->ReadPixel(1, mouseX, mouseY);
+					const int pixelData = m_SecondViewportFramebuffer->ReadPixel(1, mouseX, mouseY);
 					m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.Raw() };
 					ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 				}
@@ -422,7 +429,7 @@ namespace Vortex {
 			ImGuiWindow* hoveredWindow = GImGui->HoveredWindow;
 			if (hoveredWindow)
 			{
-				std::string name = hoveredWindow->Name;
+				const std::string name = hoveredWindow->Name;
 				if (name == "Scene" || name == "Second Viewport")
 				{
 					Gui::FocusWindow(hoveredWindow);
@@ -464,12 +471,12 @@ namespace Vortex {
 		// Update C# Entity.OnGui()
 		m_ActiveScene->OnUpdateEntityGui();
 
-		if (m_ShowScenePanel)
+		if (m_SceneViewportPanelOpen)
 		{
 			OnScenePanelRender();
 		}
 
-		if (m_ShowSecondViewport)
+		if (m_SecondViewportPanelOpen)
 		{
 			OnSecondViewportPanelRender();
 		}
@@ -609,7 +616,7 @@ namespace Vortex {
 					{
 						if (Gui::MenuItem("Rename Entity", "F2"))
 						{
-							m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(true);
+							m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnEntityName(true);
 							Gui::CloseCurrentPopup();
 						}
 						UI::Draw::Underline();
@@ -819,13 +826,13 @@ namespace Vortex {
 				UI::Draw::Underline();
 				m_PanelManager->MenuBarItem<PhysicsMaterialEditorPanel>();
 				UI::Draw::Underline();
-				Gui::MenuItem("Scene", nullptr, &m_ShowScenePanel);
+				Gui::MenuItem("Scene", nullptr, &m_SceneViewportPanelOpen);
 				UI::Draw::Underline();
 				m_PanelManager->MenuBarItem<SceneHierarchyPanel>();
 				UI::Draw::Underline();
 				m_PanelManager->MenuBarItem<SceneRendererPanel>();
 				UI::Draw::Underline();
-				Gui::MenuItem("Second Viewport", nullptr, &m_ShowSecondViewport);
+				Gui::MenuItem("Second Viewport", nullptr, &m_SecondViewportPanelOpen);
 				UI::Draw::Underline();
 				m_PanelManager->MenuBarItem<ShaderEditorPanel>();
 				UI::Draw::Underline();
@@ -872,14 +879,14 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
-		Gui::Begin("Scene", &m_ShowScenePanel, ImGuiWindowFlags_NoCollapse);
+		Gui::Begin("Scene", &m_SceneViewportPanelOpen, ImGuiWindowFlags_NoCollapse);
 
 		const auto viewportMinRegion = Gui::GetWindowContentRegionMin();
 		const auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
 		const auto viewportOffset = Gui::GetWindowPos();
 
 		m_ViewportBounds.MinBound = Math::vec2(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y);
-		m_ViewportBounds.MaxBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
+		m_ViewportBounds.MinBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
 
 		m_ActiveScene->SetViewportBounds(m_ViewportBounds);
 
@@ -908,7 +915,7 @@ namespace Vortex {
 			UIViewportSettingsToolbar();
 		}
 
-		if (m_SceneViewportHovered || !m_ShowSecondViewport)
+		if (m_SceneViewportHovered || !m_SecondViewportPanelOpen)
 		{
 			OnGizmosRender(m_EditorCamera, m_ViewportBounds, false);
 		}
@@ -1260,7 +1267,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
-		Gui::Begin("Second Viewport", &m_ShowSecondViewport, ImGuiWindowFlags_NoCollapse);
+		Gui::Begin("Second Viewport", &m_SecondViewportPanelOpen, ImGuiWindowFlags_NoCollapse);
 
 		const auto viewportMinRegion = Gui::GetWindowContentRegionMin();
 		const auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
@@ -1305,7 +1312,7 @@ namespace Vortex {
 			m_EditorCamera->SetViewportSize((uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y);
 		}
 
-		if (m_ShowSecondViewport)
+		if (m_SecondViewportPanelOpen)
 		{
 			if (FramebufferProperties props = m_SecondViewportFramebuffer->GetProperties();
 				m_SecondViewportPanelSize.x > 0.0f && m_SecondViewportPanelSize.y > 0.0f && // zero sized framebuffer is invalid
@@ -1321,11 +1328,11 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-		UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
-		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		const UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		const UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		const UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
+		const UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		const UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
 		const ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
 		const ImVec4 bgColor = { 0.7f, 0.7f, 0.7f, 1.0f };
@@ -1353,19 +1360,27 @@ namespace Vortex {
 		Gui::Spring();
 
 		if (UI::ImageButtonEx(EditorResources::SelectToolIcon, textureSize, m_GizmoType == -1 ? bgColor : normalColor, tintColor))
+		{
 			OnNoGizmoSelected();
+		}
 		UI::SetTooltip("Select Tool");
 
 		if (UI::ImageButtonEx(EditorResources::TranslateToolIcon, textureSize, m_GizmoType == 0 ? bgColor : normalColor, tintColor))
+		{
 			OnTranslationToolSelected();
+		}
 		UI::SetTooltip("Translate Tool");
 
 		if (UI::ImageButtonEx(EditorResources::RotateToolIcon, textureSize, m_GizmoType == 1 ? bgColor : normalColor, tintColor))
+		{
 			OnRotationToolSelected();
+		}
 		UI::SetTooltip("Rotate Tool");
 
 		if (UI::ImageButtonEx(EditorResources::ScaleToolIcon, textureSize, m_GizmoType == 2 ? bgColor : normalColor, tintColor))
+		{
 			OnScaleToolSelected();
+		}
 		UI::SetTooltip("Scale Tool");
 
 		Gui::Spring();
@@ -1383,11 +1398,11 @@ namespace Vortex {
 		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
-		UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-		UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
-		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		const UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		const UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		const UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
+		const UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		const UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 
 		const ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
 		const ImVec4 bgColor = { 0.7f, 0.7f, 0.7f, 1.0f };
@@ -1400,7 +1415,7 @@ namespace Vortex {
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
 		const ImVec2 textureSize = { buttonSize, buttonSize };
 
-		float toolbarX = (m_ViewportBounds.MinBound.x + m_ViewportBounds.MaxBound.x) / 2.0f;
+		const float toolbarX = (m_ViewportBounds.MinBound.x + m_ViewportBounds.MaxBound.x) / 2.0f;
 		Gui::SetNextWindowPos(ImVec2(toolbarX - (backgroundWidth / 2.0f), m_ViewportBounds.MinBound.y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
@@ -1426,9 +1441,13 @@ namespace Vortex {
 			if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 			{
 				if (hasSimulateButton)
+				{
 					OnScenePlay();
+				}
 				else
+				{
 					OnSceneStop();
+				}
 
 				Gui::SetWindowFocus("Scene");
 			}
@@ -1442,9 +1461,13 @@ namespace Vortex {
 			if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 			{
 				if (hasPlayButton)
+				{
 					OnSceneSimulate();
+				}
 				else
+				{
 					OnSceneStop();
+				}
 
 				Gui::SetWindowFocus("Scene");
 			}
@@ -1457,12 +1480,16 @@ namespace Vortex {
 			SharedReference<Texture2D> icon = EditorResources::PauseIcon;
 			if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 			{
-				const bool paused = !scenePaused;
+				const bool isPaused = !scenePaused;
 
-				if (paused)
+				if (isPaused)
+				{
 					OnScenePause();
+				}
 				else
+				{
 					OnSceneResume();
+				}
 
 				Gui::SetWindowFocus("Scene");
 			}
@@ -1503,10 +1530,10 @@ namespace Vortex {
 		SharedReference<Project> activeProject = Project::GetActive();
 		ProjectProperties& projectProps = activeProject->GetProperties();
 
-		UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-		UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
-		UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		const UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		const UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		const UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
+		const UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
 		const float buttonSize = 18.0f;
 		const float edgeOffset = 2.0f;
@@ -1514,7 +1541,7 @@ namespace Vortex {
 		const float numberOfButtons = 1.0f;
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
 
-		ImVec2 textureSize = { buttonSize, buttonSize };
+		const ImVec2 textureSize = { buttonSize, buttonSize };
 
 		const ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
 		const ImVec4 bgColor = { 0.7f, 0.7f, 0.7f, 1.0f };
@@ -1539,7 +1566,9 @@ namespace Vortex {
 			UI::ScopedStyle enableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(edgeOffset * 2.0f, 0));
 
 			if (UI::ImageButtonEx(EditorResources::SettingsIcon, textureSize, normalColor, tintColor))
+			{
 				openSettingsPopup = true;
+			}
 			UI::SetTooltip("Viewport Settings");
 		}
 		Gui::Spring();
@@ -1576,27 +1605,39 @@ namespace Vortex {
 					UI::BeginPropertyGrid(columnWidth);
 
 					if (UI::ImageButton("Maximize On Play", EditorResources::MaximizeOnPlayIcon, textureSize, projectProps.EditorProps.MaximizeOnPlay ? bgColor : normalColor, tintColor))
+					{
 						projectProps.EditorProps.MaximizeOnPlay = !projectProps.EditorProps.MaximizeOnPlay;
+					}
 
 					if (UI::ImageButton(projectProps.EditorProps.DrawEditorGrid ? "Hide Grid" : "Show Grid", EditorResources::ShowGridIcon, textureSize, projectProps.EditorProps.DrawEditorGrid ? normalColor : bgColor, tintColor))
+					{
 						projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
+					}
 
 					if (UI::ImageButton(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders", EditorResources::PhysicsCollidersIcon, textureSize, projectProps.PhysicsProps.ShowColliders ? bgColor : normalColor, tintColor))
+					{
 						projectProps.PhysicsProps.ShowColliders = !projectProps.PhysicsProps.ShowColliders;
+					}
 
 					if (UI::ImageButton(projectProps.EditorProps.ShowBoundingBoxes ? "Hide Bounding Boxes" : "Show Bounding Boxes", EditorResources::BoundingBoxesIcon, textureSize, projectProps.EditorProps.ShowBoundingBoxes ? bgColor : normalColor, tintColor))
+					{
 						projectProps.EditorProps.ShowBoundingBoxes = !projectProps.EditorProps.ShowBoundingBoxes;
+					}
 
 					static const char* selectionModes[] = { "Entity", "Submesh" };
 					uint32_t currentSelectionMode = (uint32_t)m_SelectionMode;
-					if (UI::PropertyDropdown("Selection Mode", selectionModes, VX_ARRAYCOUNT(selectionModes), currentSelectionMode))
+					if (UI::PropertyDropdown("Selection Mode", selectionModes, VX_ARRAYSIZE(selectionModes), currentSelectionMode))
+					{
 						m_SelectionMode = (SelectionMode)currentSelectionMode;
+					}
 
 					UI::Property("Selected Entity Outline", m_ShowSelectedEntityOutline);
 					UI::Property("Selected Entity Collider", m_ShowSelectedEntityCollider);
 
 					if (UI::ImageButton(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio", EditorResources::MuteAudioSourcesIcons, textureSize, projectProps.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
+					{
 						projectProps.EditorProps.MuteAudioSources = !projectProps.EditorProps.MuteAudioSources;
+					}
 
 					UI::EndPropertyGrid();
 				}
@@ -1611,10 +1652,14 @@ namespace Vortex {
 					UI::Property("Gimzo Size", projectProps.GizmoProps.GizmoSize, 0.05f, 0.05f);
 
 					if (UI::ImageButton("Local Mode", EditorResources::LocalModeIcon, textureSize, m_TranslationMode == 0 ? bgColor : normalColor, tintColor))
+					{
 						m_TranslationMode = (uint32_t)ImGuizmo::MODE::LOCAL;
+					}
 
 					if (UI::ImageButton("World Mode", EditorResources::WorldModeIcon, textureSize, m_TranslationMode == 1 ? bgColor : normalColor, tintColor))
-						m_TranslationMode = static_cast<uint32_t>(ImGuizmo::MODE::WORLD);
+					{
+						m_TranslationMode = (uint32_t)ImGuizmo::MODE::WORLD;
+					}
 
 					if (UI::ImageButton(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos", EditorResources::DisplaySceneIconsIcon, textureSize, projectProps.RendererProps.DisplaySceneIconsInEditor ? normalColor : bgColor, tintColor))
 						projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
@@ -1664,12 +1709,12 @@ namespace Vortex {
 		UI::PopID();
 	}
 
-	void EditorLayer::OnLaunchRuntime(const Fs::Path& filepath)
+	void EditorLayer::LaunchRuntimeApp()
 	{
-		SaveProject();
+		const std::string projectPath = Project::GetProjectFilepath().string();
+		const std::string runtimeAppPath = m_RuntimeAppFilepath.string();
 
-		std::string runtimeApplicationPath = Application::Get().GetRuntimeBinaryPath();
-		Platform::LaunchProcess(runtimeApplicationPath.c_str(), filepath.string().c_str());
+		Platform::LaunchProcess(runtimeAppPath.c_str(), projectPath.c_str());
 	}
 
 	void EditorLayer::OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode)
@@ -1681,13 +1726,11 @@ namespace Vortex {
 
 		if (m_SceneState == SceneState::Play && !renderInPlayMode)
 		{
-			Entity cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-
-			if (cameraEntity)
+			if (Entity primaryCameraEntity = m_ActiveScene->GetPrimaryCameraEntity())
 			{
-				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(cameraEntity);
-				SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-				Math::mat4 view = Math::Inverse(transform);
+				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(primaryCameraEntity);
+				const SceneCamera& camera = primaryCameraEntity.GetComponent<CameraComponent>().Camera;
+				const Math::mat4 view = Math::Inverse(transform);
 				Renderer2D::BeginScene(camera, view);
 			}
 		}
@@ -1702,10 +1745,10 @@ namespace Vortex {
 			OverlayRenderGrid(projectProps.EditorProps.DrawEditorAxes);
 		}
 
-		const auto colliderColor = projectProps.PhysicsProps.Physics3DColliderColor;
-		const auto spriteColliderColor = projectProps.PhysicsProps.Physics2DColliderColor;
-		const auto boundingBoxColor = ColorToVec4(Color::Orange);
-		const auto outlineColor = ColorToVec4(Color::Orange);
+		const Math::vec4 colliderColor = projectProps.PhysicsProps.Physics3DColliderColor;
+		const Math::vec4 spriteColliderColor = projectProps.PhysicsProps.Physics2DColliderColor;
+		const Math::vec4 boundingBoxColor = ColorToVec4(Color::Orange);
+		const Math::vec4 outlineColor = ColorToVec4(Color::Orange);
 
 		// Render Physics Colliders
 		if (projectProps.PhysicsProps.ShowColliders)
@@ -1743,7 +1786,7 @@ namespace Vortex {
 					entities.emplace_back(e, m_ActiveScene.Raw());
 			}
 
-			for (auto& entity : entities)
+			for (Entity entity : entities)
 			{
 				auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
 				OverlayRenderMeshCollider(entity, transform, colliderColor);
@@ -1772,7 +1815,7 @@ namespace Vortex {
 					entities.emplace_back(e, m_ActiveScene.Raw());
 			}
 
-			for (auto& entity : entities)
+			for (Entity entity : entities)
 			{
 				auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
 				OverlayRenderSpriteCollider(editorCamera, entity, transform, colliderColor);
@@ -1783,7 +1826,7 @@ namespace Vortex {
 		{
 			if (Entity selectedEntity = SelectionManager::GetSelectedEntity(); selectedEntity)
 			{
-				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
+				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
 
 				if (m_ShowSelectedEntityCollider)
 				{
@@ -1796,18 +1839,20 @@ namespace Vortex {
 					Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
 
 					if (selectedEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
+					{
 						OverlayRenderMeshOutline(selectedEntity, scaledTransform, outlineColor);
+					}
 
 					if (selectedEntity.HasAny<SpriteRendererComponent, CircleRendererComponent>())
+					{
 						OverlayRenderSpriteOutline(selectedEntity, scaledTransform, outlineColor);
+					}
 
 					if (selectedEntity.HasComponent<TextMeshComponent>())
 					{
-						const auto& textMesh = selectedEntity.GetComponent<TextMeshComponent>();
+						const TextMeshComponent& textMesh = selectedEntity.GetComponent<TextMeshComponent>();
 
-						const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
-						Math::mat4 transform = worldSpaceTransform.GetTransform();
-
+						// TODO calculate the text size and scale transform
 						Renderer2D::DrawRect(transform, outlineColor);
 					}
 
@@ -1819,15 +1864,18 @@ namespace Vortex {
 						{
 							case SceneCamera::ProjectionType::Perspective:
 							{
-								const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
-								auto corners = GetFrustumCornersWorldSpace(worldSpaceTransform, sceneCamera);
+								const Camera* camera = &sceneCamera;
+								Math::mat4 view = Math::Inverse(transform);
+								std::vector<Math::vec4> corners = GetCameraFrustumCornersWorldSpace(camera, view);
 
-								Renderer::DrawFrustum(corners, ColorToVec4(Color::LightBlue));
+								const Math::vec4 frustumColor = ColorToVec4(Color::LightBlue);
+
+								Renderer::DrawFrustum(corners, frustumColor);
 								break;
 							}
 							case SceneCamera::ProjectionType::Orthographic:
 							{
-								auto scaled = transform * Math::Scale({ sceneCamera.GetOrthographicSize() * 1.6f, sceneCamera.GetOrthographicSize() * 0.9f, 1.0f });
+								const Math::mat4 scaled = transform * Math::Scale({ sceneCamera.GetOrthographicSize() * 1.6f, sceneCamera.GetOrthographicSize() * 0.9f, 1.0f });
 								Renderer2D::DrawRect(scaled, outlineColor);
 								break;
 							}
@@ -1839,21 +1887,21 @@ namespace Vortex {
 						const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
 
 						const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
-						Math::vec3 translation = worldSpaceTransform.Translation;
-						Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
+						const Math::vec3 translation = worldSpaceTransform.Translation;
+						const Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
 
 						switch (lightSourceComponent.Type)
 						{
 							case LightType::Directional:
 							{
-								Math::vec3 midpoint = Math::Midpoint(translation, Math::vec3(0.0f));
+								const Math::vec3 midpoint = Math::Midpoint(translation, Math::vec3(0.0f));
 
-								Math::quaternion rotation = worldSpaceTransform.GetRotation();
+								const Math::quaternion rotation = worldSpaceTransform.GetRotation();
 
-								Math::vec3 left = Math::Rotate(rotation, Math::vec3(-1.0f, 0.0f, 0.0f)) * 0.5f;
-								Math::vec3 right = Math::Rotate(rotation, Math::vec3(1.0f, 0.0f, 0.0f)) * 0.5f;
-								Math::vec3 up = Math::Rotate(rotation, Math::vec3(0.0f, 1.0f, 0.0f)) * 0.5f;
-								Math::vec3 down = Math::Rotate(rotation, Math::vec3(0.0f, -1.0f, 0.0f)) * 0.5f;
+								const Math::vec3 left = Math::Rotate(rotation, Math::vec3(-1.0f, 0.0f, 0.0f)) * 0.5f;
+								const Math::vec3 right = Math::Rotate(rotation, Math::vec3(1.0f, 0.0f, 0.0f)) * 0.5f;
+								const Math::vec3 up = Math::Rotate(rotation, Math::vec3(0.0f, 1.0f, 0.0f)) * 0.5f;
+								const Math::vec3 down = Math::Rotate(rotation, Math::vec3(0.0f, -1.0f, 0.0f)) * 0.5f;
 
 								Renderer2D::DrawLine(translation, midpoint, color);
 								Renderer2D::DrawLine(translation + left, midpoint + left, color);
@@ -1919,7 +1967,7 @@ namespace Vortex {
 
 			static ScriptingLanguage currentScriptingLanguage = ScriptingLanguage::CSharp;
 			const char* scriptingLanguages[] = { "C#", "C++" };
-			UI::PropertyDropdown("Language", scriptingLanguages, VX_ARRAYCOUNT(scriptingLanguages), currentScriptingLanguage);
+			UI::PropertyDropdown("Language", scriptingLanguages, VX_ARRAYSIZE(scriptingLanguages), currentScriptingLanguage);
 
 			UI::EndPropertyGrid();
 
@@ -2623,7 +2671,7 @@ namespace Vortex {
 			{
 				if (selectedEntity)
 				{
-					m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(true);
+					m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnEntityName(true);
 				}
 
 				break;
@@ -2686,7 +2734,7 @@ namespace Vortex {
 		if (Entity selected = GetHoveredMeshEntityFromRaycast())
 		{
 			SelectionManager::SetSelectedEntity(selected);
-			m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(false);
+			m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnEntityName(false);
 		}
 
 		return false;
@@ -2706,15 +2754,14 @@ namespace Vortex {
 
 	bool EditorLayer::OpenExistingProject()
 	{
-		std::string filepath = FileDialogue::OpenFileDialog("Vortex Project (*.vxproject)\0*.vxproject\0");
+		const std::string filepath = FileDialogue::OpenFileDialog("Vortex Project (*.vxproject)\0*.vxproject\0");
 
 		if (filepath.empty())
 		{
 			return false;
 		}
 
-		OpenProject(filepath);
-		return true;
+		return OpenProject(filepath);
 	}
 
 	bool EditorLayer::OpenProject(const Fs::Path& filepath)
@@ -2722,9 +2769,12 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		if (Project::GetActive())
+		{
 			CloseProject();
+		}
 
 		m_HoveredEntity = Entity{};
+		SelectionManager::DeselectEntity();
 
 		const bool success = ProjectLoader::LoadEditorProject(filepath);
 		if (!success)
@@ -2733,11 +2783,11 @@ namespace Vortex {
 			return false;
 		}
 
-		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
-		Fs::Path startScenePath = Project::GetActive()->GetProperties().General.StartScene;
-		const AssetMetadata& sceneMetadata = editorAssetManager->GetMetadata(startScenePath);
+		SharedReference<EditorAssetManager> assetManager = Project::GetEditorAssetManager();
+		const Fs::Path startScenePath = Project::GetActive()->GetProperties().General.StartScene;
+		const AssetMetadata& sceneMetadata = assetManager->GetMetadata(startScenePath);
 
-		Fs::Path relativePath = editorAssetManager->GetFileSystemPath(sceneMetadata);
+		const Fs::Path relativePath = assetManager->GetFileSystemPath(sceneMetadata);
 		OpenScene(relativePath);
 
 		m_PanelManager->AddPanel<ProjectSettingsPanel>(Project::GetActive());
@@ -2750,24 +2800,34 @@ namespace Vortex {
 	{
 		SaveScene();
 
-		if (m_CaptureFramebufferToDiskOnSave)
+		if (m_CaptureSceneViewportFramebufferToDiskOnSave)
 		{
-			CaptureFramebufferImageToDisk();
+			CaptureSceneViewportFramebufferImageToDisk();
 		}
 
-		ProjectLoader::SaveActiveEditorProject();
+		const bool success = ProjectLoader::SaveActiveEditorProject();
+
+		if (!success)
+		{
+			const std::string& projectName = Project::GetActive()->GetName();
+			VX_CONSOLE_LOG_ERROR("Failed to save project '{}'", projectName);
+		}
 	}
 
 	void EditorLayer::CloseProject()
 	{
 		if (m_ActiveScene->IsRunning())
+		{
 			OnSceneStop();
+		}
 
 		ScriptEngine::Shutdown();
 	}
 
 	void EditorLayer::BuildProject()
 	{
+		SaveProject();
+
 		// TODO build asset pack here
 	}
 
@@ -2775,7 +2835,7 @@ namespace Vortex {
 	{
 		BuildProject();
 
-		OnLaunchRuntime(Project::GetProjectFilepath());
+		LaunchRuntimeApp();
 	}
 
 	void EditorLayer::CreateNewScene()
@@ -2785,7 +2845,7 @@ namespace Vortex {
 			return;
 		}
 
-		m_EditorScenePath = ""; // No scene on disk yet
+		m_EditorSceneFilepath = ""; // No scene on disk yet
 
 		m_ActiveScene = Scene::Create(m_Framebuffer);
 
@@ -2803,12 +2863,14 @@ namespace Vortex {
 
 	void EditorLayer::OpenExistingScene()
 	{
-		std::string filepath = FileDialogue::OpenFileDialog("Vortex Scene (*.vortex)\0*.vortex\0");
+		const std::string filepath = FileDialogue::OpenFileDialog("Vortex Scene (*.vortex)\0*.vortex\0");
 
-		if (!filepath.empty())
+		if (filepath.empty())
 		{
-			OpenScene(filepath);
+			return;
 		}
+
+		OpenScene(filepath);
 	}
 
 	void EditorLayer::OpenScene(const Fs::Path& filepath)
@@ -2820,7 +2882,7 @@ namespace Vortex {
 
 		m_HoveredEntity = Entity{}; // Prevent an invalid entity from being used elsewhere in the editor
 
-		std::string sceneFilename = FileSystem::RemoveFileExtension(filepath.filename());
+		const std::string sceneFilename = FileSystem::RemoveFileExtension(filepath.filename());
 
 		if (filepath.extension() != ".vortex")
 		{
@@ -2832,7 +2894,7 @@ namespace Vortex {
 		SceneSerializer serializer(newScene);
 		newScene->OnViewportResize((uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y);
 
-		std::string timerName = std::format("{} Scene Load Time", sceneFilename);
+		const std::string timerName = std::format("{} Scene Load Time", sceneFilename);
 		InstrumentationTimer timer(timerName.c_str());
 
 		if (serializer.Deserialize(filepath.string()))
@@ -2843,7 +2905,7 @@ namespace Vortex {
 			ResetEditorCameras();
 
 			m_ActiveScene = m_EditorScene;
-			m_EditorScenePath = filepath;
+			m_EditorSceneFilepath = filepath;
 
 			SetWindowTitle(sceneFilename);
 
@@ -2871,11 +2933,11 @@ namespace Vortex {
 		{
 			ReplaceSceneFileExtensionIfNeeded(filepath);
 
-			m_EditorScenePath = filepath;
+			m_EditorSceneFilepath = filepath;
 
-			SerializeScene(m_ActiveScene, m_EditorScenePath);
+			SerializeScene(m_ActiveScene, m_EditorSceneFilepath);
 
-			SetWindowTitle(FileSystem::RemoveFileExtension(m_EditorScenePath.filename()));
+			SetWindowTitle(FileSystem::RemoveFileExtension(m_EditorSceneFilepath.filename()));
 		}
 	}
 
@@ -2883,9 +2945,9 @@ namespace Vortex {
 	{
 		m_ActiveScene->SortEntities();
 
-		if (!m_EditorScenePath.empty())
+		if (!m_EditorSceneFilepath.empty())
 		{
-			SerializeScene(m_ActiveScene, m_EditorScenePath);
+			SerializeScene(m_ActiveScene, m_EditorSceneFilepath);
 		}
 		else
 		{
@@ -2988,7 +3050,7 @@ namespace Vortex {
 
 		if (m_TransitionedFromStartScene)
 		{
-			OpenScene(m_StartScenePath);
+			OpenScene(m_StartSceneFilepath);
 			m_TransitionedFromStartScene = false;
 		}
 	}
@@ -3031,7 +3093,7 @@ namespace Vortex {
 
 		Application::Get().SubmitToMainThreadQueue([=]()
 		{
-			m_StartScenePath = m_EditorScenePath;
+			m_StartSceneFilepath = m_EditorSceneFilepath;
 
 			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
 			const uint32_t nextBuildIndex = ScriptRegistry::GetNextBuildIndex();
@@ -3057,15 +3119,16 @@ namespace Vortex {
 
 	void EditorLayer::SetWindowTitle(const std::string& sceneName)
 	{
-		std::string projectName = Project::GetActive()->GetName();
-		std::string platformName = Platform::GetName();
-		std::string graphicsAPI = RendererAPI::GetAPIInfo().Name;
+		const std::string projectName = Project::GetActive()->GetName();
+		const std::string platformName = Platform::GetName();
+		const std::string graphicsAPI = RendererAPI::GetAPIInfo().Name;
 
 		Application& application = Application::Get();
 		Window& window = application.GetWindow();
 
 		const static std::string originalTitle = window.GetTitle();
-		std::string newTitle = fmt::format("{0} - {1} - {2} - {3} - <{4}>",
+		std::string newTitle = fmt::format(
+			"{0} - {1} - {2} - {3} - <{4}>",
 			projectName,
 			sceneName,
 			platformName,
@@ -3090,10 +3153,10 @@ namespace Vortex {
 			return;
 		}
 
-		Entity duplicatedEntity = m_ActiveScene->DuplicateEntity(selectedEntity);
-		SelectionManager::SetSelectedEntity(duplicatedEntity);
+		Entity duplicate = m_ActiveScene->DuplicateEntity(selectedEntity);
+		SelectionManager::SetSelectedEntity(duplicate);
 
-		m_PanelManager->GetPanel<SceneHierarchyPanel>()->EditSelectedEntityName(true);
+		m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnEntityName(true);
 	}
 
 	void EditorLayer::SetSceneContext(SharedReference<Scene>& scene)
@@ -3103,20 +3166,23 @@ namespace Vortex {
 
 	void EditorLayer::ResetEditorCameras()
 	{
-		if (m_EditorCamera)
-		{
-			m_EditorCamera->Focus({ 0, 0, 0 });
-			m_EditorCamera->SetDistance(10);
-		}
+		EditorCamera* cameras[VX_EDITOR_MAX_CAMERAS] = { m_EditorCamera, m_SecondEditorCamera };
 
-		if (m_SecondEditorCamera)
+		const Math::vec3 origin = Math::vec3(0.0f);
+		const float distance = 10.0f;
+
+		for (size_t i = 0; i < VX_EDITOR_MAX_CAMERAS; i++)
 		{
-			m_EditorCamera->Focus({ 0, 0, 0 });
-			m_EditorCamera->SetDistance(10);
+			EditorCamera* camera = cameras[i];
+			if (camera == nullptr)
+				continue;
+
+			camera->Focus(origin);
+			camera->SetDistance(distance);
 		}
 	}
 
-	void EditorLayer::CaptureFramebufferImageToDisk()
+	void EditorLayer::CaptureSceneViewportFramebufferImageToDisk()
 	{
 		const std::string sceneImagePath = Project::GetProjectDirectory().string() + "/" + Project::GetActive()->GetName() + ".png";
 
@@ -3161,10 +3227,9 @@ namespace Vortex {
 		}
 	}
 
-	std::vector<Math::vec4> EditorLayer::GetFrustumCornersWorldSpace(const TransformComponent& transform, const SceneCamera& sceneCamera)
+	std::vector<Math::vec4> EditorLayer::GetCameraFrustumCornersWorldSpace(const Camera* camera, const Math::mat4& view)
 	{
-		Math::mat4 proj = sceneCamera.GetProjectionMatrix();
-		Math::mat4 view = Math::Inverse(transform.GetTransform());
+		Math::mat4 proj = camera->GetProjectionMatrix();
 
 		Math::mat4 inverseViewProj = Math::Inverse(proj * view);
 
@@ -3305,6 +3370,17 @@ namespace Vortex {
 		}
 
 		return Entity{};
+	}
+
+	EditorCamera* EditorLayer::CreateEditorCamera(const EditorCameraProperties& properties)
+	{
+		const float degreeFOV = properties.FOV;
+		const float width = properties.ViewportSize.x;
+		const float height = properties.ViewportSize.y;
+		const float nearPlane = properties.NearPlane;
+		const float farPlane = properties.FarPlane;
+
+		return new EditorCamera(degreeFOV, width, height, nearPlane, farPlane);
 	}
 
 	void EditorLayer::OnNoGizmoSelected()

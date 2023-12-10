@@ -202,9 +202,9 @@ namespace Vortex {
 	{
 		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
 
-		for (const auto& func : m_MainThreadQueue)
+		for (const auto& fn : m_MainThreadQueue)
 		{
-			func();
+			std::invoke(fn);
 		}
 
 		m_MainThreadQueue.clear();
@@ -218,8 +218,8 @@ namespace Vortex {
 		{
 			VX_PROFILE_SCOPE("Application Loop");
 
-			float currentTime = Time::GetTime();
-			TimeStep deltaTime = currentTime - m_LastFrameTimeStamp;
+			const float currentTime = Time::GetTime();
+			const TimeStep deltaTime = currentTime - m_LastFrameTimeStamp;
 			Time::SetDeltaTime(deltaTime);
 			m_LastFrameTimeStamp = currentTime;
 
@@ -268,13 +268,14 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (e.GetWidth() == 0 || e.GetHeight() == 0)
+		const bool zeroWidth = e.GetWidth() == 0;
+		const bool zeroHeight = e.GetHeight() == 0;
+		
+		m_ApplicationMinimized = zeroWidth || zeroHeight;
+		if (m_ApplicationMinimized)
 		{
-			m_ApplicationMinimized = true;
 			return false;
 		}
-
-		m_ApplicationMinimized = false;
 
 		Viewport viewport;
 		viewport.TopLeftXPos = 0;

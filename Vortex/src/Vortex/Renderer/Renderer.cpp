@@ -113,7 +113,7 @@ namespace Vortex {
 
 		s_Data.SkyboxMesh = StaticMesh::Create(MeshType::Cube);
 
-#if VX_RENDERER_STATISTICS
+#if VX_ENABLE_RENDER_STATISTICS
 		ResetStats();
 #endif // VX_RENDERER_STATISTICS
 
@@ -148,8 +148,12 @@ namespace Vortex {
 	void Renderer::OnWindowResize(const Viewport& viewport)
 	{
 		RenderCommand::SetViewport(viewport);
-		s_Data.BloomRenderPass.Destroy();
-		CreateBlurFramebuffer(viewport.Width, viewport.Height);
+
+		if (s_Data.RenderFlags & (uint32_t)RenderFlag::EnableBloom)
+		{
+			s_Data.BloomRenderPass.Destroy();
+			CreateBlurFramebuffer(viewport.Width, viewport.Height);
+		}
 	}
 
 	void Renderer::BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedReference<Framebuffer> targetFramebuffer)
@@ -200,7 +204,7 @@ namespace Vortex {
 	void Renderer::RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent)
 	{
 		SharedReference<Shader> shaders[] = { s_Data.ShaderLibrary.Get("PBR"), s_Data.ShaderLibrary.Get("PBR_Static") };
-		const uint32_t shaderCount = VX_ARRAYCOUNT(shaders);
+		const uint32_t shaderCount = VX_ARRAYSIZE(shaders);
 
 		switch (lightSourceComponent.Type)
 		{
@@ -392,7 +396,7 @@ namespace Vortex {
 		}
 
 		s_Data.HDRFramebuffer->Bind();
-		for (uint32_t i = 0; i < 6; i++)
+		for (uint32_t i = 0; i < VX_ARRAYSIZE(captureViews); i++)
 		{
 			equirectToCubemapShader->SetMat4("u_View", captureViews[i]);
 			s_Data.HDRFramebuffer->SetEnvironmentCubemapFramebufferTexture(i);
@@ -976,7 +980,7 @@ namespace Vortex {
 		static bool init = false;
 		if (init == false)//should be checking if the framebuffer wasn't created yet
 		{
-			Viewport viewport = postProcessProps.ViewportSize;
+			Viewport viewport = postProcessProps.ViewportInfo;
 			CreateBlurFramebuffer(viewport.Width, viewport.Height);
 			init = true;
 		}

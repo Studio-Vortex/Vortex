@@ -8,15 +8,15 @@
 namespace Vortex {
 
 #ifndef VX_DIST
-	#define VX_RENDERER_STATISTICS 1;
+	#define VX_ENABLE_RENDER_STATISTICS 1;
 #else
-	#define VX_RENDERER_STATISTICS 0;
+	#define VX_ENABLE_RENDER_STATISTICS 0;
 #endif // VX_DIST
 
 	static constexpr uint32_t VERTICES_PER_QUAD = 4;
 	static constexpr uint32_t INDICES_PER_QUAD = 6;
 
-	struct RenderStatistics
+	struct VORTEX_API RenderStatistics
 	{
 		uint32_t DrawCalls;
 		uint32_t QuadCount;
@@ -31,6 +31,14 @@ namespace Vortex {
 	{
 		Math::vec2 MinBound;
 		Math::vec2 MaxBound;
+
+		ViewportBounds(const Math::vec2& minBound, const Math::vec2& maxBound)
+			: MinBound(minBound), MaxBound(maxBound) { }
+
+		ViewportBounds()
+			: MinBound(Math::vec2(0.0f)), MaxBound(Math::vec2(0.0f)) { }
+
+		Math::vec2 CalculateViewportSize() const { return Math::vec2(MaxBound - MinBound); }
 	};
 
 	struct VORTEX_API Viewport
@@ -41,6 +49,8 @@ namespace Vortex {
 		uint32_t Height = 0;
 
 		ViewportBounds Bounds;
+
+		Math::vec2 GetSize() const { return Math::vec2((float)Width, (float)Height); }
 	};
 
 	class VORTEX_API RendererAPI

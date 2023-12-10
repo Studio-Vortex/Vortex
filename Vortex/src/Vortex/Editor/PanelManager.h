@@ -114,7 +114,7 @@ namespace Vortex {
 			return clicked;
 		}
 
-		void ForEach(const EditorPanelFn& func);
+		void ForEach(const EditorPanelFn& fn);
 
 		static SharedReference<PanelManager> Create();
 

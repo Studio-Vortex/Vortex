@@ -235,7 +235,7 @@ namespace Vortex {
 			static const char* options[] = { Utils::ProjectTypeToString(ProjectType::e2D), Utils::ProjectTypeToString(ProjectType::e3D) };
 			int32_t currentProjectType = (int32_t)m_Properties.ProjectType;
 
-			if (UI::PropertyDropdown("Project Type", options, VX_ARRAYCOUNT(options), currentProjectType))
+			if (UI::PropertyDropdown("Project Type", options, VX_ARRAYSIZE(options), currentProjectType))
 			{
 				m_Properties.ProjectType = (ProjectType)currentProjectType;
 			}
@@ -373,15 +373,15 @@ namespace Vortex {
 	{
 		ProjectSerializer serializer(Project::GetActive());
 		const bool success = serializer.Serialize(m_Properties.ProjectFilepath);
-		VX_CORE_ASSERT(success, "Failed to serialize project!");
+		VX_CORE_ASSERT(success, "Failed to save project to disk!");
 	}
 
 	void LauncherLayer::LaunchEditorApp()
 	{
-		std::string projectPath = FileSystem::Relative(m_Properties.ProjectFilepath, m_Properties.WorkingDirectory).string();
-		std::string editorApp = m_Properties.EditorAppFilepath.string();
+		const std::string projectPath = FileSystem::Relative(m_Properties.ProjectFilepath, m_Properties.WorkingDirectory).string();
+		const std::string editorAppPath = m_Properties.EditorAppFilepath.string();
 
-		Platform::LaunchProcess(editorApp.c_str(), projectPath.c_str());
+		Platform::LaunchProcess(editorAppPath.c_str(), projectPath.c_str());
 	}
 
 	void LauncherLayer::ResetInputFields()

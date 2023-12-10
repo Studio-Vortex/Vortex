@@ -8,7 +8,7 @@ bool g_ApplicationRunning = true;
 
 int main(int argc, char** argv)
 {
-	Vortex::InitalizeEngine();
+	::Vortex::InitalizeEngine();
 
 	while (g_ApplicationRunning)
 	{	
@@ -25,5 +25,5 @@ int main(int argc, char** argv)
 		VX_PROFILE_END_SESSION();
 	}
 
-	Vortex::ShutdownEngine();
+	::Vortex::ShutdownEngine();
 }

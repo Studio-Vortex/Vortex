@@ -58,7 +58,7 @@ namespace Vortex {
 		// Shadow pass
 		if (Entity skyLightEntity = m_RuntimeScene->GetSkyLightEntity())
 		{
-			const auto& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
 			if (lsc.CastShadows)
 			{
 				Renderer::RenderToDepthMap(m_RuntimeScene);
@@ -89,12 +89,12 @@ namespace Vortex {
 			auto [mx, my] = Gui::GetMousePos();
 			my = m_ViewportSize.y - my;
 
-			int mouseX = (int)mx;
-			int mouseY = (int)my;
+			const int mouseX = (int)mx;
+			const int mouseY = (int)my;
 
 			if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)m_ViewportSize.x && mouseY < (int)m_ViewportSize.y)
 			{
-				int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
+				const int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 				m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_RuntimeScene.Raw() };
 				ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
 			}
@@ -110,10 +110,10 @@ namespace Vortex {
 
 			Math::vec3 cameraPos = primaryCamera.GetTransform().Translation;
 			postProcessProps.CameraPosition = cameraPos;
-			postProcessProps.ViewportSize = Viewport{ 0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y };
+			postProcessProps.ViewportInfo = Viewport{ 0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y };
 			PostProcessStage stages[] = { PostProcessStage::Bloom };
 			postProcessProps.Stages = stages;
-			postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
+			postProcessProps.StageCount = VX_ARRAYSIZE(stages);
 			Renderer::BeginPostProcessingStages(postProcessProps);
 		}
 
@@ -223,7 +223,9 @@ namespace Vortex {
 	void RuntimeLayer::CloseProject()
 	{
 		if (m_RuntimeScene->IsRunning())
+		{
 			OnRuntimeSceneStop();
+		}
 
 		ScriptEngine::Shutdown();
 	}

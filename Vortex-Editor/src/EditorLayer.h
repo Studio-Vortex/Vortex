@@ -102,7 +102,7 @@ namespace Vortex {
 
 		// Editor Callbacks
 
-		void OnLaunchRuntime(const Fs::Path& filepath);
+		void LaunchRuntimeApp();
 		void QueueSceneTransition();
 
 		// Helper
@@ -111,15 +111,25 @@ namespace Vortex {
 		void DuplicateSelectedEntity();
 		void SetSceneContext(SharedReference<Scene>& scene);
 		void ResetEditorCameras();
-		void CaptureFramebufferImageToDisk();
+		void CaptureSceneViewportFramebufferImageToDisk();
 		void ReplaceSceneFileExtensionIfNeeded(std::string& filepath);
 
-		std::vector<Math::vec4> GetFrustumCornersWorldSpace(const TransformComponent& transform, const SceneCamera& sceneCamera);
+		std::vector<Math::vec4> GetCameraFrustumCornersWorldSpace(const Camera* camera, const Math::mat4& view);
 
 		std::pair<float, float> GetEditorCameraMouseViewportSpace(bool mainViewport);
 		Math::Ray CastRay(EditorCamera* editorCamera, float mx, float my);
 
 		Entity GetHoveredMeshEntityFromRaycast();
+
+		struct EditorCameraProperties
+		{
+			Math::vec2 ViewportSize;
+			float FOV;
+			float NearPlane;
+			float FarPlane;
+		};
+
+		EditorCamera* CreateEditorCamera(const EditorCameraProperties& properties);
 
 	private:
 		struct SelectionData
@@ -141,9 +151,9 @@ namespace Vortex {
 		SharedReference<Scene> m_ActiveScene = nullptr;
 		SharedReference<Scene> m_EditorScene = nullptr;
 		
-		Fs::Path m_EditorScenePath;
-
-		Fs::Path m_StartScenePath;
+		Fs::Path m_EditorSceneFilepath;
+		Fs::Path m_StartSceneFilepath;
+		Fs::Path m_RuntimeAppFilepath;
 
 		Entity m_HoveredEntity;
 
@@ -164,8 +174,8 @@ namespace Vortex {
 		int32_t m_GizmoType = -1;
 		uint32_t m_TranslationMode = 0; // Local mode
 
-		bool m_ShowScenePanel = true;
-		bool m_ShowSecondViewport = false;
+		bool m_SceneViewportPanelOpen = true;
+		bool m_SecondViewportPanelOpen = false;
 		bool m_ShowSceneCreateEntityMenu = false;
 		bool m_SceneViewportFocused = false;
 		bool m_SceneViewportHovered = false;
@@ -178,7 +188,7 @@ namespace Vortex {
 		bool m_StartedClickInSecondViewport = false;
 		bool m_ShowSelectedEntityCollider = false;
 		bool m_ShowSelectedEntityOutline = true;
-		bool m_CaptureFramebufferToDiskOnSave = true;
+		bool m_CaptureSceneViewportFramebufferToDiskOnSave = false;
 		bool m_TransitionedFromStartScene = false;
 
 		// Popups

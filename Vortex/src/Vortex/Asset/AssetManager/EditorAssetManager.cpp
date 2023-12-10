@@ -60,11 +60,15 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		if (IsMemoryOnlyAsset(handle))
+		{
 			return m_MemoryOnlyAssets[handle];
+		}
 
-		auto& metadata = GetMetadataInternal(handle);
+		AssetMetadata& metadata = GetMetadataInternal(handle);
 		if (!metadata.IsValid())
+		{
 			return nullptr;
+		}
 
 		SharedReference<Asset> asset = nullptr;
 		if (!metadata.IsDataLoaded)
@@ -72,7 +76,9 @@ namespace Vortex {
 			metadata.IsDataLoaded = AssetImporter::TryLoadData(metadata, asset);
 
 			if (!metadata.IsDataLoaded)
+			{
 				return nullptr;
+			}
 
 			m_LoadedAssets[handle] = asset;
 		}
@@ -99,32 +105,36 @@ namespace Vortex {
 
 	bool EditorAssetManager::ReloadData(AssetHandle assetHandle)
 	{
-		auto& metadata = GetMetadataInternal(assetHandle);
+		AssetMetadata& metadata = GetMetadataInternal(assetHandle);
 		if (!metadata.IsValid())
 		{
 			VX_CORE_ERROR("Trying to reload invalid asset");
 			return false;
 		}
 
-		SharedReference<Asset> asset;
+		SharedReference<Asset> asset = nullptr;
 		metadata.IsDataLoaded = AssetImporter::TryLoadData(metadata, asset);
 		if (metadata.IsDataLoaded)
+		{
 			m_LoadedAssets[assetHandle] = asset;
+		}
 
 		return metadata.IsDataLoaded;
 	}
 
 	std::unordered_set<AssetHandle> EditorAssetManager::GetAllAssetsWithType(AssetType type) const
 	{
-		std::unordered_set<AssetHandle> result;
+		std::unordered_set<AssetHandle> assets;
 
 		for (const auto& [handle, metadata] : m_AssetRegistry)
 		{
-			if (metadata.Type == type)
-				result.insert(handle);
+			if (metadata.Type != type)
+				continue;
+
+			assets.insert(handle);
 		}
 
-		return result;
+		return assets;
 	}
 
 	const std::unordered_map<AssetHandle, SharedReference<Asset>>& EditorAssetManager::GetLoadedAssets() const
@@ -146,7 +156,7 @@ namespace Vortex {
 	{
 		Fs::Path relativePath = filepath.lexically_normal();
 		const Fs::Path assetDirectory = m_ProjectAssetDirectory;
-		std::string temp = filepath.string();
+		const std::string temp = filepath.string();
 
 		if (temp.find(assetDirectory.string()) == std::string::npos)
 		{
@@ -167,8 +177,15 @@ namespace Vortex {
 	{
 		const AssetMetadata& metadata = GetMetadata(filepath);
 
+		if (AssetMetadata::Equal(metadata, s_NullMetadata))
+		{
+			return nullptr;
+		}
+
 		if (IsHandleValid(metadata.Handle))
+		{
 			return GetAsset(metadata.Handle);
+		}
 
 		return nullptr;
 	}
@@ -177,8 +194,15 @@ namespace Vortex {
 	{
 		const SharedReference<Asset> asset = GetAssetFromFilepath(filepath);
 
+		if (asset == nullptr)
+		{
+			return 0;
+		}
+
 		if (IsHandleValid(asset->Handle))
+		{
 			return asset->Handle;
+		}
 
 		return 0;
 	}
@@ -189,7 +213,9 @@ namespace Vortex {
 		const std::string ext = String::ToLowerCopy(copy);
 
 		if (!IsValidAssetExtension(ext))
+		{
 			return AssetType::None;
+		}
 
 		return s_AssetExtensionMap.at(ext);
 	}
@@ -207,11 +233,11 @@ namespace Vortex {
 
 	const AssetMetadata& EditorAssetManager::GetMetadata(const Fs::Path& filepath)
 	{
-		const auto relativePath = GetRelativePath(filepath);
+		const Fs::Path relativePath = GetRelativePath(filepath);
 
 		for (const auto& [handle, metadata] : m_AssetRegistry)
 		{
-			if (!String::FastCompare(metadata.Filepath.string(), relativePath.string()))
+			if (metadata.Filepath != relativePath)
 				continue;
 
 			return metadata;
@@ -223,7 +249,9 @@ namespace Vortex {
 	const AssetMetadata& EditorAssetManager::GetMetadata(AssetHandle handle)
 	{
 		if (m_AssetRegistry.Contains(handle))
+		{
 			return m_AssetRegistry.Get(handle);
+		}
 
 		return s_NullMetadata;
 	}
@@ -236,7 +264,9 @@ namespace Vortex {
 	AssetMetadata& EditorAssetManager::GetMutableMetadata(AssetHandle handle)
 	{
 		if (m_AssetRegistry.Contains(handle))
+		{
 			return m_AssetRegistry[handle];
+		}
 
 		return s_NullMetadata;
 	}
@@ -248,14 +278,18 @@ namespace Vortex {
 
 	AssetHandle EditorAssetManager::ImportAsset(const Fs::Path& filepath)
 	{
-		Fs::Path path = GetRelativePath(filepath);
+		const Fs::Path path = GetRelativePath(filepath);
 
-		if (const auto& metadata = GetMetadata(path); metadata.IsValid())
+		if (const AssetMetadata& metadata = GetMetadata(path); metadata.IsValid())
+		{
 			return metadata.Handle;
+		}
 
 		AssetType type = GetAssetTypeFromFilepath(filepath);
 		if (type == AssetType::None)
+		{
 			return 0;
+		}
 
 		AssetMetadata metadata;
 		metadata.Filepath = path;
@@ -267,23 +301,17 @@ namespace Vortex {
 		return metadata.Handle;
 	}
 
-	bool EditorAssetManager::RenameAsset(SharedReference<Asset>& asset, const std::string& newName)
+	bool EditorAssetManager::RenameAsset(SharedReference<Asset>& asset, const Fs::Path& newFilepath)
 	{
-		if (!asset)
+		if (!asset || !IsHandleValid(asset->Handle))
 		{
 			VX_CORE_ASSERT(false, "Trying to rename invalid asset!");
 			return false;
 		}
 
-		if (newName.empty())
+		if (newFilepath.empty())
 		{
-			VX_CORE_ASSERT(false, "Trying to rename asset with empty name!")
-			return false;
-		}
-
-		if (!IsHandleValid(asset->Handle))
-		{
-			VX_CORE_ASSERT(false, "Trying to rename asset with invalid handle!");
+			VX_CORE_ASSERT(false, "Trying to rename asset with empty filepath!")
 			return false;
 		}
 
@@ -293,13 +321,23 @@ namespace Vortex {
 		}
 		else
 		{
-			// TODO how should we handle this?
 			AssetMetadata& metadata = GetMutableMetadata(asset->Handle);
+			const Fs::Path oldMetadataPath = metadata.Filepath;
+			std::string temp = oldMetadataPath.string();
+			size_t lastSlashPos = temp.find_last_of("/\\");
+			const Fs::Path directory = temp.substr(0, lastSlashPos + 1);
+			temp = newFilepath.string();
+			lastSlashPos = temp.find_last_of("/\\");
+			const std::string filenameWithExtension = temp.substr(lastSlashPos + 1, temp.size());
+			const std::string filename = FileSystem::RemoveFileExtension(filenameWithExtension);
+			metadata.Filepath = Fs::Path(directory / filenameWithExtension);
+
 			switch (metadata.Type)
 			{
-				default:
-					break;
+				case AssetType::MaterialAsset: asset.As<Material>()->SetName(filename); break;
 			}
+
+			AssetImporter::Serialize(asset);
 		}
 
 		return true;
@@ -320,27 +358,33 @@ namespace Vortex {
 		VX_CONSOLE_LOG_INFO("[Asset Manager] Loading Asset Registry");
 
 		if (!FileSystem::Exists(m_ProjectAssetRegistryPath))
+		{
 			return;
+		}
 
 		std::ifstream stream(m_ProjectAssetRegistryPath);
-		VX_CORE_ASSERT(stream.is_open(), "Failed to open Asset Registry File!");
+		if (!stream.is_open())
+		{
+			const std::string assetRegistryPath = m_ProjectAssetRegistryPath.string();
+			VX_CONSOLE_LOG_ERROR("Failed to open Asset Registry File /'{}'", assetRegistryPath);
+		}
+
 		std::stringstream ss;
 		ss << stream.rdbuf();
 
 		YAML::Node data = YAML::Load(ss.str());
 
-		auto assetHandles = data["Assets"];
+		YAML::Node assetHandles = data["Assets"];
 		if (!assetHandles)
 		{
 			VX_CONSOLE_LOG_ERROR("Asset Registry was corrupted!");
-			VX_CORE_ASSERT(false, "");
 			return;
 		}
 
 		for (auto entry : assetHandles)
 		{
-			std::string filepath = entry["Filepath"].as<std::string>();
-			AssetHandle handle = entry["Handle"].as<uint64_t>();
+			const std::string filepath = entry["Filepath"].as<std::string>();
+			const AssetHandle handle = entry["Handle"].as<uint64_t>();
 			AssetType type = Utils::AssetTypeFromString(entry["Type"].as<std::string>());
 
 			if (type == AssetType::None)
@@ -348,7 +392,7 @@ namespace Vortex {
 
 			if (type != GetAssetTypeFromFilepath(filepath))
 			{
-				VX_CONSOLE_LOG_ERROR("[Asset Manager] Mismatch between stored AssetType and extension type when reading asset registry!");
+				VX_CONSOLE_LOG_ERROR("[Asset Manager] Mismatch between AssetType and extension type while reading asset registry entry!");
 				type = GetAssetTypeFromFilepath(filepath);
 			}
 
@@ -429,19 +473,21 @@ namespace Vortex {
 	{
 		for (const auto& entry : std::filesystem::directory_iterator(directory))
 		{
-			Fs::Path path = entry.path();
-
-			if (path.string().find(".vxr") != std::string::npos)
-				continue;
+			const Fs::Path filepath = entry.path();
 
 			if (entry.is_directory())
 			{
-				ProcessDirectory(path);
+				ProcessDirectory(filepath);
+				continue;
 			}
-			else
+			
+			const Fs::Path extension = FileSystem::GetFileExtension(filepath);
+			if (!IsValidAssetExtension(extension))
 			{
-				ImportAsset(path);
+				continue;
 			}
+
+			ImportAsset(filepath);
 		}
 	}
 
@@ -507,7 +553,9 @@ namespace Vortex {
 	AssetMetadata& EditorAssetManager::GetMetadataInternal(AssetHandle handle)
 	{
 		if (m_AssetRegistry.Contains(handle))
+		{
 			return m_AssetRegistry[handle];
+		}
 
 		return s_NullMetadata;
 	}

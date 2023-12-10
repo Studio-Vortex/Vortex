@@ -255,7 +255,7 @@ namespace Vortex {
 		static const char* displayNames[] = { "No Depth Test" };
 		static MaterialFlag flags[] = { MaterialFlag::NoDepthTest };
 
-		uint32_t count = VX_ARRAYCOUNT(displayNames);
+		uint32_t count = VX_ARRAYSIZE(displayNames);
 
 		for (uint32_t i = 0; i < count; i++)
 		{
@@ -308,7 +308,7 @@ namespace Vortex {
 		Math::vec3 albedo = material->GetAlbedo();
 		ImVec4 albedoTint = { albedo.r, albedo.g, albedo.b, 1.0f };
 
-		uint32_t count = VX_ARRAYCOUNT(displayNames);
+		uint32_t count = VX_ARRAYSIZE(displayNames);
 
 		bool hovered = false;
 		bool leftMouseButtonClicked = false;

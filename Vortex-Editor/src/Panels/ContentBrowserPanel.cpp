@@ -82,15 +82,16 @@ namespace Vortex {
 				if (Gui::MenuItem("Folder"))
 				{
 					m_ItemPathToRename = m_CurrentDirectory / Fs::Path("New Folder");
-					std::filesystem::create_directory(m_ItemPathToRename);
+					FileSystem::CreateDirectoryV(m_ItemPathToRename);
+
 					Gui::CloseCurrentPopup();
 				}
 				UI::Draw::Underline();
 
 				if (Gui::MenuItem("Scene"))
 				{
-					m_ItemPathToRename = m_CurrentDirectory / Fs::Path("Untitled.vortex");
 					std::ofstream fout(m_ItemPathToRename);
+					VX_CORE_ASSERT(fout.is_open(), "Failed to open file!");
 					fout << "Scene: Untitled\nEntities:";
 					fout.close();
 
@@ -100,15 +101,11 @@ namespace Vortex {
 
 				if (Gui::MenuItem("Material"))
 				{
-					Fs::Path materialsDirectory = Project::GetAssetDirectory() / "Materials";
-					if (!FileSystem::Exists(materialsDirectory))
-						FileSystem::CreateDirectoryV(materialsDirectory);
-
-					m_ItemPathToRename = m_CurrentDirectory / "NewMaterial.vmaterial";
-					SharedReference<Shader> pbrStaticShader = Renderer::GetShaderLibrary().Get("PBR_Static");
-					SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
-					SharedReference<Material> materialAsset = editorAssetManager->CreateNewAsset<Material>("Materials", "NewMaterial.vmaterial", pbrStaticShader, MaterialProperties());
-					VX_CORE_ASSERT(AssetManager::IsHandleValid(materialAsset->Handle), "Invalid asset handle!");
+					const std::string filename = "NewMaterial.vmaterial";
+					SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("PBR_Static");
+					MaterialProperties properties = MaterialProperties();
+					SharedReference<Material> material = Project::GetEditorAssetManager()->CreateNewAsset<Material>("Materials", filename, shader, properties);
+					VX_CORE_ASSERT(material, "Failed to create material!");
 
 					Gui::CloseCurrentPopup();
 				}
@@ -116,7 +113,6 @@ namespace Vortex {
 
 				if (Gui::MenuItem("C# Script"))
 				{
-					m_ItemPathToRename = m_CurrentDirectory / Fs::Path("Untitled.cs");
 					std::ofstream fout(m_ItemPathToRename);
 					fout << R"(using Vortex;
 
@@ -424,84 +420,61 @@ public class Untitled : Entity
 	{
 		// Find the last backslash in the path and copy the filename to the buffer
 		char buffer[256];
-		const size_t pos = currentPath.string().find_last_of('\\');
-		const std::string oldFilenameWithExtension = currentPath.string().substr(pos + 1, currentPath.string().length());
+		const size_t lastSlashPos = currentPath.string().find_last_of('/\\');
+		const std::string oldFilenameWithExtension = currentPath.string().substr(lastSlashPos + 1, currentPath.string().length());
 		memcpy(buffer, oldFilenameWithExtension.c_str(), sizeof(buffer));
 
 		Gui::SetKeyboardFocusHere();
 		Gui::SetNextItemWidth(m_ThumbnailSize);
-		if (Gui::InputText("##RenameInputText", buffer, sizeof(buffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+
+		const ImGuiInputTextFlags flags = ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue;
+
+		if (Gui::InputText("##RenameInputText", buffer, sizeof(buffer), flags))
 		{
-			const bool inputTextEmpty = strlen(buffer) == 0;
-			const bool consistentPaths = (m_CurrentDirectory / Fs::Path(buffer)) == currentPath;
+			m_ItemPathToRename.clear();
 
-			if (!inputTextEmpty && !consistentPaths)
+			// Get the new path from the input text buffer relative to the current directory
+			const bool inputEmpty = strlen(buffer) == 0;
+
+			if (inputEmpty)
 			{
-				// Get the new path from the input text buffer relative to the current directory
-				const Fs::Path newFilePath = m_CurrentDirectory / Fs::Path(buffer);
-
-				// Temporary until asset manager is sorted
-				FileSystem::Rename(currentPath, newFilePath);
-
-				if (FileSystem::IsDirectory(currentPath))
-					return;
-				
-				// TODO make this work
-
-				// Now we need to rename the asset
-				//const SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilenameWithExtension);
-				//Project::GetEditorAssetManager()->RenameAsset(asset, newFilePath.string());
-
-				// TODO this should take place in asset manager
-				const Fs::Path extension = newFilePath.filename().extension();
-
-				const bool isMaterialFile = extension == ".vmaterial";
-				if (isMaterialFile)
-				{
-					OnMaterialFileRenamed(newFilePath, oldFilenameWithExtension);
-				}
-
-				// TODO this should take place in asset manager
-				// Rename C# Class name in file
-				const bool isCSharpFile = newFilePath.filename().extension() == ".cs";
-				if (isCSharpFile)
-				{
-					OnCSharpFileRenamed(newFilePath, oldFilenameWithExtension);
-				}
-
-				// Rename AudioSourceComponent Source path
-				const bool isAudioFile = newFilePath.filename().extension() == ".wav" || newFilePath.filename().extension() == ".mp3";
-				if (isAudioFile)
-				{
-					// TODO
-				}
-
-				// Rename SpriteRendererComponent Texture path
-				const bool isTextureFile = newFilePath.filename().extension() == ".png" || newFilePath.filename().extension() == ".jpg" || newFilePath.filename().extension() == ".jpeg" || newFilePath.filename().extension() == ".tga" || newFilePath.filename().extension() == ".psd";
-				if (isTextureFile)
-				{
-					// TODO
-				}
+				return;
 			}
 
-			m_ItemPathToRename.clear();
-		}
-	}
+			const Fs::Path newFilepath = m_CurrentDirectory / Fs::Path(buffer);
+			const bool equivalent = FileSystem::Equivalent(currentPath, newFilepath);
+			const bool validRename = !inputEmpty && !equivalent;
 
-	void ContentBrowserPanel::OnMaterialFileRenamed(const Fs::Path& newFilepath, const std::string& oldFilepath)
-	{
-		SharedReference<Material> material = Project::GetEditorAssetManager()->GetAssetFromFilepath(oldFilepath);
-		if (material)
-		{
-			material->SetName(FileSystem::RemoveFileExtension(newFilepath));
+			if (!validRename)
+			{
+				return;
+  			}
+
+			// Now we need to rename the asset
+			SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentPath);
+			if (asset == nullptr)
+			{
+				FileSystem::Rename(currentPath, newFilepath);
+				return;
+			}
+
+			if (!Project::GetEditorAssetManager()->RenameAsset(asset, newFilepath))
+			{
+				return;
+			}
+
+			FileSystem::Rename(currentPath, newFilepath);
+			if (!Project::GetEditorAssetManager()->ReloadData(asset->Handle))
+			{
+				return;
+			}
+
+			Project::GetEditorAssetManager()->WriteToRegistryFile();
 		}
 	}
 
 	void ContentBrowserPanel::OnCSharpFileRenamed(const Fs::Path& newFilepath, const std::string& oldFilepath)
 	{
-		if (!FileSystem::Exists(newFilepath))
-			return;
-
 		std::ifstream file(newFilepath);
 
 		if (file.is_open())
@@ -525,15 +498,12 @@ public class Untitled : Entity
 					continue;
 
 				classNameFound = true;
+				// NOTE: we can't just break here beacuse we need all the lines in the file
 			}
 
 			file.close();
 
 			VX_CORE_ASSERT(classNameFound, "C# Class Name was not the same as filename!");
-
-			// TODO we should count the indentations of the old line and add them to
-			// the new line so that we do not mess with the original code formatting
-			// - for example we need to count tabs and spaces then we find the first character and stop there
 
 			// Find the line with the class name and replace it
 			for (auto& line : lineBuffer)
@@ -546,10 +516,8 @@ public class Untitled : Entity
 				const std::string newPath = newFilepath.filename().string();
 				const size_t lastDotPos = newPath.find_first_of('.');
 				const std::string newClassName = newPath.substr(0, lastDotPos);
-				const std::string formattedLine = std::format("public class {} : Entity", newClassName);
 
-				// Set the new line
-				line = formattedLine;
+				String::ReplaceToken(line, oldClassName.c_str(), newClassName);
 
 				// Replace the contents of the file
 				std::ofstream fout(newFilepath, std::ios::trunc);

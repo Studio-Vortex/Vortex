@@ -1298,7 +1298,7 @@ namespace Vortex {
 
 		const char* projectionTypes[] = { "Perspective", "Othrographic" };
 		int32_t currentProjectionType = (int32_t)camera.GetProjectionType();
-		if (UI::PropertyDropdown("Projection", projectionTypes, VX_ARRAYCOUNT(projectionTypes), currentProjectionType))
+		if (UI::PropertyDropdown("Projection", projectionTypes, VX_ARRAYSIZE(projectionTypes), currentProjectionType))
 			camera.SetProjectionType((SceneCamera::ProjectionType)currentProjectionType);
 
 		bool modified = false;
@@ -1429,7 +1429,7 @@ namespace Vortex {
 
 		static const char* lightTypes[] = { "Directional", "Point", "Spot" };
 		int32_t currentLightType = (int32_t)component.Type;
-		if (UI::PropertyDropdown("Light Type", lightTypes, VX_ARRAYCOUNT(lightTypes), currentLightType))
+		if (UI::PropertyDropdown("Light Type", lightTypes, VX_ARRAYSIZE(lightTypes), currentLightType))
 			component.Type = (LightType)currentLightType;
 
 		switch (component.Type)
@@ -2050,7 +2050,7 @@ namespace Vortex {
 					static const char* attenuationModels[] = { "None", "Inverse", "Linear", "Exponential" };
 
 					AttenuationModel currentAttenuationModel = Utils::FromWaveAttenuationModel(device.GetSound().GetAttenuationModel());
-					if (UI::PropertyDropdown("Attenuation Model", attenuationModels, VX_ARRAYCOUNT(attenuationModels), currentAttenuationModel))
+					if (UI::PropertyDropdown("Attenuation Model", attenuationModels, VX_ARRAYSIZE(attenuationModels), currentAttenuationModel))
 						device.GetSound().SetAttenuationModel(Utils::ToWaveAttenuationModel(currentAttenuationModel));
 
 					float pan = device.GetSound().GetPan();
@@ -2060,13 +2060,13 @@ namespace Vortex {
 					static const char* panModes[] = { "Balance", "Pan" };
 
 					PanMode currentPanMode = Utils::FromWavePanMode(device.GetSound().GetPanMode());
-					if (UI::PropertyDropdown("Pan Mode", panModes, VX_ARRAYCOUNT(panModes), currentPanMode))
+					if (UI::PropertyDropdown("Pan Mode", panModes, VX_ARRAYSIZE(panModes), currentPanMode))
 						device.GetSound().SetPanMode(Utils::ToWavePanMode(currentPanMode));
 
 					static const char* positioningModes[] = { "Absolute", "Relative" };
 
 					PositioningMode currentPositioningMode = Utils::FromWavePositioningMode(device.GetSound().GetPositioning());
-					if (UI::PropertyDropdown("Positioning Mode", positioningModes, VX_ARRAYCOUNT(positioningModes), currentPositioningMode))
+					if (UI::PropertyDropdown("Positioning Mode", positioningModes, VX_ARRAYSIZE(positioningModes), currentPositioningMode))
 						device.GetSound().SetPositioning(Utils::ToWavePositioningMode(currentPositioningMode));
 
 					float falloff = device.GetSound().GetFalloff();
@@ -2200,7 +2200,7 @@ namespace Vortex {
 
 		const char* bodyTypes[] = { "Static", "Dynamic" };
 		int32_t currentBodyType = (int32_t)component.Type;
-		if (UI::PropertyDropdown("Body Type", bodyTypes, VX_ARRAYCOUNT(bodyTypes), currentBodyType))
+		if (UI::PropertyDropdown("Body Type", bodyTypes, VX_ARRAYSIZE(bodyTypes), currentBodyType))
 		{
 			const bool recreateActor = component.Type != (RigidBodyType)currentBodyType;
 			component.Type = (RigidBodyType)currentBodyType;
@@ -2235,7 +2235,7 @@ namespace Vortex {
 
 			const char* collisionDetectionTypes[] = { "Discrete", "Continuous", "Continuous Speclative" };
 			int32_t currentCollisionDetectionType = (uint32_t)component.CollisionDetection;
-			if (UI::PropertyDropdown("Collision Detection", collisionDetectionTypes, VX_ARRAYCOUNT(collisionDetectionTypes), currentCollisionDetectionType))
+			if (UI::PropertyDropdown("Collision Detection", collisionDetectionTypes, VX_ARRAYSIZE(collisionDetectionTypes), currentCollisionDetectionType))
 				component.CollisionDetection = (CollisionDetectionType)currentCollisionDetectionType;
 
 			UI::EndPropertyGrid();
@@ -2356,14 +2356,14 @@ namespace Vortex {
 
 		const char* nonWalkableModes[] = { "Prevent Climbing", "Prevent Climbing and Force Sliding" };
 		int32_t currentNonWalkableMode = (uint32_t)component.NonWalkMode;
-		if (UI::PropertyDropdown("Non Walkable Mode", nonWalkableModes, VX_ARRAYCOUNT(nonWalkableModes), currentNonWalkableMode))
+		if (UI::PropertyDropdown("Non Walkable Mode", nonWalkableModes, VX_ARRAYSIZE(nonWalkableModes), currentNonWalkableMode))
 			component.NonWalkMode = (NonWalkableMode)currentNonWalkableMode;
 
 		if (entity.HasComponent<CapsuleColliderComponent>())
 		{
 			const char* climbModes[] = { "Easy", "Constrained" };
 			int32_t currentClimbMode = (uint32_t)component.ClimbMode;
-			if (UI::PropertyDropdown("Capsule Climb Mode", climbModes, VX_ARRAYCOUNT(climbModes), currentClimbMode))
+			if (UI::PropertyDropdown("Capsule Climb Mode", climbModes, VX_ARRAYSIZE(climbModes), currentClimbMode))
 				component.ClimbMode = (CapsuleClimbMode)currentClimbMode;
 		}
 
@@ -2453,7 +2453,7 @@ namespace Vortex {
 		static const char* collisionComplexities[] = { "Default", "Use Complex as Simple", "Use Simple as Complex" };
 		uint32_t currentCollisionComplexity = (uint32_t)component.CollisionComplexity;
 
-		if (UI::PropertyDropdown("Collision Complexity", collisionComplexities, VX_ARRAYCOUNT(collisionComplexities), currentCollisionComplexity))
+		if (UI::PropertyDropdown("Collision Complexity", collisionComplexities, VX_ARRAYSIZE(collisionComplexities), currentCollisionComplexity))
 			component.CollisionComplexity = (ECollisionComplexity)currentCollisionComplexity;
 
 		UI::Property("Visible", component.Visible);
@@ -2469,7 +2469,7 @@ namespace Vortex {
 
 		const char* bodyTypes[] = { "Static", "Dynamic", "Kinematic" };
 		int32_t currentBodyType = (uint32_t)component.Type;
-		if (UI::PropertyDropdown("Body Type", bodyTypes, VX_ARRAYCOUNT(bodyTypes), currentBodyType))
+		if (UI::PropertyDropdown("Body Type", bodyTypes, VX_ARRAYSIZE(bodyTypes), currentBodyType))
 			component.Type = (RigidBody2DType)currentBodyType;
 
 		if (component.Type == RigidBody2DType::Dynamic)

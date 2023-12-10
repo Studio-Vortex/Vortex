@@ -86,19 +86,29 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		Project::New();
+		SharedReference<Project> project = Project::New();
 
-		ProjectSerializer serializer(s_ActiveProject);
-		if (serializer.Deserialize(filepath))
+		ProjectSerializer serializer(project);
+		bool success = serializer.Deserialize(filepath);
+		if (!success)
 		{
-			s_ActiveProject->m_ProjectDirectory = FileSystem::GetParentDirectory(filepath);
-			s_ActiveProject->m_ProjectFilepath = filepath;
-			s_AssetManager = SharedReference<EditorAssetManager>::Create();
-
-			s_ActiveProject->OnDeserialized();
+			return nullptr;
 		}
+
+		const Fs::Path directory = FileSystem::GetParentDirectory(filepath);
+
+		project->m_ProjectDirectory = directory;
+		project->m_ProjectFilepath = filepath;
+		project->s_AssetManager = SharedReference<EditorAssetManager>::Create();
 		
-		return s_ActiveProject;
+		success = project->OnDeserialized();
+
+		if (!success)
+		{
+			return nullptr;
+		}
+
+		return project;
 	}
 
 	SharedReference<Project> Project::LoadRuntime(const Fs::Path& filepath)
@@ -107,17 +117,19 @@ namespace Vortex {
 
 		Project::New();
 
-		/*ProjectSerializer serializer(s_ActiveProject);
-		if (serializer.DeserializeRuntime())
+		//ProjectSerializer serializer(s_ActiveProject);
+		//if (serializer.DeserializeRuntime())
 		{
-			s_AssetManager = SharedReference<RuntimeAssetManager>::Create();
-		}*/
+			//s_AssetManager = SharedReference<RuntimeAssetManager>::Create();
+		}
 
 		return s_ActiveProject;
 	}
 
 	bool Project::SaveToDisk()
 	{
+		VX_CORE_ASSERT(s_ActiveProject, "No Active Project!");
+
 		return OnSerialized();
 	}
 
@@ -135,7 +147,7 @@ namespace Vortex {
     {
 		VX_CORE_ASSERT(s_ActiveProject, "No Active Project!");
 
-        return s_ActiveProject->m_Properties.BuildProps.BuildIndices;
+		return s_ActiveProject->m_Properties.BuildProps.BuildIndices;
     }
 
 	bool Project::OnSerialized()
@@ -144,17 +156,23 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(s_ActiveProject, "No Active Project!");
 
-		ProjectSerializer serializer(s_ActiveProject);
-		const auto& projectPath = GetProjectFilepath();
-		const bool serialized = serializer.Serialize(projectPath);
+		SharedReference<Project> project = GetActive();
 
-		if (!serialized)
+		ProjectSerializer serializer(project);
+		const Fs::Path& projectFilepath = GetProjectFilepath();
+		const bool success = serializer.Serialize(projectFilepath);
+
+		if (!success)
+		{
 			return false;
+		}
 
-		s_ActiveProject->m_ProjectDirectory = FileSystem::GetParentDirectory(projectPath);
-		s_ActiveProject->m_ProjectFilepath = projectPath;
+		const Fs::Path directory = FileSystem::GetParentDirectory(projectFilepath);
 
-		return s_AssetManager.As<EditorAssetManager>()->OnProjectSerialized();
+		project->m_ProjectDirectory = directory;
+		project->m_ProjectFilepath = projectFilepath;
+
+		return GetEditorAssetManager()->OnProjectSerialized();
 	}
 
 	bool Project::OnDeserialized()
@@ -163,7 +181,7 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(s_ActiveProject, "No Active Project!");
 
-		return s_AssetManager.As<EditorAssetManager>()->OnProjectDeserialized();
+		return GetEditorAssetManager()->OnProjectDeserialized();
 	}
 
 }

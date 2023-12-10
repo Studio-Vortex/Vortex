@@ -72,7 +72,7 @@ namespace Vortex {
 		const size_t lastDot = filepath.rfind('.');
 		const size_t count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
 		m_Name = filepath.substr(lastSlash, count);
-		VX_CONSOLE_LOG_INFO("Shader Loaded: '{}' - path /{}", m_Name, filepath);
+		VX_CONSOLE_LOG_INFO("[Renderer] Shader Loaded: '{}'", m_Name);
 	}
 
 	std::string OpenGLShader::ReadFile(const std::string& filepath) const
@@ -95,12 +95,12 @@ namespace Vortex {
 			}
 			else
 			{
-				VX_CONSOLE_LOG_ERROR("Could not read from file '/{}'", filepath);
+				VX_CONSOLE_LOG_ERROR("File was empty while trying to read shader source '/{}'", filepath);
 			}
 		}
 		else
 		{
-			VX_CONSOLE_LOG_ERROR("Failed to open shader file from: '/{}'", filepath);
+			VX_CONSOLE_LOG_ERROR("Failed to open shader: '/{}'", filepath);
 		}
 
 		return result;
@@ -166,8 +166,8 @@ namespace Vortex {
 
 				glDeleteShader(shader);
 
-				VX_CONSOLE_LOG_ERROR("{}", &infoLog[0]);
-				VX_CORE_ASSERT(false, "Shader compilation failed!");
+				VX_CONSOLE_LOG_ERROR("[Renderer] Shader '{}' compilation failed", m_Name);
+				VX_CONSOLE_LOG_ERROR("[Renderer] Shader Error: {}", &infoLog[0]);
 				break;
 			}
 			

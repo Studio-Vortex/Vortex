@@ -88,7 +88,7 @@ namespace Vortex {
 
 			static const char* columns[] = { "Name", "" };
 
-			UI::Table("Loaded Shaders", columns, VX_ARRAYCOUNT(columns), Gui::GetContentRegionAvail(), [&]()
+			UI::Table("Loaded Shaders", columns, VX_ARRAYSIZE(columns), Gui::GetContentRegionAvail(), [&]()
 			{
 				for (auto& shader : shaders)
 				{
@@ -124,7 +124,7 @@ namespace Vortex {
 			SharedReference<Project> activeProject = Project::GetActive();
 			ProjectProperties& projectProps = activeProject->GetProperties();
 
-			if (UI::PropertyDropdown("Cull Mode", cullModes, VX_ARRAYCOUNT(cullModes), currentCullMode))
+			if (UI::PropertyDropdown("Cull Mode", cullModes, VX_ARRAYSIZE(cullModes), currentCullMode))
 			{
 				RendererAPI::TriangleCullMode newCullMode = (RendererAPI::TriangleCullMode)currentCullMode;
 				Renderer::SetCullMode(newCullMode);
@@ -163,7 +163,7 @@ namespace Vortex {
 			if (envMapResolution == 1024.0f) currentEnvMapSize = 1;
 			if (envMapResolution == 2048.0f) currentEnvMapSize = 2;
 
-			if (UI::PropertyDropdown("Environment Map Resolution", envMapSizes, VX_ARRAYCOUNT(envMapSizes), currentEnvMapSize))
+			if (UI::PropertyDropdown("Environment Map Resolution", envMapSizes, VX_ARRAYSIZE(envMapSizes), currentEnvMapSize))
 			{
 				switch (currentEnvMapSize)
 				{
@@ -184,7 +184,7 @@ namespace Vortex {
 			if (prefilterMapResolution == 256.0f)  currentPrefilterMapSize = 1;
 			if (prefilterMapResolution == 512.0f)  currentPrefilterMapSize = 2;
 
-			if (UI::PropertyDropdown("Prefilter Map Resolution", prefilterMapSizes, VX_ARRAYCOUNT(prefilterMapSizes), currentPrefilterMapSize))
+			if (UI::PropertyDropdown("Prefilter Map Resolution", prefilterMapSizes, VX_ARRAYSIZE(prefilterMapSizes), currentPrefilterMapSize))
 			{
 				switch (currentPrefilterMapSize)
 				{
@@ -207,7 +207,7 @@ namespace Vortex {
 			if (shadowMapResolution == 4096.0f) currentShadowMapSize = 3;
 			if (shadowMapResolution == 8192.0f) currentShadowMapSize = 4;
 
-			if (UI::PropertyDropdown("Shadow Map Resolution", shadowMapSizes, VX_ARRAYCOUNT(shadowMapSizes), currentShadowMapSize))
+			if (UI::PropertyDropdown("Shadow Map Resolution", shadowMapSizes, VX_ARRAYSIZE(shadowMapSizes), currentShadowMapSize))
 			{
 				switch (currentShadowMapSize)
 				{
@@ -297,7 +297,7 @@ namespace Vortex {
 					if (bloomSampleSize == 20) currentBloomBlurSamplesSize = 3;
 					if (bloomSampleSize == 40) currentBloomBlurSamplesSize = 4;
 
-					if (UI::PropertyDropdown("Bloom Blur Samples", bloomBlurSampleSizes, VX_ARRAYCOUNT(bloomBlurSampleSizes), currentBloomBlurSamplesSize))
+					if (UI::PropertyDropdown("Bloom Blur Samples", bloomBlurSampleSizes, VX_ARRAYSIZE(bloomBlurSampleSizes), currentBloomBlurSamplesSize))
 					{
 						switch (currentBloomBlurSamplesSize)
 						{

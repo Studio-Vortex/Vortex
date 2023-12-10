@@ -466,6 +466,8 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		ExecutePreUpdateQueue();
+
 		const bool updateCurrentFrame = !m_IsPaused || m_StepFrames > 0;
 
 		if (updateCurrentFrame)
@@ -612,20 +614,39 @@ namespace Vortex {
 		ExecutePostUpdateQueue();
 	}
 
-	void Scene::SubmitToPostUpdateQueue(const std::function<void()>& func)
+	void Scene::SubmitToPreUpdateQueue(const std::function<void()>& fn)
+	{
+		std::scoped_lock<std::mutex> lock(m_PreUpdateQueueMutex);
+
+		m_PreUpdateQueue.emplace_back(fn);
+	}
+
+	void Scene::SubmitToPostUpdateQueue(const std::function<void()>& fn)
 	{
 		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
 
-		m_PostUpdateQueue.emplace_back(func);
+		m_PostUpdateQueue.emplace_back(fn);
+	}
+
+	void Scene::ExecutePreUpdateQueue()
+	{
+		std::scoped_lock<std::mutex> lock(m_PreUpdateQueueMutex);
+
+		for (const auto& fn : m_PreUpdateQueue)
+		{
+			std::invoke(fn);
+		}
+
+		m_PreUpdateQueue.clear();
 	}
 
 	void Scene::ExecutePostUpdateQueue()
 	{
 		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
 
-		for (const auto& func : m_PostUpdateQueue)
+		for (const auto& fn : m_PostUpdateQueue)
 		{
-			func();
+			std::invoke(fn);
 		}
 
 		m_PostUpdateQueue.clear();
@@ -728,13 +749,17 @@ namespace Vortex {
 		Entity parent = entity.GetParent();
 		VX_CORE_ASSERT(parent, "Parent was invalid!");
 		if (!parent)
+		{
 			return;
+		}
 
-		auto& parentChildren = parent.Children();
+		std::vector<UUID>& parentChildren = parent.Children();
 		parentChildren.erase(std::remove(parentChildren.begin(), parentChildren.end(), entity.GetUUID()), parentChildren.end());
 
 		if (convertToWorldSpace)
+		{
 			ConvertToWorldSpace(entity);
+		}
 
 		entity.SetParentUUID(0);
 	}
@@ -746,17 +771,19 @@ namespace Vortex {
 
 		const std::vector<UUID>& children = entity.Children();
 
-		for (const auto& child : children)
+		for (const auto& uuid : children)
 		{
-			Entity childEntity = TryGetEntityWithUUID(child);
+			Entity child = TryGetEntityWithUUID(uuid);
 
-			if (!childEntity)
+			if (!child)
 				continue;
 
-			childEntity.SetActive(true);
+			child.SetActive(true);
 
-			if (!childEntity.Children().empty())
-				ActiveateChildren(childEntity);
+			if (!child.Children().empty())
+			{
+				ActiveateChildren(child);
+			}
 		}
 	}
 
@@ -767,17 +794,19 @@ namespace Vortex {
 
 		const std::vector<UUID>& children = entity.Children();
 
-		for (const auto& child : children)
+		for (const auto& uuid : children)
 		{
-			Entity childEntity = TryGetEntityWithUUID(child);
+			Entity child = TryGetEntityWithUUID(uuid);
 
-			if (!childEntity)
+			if (!child)
 				continue;
 
-			childEntity.SetActive(false);
+			child.SetActive(false);
 
-			if (!childEntity.Children().empty())
-				DeactiveateChildren(childEntity);
+			if (!child.Children().empty())
+			{
+				DeactiveateChildren(child);
+			}
 		}
 	}
 
@@ -786,7 +815,9 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		if (!child.HasParent())
+		{
 			return child;
+		}
 
 		Entity parent = child.GetParent();
 		return GetRootEntityInHierarchy(parent);
@@ -797,7 +828,9 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		if (auto it = m_EntityMap.find(uuid); it != m_EntityMap.end())
+		{
 			return Entity{ it->second, this };
+		}
 
 		return Entity{};
 	}
@@ -810,10 +843,12 @@ namespace Vortex {
 
 		for (const auto entity : view)
 		{
-			const auto& cc = view.get<CameraComponent>(entity);
+			const CameraComponent& cc = view.get<CameraComponent>(entity);
 
-			if (cc.Primary)
-				return { entity, this };
+			if (!cc.Primary)
+				continue;
+			
+			return { entity, this };
 		}
 
 		return Entity{};
@@ -841,7 +876,7 @@ namespace Vortex {
 
 		for (const auto entity : view)
 		{
-			auto& lsc = view.get<LightSourceComponent>(entity);
+			const LightSourceComponent& lsc = view.get<LightSourceComponent>(entity);
 
 			if (lsc.Type != LightType::Directional)
 				continue;
@@ -857,7 +892,9 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		if (!entity)
+		{
 			return Entity{};
+		}
 
 		if (entity.HasComponent<PrefabComponent>())
 		{

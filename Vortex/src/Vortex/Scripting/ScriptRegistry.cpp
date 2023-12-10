@@ -559,8 +559,8 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Entity entity = GetEntity(entityUUID);
 
-			const auto& children = entity.Children();
-			if (index > children.size() - 1)
+			const std::vector<UUID>& children = entity.Children();
+			if (index > (children.size() - 1))
 			{
 				VX_CORE_ASSERT(false, "Index out of bounds!");
 				return 0;
@@ -1451,6 +1451,7 @@ namespace Vortex {
 
 		void CameraComponent_CastRay(UUID entityUUID, Math::vec3* position, float maxDistance, Math::Ray* outRay)
 		{
+			Scene* contextScene = GetContextScene();
 			Entity entity = GetEntity(entityUUID);
 
 			if (!entity.HasComponent<CameraComponent>())
@@ -1462,10 +1463,10 @@ namespace Vortex {
 			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
 			const SceneCamera& sceneCamera = cameraComponent.Camera;
 
-			const TransformComponent& transform = entity.GetTransform();
-			Math::mat4 view = Math::Inverse(transform.GetTransform());
+			const Math::mat4 transform = contextScene->GetWorldSpaceTransformMatrix(entity);
+			const Math::mat4 view = Math::Inverse(transform);
 
-			*outRay = sceneCamera.CastRay(*position, transform.Translation, maxDistance, view);
+			*outRay = sceneCamera.CastRay(*position, entity.GetTransform().Translation, maxDistance, view);
 		}
 
 		void CameraComponent_ScreenToWorldPoint(UUID entityUUID, Math::vec2* position, float maxDistance, Math::vec3* outWorldPoint)
@@ -1482,11 +1483,11 @@ namespace Vortex {
 			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
 			const SceneCamera& sceneCamera = cameraComponent.Camera;
 
-			const TransformComponent& transform = entity.GetTransform();
-			const Math::mat4 view = Math::Inverse(transform.GetTransform());
+			const Math::mat4 transform = contextScene->GetWorldSpaceTransformMatrix(entity);
+			const Math::mat4 view = Math::Inverse(transform);
 
 			const ViewportBounds& viewportBounds = contextScene->GetViewportBounds();
-			*outWorldPoint = sceneCamera.ScreenPointToWorldPoint(*position, viewportBounds.MinBound, transform.Translation, maxDistance, view);
+			*outWorldPoint = sceneCamera.ScreenPointToWorldPoint(*position, viewportBounds.MinBound, entity.GetTransform().Translation, maxDistance, view);
 		}
 
 		void CameraComponent_ScreenToViewportPoint(UUID entityUUID, Math::vec2* position, Math::vec2* outViewportPoint)

@@ -73,8 +73,14 @@ namespace Vortex {
 		void OnUpdateSimulation(TimeStep delta, EditorCamera* camera);
 		void OnUpdateEditor(TimeStep delta, EditorCamera* camera);
 
-		void SubmitToPostUpdateQueue(const std::function<void()>& func);
+		void SubmitToPreUpdateQueue(const std::function<void()>& fn);
+		void SubmitToPostUpdateQueue(const std::function<void()>& fn);
+
+	private:
+		void ExecutePreUpdateQueue();
 		void ExecutePostUpdateQueue();
+
+	public:
 
 		void OnUpdateEntityGui();
 
@@ -198,6 +204,9 @@ namespace Vortex {
 		using QueueFreeMap = std::unordered_map<UUID, QueueFreeData>;
 		QueueFreeMap m_QueueFreeMap;
 		std::vector<UUID> m_EntitiesToBeRemovedFromQueue;
+
+		std::vector<std::function<void()>> m_PreUpdateQueue;
+		std::mutex m_PreUpdateQueueMutex;
 
 		std::vector<std::function<void()>> m_PostUpdateQueue;
 		std::mutex m_PostUpdateQueueMutex;

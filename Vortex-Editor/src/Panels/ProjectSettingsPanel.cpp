@@ -36,7 +36,7 @@ namespace Vortex {
 		Gui::BeginChild("Selections", { contentRegionAvail.x / 4.0f, contentRegionAvail.y }, true);
 
 		static const char* selections[] = { "General", "Editor", "Gizmo", "Network", "Physics", "Scripting" };
-		static auto count = VX_ARRAYCOUNT(selections);
+		static auto count = VX_ARRAYSIZE(selections);
 		static uint32_t selection = 0;
 
 		for (uint32_t i = 0; i < count; i++)
@@ -92,7 +92,7 @@ namespace Vortex {
 		enum class Theme { Dark, LightGray, Default, Classic, Light };
 		static const char* themes[] = { "Dark", "Light Gray", "Default", "Classic", "Light" };
 		static int32_t currentTheme = (int32_t)Theme::Dark;
-		if (UI::PropertyDropdown("Editor Theme", themes, VX_ARRAYCOUNT(themes), currentTheme))
+		if (UI::PropertyDropdown("Editor Theme", themes, VX_ARRAYSIZE(themes), currentTheme))
 		{
 			if (currentTheme == 0)
 				Application::Get().GetGuiLayer()->SetDarkThemeColors();
@@ -160,12 +160,12 @@ namespace Vortex {
 
 			static const char* broadphaseTypes[] = { "Sweep And Prune", "Multi Box Pruning", "Automatic Box Pruning" };
 			int32_t currentBroadphaseType = (int32_t)m_ProjectProperties.PhysicsProps.BroadphaseModel;
-			if (UI::PropertyDropdown("Broadphase Model", broadphaseTypes, VX_ARRAYCOUNT(broadphaseTypes), currentBroadphaseType))
+			if (UI::PropertyDropdown("Broadphase Model", broadphaseTypes, VX_ARRAYSIZE(broadphaseTypes), currentBroadphaseType))
 				m_ProjectProperties.PhysicsProps.BroadphaseModel = (BroadphaseType)currentBroadphaseType;
 
 			static const char* frictionTypes[3] = { "Patch", "One Directional", "Two Directional" };
 			int32_t currentFrictionType = (int32_t)m_ProjectProperties.PhysicsProps.FrictionModel;
-			if (UI::PropertyDropdown("Friction Model", frictionTypes, VX_ARRAYCOUNT(frictionTypes), currentFrictionType))
+			if (UI::PropertyDropdown("Friction Model", frictionTypes, VX_ARRAYSIZE(frictionTypes), currentFrictionType))
 				m_ProjectProperties.PhysicsProps.FrictionModel = (FrictionType)currentFrictionType;
 
 			int32_t positionIterations3D = Physics::GetPhysicsScenePositionIterations();

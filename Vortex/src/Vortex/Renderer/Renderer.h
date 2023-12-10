@@ -55,7 +55,7 @@ namespace Vortex {
 	{
 		SharedReference<Framebuffer> TargetFramebuffer = nullptr;
 		Math::vec3 CameraPosition = {};
-		Viewport ViewportSize = {};
+		Viewport ViewportInfo = {};
 		PostProcessStage* Stages = nullptr;
 		uint32_t StageCount = 0;
 	};

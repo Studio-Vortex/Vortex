@@ -12,6 +12,7 @@
 namespace Vortex {
 
 	class AssetRegistryPanel;
+	class ContentBrowserPanel;
 
 	class EditorAssetManager : public IAssetManager
 	{
@@ -50,7 +51,7 @@ namespace Vortex {
 
 		AssetHandle ImportAsset(const Fs::Path& filepath);
 
-		bool RenameAsset(SharedReference<Asset>& asset, const std::string& newName);
+		bool RenameAsset(SharedReference<Asset>& asset, const Fs::Path& newFilepath);
 
 		AssetHandle GetDefaultStaticMesh(DefaultMesh::StaticMeshType defaultMesh);
 		bool IsDefaultStaticMesh(AssetHandle assetHandle);
@@ -106,6 +107,7 @@ namespace Vortex {
 
 	private:
 		friend AssetRegistryPanel;
+		friend ContentBrowserPanel;
 	};
 
 }

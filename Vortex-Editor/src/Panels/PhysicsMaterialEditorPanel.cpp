@@ -81,13 +81,13 @@ namespace Vortex {
 
 			const char* combineModes[] = { "Average", "Maximum", "Minimum", "Multiply" };
 			int32_t currentFrictionCombineMode = (uint32_t)physicsMaterial->FrictionCombineMode;
-			if (UI::PropertyDropdown("Friction Combine Mode", combineModes, VX_ARRAYCOUNT(combineModes), currentFrictionCombineMode))
+			if (UI::PropertyDropdown("Friction Combine Mode", combineModes, VX_ARRAYSIZE(combineModes), currentFrictionCombineMode))
 			{
 				physicsMaterial->FrictionCombineMode = (CombineMode)currentFrictionCombineMode;
 			}
 
 			int32_t currentBouncinessCombineMode = (uint32_t)physicsMaterial->BouncinessCombineMode;
-			if (UI::PropertyDropdown("Bounciness Combine Mode", combineModes, VX_ARRAYCOUNT(combineModes), currentBouncinessCombineMode))
+			if (UI::PropertyDropdown("Bounciness Combine Mode", combineModes, VX_ARRAYSIZE(combineModes), currentBouncinessCombineMode))
 			{
 				physicsMaterial->BouncinessCombineMode = (CombineMode)currentBouncinessCombineMode;
 			}

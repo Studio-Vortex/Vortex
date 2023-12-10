@@ -138,7 +138,7 @@ namespace Vortex
 
 		/// Unit Quad
 		s_Data.UnitQuadVA = VertexArray::Create();
-		s_Data.UnitQuadVB = VertexBuffer::Create(vertices, sizeof(float) * VX_ARRAYCOUNT(vertices));
+		s_Data.UnitQuadVB = VertexBuffer::Create(vertices, sizeof(float) * VX_ARRAYSIZE(vertices));
 		s_Data.UnitQuadVB->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoord" }
@@ -261,7 +261,7 @@ namespace Vortex
 		SetLineWidth(s_Data.LineWidth);
 		SetCullMode(cullMode);
 
-#if VX_RENDERER_STATISTICS
+#if VX_ENABLE_RENDER_STATISTICS
 		ResetStats();
 #endif // SP_RENDERER_STATISTICS
 	}
@@ -460,7 +460,7 @@ namespace Vortex
 
 		s_Data.QuadIndexCount += INDICES_PER_QUAD;
 
-#if VX_RENDERER_STATISTICS
+#if VX_ENABLE_RENDER_STATISTICS
 		s_Data.Renderer2DStatistics.QuadCount++;
 #endif // SP_RENDERER_STATISTICS
 	}
@@ -480,7 +480,7 @@ namespace Vortex
 
 		s_Data.CircleIndexCount += INDICES_PER_QUAD;
 
-#if VX_RENDERER_STATISTICS
+#if VX_ENABLE_RENDER_STATISTICS
 		s_Data.Renderer2DStatistics.QuadCount++;
 #endif // SP_RENDERER_STATISTICS
 	}
@@ -1069,7 +1069,7 @@ namespace Vortex
 
 		s_Data.LineVertexCount += 2;
 
-#if VX_RENDERER_STATISTICS
+#if VX_ENABLE_RENDER_STATISTICS
 		s_Data.Renderer2DStatistics.LineCount++;
 #endif // SP_RENDERER_STATISTICS
 	}
@@ -1294,7 +1294,7 @@ namespace Vortex
 					fontGeometry.getAdvance(advance, character, utf32string[(size_t)i + 1]);
 					x += fsScale * advance + kerningOffset;
 
-#if VX_RENDERER_STATISTICS
+#if VX_ENABLE_RENDER_STATISTICS
 					s_Data.Renderer2DStatistics.QuadCount++;
 #endif // SP_RENDERER_STATISTICS
 				}
