@@ -18,8 +18,8 @@ namespace Vortex {
 		OnTriggerEnter,
 		OnTriggerExit,
 		OnFixedJointDisconnected,
-		OnEnabled,
-		OnDisabled,
+		OnEnable,
+		OnDisable,
 		OnGui,
 	};
 

@@ -2,8 +2,6 @@
 
 	public static class Scene
 	{
-		public static uint BuildIndex = InternalCalls.Scene_GetCurrentBuildIndex();
-
 		public static Entity FindEntityByID(ulong entityID)
 		{
 			bool found = InternalCalls.Scene_FindEntityByID(entityID);

@@ -302,11 +302,11 @@ namespace Vortex {
 		ScriptUtils::InvokeMethod(instance, entityConstructor, &param);
 	}
 
-	void ScriptEngine::CreateEntityScriptInstanceRuntime(Entity entity)
+	void ScriptEngine::RT_CreateEntityScriptInstance(Entity entity)
 	{
 		VX_PROFILE_FUNCTION();
 
-		UUID entityUUID = entity.GetUUID();
+		const UUID entityUUID = entity.GetUUID();
 
 		const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
 
@@ -315,13 +315,19 @@ namespace Vortex {
 
 		SharedReference<ScriptClass> scriptClass = GetEntityClass(scriptComponent.ClassName);
 		SharedReference<ScriptInstance> instance = SharedReference<ScriptInstance>::Create(scriptClass, entity);
+		
+		// Invoke C# Entity class constructor
+		instance->InvokeConstructor(entity);
+
 		s_Data->EntityInstances[entityUUID] = instance;
 
 		// Copy field values
 		auto it = s_Data->EntityScriptFields.find(entityUUID);
 
 		if (it == s_Data->EntityScriptFields.end())
+		{
 			return;
+		}
 
 		const ScriptFieldMap& fields = it->second;
 
@@ -331,7 +337,7 @@ namespace Vortex {
 		}
 	}
 
-	bool ScriptEngine::CallMethod(const std::string& methodName, Entity entity, const std::initializer_list<RuntimeMethodArgument*>& argumentList)
+	bool ScriptEngine::Invoke(const std::string& methodName, Entity entity, const std::vector<RuntimeMethodArgument>& argumentList)
 	{
 		if (methodName.empty())
 		{
@@ -341,12 +347,18 @@ namespace Vortex {
 
 		ManagedMethod method = Utils::ManagedMethodFromString(methodName);
 
-		return CallMethod(method, entity, argumentList);
+		return Invoke(method, entity, argumentList);
 	}
 
-	bool ScriptEngine::CallMethod(ManagedMethod method, Entity entity, const std::initializer_list<RuntimeMethodArgument*>& argumentList)
+	bool ScriptEngine::Invoke(ManagedMethod method, Entity entity, const std::vector<RuntimeMethodArgument>& argumentList)
 	{
 		VX_PROFILE_FUNCTION();
+
+		if (!entity)
+		{
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Entity.{} on invalid entity!");
+			return false;
+		}
 
 		const UUID entityUUID = entity.GetUUID();
 		const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
@@ -356,23 +368,32 @@ namespace Vortex {
 
 		if (!EntityInstanceExists(entityUUID))
 		{
-			VX_CONSOLE_LOG_ERROR("Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
 			return false;
 		}
 
 		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
 		VX_CORE_ASSERT(instance, "Invalid script instance!");
 
-		if (!instance)
+		if (instance == nullptr)
 		{
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Entity.{} on entity '{}' with invalid script instance!", Utils::StringFromManagedMethod(method), entity.GetName());
 			return false;
 		}
 
 		switch (method)
 		{
-			case ManagedMethod::OnAwake:  instance->InvokeOnAwake();  break;
-			case ManagedMethod::OnCreate: instance->InvokeOnCreate(); break;
-			case ManagedMethod::OnUpdateDelta:
+			case ManagedMethod::OnAwake:
+			{
+				instance->InvokeOnAwake();
+				break;
+			}
+			case ManagedMethod::OnCreate:
+			{
+				instance->InvokeOnCreate();
+				break;
+			}
+			case ManagedMethod::OnUpdateDelta: // fallthrough
 			case ManagedMethod::OnUpdate:
 			{
 				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
@@ -381,8 +402,8 @@ namespace Vortex {
 					return false;
 				}
 
-				const RuntimeMethodArgument* arg0 = (const RuntimeMethodArgument*)argumentList.begin() + (0 * sizeof uint64_t);
-				instance->InvokeOnUpdate(arg0->Delta);
+				const RuntimeMethodArgument& arg0 = argumentList.front();
+				instance->InvokeOnUpdate(arg0.Delta);
 				break;
 			}
 			case ManagedMethod::OnDestroy:
@@ -402,8 +423,8 @@ namespace Vortex {
 					return false;
 				}
 
-				const RuntimeMethodArgument* arg0 = (const RuntimeMethodArgument*)argumentList.begin() + (0 * sizeof uint64_t);
-				instance->InvokeOnCollisionEnter(arg0->CollisionArg);
+				const RuntimeMethodArgument& arg0 = argumentList.front();
+				instance->InvokeOnCollisionEnter(arg0.CollisionArg);
 				break;
 			}
 			case ManagedMethod::OnCollisionExit:
@@ -414,8 +435,8 @@ namespace Vortex {
 					return false;
 				}
 
-				const RuntimeMethodArgument* arg0 = (const RuntimeMethodArgument*)argumentList.begin() + (0 * sizeof uint64_t);
-				instance->InvokeOnCollisionExit(arg0->CollisionArg);
+				const RuntimeMethodArgument& arg0 = argumentList.front();
+				instance->InvokeOnCollisionExit(arg0.CollisionArg);
 				break;
 			}
 			case ManagedMethod::OnTriggerEnter:
@@ -426,8 +447,8 @@ namespace Vortex {
 					return false;
 				}
 
-				const RuntimeMethodArgument* arg0 = (const RuntimeMethodArgument*)argumentList.begin() + (0 * sizeof uint64_t);
-				instance->InvokeOnTriggerEnter(arg0->CollisionArg);
+				const RuntimeMethodArgument& arg0 = argumentList.front();
+				instance->InvokeOnTriggerEnter(arg0.CollisionArg);
 				break;
 			}
 			case ManagedMethod::OnTriggerExit:
@@ -438,8 +459,8 @@ namespace Vortex {
 					return false;
 				}
 
-				const RuntimeMethodArgument* arg0 = (const RuntimeMethodArgument*)argumentList.begin() + (0 * sizeof uint64_t);
-				instance->InvokeOnTriggerExit(arg0->CollisionArg);
+				const RuntimeMethodArgument& arg0 = argumentList.front();
+				instance->InvokeOnTriggerExit(arg0.CollisionArg);
 				break;
 			}
 			case ManagedMethod::OnFixedJointDisconnected:
@@ -450,13 +471,25 @@ namespace Vortex {
 					return false;
 				}
 
-				const RuntimeMethodArgument* arg0 = (const RuntimeMethodArgument*)argumentList.begin() + (0 * sizeof uint64_t);
-				instance->InvokeOnFixedJointDisconnected(arg0->ForceAndTorque);
+				const RuntimeMethodArgument& arg0 = argumentList.front();
+				instance->InvokeOnFixedJointDisconnected(arg0.ForceAndTorque);
 				break;
 			}
-			case ManagedMethod::OnEnabled:  instance->InvokeOnEnabled();  break;
-			case ManagedMethod::OnDisabled: instance->InvokeOnDisabled(); break;
-			case ManagedMethod::OnGui:      instance->InvokeOnGui();      break;
+			case ManagedMethod::OnEnable:
+			{
+				instance->InvokeOnEnable();
+				break;
+			}
+			case ManagedMethod::OnDisable:
+			{
+				instance->InvokeOnDisable();
+				break;
+			}
+			case ManagedMethod::OnGui:
+			{
+				instance->InvokeOnGui();
+				break;
+			}
 		}
 
 		return true;
@@ -546,26 +579,28 @@ namespace Vortex {
 			return;
 		}
 
-		Scene* contextScene = GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Invalid scene");
-
-		if (!contextScene->IsRunning())
-			return;
-
 		if (!entity.HasComponent<ScriptComponent>())
 		{
 			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate Entity '{}' without script component!", entity.GetName());
 			return;
 		}
 
-		// Create the script instance
-		ScriptEngine::CreateEntityScriptInstanceRuntime(entity);
-		VX_CORE_ASSERT(s_Data->EntityInstances.contains(entity.GetUUID()), "Entity script instance not instantiated properly!");
+		Scene* contextScene = GetContextScene();
+		VX_CORE_ASSERT(contextScene, "Invalid scene");
 
-		// Call Entity.OnAwake
-		ScriptEngine::CallMethod(ManagedMethod::OnAwake, entity);
-		// Call Entity.OnCreate
-		ScriptEngine::CallMethod(ManagedMethod::OnCreate, entity);
+		if (!contextScene->IsRunning())
+		{
+			return;
+		}
+
+		// Create the instance
+		ScriptEngine::RT_CreateEntityScriptInstance(entity);
+		VX_CORE_ASSERT(EntityInstanceExists(entity), "Entity script instance not instantiated properly!");
+
+		// Invoke Entity.OnAwake
+		ScriptEngine::Invoke(ManagedMethod::OnAwake, entity);
+		// Invoke Entity.OnCreate
+		ScriptEngine::Invoke(ManagedMethod::OnCreate, entity);
 	}
 
 	void ScriptEngine::LoadAssemblyClasses(bool displayClasses)

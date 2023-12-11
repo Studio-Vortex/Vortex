@@ -133,23 +133,6 @@ namespace Vortex {
 		return OnSerialized();
 	}
 
-    void Project::SubmitSceneToBuild(const std::string& filepath)
-    {
-		VX_CORE_ASSERT(s_ActiveProject, "No Active Project!");
-
-		BuildIndexMap& buildIndices = GetScenesInBuild();
-
-		const uint32_t buildIndex = (uint32_t)buildIndices.size();
-		buildIndices[buildIndex] = filepath;
-    }
-
-    BuildIndexMap& Project::GetScenesInBuild()
-    {
-		VX_CORE_ASSERT(s_ActiveProject, "No Active Project!");
-
-		return s_ActiveProject->m_Properties.BuildProps.BuildIndices;
-    }
-
 	bool Project::OnSerialized()
 	{
 		VX_PROFILE_FUNCTION();

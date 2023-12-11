@@ -120,7 +120,7 @@ namespace Vortex {
 
 		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask);
 		static void UpdateDynamicActorProperties(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor);
-		static void TraverseSceneForUninitializedActors();
+		static void InitializeUninitializedActors();
 
 		static void DestroyFixedJointInternal(UUID entityUUID);
 		static void DestroyCharacterControllerInternal(UUID entityUUID);

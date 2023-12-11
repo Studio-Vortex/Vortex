@@ -46,7 +46,7 @@ namespace Vortex {
 		float BloomPassRenderTime = 0.0f;
 	};
 
-	enum class PostProcessStage
+	enum class VORTEX_API PostProcessStage
 	{
 		None = 0, Bloom,
 	};
@@ -74,7 +74,7 @@ namespace Vortex {
 
 		static void OnWindowResize(const Viewport& viewport);
 
-		static void BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedReference<Framebuffer> targetFramebuffer);
+		static void BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& cameraTranslation, SharedReference<Framebuffer> targetFramebuffer);
 		static void BeginScene(const EditorCamera* camera, SharedReference<Framebuffer> targetFramebuffer);
 		static void EndScene();
 
@@ -161,11 +161,11 @@ namespace Vortex {
 		// Helpers
 
 		static void BindRenderTarget(SharedReference<Framebuffer>& renderTarget);
-		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);
+		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraTranslation);
 
-		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
-		static void RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
-		static void RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
+		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);
+		static void RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);
+		static void RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);
 
 		// Post Processing
 

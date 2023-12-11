@@ -37,82 +37,48 @@ namespace Vortex {
 		OnRenderScene3D(renderPacket);
 	}
 
-	void SceneRenderer::BeginSceneRenderer2D(const SceneRenderPacket& renderPacket)
-	{
-		if (renderPacket.EditorScene)
-		{
-			Renderer2D::BeginScene((EditorCamera*)renderPacket.MainCamera);
-		}
-		else
-		{
-			Renderer2D::BeginScene((SceneCamera&)*renderPacket.MainCamera, renderPacket.MainCameraViewMatrix);
-		}
-	}
-
-	void SceneRenderer::EndSceneRenderer2D()
-	{
-		Renderer2D::EndScene();
-	}
-
-	void SceneRenderer::BeginSceneRenderer(const SceneRenderPacket& renderPacket)
-	{
-		if (renderPacket.EditorScene)
-		{
-			Renderer::BeginScene((EditorCamera*)renderPacket.MainCamera, renderPacket.TargetFramebuffer);
-		}
-		else
-		{
-			Renderer::BeginScene((SceneCamera&)*renderPacket.MainCamera, renderPacket.MainCameraViewMatrix, renderPacket.MainCameraWorldSpaceTranslation, renderPacket.TargetFramebuffer);
-		}
-	}
-
-	void SceneRenderer::EndSceneRenderer()
-	{
-		Renderer::EndScene();
-	}
-
 	void SceneRenderer::OnRenderScene2D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
-		Camera activeCamera = *renderPacket.MainCamera;
-		Math::mat4 cameraView = renderPacket.MainCameraViewMatrix;
-
-		SharedReference<Project> activeProject = Project::GetActive();
-		const ProjectProperties& projectProps = activeProject->GetProperties();
-
-		BeginSceneRenderer2D(renderPacket);
+		BeginScene2D(renderPacket);
 
 		LightPass2D(renderPacket);
 
-		SpritePass(renderPacket);
+		SpritePass2D(renderPacket);
 
-		ParticlePass(renderPacket);
+		ParticlePass2D(renderPacket);
 
-		TextPass(renderPacket);
+		TextPass2D(renderPacket);
 
-		// Scene Icons
-		if (renderPacket.EditorScene && projectProps.RendererProps.DisplaySceneIconsInEditor)
+		// Scene Gizmos
+		if (renderPacket.EditorScene)
 		{
-			SceneIconPass(renderPacket);
+			SharedReference<Project> project = Project::GetActive();
+			const ProjectProperties& properties = project->GetProperties();
+
+			if (properties.RendererProps.DisplaySceneIconsInEditor)
+			{
+				SceneGizmosPass2D(renderPacket);
+			}
 		}
 
-		EndSceneRenderer2D();
+		EndScene2D();
 	}
 
 	void SceneRenderer::OnRenderScene3D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
-		Math::mat4* view = (Math::mat4*)&renderPacket.MainCameraViewMatrix;
-		Math::mat4* projection = (Math::mat4*)&renderPacket.MainCameraProjectionMatrix;
+		const Math::mat4* view = (const Math::mat4*)&renderPacket.MainCameraViewMatrix;
+		const Math::mat4* projection = (const Math::mat4*)&renderPacket.MainCameraProjectionMatrix;
 
 		SkyboxComponent skyboxComponent;
 		SharedReference<Skybox> environment = nullptr;
 
 		FindCurrentEnvironment(renderPacket, skyboxComponent, environment);
 
-		BeginSceneRenderer(renderPacket);
+		BeginScene(renderPacket);
 
 		const bool hasEnvironment = s_EnvironmentHandle != 0 && view && projection && environment;
 
@@ -125,13 +91,35 @@ namespace Vortex {
 			ClearEnvironment();
 		}
 
-		LightPass3D(renderPacket);
+		LightPass(renderPacket);
 
 		const std::map<float, Entity>& sortedEntities = SortMeshGeometry(renderPacket);
 
 		GeometryPass(renderPacket, sortedEntities);
 
-		EndSceneRenderer();
+		EndScene();
+	}
+
+	void SceneRenderer::BeginScene2D(const SceneRenderPacket& renderPacket)
+	{
+		if (renderPacket.EditorScene)
+		{
+			EditorCamera* camera = (EditorCamera*)renderPacket.MainCamera;
+
+			Renderer2D::BeginScene(camera);
+		}
+		else
+		{
+			const SceneCamera& camera = (const SceneCamera&)*renderPacket.MainCamera;
+			const Math::mat4 view = renderPacket.MainCameraViewMatrix;
+
+			Renderer2D::BeginScene(camera, view);
+		}
+	}
+
+	void SceneRenderer::EndScene2D()
+	{
+		Renderer2D::EndScene();
 	}
 
 	void SceneRenderer::LightPass2D(const SceneRenderPacket& renderPacket)
@@ -154,7 +142,7 @@ namespace Vortex {
 		}
 	}
 
-	void SceneRenderer::SpritePass(const SceneRenderPacket& renderPacket)
+	void SceneRenderer::SpritePass2D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -192,12 +180,12 @@ namespace Vortex {
 
 		// Circle Pass 2D
 		{
-			auto group = scene->GetAllEntitiesWith<TransformComponent, CircleRendererComponent>();
+			auto view = scene->GetAllEntitiesWith<TransformComponent, CircleRendererComponent>();
 
-			for (const auto e : group)
+			for (const auto e : view)
 			{
 				Entity entity{ e, scene };
-				const auto [transformComponent, circleRendererComponent] = group.get<TransformComponent, CircleRendererComponent>(e);
+				const auto [transformComponent, circleRendererComponent] = view.get<TransformComponent, CircleRendererComponent>(e);
 
 				if (!entity.IsActive())
 					continue;
@@ -216,7 +204,7 @@ namespace Vortex {
 		}
 	}
 
-	void SceneRenderer::ParticlePass(const SceneRenderPacket& renderPacket)
+	void SceneRenderer::ParticlePass2D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -264,7 +252,7 @@ namespace Vortex {
 		}
 	}
 
-	void SceneRenderer::TextPass(const SceneRenderPacket& renderPacket)
+	void SceneRenderer::TextPass2D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -312,18 +300,18 @@ namespace Vortex {
 		Renderer2D::SetCullMode(originalCullMode);
 	}
 
-	void SceneRenderer::SceneIconPass(const SceneRenderPacket& renderPacket)
+	void SceneRenderer::SceneGizmosPass2D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
-		VX_CORE_ASSERT(renderPacket.EditorScene, "Scene Icons can only be rendered in a Editor Scene!");
+		VX_CORE_ASSERT(renderPacket.EditorScene, "Scene Gizmos can only be rendered in a Editor Scene!");
 
 		Scene* scene = renderPacket.Scene;
-		Math::mat4 cameraView = renderPacket.MainCameraViewMatrix;
+		const Math::mat4 cameraView = renderPacket.MainCameraViewMatrix;
 
 		const ProjectProperties& projectProps = Project::GetActive()->GetProperties();
 
-		// Camera Icons
+		// Camera Gizmos
 		{
 			auto view = scene->GetAllEntitiesWith<TransformComponent, CameraComponent>();
 
@@ -348,7 +336,7 @@ namespace Vortex {
 			}
 		}
 
-		// Light Icons
+		// Light Gizmos
 		{
 			auto view = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
 
@@ -380,7 +368,7 @@ namespace Vortex {
 			}
 		}
 
-		// Audio Icons
+		// Audio Gizmos
 		{
 			auto view = scene->GetAllEntitiesWith<TransformComponent, AudioSourceComponent>();
 
@@ -406,39 +394,32 @@ namespace Vortex {
 		}
 	}
 
-	void SceneRenderer::FindCurrentEnvironment(const SceneRenderPacket& renderPacket, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
+	void SceneRenderer::BeginScene(const SceneRenderPacket& renderPacket)
 	{
-		Scene* scene = renderPacket.Scene;
+		SharedReference<Framebuffer> framebuffer = renderPacket.TargetFramebuffer;
 
-		auto skyboxView = scene->GetAllEntitiesWith<SkyboxComponent>();
-
-		// Only render one environment per scene
-		for (const auto e : skyboxView)
+		if (renderPacket.EditorScene)
 		{
-			Entity entity{ e, scene };
+			EditorCamera* camera = (EditorCamera*)renderPacket.MainCamera;
 
-			if (!entity.IsActive())
-				continue;
+			Renderer::BeginScene(camera, framebuffer);
+		}
+		else
+		{
+			const SceneCamera& camera = (const SceneCamera&)*renderPacket.MainCamera;
+			const Math::mat4& view = renderPacket.MainCameraViewMatrix;
+			const Math::vec3& translation = renderPacket.MainCameraWorldSpaceTranslation;
 
-			skyboxComponent = entity.GetComponent<SkyboxComponent>();
-			AssetHandle environmentHandle = skyboxComponent.Skybox;
-			if (!AssetManager::IsHandleValid(environmentHandle))
-				continue;
-
-			environment = AssetManager::GetAsset<Skybox>(environmentHandle);
-			if (!environment)
-				continue;
-
-			if (environmentHandle != s_EnvironmentHandle)
-			{
-				SetEnvironment(environmentHandle, skyboxComponent, environment);
-			}
-
-			return;
+			Renderer::BeginScene(camera, view, translation, framebuffer);
 		}
 	}
 
-	void SceneRenderer::LightPass3D(const SceneRenderPacket& renderPacket)
+	void SceneRenderer::EndScene()
+	{
+		Renderer::EndScene();
+	}
+
+	void SceneRenderer::LightPass(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -578,8 +559,12 @@ namespace Vortex {
 		for (auto it = sortedEntities.crbegin(); it != sortedEntities.crend(); it++)
 		{
 			Entity entity = it->second;
+
+			if (!entity)
+				continue;
 			
-			VX_CORE_ASSERT(entity.HasComponent<MeshRendererComponent>() || entity.HasComponent<StaticMeshRendererComponent>(), "Entity doesn't have mesh component!");
+			const bool hasRequiredComponent = entity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>();
+			VX_CORE_ASSERT(hasRequiredComponent, "Entity doesn't have mesh component!");
 
 			if (entity.HasComponent<MeshRendererComponent>())
 			{
@@ -630,26 +615,26 @@ namespace Vortex {
 		Renderer::BindPointLightDepthMaps();
 		Renderer::BindSpotLightDepthMaps();
 
-		if (mesh->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())
-		{
-			shader->SetBool("u_HasAnimations", true);
+		const bool isAnimated = mesh->HasAnimations();
+		const bool hasRequiredComponents = entity.HasComponent<AnimatorComponent, AnimationComponent>();
 
+		shader->SetBool("u_HasAnimations", isAnimated);
+
+		if (isAnimated && hasRequiredComponents)
+		{
 			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
 			const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+			const uint32_t size = transforms.size();
 
-			for (uint32_t i = 0; i < transforms.size(); i++)
+			for (uint32_t i = 0; i < size; i++)
 			{
 				shader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
 			}
 		}
-		else
-		{
-			shader->SetBool("u_HasAnimations", false);
-		}
 
 		submesh.Render();
 
-		ResetAllMaterialFlags();
+		ResetMaterialFlags();
 	}
 
 	void SceneRenderer::RenderStaticMesh(Scene* scene, Entity entity, const SceneLightDescription& sceneLightDesc)
@@ -669,7 +654,7 @@ namespace Vortex {
 		Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
 		const auto& submeshes = staticMesh->GetSubmeshes();
 
-		auto& materialTable = staticMeshRendererComponent.Materials;
+		SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
 
 		// render each submesh
 		for (const auto& [submeshIndex, submesh] : submeshes)
@@ -700,7 +685,39 @@ namespace Vortex {
 
 			submesh.Render(materialHandle);
 
-			ResetAllMaterialFlags();
+			ResetMaterialFlags();
+		}
+	}
+
+	void SceneRenderer::FindCurrentEnvironment(const SceneRenderPacket& renderPacket, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
+	{
+		Scene* scene = renderPacket.Scene;
+
+		auto skyboxView = scene->GetAllEntitiesWith<SkyboxComponent>();
+
+		// Only render one environment per scene
+		for (const auto e : skyboxView)
+		{
+			Entity entity{ e, scene };
+
+			if (!entity.IsActive())
+				continue;
+
+			skyboxComponent = entity.GetComponent<SkyboxComponent>();
+			AssetHandle environmentHandle = skyboxComponent.Skybox;
+			if (!AssetManager::IsHandleValid(environmentHandle))
+				continue;
+
+			environment = AssetManager::GetAsset<Skybox>(environmentHandle);
+			if (!environment)
+				continue;
+
+			const bool consistent = environmentHandle == s_EnvironmentHandle;
+			if (consistent)
+				continue;
+			
+			SetEnvironment(environmentHandle, skyboxComponent, environment);
+			break;
 		}
 	}
 
@@ -709,6 +726,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		s_EnvironmentHandle = environmentHandle;
+
 		Renderer::CreateEnvironmentMap(skyboxComponent, environment);
 		Renderer::SetEnvironment(environment);
 	}
@@ -717,8 +735,8 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		Renderer::SetEnvironment(s_EmptyEnvironment);
 		s_EnvironmentHandle = 0;
+		Renderer::SetEnvironment(s_EmptyEnvironment);
 	}
 
 	void SceneRenderer::RenderEnvironment(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent* skyboxComponent, SharedReference<Skybox>& environment)
@@ -737,11 +755,11 @@ namespace Vortex {
 		}
 	}
 
-	void SceneRenderer::ResetAllMaterialFlags()
+	void SceneRenderer::ResetMaterialFlags()
 	{
 		RendererAPI::TriangleCullMode cullMode = Renderer::GetCullMode();
-		RenderCommand::EnableDepthTest();
 		RenderCommand::SetCullMode(cullMode);
+		RenderCommand::EnableDepthTest();
 	}
 
 }

@@ -71,8 +71,8 @@ namespace Vortex {
 		m_EditorScene = nullptr;
 		m_ActiveScene = m_EditorScene;
 
-		m_ViewportPanelSize = { applicationProperties.WindowWidth, applicationProperties.WindowHeight };
-		m_SecondViewportPanelSize = { applicationProperties.WindowWidth, applicationProperties.WindowHeight };
+		m_ViewportPanelSize = { (float)applicationProperties.WindowWidth, (float)applicationProperties.WindowHeight };
+		m_SecondViewportPanelSize = { (float)applicationProperties.WindowWidth, (float)applicationProperties.WindowHeight };
 
 		m_PanelManager = PanelManager::Create();
 
@@ -81,8 +81,8 @@ namespace Vortex {
 		m_PanelManager->AddPanel<NetworkManagerPanel>();
 		m_PanelManager->AddPanel<SceneHierarchyPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<ScriptRegistryPanel>();
-		m_PanelManager->AddPanel<MaterialEditorPanel>()->IsOpen = true;
-		m_PanelManager->AddPanel<SceneRendererPanel>()->IsOpen = true;
+		m_PanelManager->AddPanel<MaterialEditorPanel>();
+		m_PanelManager->AddPanel<SceneRendererPanel>();
 		m_PanelManager->AddPanel<AssetRegistryPanel>();
 		m_PanelManager->AddPanel<BuildSettingsPanel>(
 			VX_BIND_CALLBACK(BuildAndRunProject),
@@ -337,12 +337,6 @@ namespace Vortex {
 		if (!rightMouseButtonDown && !(altDown && (leftMouseButtonDown || (middleMouseButtonDown))))
 		{
 			m_StartedClickInViewport = m_StartedClickInSecondViewport = false;
-		}
-
-		const bool pendingTransisiton = ScriptRegistry::HasPendingTransitionQueued();
-		if (m_SceneState == SceneState::Play && pendingTransisiton)
-		{
-			QueueSceneTransition();
 		}
 	}
 
@@ -881,12 +875,12 @@ namespace Vortex {
 		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		Gui::Begin("Scene", &m_SceneViewportPanelOpen, ImGuiWindowFlags_NoCollapse);
 
-		const auto viewportMinRegion = Gui::GetWindowContentRegionMin();
-		const auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
-		const auto viewportOffset = Gui::GetWindowPos();
+		const ImVec2 viewportMinRegion = Gui::GetWindowContentRegionMin();
+		const ImVec2 viewportMaxRegion = Gui::GetWindowContentRegionMax();
+		const ImVec2 viewportOffset = Gui::GetWindowPos();
 
 		m_ViewportBounds.MinBound = Math::vec2(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y);
-		m_ViewportBounds.MinBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
+		m_ViewportBounds.MaxBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
 
 		m_ActiveScene->SetViewportBounds(m_ViewportBounds);
 
@@ -1168,9 +1162,13 @@ namespace Vortex {
 		bool showGizmos;
 
 		if (allowInPlayMode)
+		{
 			showGizmos = (selectedEntity && validGizmoTool && !altDown && !rightMouseButtonDown);
+		}
 		else
+		{
 			showGizmos = (selectedEntity && validGizmoTool && !altDown && !rightMouseButtonDown && notInPlayMode);
+		}
 
 		if (showGizmos)
 		{
@@ -1207,7 +1205,9 @@ namespace Vortex {
 			);
 
 			if (projectProps.GizmoProps.DrawGrid)
+			{
 				ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(transform), projectProps.GizmoProps.GridSize);
+			}
 
 			if (ImGuizmo::IsUsing())
 			{
@@ -1269,9 +1269,9 @@ namespace Vortex {
 		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
 		Gui::Begin("Second Viewport", &m_SecondViewportPanelOpen, ImGuiWindowFlags_NoCollapse);
 
-		const auto viewportMinRegion = Gui::GetWindowContentRegionMin();
-		const auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
-		const auto viewportOffset = Gui::GetWindowPos();
+		const ImVec2 viewportMinRegion = Gui::GetWindowContentRegionMin();
+		const ImVec2 viewportMaxRegion = Gui::GetWindowContentRegionMax();
+		const ImVec2 viewportOffset = Gui::GetWindowPos();
 
 		m_SecondViewportBounds.MinBound = Math::vec2(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y);
 		m_SecondViewportBounds.MaxBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
@@ -2897,32 +2897,23 @@ namespace Vortex {
 		const std::string timerName = std::format("{} Scene Load Time", sceneFilename);
 		InstrumentationTimer timer(timerName.c_str());
 
-		if (serializer.Deserialize(filepath.string()))
+		if (!serializer.Deserialize(filepath.string()))
 		{
-			m_EditorScene = newScene;
-			SetSceneContext(m_EditorScene);
-
-			ResetEditorCameras();
-
-			m_ActiveScene = m_EditorScene;
-			m_EditorSceneFilepath = filepath;
-
-			SetWindowTitle(sceneFilename);
-
-			m_ActiveScene->SetDebugName(sceneFilename);
-
-			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
-
-			for (const auto& [buildIndex, sceneFilepath] : buildIndices)
-			{
-				if (sceneFilepath.find(sceneFilename) == std::string::npos)
-					continue;
-
-				Scene::SetActiveSceneBuildIndex(buildIndex);
-
-				break;
-			}
+			VX_CORE_WARN("Failed to deserialize scene - {}", sceneFilename);
+			return;
 		}
+
+		m_EditorScene = newScene;
+		SetSceneContext(m_EditorScene);
+
+		ResetEditorCameras();
+
+		m_ActiveScene = m_EditorScene;
+		m_EditorSceneFilepath = filepath;
+
+		SetWindowTitle(sceneFilename);
+
+		m_ActiveScene->SetDebugName(sceneFilename);
 	}
 
 	void EditorLayer::SaveSceneAs()
@@ -2974,21 +2965,26 @@ namespace Vortex {
 		ProjectProperties projectProps = activeProject->GetProperties();
 
 		if (projectProps.ScriptingProps.ReloadAssemblyOnPlay)
+		{
 			ScriptEngine::ReloadAssembly();
+		}
 
-		if (projectProps.EditorProps.MaximizeOnPlay)
-			m_SceneViewportMaximized = true;
+		m_SceneViewportMaximized = projectProps.EditorProps.MaximizeOnPlay;
 
-		auto consolePanel = m_PanelManager->GetPanel<ConsolePanel>();
+		SharedReference<ConsolePanel> consolePanel = m_PanelManager->GetPanel<ConsolePanel>();
 		if (consolePanel->ClearOnPlay())
+		{
 			consolePanel->ClearMessages();
+		}
 
+		// Make a copy of the editors scene
 		m_ActiveScene = Scene::Copy(m_EditorScene);
+
+		ScriptRegistry::SetSceneStartTime(Time::GetTime());
+
 		m_ActiveScene->OnRuntimeStart(projectProps.EditorProps.MuteAudioSources);
 
 		SetSceneContext(m_ActiveScene);
-
-		ScriptRegistry::SetSceneStartTime(Time::GetTime());
 
 		OnNoGizmoSelected();
 	}
@@ -3095,23 +3091,12 @@ namespace Vortex {
 		{
 			m_StartSceneFilepath = m_EditorSceneFilepath;
 
-			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
-			const uint32_t nextBuildIndex = ScriptRegistry::GetNextBuildIndex();
-
-			if (buildIndices.find(nextBuildIndex) == buildIndices.end())
-			{
-				VX_CONSOLE_LOG_ERROR("Trying to load Scene with invalid Build Index: {}", nextBuildIndex);
-				return;
-			}
-
-			Fs::Path scenePath = buildIndices.at(nextBuildIndex);
-			Fs::Path assetDirectory = Project::GetAssetDirectory();
-			Fs::Path nextSceneFilepath = assetDirectory / scenePath;
+			// TODO
+			const Fs::Path assetDirectory = Project::GetAssetDirectory();
+			const Fs::Path nextSceneFilepath = assetDirectory / "";
 
 			OpenScene(nextSceneFilepath);
 			OnScenePlay();
-
-			ScriptRegistry::ResetBuildIndex();
 
 			m_TransitionedFromStartScene = true;
 		});
@@ -3263,10 +3248,9 @@ namespace Vortex {
 
 		mx -= viewportBounds.MinBound.x;
 		my -= viewportBounds.MinBound.y;
-		auto viewportWidth = viewportBounds.MaxBound.x - viewportBounds.MinBound.x;
-		auto viewportHeight = viewportBounds.MaxBound.y - viewportBounds.MinBound.y;
+		const Math::vec2 viewportSize = viewportBounds.CalculateViewportSize();
 
-		return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+		return { (mx / viewportSize.x) * 2.0f - 1.0f, ((my / viewportSize.y) * 2.0f - 1.0f) * -1.0f };
 	}
 
 	Math::Ray EditorLayer::CastRay(EditorCamera* editorCamera, float mx, float my)
@@ -3312,18 +3296,15 @@ namespace Vortex {
 				if (!AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh))
 					continue;
 
-				auto staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
-				if (!staticMesh)
+				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
+				if (staticMesh == nullptr)
 					continue;
 
+				const Math::mat4 transform = worldSpaceTransform.GetTransform();
 				const auto& submeshes = staticMesh->GetSubmeshes();
-				uint32_t submeshIndex = 0;
 
-				while (staticMesh->HasSubmesh(submeshIndex))
+				for (const auto& [submeshIndex, submesh] : submeshes)
 				{
-					const auto& submesh = submeshes.at(submeshIndex++);
-
-					Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
 					Math::Ray ray{
 						Math::Inverse(transform) * Math::vec4(origin, 1.0f),
 						Math::Inverse((Math::mat3(transform))) * direction
@@ -3333,12 +3314,12 @@ namespace Vortex {
 
 					float t;
 					const bool intersects = ray.IntersectsAABB(aabb, t);
-					if (intersects)
-					{
-						float distance = Math::Distance(camera->GetPosition(), worldSpaceTransform.Translation);
-						selectionData.emplace_back(SelectionData{ entity.GetUUID(), distance });
-						break;
-					}
+					if (!intersects)
+						continue;
+
+					const float distance = Math::Distance(camera->GetPosition(), worldSpaceTransform.Translation);
+					selectionData.emplace_back(SelectionData{ entity.GetUUID(), distance });
+					break;
 				}
 			}
 
@@ -3349,23 +3330,28 @@ namespace Vortex {
 			}
 
 			const bool anyViewportHovered = (m_SceneViewportHovered && m_SceneState != SceneState::Play) || m_SecondViewportHovered;
-			if (anyViewportHovered)
+			if (!anyViewportHovered)
 			{
-				SelectionData selectedData = selectionData[0];
+				return Entity{};
+			}
 
-				float closest = selectedData.Distance;
-				for (const auto& data : selectionData)
-				{
-					if (data.Distance < closest)
-					{
-						closest = data.Distance;
-						selectedData.SelectedUUID = data.SelectedUUID;
-						selectedData.Distance = data.Distance;
-					}
-				}
+			// start with the first option as a default
+			SelectionData selectedData = selectionData[0];
 
-				if (Entity hovered = m_ActiveScene->TryGetEntityWithUUID(selectedData.SelectedUUID))
-					return hovered;
+			float closest = selectedData.Distance;
+			for (const auto& current : selectionData)
+			{
+				if (current.Distance > closest)
+					continue;
+				
+				closest = current.Distance;
+				selectedData.SelectedUUID = current.SelectedUUID;
+				selectedData.Distance = current.Distance;
+			}
+
+			if (Entity hovered = m_ActiveScene->TryGetEntityWithUUID(selectedData.SelectedUUID))
+			{
+				return hovered;
 			}
 		}
 

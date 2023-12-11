@@ -149,20 +149,23 @@ namespace Vortex {
 	{
 		RenderCommand::SetViewport(viewport);
 
-		if (s_Data.RenderFlags & (uint32_t)RenderFlag::EnableBloom)
+		if (IsFlagSet(RenderFlag::EnableBloom))
 		{
 			s_Data.BloomRenderPass.Destroy();
 			CreateBlurFramebuffer(viewport.Width, viewport.Height);
 		}
 	}
 
-	void Renderer::BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedReference<Framebuffer> targetFramebuffer)
+	void Renderer::BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& cameraTranslation, SharedReference<Framebuffer> targetFramebuffer)
 	{
 		VX_PROFILE_FUNCTION();
 
 		BindRenderTarget(targetFramebuffer);
 
-		BindShaders(view, camera.GetProjectionMatrix(), translation);
+		const Math::mat4& projection = camera.GetProjectionMatrix();
+
+		BindShaders(view, projection, cameraTranslation);
+
 		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
 	}
 
@@ -172,7 +175,12 @@ namespace Vortex {
 
 		BindRenderTarget(targetFramebuffer);
 
-		BindShaders(camera->GetViewMatrix(), camera->GetProjectionMatrix(), camera->GetPosition());
+		const Math::mat4& view = camera->GetViewMatrix();
+		const Math::mat4& projection = camera->GetProjectionMatrix();
+		const Math::vec3& translation = camera->GetPosition();
+
+		BindShaders(view, projection, translation);
+
 		RenderCommand::SetBlendMode(RendererAPI::BlendMode::SrcAlphaOneMinusSrcAlpha);
 	}
 
@@ -700,7 +708,7 @@ namespace Vortex {
 		}
 	}
 
-	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition)
+	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraTranslation)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -711,7 +719,7 @@ namespace Vortex {
 		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
 		pbrShader->Enable();
 		pbrShader->SetMat4("u_ViewProjection", viewProjection);
-		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
+		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraTranslation);
 		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
 		pbrShader->SetFloat3("u_SceneProperties.BloomThreshold", bloomSettings);
@@ -719,7 +727,7 @@ namespace Vortex {
 		SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
 		pbrStaticShader->Enable();
 		pbrStaticShader->SetMat4("u_ViewProjection", viewProjection);
-		pbrStaticShader->SetFloat3("u_SceneProperties.CameraPosition", cameraPosition);
+		pbrStaticShader->SetFloat3("u_SceneProperties.CameraPosition", cameraTranslation);
 		pbrStaticShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 		pbrStaticShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
 		pbrStaticShader->SetFloat3("u_SceneProperties.BloomThreshold", bloomSettings);
@@ -729,16 +737,17 @@ namespace Vortex {
 		s_Data.SceneLightDesc.SpotLightIndex = 0;
 	}
 
-	void Renderer::RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes)
+	void Renderer::RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes)
 	{
 		SharedReference<Shader> shadowMapShader = s_Data.ShaderLibrary.Get("SkyLightShadowMap");
 
 		// Configure shader
 		{
-			Math::mat4 orthogonalProjection = Math::Ortho(-75.0f, 75.0f, -75.0f, 75.0f, 0.01f, 500.0f);
-			TransformComponent& transform = lightSourceEntity.GetTransform();
-			Math::mat4 lightView = Math::LookAt(transform.Translation, Math::Normalize(transform.GetRotationEuler()), Math::vec3(0.0f, 1.0f, 0.0f));
-			Math::mat4 lightProjection = orthogonalProjection * lightView;
+			const Math::mat4 orthogonalProjection = Math::Ortho(-75.0f, 75.0f, -75.0f, 75.0f, 0.01f, 500.0f);
+			Scene* contextScene = lightSourceEntity.GetContextScene();
+			const TransformComponent transform = contextScene->GetWorldSpaceTransform(lightSourceEntity);
+			const Math::mat4 lightView = Math::LookAt(transform.Translation, Math::Normalize(transform.GetRotationEuler()), Math::vec3(0.0f, 1.0f, 0.0f));
+			const Math::mat4 lightProjection = orthogonalProjection * lightView;
 
 			RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::Front);
 
@@ -813,7 +822,7 @@ namespace Vortex {
 		RenderCommand::SetCullMode(s_Data.CullMode);
 	}
 
-	void Renderer::RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes)
+	void Renderer::RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes)
 	{
 		// Configure shader
 		/*float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
@@ -901,7 +910,7 @@ namespace Vortex {
 		RenderCommand::SetCullMode(s_Data.CullMode);*/
 	}
 
-	void Renderer::RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes)
+	void Renderer::RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes)
 	{
 		/*float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
 		float nearPlane = 0.01f;

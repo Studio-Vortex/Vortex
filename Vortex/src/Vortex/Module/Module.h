@@ -2,7 +2,7 @@
 
 #include "Vortex/Core/Base.h"
 
-#include "Vortex/Core/LibraryBase.h"
+#include "Vortex/Collections/ILibraryMap.h"
 
 #include "Vortex/Module/Version.h"
 
@@ -56,19 +56,19 @@ namespace Vortex {
 		std::vector<RequiredModule> FailedModuleReferences;
 	};
 
-	class VORTEX_API ModuleLibrary : public LibraryBase<SubModule, std::string>
+	class VORTEX_API ModuleLibrary : public ILibrary<std::string, SubModule>
 	{
 	public:
 		ModuleLibrary() = default;
 		~ModuleLibrary() override = default;
 
-		void Add(const SubModule& submodule) override;
-		uint8_t Remove(const std::string& name) override;
+		virtual void Add(const Value& submodule) override;
+		virtual uint8_t Remove(const Key& name) override;
 
-		bool Exists(const std::string& name) const override;
+		virtual bool Exists(const Key& name) const override;
 
-		SubModule& Get(const std::string& name) override;
-		const SubModule& Get(const std::string& name) const override;
+		virtual Value& Get(const Key& name) override;
+		virtual const Value& Get(const Key& name) const override;
 
 		ModuleResult ResolveModules() const;
 	};

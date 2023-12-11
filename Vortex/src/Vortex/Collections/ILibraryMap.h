@@ -7,18 +7,22 @@
 
 namespace Vortex {
 
-	template <typename V, typename K>
-	class VORTEX_API LibraryBase
+	template <typename K, typename V>
+	class VORTEX_API ILibrary
 	{
 	public:
-		virtual ~LibraryBase() = default;
+		using Key = K;
+		using Value = V;
+
+	public:
+		virtual ~ILibrary() = default;
 
 		virtual void Add(const V& value) = 0;
 		virtual uint8_t Remove(const K& identifier) = 0;
 
 		virtual bool Exists(const K& identifier) const = 0;
 
-		virtual size_t Size() const { return m_LibraryData.size(); }
+		VX_FORCE_INLINE virtual size_t Size() const { return m_LibraryData.size(); }
 
 		virtual const V& Get(const K& identifier) const = 0;
 		virtual V& Get(const K& identifier) = 0;
@@ -33,18 +37,22 @@ namespace Vortex {
 		std::vector<V> m_LibraryData;
 	};
 
-	template <typename V, typename K>
-	class VORTEX_API LibraryMapBase
+	template <typename K, typename V>
+	class VORTEX_API ILibraryMap
 	{
 	public:
-		virtual ~LibraryMapBase() = default;
+		using Key = K;
+		using Value = V;
+
+	public:
+		virtual ~ILibraryMap() = default;
 
 		virtual void Add(const V& value) = 0;
 		virtual uint8_t Remove(const K& identifier) = 0;
 
-		virtual bool Exists(const K& identifier) const { return m_LibraryData.find(identifier) != m_LibraryData.end(); }
+		VX_FORCE_INLINE virtual bool Exists(const K& identifier) const { return m_LibraryData.contains(identifier); }
 
-		virtual size_t Size() const { return m_LibraryData.size(); }
+		VX_FORCE_INLINE virtual size_t Size() const { return m_LibraryData.size(); }
 
 		virtual const V& Get(const K& identifier) const = 0;
 		virtual V& Get(const K& identifier) = 0;

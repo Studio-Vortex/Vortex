@@ -38,9 +38,6 @@ namespace Vortex {
 		static SharedReference<Project> Load(const Fs::Path& filepath);
 		static SharedReference<Project> LoadRuntime(const Fs::Path& filepath);
 		bool SaveToDisk();
-
-		static void SubmitSceneToBuild(const std::string& filepath);
-		static BuildIndexMap& GetScenesInBuild();
 		
 	private:
 		bool OnSerialized();

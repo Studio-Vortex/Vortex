@@ -3,9 +3,11 @@
 // Platform detection using predefined macros
 #ifdef _WIN32
 	/* Windows x64/x86 */
+	#define VX_32BIT
 #ifdef _WIN64
 	/* Windows x64  */
 	#define VX_PLATFORM_WINDOWS
+	#define VX_64BIT
 #else
 	/* Windows x86 */
 	#error "x86 Builds are not supported!"

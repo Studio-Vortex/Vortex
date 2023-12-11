@@ -221,16 +221,32 @@ namespace Vortex {
 		DestroyEntityInternal(queueFreeData);
 	}
 
+	const QueueFreeData& Scene::GetQueueFreeStatus(UUID entityUUID) const
+	{
+		VX_CORE_ASSERT(m_QueueFreeMap.contains(entityUUID), "entity was not found in queue free map!");
+
+		if (auto it = m_QueueFreeMap.find(entityUUID); it != m_QueueFreeMap.end())
+		{
+			return m_QueueFreeMap.at(entityUUID);
+		}
+	}
+
 	void Scene::DestroyEntityInternal(Entity entity, bool excludeChildren)
 	{
 		VX_PROFILE_FUNCTION();
 
 #ifdef VX_DEBUG
+		const uint32_t garbage = 0xcccccccc;
 		uint32_t addr = (uint32_t)entity.GetContextScene();
-		uint32_t garbage = 0xcccccccc;
-		if (addr == garbage || (uint32_t)entity.operator entt::entity() == garbage)
+		if (addr == garbage)
 		{
 			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntityInternal with invalid Scene!");
+			return;
+		}
+		addr = (uint32_t)entity.operator entt::entity();
+		if (addr == garbage)
+		{
+			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyEntityInternal with invalid Entity!");
 			return;
 		}
 #endif
@@ -249,14 +265,14 @@ namespace Vortex {
 
 		if (m_IsRunning)
 		{
-			// Call Entity.OnDestroy
+			// Invoke Entity.OnDestroy
 			if (entity.HasComponent<ScriptComponent>() && ScriptEngine::GetContextScene() != nullptr)
 			{
 				const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
 
 				if (ScriptEngine::EntityClassExists(scriptComponent.ClassName))
 				{
-					ScriptEngine::CallMethod(ManagedMethod::OnDestroy, entity);
+					ScriptEngine::Invoke(ManagedMethod::OnDestroy, entity);
 				}
 			}
 
@@ -267,6 +283,7 @@ namespace Vortex {
 				nsc.DestroyInstanceScript(&nsc);
 			}
 
+			// Destroy physics body
 			Physics::DestroyPhysicsActor(entity);
 			Physics2D::DestroyPhysicsBody(entity);
 		}
@@ -280,7 +297,7 @@ namespace Vortex {
 		{
 			for (size_t i = 0; i < entity.Children().size(); i++)
 			{
-				auto& childID = entity.Children()[i];
+				UUID childID = entity.Children()[i];
 				Entity child = TryGetEntityWithUUID(childID);
 				DestroyEntityInternal(child, excludeChildren);
 			}
@@ -307,10 +324,14 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		if (!m_EntityMap.contains(queueFreeData.EntityUUID))
+		{
 			return;
+		}
 
 		if (m_QueueFreeMap.contains(queueFreeData.EntityUUID))
+		{
 			return;
+		}
 
 		const bool invalidTimer = queueFreeData.WaitTime <= 0.0f;
 
@@ -339,11 +360,11 @@ namespace Vortex {
 			if (!timerDone)
 				continue;
 			
-			// Timer is done so lets add it to queue
 			auto it = std::find(m_EntitiesToBeRemovedFromQueue.begin(), m_EntitiesToBeRemovedFromQueue.end(), uuid);
 			if (it != m_EntitiesToBeRemovedFromQueue.end())
 				continue;
 
+			// Timer is done so lets add it to queue
 			m_EntitiesToBeRemovedFromQueue.push_back(uuid);
 		}
 
@@ -351,7 +372,9 @@ namespace Vortex {
 		for (const auto& uuid : m_EntitiesToBeRemovedFromQueue)
 		{
 			VX_CORE_ASSERT(m_EntityMap.contains(uuid), "Invalid Entity UUID!");
-			SubmitToDestroyEntity(m_EntityMap[uuid], m_QueueFreeMap[uuid].ExcludeChildren);
+			Entity entity = TryGetEntityWithUUID(uuid);
+			const QueueFreeData& data = GetQueueFreeStatus(uuid);
+			SubmitToDestroyEntity(entity, data.ExcludeChildren);
 			m_QueueFreeMap.erase(uuid);
 		}
 
@@ -382,21 +405,21 @@ namespace Vortex {
 			for (const auto e : view)
 			{
 				Entity entity{ e, this };
-				ScriptEngine::CreateEntityScriptInstanceRuntime(entity);
+				ScriptEngine::RT_CreateEntityScriptInstance(entity);
 			}
 
-			// Call Entity.OnAwake
+			// Invoke Entity.OnAwake
 			for (const auto e : view)
 			{
 				Entity entity{ e, this };
-				ScriptEngine::CallMethod(ManagedMethod::OnAwake, entity);
+				ScriptEngine::Invoke(ManagedMethod::OnAwake, entity);
 			}
 
-			// Call Entity.OnCreate
+			// Invoke Entity.OnCreate
 			for (const auto e : view)
 			{
 				Entity entity{ e, this };
-				ScriptEngine::CallMethod(ManagedMethod::OnCreate, entity);
+				ScriptEngine::Invoke(ManagedMethod::OnCreate, entity);
 			}
 		}
 
@@ -417,11 +440,11 @@ namespace Vortex {
 
 		m_IsRunning = false;
 
-		// Call Entity.OnDestroy
+		// Invoke Entity.OnDestroy
 		GetAllEntitiesWith<ScriptComponent>().each([=](auto entityID, auto& scriptComponent)
 		{
 			Entity entity{ entityID, this };
-			ScriptEngine::CallMethod(ManagedMethod::OnDestroy, entity);
+			ScriptEngine::Invoke(ManagedMethod::OnDestroy, entity);
 		});
 		ScriptEngine::OnRuntimeStop();
 
@@ -442,6 +465,8 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		m_IsSimulating = true;
+
 		Physics::OnSimulationStart(this);
 		Physics2D::OnSimulationStart(this);
 	}
@@ -457,6 +482,8 @@ namespace Vortex {
 	void Scene::OnPhysicsSimulationStop()
 	{
 		VX_PROFILE_FUNCTION();
+
+		m_IsSimulating = false;
 
 		Physics::OnSimulationStop(this);
 		Physics2D::OnSimulationStop();
@@ -483,7 +510,7 @@ namespace Vortex {
 				nsc.Instance->OnUpdate(delta);
 			});
 
-			// Call Entity.OnUpdate
+			// Invoke Entity.OnUpdate
 			auto view = GetAllEntitiesWith<ScriptComponent>();
 			for (const auto e : view)
 			{
@@ -493,7 +520,7 @@ namespace Vortex {
 					continue;
 
 				RuntimeMethodArgument arg0(delta);
-				ScriptEngine::CallMethod(ManagedMethod::OnUpdate, entity, { &arg0 });
+				ScriptEngine::Invoke(ManagedMethod::OnUpdate, entity, { arg0 });
 			}
 
 			// Update Physics Bodies
@@ -661,11 +688,11 @@ namespace Vortex {
 
 		auto view = GetAllEntitiesWith<ScriptComponent>();
 
-		// Call Entity.OnGui
+		// Invoke Entity.OnGui
 		for (const auto e : view)
 		{
 			Entity entity{ e, this };
-			ScriptEngine::CallMethod(ManagedMethod::OnGui, entity);
+			ScriptEngine::Invoke(ManagedMethod::OnGui, entity);
 		}
 	}
 
@@ -829,7 +856,7 @@ namespace Vortex {
 
 		if (auto it = m_EntityMap.find(uuid); it != m_EntityMap.end())
 		{
-			return Entity{ it->second, this };
+			return it->second;
 		}
 
 		return Entity{};
@@ -1036,7 +1063,7 @@ namespace Vortex {
 
 	// This is clearly a design flaw with the renderer, it should already have all of this data but yet we
 	// still need to go and gather it ourselves which is inefficient
-    SharedReference<Scene::SceneGeometry>& Scene::GetSceneMeshes()
+    SharedReference<SceneGeometry>& Scene::GetSceneMeshes()
 	{
 		if (m_SceneMeshes == nullptr)
 		{
@@ -1376,40 +1403,6 @@ namespace Vortex {
 
 		Entity entity = { e, this };
 		// TODO
-	}
-
-	void Scene::SubmitSceneToBuild(const std::string& sceneFilePath)
-	{
-		VX_PROFILE_FUNCTION();
-
-		Project::SubmitSceneToBuild(sceneFilePath);
-	}
-
-	void Scene::RemoveIndexFromBuild(uint32_t buildIndex)
-	{
-		VX_PROFILE_FUNCTION();
-
-		BuildIndexMap& buildIndices = Project::GetScenesInBuild();
-
-		if (buildIndices.contains(buildIndex))
-		{
-			buildIndices.erase(buildIndex);
-		}
-	}
-
-	const BuildIndexMap& Scene::GetScenesInBuild()
-	{
-		return Project::GetScenesInBuild();
-	}
-
-    uint32_t Scene::GetActiveSceneBuildIndex()
-    {
-		return s_ActiveBuildIndex;
-    }
-
-	void Scene::SetActiveSceneBuildIndex(uint32_t buildIndex)
-	{
-		s_ActiveBuildIndex = buildIndex;
 	}
 
 	SharedReference<Scene> Scene::Copy(SharedReference<Scene>& source)

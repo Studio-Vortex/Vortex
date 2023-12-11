@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Core/TimeStep.h"
 
@@ -23,26 +24,25 @@ namespace Vortex {
 	class StaticMesh;
 	class EditorCamera;
 
-	class Scene : public Asset
+	struct VORTEX_API QueueFreeData
 	{
-	public:
-		struct QueueFreeData
-		{
-			UUID EntityUUID = 0;
-			float WaitTime = 0.0f;
-			bool ExcludeChildren = false;
-		};
+		UUID EntityUUID = 0;
+		float WaitTime = 0.0f;
+		bool ExcludeChildren = false;
+	};
 
-		struct SceneGeometry : public RefCounted
-		{
-			std::vector<SharedReference<Mesh>> Meshes;
-			std::vector<Math::mat4> WorldSpaceMeshTransforms;
-			std::vector<Entity> MeshEntities;
+	struct VORTEX_API SceneGeometry : public RefCounted
+	{
+		std::vector<SharedReference<Mesh>> Meshes;
+		std::vector<Math::mat4> WorldSpaceMeshTransforms;
+		std::vector<Entity> MeshEntities;
 
-			std::vector<SharedReference<StaticMesh>> StaticMeshes;
-			std::vector<Math::mat4> WorldSpaceStaticMeshTransforms;
-		};
+		std::vector<SharedReference<StaticMesh>> StaticMeshes;
+		std::vector<Math::mat4> WorldSpaceStaticMeshTransforms;
+	};
 
+	class VORTEX_API Scene : public Asset
+	{
 	public:
 		Scene() = default;
 		Scene(SharedReference<Framebuffer>& targetFramebuffer);
@@ -54,6 +54,8 @@ namespace Vortex {
 
 		void SubmitToDestroyEntity(Entity entity, bool excludeChildren = false);
 		void SubmitToDestroyEntity(const QueueFreeData& queueFreeData);
+
+		const QueueFreeData& GetQueueFreeStatus(UUID entityUUID) const;
 
 	private:
 		void DestroyEntityInternal(Entity entity, bool excludeChildren = false);
@@ -88,12 +90,14 @@ namespace Vortex {
 		VX_FORCE_INLINE void SetTargetFramebuffer(SharedReference<Framebuffer> target) { m_TargetFramebuffer = target; }
 
 		VX_FORCE_INLINE bool IsRunning() const { return m_IsRunning; }
+		VX_FORCE_INLINE bool IsSimulating() const { return m_IsSimulating; }
 		VX_FORCE_INLINE bool IsPaused() const { return m_IsPaused; }
 		void SetPaused(bool paused);
 
 		VX_FORCE_INLINE Math::uvec2 GetViewportSize() const { return Math::uvec2(m_ViewportWidth, m_ViewportHeight); }
 		VX_FORCE_INLINE const ViewportBounds& GetViewportBounds() const { return m_ViewportBounds; }
 		VX_FORCE_INLINE void SetViewportBounds(const ViewportBounds& viewportBounds) { m_ViewportBounds = viewportBounds; }
+
 		VX_FORCE_INLINE size_t GetEntityCount() const { return m_Registry.alive(); }
 
 		void Step(uint32_t frames = 1) { m_StepFrames = frames; }
@@ -149,13 +153,6 @@ namespace Vortex {
 		const std::string& GetDebugName() const { return m_DebugName; }
 		void SetDebugName(const std::string& name) { m_DebugName = name; }
 #endif
-
-		static void SubmitSceneToBuild(const std::string& sceneFilePath);
-		static void RemoveIndexFromBuild(uint32_t buildIndex);
-		static const std::map<uint32_t, std::string>& GetScenesInBuild();
-
-		static uint32_t GetActiveSceneBuildIndex();
-		static void SetActiveSceneBuildIndex(uint32_t buildIndex);
 
 		static SharedReference<Scene> Copy(SharedReference<Scene>& source);
 		static void CreateSampleScene(ProjectType type, SharedReference<Scene>& context);
@@ -216,6 +213,7 @@ namespace Vortex {
 #endif
 
 		bool m_IsRunning = false;
+		bool m_IsSimulating = false;
 		bool m_IsPaused = false;
 
 	private:

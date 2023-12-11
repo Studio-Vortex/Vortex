@@ -16,8 +16,8 @@ namespace Vortex {
 
 	void RuntimeLayer::OnAttach()
 	{
-		const auto& appProps = Application::Get().GetProperties();
-		const auto& commandLineArgs = appProps.CommandLineArgs;
+		const Application& app = Application::Get();
+		const ApplicationProperties& applicationProperties = app.GetProperties();
 
 		FramebufferProperties framebufferProps{};
 		framebufferProps.Attachments = {
@@ -26,21 +26,23 @@ namespace Vortex {
 			ImageFormat::RGBA16F,
 			ImageFormat::Depth
 		};
-		framebufferProps.Width = appProps.WindowWidth;
-		framebufferProps.Height = appProps.WindowHeight;
+		framebufferProps.Width = applicationProperties.WindowWidth;
+		framebufferProps.Height = applicationProperties.WindowHeight;
 
 		m_Framebuffer = Framebuffer::Create(framebufferProps);
 
-		m_ViewportSize = Math::vec2((float)appProps.WindowWidth, (float)appProps.WindowHeight);
+		m_ViewportSize = Math::vec2((float)applicationProperties.WindowWidth, (float)applicationProperties.WindowHeight);
 
 		m_RuntimeScene = Scene::Create();
 		m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
-		if (commandLineArgs.Count > 1)
+		const ApplicationCommandLineArgs& arguments = applicationProperties.CommandLineArgs;
+		if (arguments.Count > 1)
 		{
-			const auto& projectFilepath = commandLineArgs[1];
-
-			OpenProject(std::filesystem::path(projectFilepath));
+			const char* arg1 = arguments[1];
+			const Fs::Path projectFilepath = Fs::Path(arg1);
+			const bool success = OpenProject(projectFilepath);
+			VX_CORE_ASSERT(success, "Failed to open project!");
 		}
 		else
 		{
@@ -116,12 +118,6 @@ namespace Vortex {
 			postProcessProps.StageCount = VX_ARRAYSIZE(stages);
 			Renderer::BeginPostProcessingStages(postProcessProps);
 		}
-
-		const bool pendingTransition = ScriptRegistry::HasPendingTransitionQueued();
-		if (pendingTransition)
-		{
-			QueueSceneTransition();
-		}
 	}
 
 	void RuntimeLayer::OnGuiRender()
@@ -143,9 +139,9 @@ namespace Vortex {
 		uint32_t flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus;
 		Gui::Begin("##ApplicationViewport", nullptr, flags);
 
-		const auto viewportMinRegion = Gui::GetWindowContentRegionMin();
-		const auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
-		const auto viewportOffset = Gui::GetWindowPos();
+		const ImVec2 viewportMinRegion = Gui::GetWindowContentRegionMin();
+		const ImVec2 viewportMaxRegion = Gui::GetWindowContentRegionMax();
+		const ImVec2 viewportOffset = Gui::GetWindowPos();
 
 		m_ViewportBounds.MinBound = Math::vec2(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y);
 		m_ViewportBounds.MaxBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
@@ -171,18 +167,18 @@ namespace Vortex {
 		dispatcher.Dispatch<WindowCloseEvent>(VX_BIND_CALLBACK(RuntimeLayer::OnWindowCloseEvent));
 	}
 
-	void RuntimeLayer::OnRuntimeScenePlay()
+	void RuntimeLayer::OnScenePlay()
 	{
 		VX_PROFILE_FUNCTION();
 
-		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "Scene must not be running!");
-
-		m_RuntimeScene->OnRuntimeStart();
+		VX_CORE_ASSERT(m_RuntimeScene, "Invalid scene!");
 
 		ScriptRegistry::SetSceneStartTime(Time::GetTime());
+
+		m_RuntimeScene->OnRuntimeStart();
 	}
 
-	void RuntimeLayer::OnRuntimeSceneStop()
+	void RuntimeLayer::OnSceneStop()
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -212,69 +208,53 @@ namespace Vortex {
 		// TODO this should be changed to LoadRuntimeProject in the future
 		const bool success = ProjectLoader::LoadEditorProject(filepath);
 		if (!success)
+		{
 			return false;
+		}
 
-		const AssetMetadata& sceneMetadata = Project::GetEditorAssetManager()->GetMetadata(Project::GetActive()->GetProperties().General.StartScene);
-		VX_CORE_VERIFY(sceneMetadata.IsValid());
+		const Fs::Path& startScenePath = Project::GetActive()->GetProperties().General.StartScene;
+		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(startScenePath);
+		VX_CORE_VERIFY(metadata.IsValid());
 
-		return OpenScene(sceneMetadata);
+		return OpenScene(metadata);
 	}
 
 	void RuntimeLayer::CloseProject()
 	{
 		if (m_RuntimeScene->IsRunning())
 		{
-			OnRuntimeSceneStop();
+			OnSceneStop();
 		}
 
 		ScriptEngine::Shutdown();
 	}
 
-	bool RuntimeLayer::OpenScene(const AssetMetadata& sceneMetadata)
+	bool RuntimeLayer::OpenScene(const AssetMetadata& metadata)
 	{
 		VX_PROFILE_FUNCTION();
 
 		if (m_RuntimeScene->IsRunning())
 		{
-			OnRuntimeSceneStop();
+			OnSceneStop();
 		}
 
-		if (!sceneMetadata.IsValid() || sceneMetadata.Type != AssetType::SceneAsset || !AssetManager::IsHandleValid(sceneMetadata.Handle))
+		if (!metadata.IsValid() || metadata.Type != AssetType::SceneAsset || !AssetManager::IsHandleValid(metadata.Handle))
 		{
-			VX_CORE_FATAL("Could not load {} - not a scene file", sceneMetadata.Filepath.filename().string());
+			VX_CORE_FATAL("Could not load {} - not a scene file", metadata.Filepath.filename().string());
 			Application::Get().Close();
 			return false;
 		}
 
 		SceneSerializer serializer(m_RuntimeScene);
 
-		std::string fullyQualifedScenePath = (Project::GetAssetDirectory() / sceneMetadata.Filepath).string();
+		const Fs::Path assetDirectory = Project::GetAssetDirectory();
+		std::string fullyQualifedScenePath = (assetDirectory / metadata.Filepath).string();
 		if (serializer.Deserialize(fullyQualifedScenePath))
 		{
-			SetSceneBuildIndexFromMetadata(sceneMetadata);
-
-			OnRuntimeScenePlay();
+			OnScenePlay();
 		}
 
 		return true;
-	}
-
-	void RuntimeLayer::SetSceneBuildIndexFromMetadata(const AssetMetadata& sceneMetadata)
-	{
-		std::string filename = sceneMetadata.Filepath.filename().string();
-		std::string sceneName = filename.substr(0, filename.find('.'));
-
-		const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
-
-		for (const auto& [buildIndex, sceneFilepath] : buildIndices)
-		{
-			if (sceneFilepath.find(sceneMetadata.Filepath.string()) == std::string::npos)
-				continue;
-
-			Scene::SetActiveSceneBuildIndex(buildIndex);
-
-			break;
-		}
 	}
 
 	void RuntimeLayer::QueueSceneTransition()
@@ -285,19 +265,14 @@ namespace Vortex {
 
 		Application::Get().SubmitToMainThreadQueue([=]()
 		{
-			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
-			const uint32_t nextBuildIndex = ScriptRegistry::GetNextBuildIndex();
+			// TODO
+			const Fs::Path assetDirectory = Project::GetAssetDirectory();
+			const Fs::Path nextSceneFilepath = assetDirectory / "";
 
-			std::filesystem::path scenePath = buildIndices.at(nextBuildIndex);
-			std::filesystem::path assetDirectory = Project::GetAssetDirectory();
-			std::filesystem::path nextSceneFilepath = assetDirectory / scenePath;
-
-			// TODO fix this
+			// TODO this will change eventually
 			const AssetMetadata& sceneMetadata = Project::GetEditorAssetManager()->GetMetadata(nextSceneFilepath);
 
 			OpenScene(sceneMetadata);
-
-			ScriptRegistry::ResetBuildIndex();
 		});
 	}
 

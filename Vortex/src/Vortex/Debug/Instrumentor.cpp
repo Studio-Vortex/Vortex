@@ -147,7 +147,7 @@ namespace Vortex {
 
 		Instrumentor::Get().WriteProfile(profile);
 		
-#ifdef VX_ENABLE_PROFILING
+#if VX_ENABLE_PROFILING
 		VX_CONSOLE_LOG_INFO("Timer: {} - {} ms ({} us)", m_Name, elapsedTime.count() / 1000.0f, elapsedTime.count());
 #endif
 

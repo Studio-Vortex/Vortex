@@ -44,18 +44,18 @@ namespace Vortex {
 		return nullptr;
 	}
 
-	void ShaderLibrary::Add(const std::string& name, const SharedReference<Shader>& shader)
+	void ShaderLibrary::Add(const Key& name, const Value& shader)
 	{
 		VX_CORE_ASSERT(!Exists(name), "Shader already exists!");
 		m_LibraryData[name] = shader;
 	}
 
-	void ShaderLibrary::Add(const SharedReference<Shader>& shader)
+	void ShaderLibrary::Add(const Value& shader)
 	{
 		Add(shader->GetName(), shader);
 	}
 
-	uint8_t ShaderLibrary::Remove(const std::string& name)
+	uint8_t ShaderLibrary::Remove(const Key& name)
 	{
 		VX_CORE_ASSERT(Exists(name), "Unknown shader name!");
 
@@ -68,29 +68,29 @@ namespace Vortex {
 		return 0;
 	}
 
-	SharedReference<Shader> ShaderLibrary::Load(const std::string& filepath)
+	const ShaderLibrary::Value& ShaderLibrary::Get(const Key& identifier) const
 	{
-		auto shader = Shader::Create(filepath);
+		return Get(identifier);
+	}
+
+	ShaderLibrary::Value& ShaderLibrary::Get(const Key& identifier)
+	{
+		VX_CORE_ASSERT(Exists(identifier), "Invalid identifier!");
+		return m_LibraryData.find(identifier)->second;
+	}
+
+	SharedReference<Shader> ShaderLibrary::Load(const Key& filepath)
+	{
+		SharedReference<Shader> shader = Shader::Create(filepath);
 		Add(shader);
 		return shader;
 	}
 
-	SharedReference<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
+	SharedReference<Shader> ShaderLibrary::Load(const std::string& name, const Key& filepath)
 	{
-		auto shader = Shader::Create(filepath);
+		SharedReference<Shader> shader = Shader::Create(filepath);
 		Add(name, shader);
 		return shader;
 	}
-
-	SharedReference<Shader>& ShaderLibrary::Get(const std::string& name)
-	{
-		VX_CORE_ASSERT(Exists(name), "Shader not found!")
-		return m_LibraryData.find(name)->second;
-	}
-
-    const SharedReference<Shader>& ShaderLibrary::Get(const std::string& name) const
-    {
-		return Get(name);
-    }
 
 }

@@ -71,8 +71,6 @@ namespace Vortex {
 
 		float SceneStartTime = 0.0f;
 
-		int32_t NextSceneBuildIndex = -1;
-
 		Math::vec4 RaycastDebugLineColor = Math::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	};
 
@@ -90,7 +88,8 @@ namespace Vortex {
 
 		static Entity GetEntity(UUID entityUUID)
 		{
-			Entity entity = GetContextScene()->TryGetEntityWithUUID(entityUUID);
+			Scene* contextScene = GetContextScene();
+			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
 			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 			return entity;
@@ -435,13 +434,6 @@ namespace Vortex {
 			return s_Data.HoveredEntity.GetUUID();
 		}
 
-		uint32_t Scene_GetCurrentBuildIndex()
-		{
-			Scene* contextScene = GetContextScene();
-
-			return Scene::GetActiveSceneBuildIndex();
-		}
-
 #pragma endregion
 
 #pragma region SceneManager
@@ -452,58 +444,9 @@ namespace Vortex {
 
 			char* sceneNameCStr = mono_string_to_utf8(sceneName);
 
-			uint32_t nextBuildIndex = 0;
-
-			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
-
-			for (const auto& [buildIndex, sceneFilepath] : buildIndices)
-			{
-				if (sceneFilepath.find(sceneNameCStr) != std::string::npos)
-				{
-					nextBuildIndex = buildIndex;
-				}
-			}
-
-			s_Data.NextSceneBuildIndex = nextBuildIndex;
+			// TODO
 
 			mono_free(sceneNameCStr);
-		}
-
-		void SceneManager_LoadSceneFromBuildIndex(uint32_t buildIndex)
-		{
-			Scene* contextScene = GetContextScene();
-
-			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
-
-			const bool invalidBuildIndex = buildIndex > buildIndices.size() - 1;
-
-			// Wrap around to beginning
-			if (invalidBuildIndex)
-			{
-				buildIndex = 0;
-			}
-
-			s_Data.NextSceneBuildIndex = buildIndex;
-		}
-
-		uint32_t SceneManager_GetActiveSceneBuildIndex()
-		{
-			Scene* contextScene = GetContextScene();
-
-			return Scene::GetActiveSceneBuildIndex();
-		}
-
-		MonoString* SceneManager_GetActiveScene()
-		{
-			Scene* contextScene = GetContextScene();
-
-			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
-
-			std::string sceneFilepath = buildIndices.at(Scene::GetActiveSceneBuildIndex());
-			size_t lastSlashPos = sceneFilepath.find_last_of("/\\");
-			std::string activeSceneName = sceneFilepath.substr(lastSlashPos + 1);
-
-			return mono_string_new(mono_domain_get(), activeSceneName.c_str());
 		}
 
 #pragma endregion
@@ -654,7 +597,7 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Entity entity = GetEntity(entityUUID);
 
-			Scene::QueueFreeData queueFreeData;
+			QueueFreeData queueFreeData;
 			queueFreeData.EntityUUID = entityUUID;
 			queueFreeData.ExcludeChildren = excludeChildren;
 			queueFreeData.WaitTime = waitTime;
@@ -8340,12 +8283,15 @@ namespace Vortex {
 
 		float Time_GetElapsed()
 		{
-			return Time::GetTime() - s_Data.SceneStartTime;
+			const float currentTime = Time::GetTime();
+			const float startTime = s_Data.SceneStartTime;
+			return currentTime - startTime;
 		}
 
 		float Time_GetDeltaTime()
 		{
-			return Time::GetDeltaTime();
+			TimeStep dt = Time::GetDeltaTime();
+			return dt.GetDeltaTime();
 		}
 
 #pragma endregion
@@ -8643,21 +8589,11 @@ namespace Vortex {
 
 			switch (type)
 			{
-				case Log::LogLevel::Trace:
-					VX_CONSOLE_LOG_TRACE("{}", managedString);
-					break;
-				case Log::LogLevel::Info:
-					VX_CONSOLE_LOG_INFO("{}", managedString);
-					break;
-				case Log::LogLevel::Warn:
-					VX_CONSOLE_LOG_WARN("{}", managedString);
-					break;
-				case Log::LogLevel::Error:
-					VX_CONSOLE_LOG_ERROR("{}", managedString);
-					break;
-				case Log::LogLevel::Fatal:
-					VX_CONSOLE_LOG_FATAL("{}", managedString);
-					break;
+				case Log::LogLevel::Trace: VX_CONSOLE_LOG_TRACE("{}", managedString); break;
+				case Log::LogLevel::Info:  VX_CONSOLE_LOG_INFO("{}", managedString);  break;
+				case Log::LogLevel::Warn:  VX_CONSOLE_LOG_WARN("{}", managedString);  break;
+				case Log::LogLevel::Error: VX_CONSOLE_LOG_ERROR("{}", managedString); break;
+				case Log::LogLevel::Fatal: VX_CONSOLE_LOG_FATAL("{}", managedString); break;
 			}
 
 			mono_free(managedString);
@@ -8717,21 +8653,6 @@ namespace Vortex {
 		s_Data.SceneStartTime = startTime;
 	}
 
-	bool ScriptRegistry::HasPendingTransitionQueued()
-	{
-		return s_Data.NextSceneBuildIndex != -1;
-	}
-
-	uint32_t ScriptRegistry::GetNextBuildIndex()
-	{
-		return s_Data.NextSceneBuildIndex;
-	}
-
-	void ScriptRegistry::ResetBuildIndex()
-	{
-		s_Data.NextSceneBuildIndex = -1;
-	}
-
 	void ScriptRegistry::RegisterMethods()
 	{
 		VX_REGISTER_INTERNAL_CALL(Application_Quit);
@@ -8771,11 +8692,8 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Scene_Pause);
 		VX_REGISTER_INTERNAL_CALL(Scene_Resume);
 		VX_REGISTER_INTERNAL_CALL(Scene_GetHoveredEntity);
-		VX_REGISTER_INTERNAL_CALL(Scene_GetCurrentBuildIndex);
 
 		VX_REGISTER_INTERNAL_CALL(SceneManager_LoadScene);
-		VX_REGISTER_INTERNAL_CALL(SceneManager_LoadSceneFromBuildIndex);
-		VX_REGISTER_INTERNAL_CALL(SceneManager_GetActiveScene);
 
 		VX_REGISTER_INTERNAL_CALL(Entity_AddComponent);
 		VX_REGISTER_INTERNAL_CALL(Entity_HasComponent);

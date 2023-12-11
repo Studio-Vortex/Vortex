@@ -10,11 +10,8 @@
 #include "Vortex/Utils/FileSystem.h"
 
 #include <string>
-#include <map>
 
 namespace Vortex {
-
-	using VORTEX_API BuildIndexMap = std::map<uint32_t, std::string>;
 
 	struct VORTEX_API ProjectProperties
 	{
@@ -36,8 +33,6 @@ namespace Vortex {
 				bool Decorated = true;
 				bool Resizeable = true;
 			} Window;
-
-			BuildIndexMap BuildIndices;
 		} BuildProps;
 
 		struct VORTEX_API EditorProperties

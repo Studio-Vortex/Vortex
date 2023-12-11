@@ -23,28 +23,42 @@ namespace Vortex {
 		m_ManagedMethods[ManagedMethod::OnTriggerEnter] = m_ScriptClass->GetMethod("OnTriggerEnter", 1);
 		m_ManagedMethods[ManagedMethod::OnTriggerExit] = m_ScriptClass->GetMethod("OnTriggerExit", 1);
 		m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected] = m_ScriptClass->GetMethod("OnFixedJointDisconnected", 2);
-		m_ManagedMethods[ManagedMethod::OnEnabled] = m_ScriptClass->GetMethod("OnEnabled", 0);
-		m_ManagedMethods[ManagedMethod::OnDisabled] = m_ScriptClass->GetMethod("OnDisabled", 0);
+		m_ManagedMethods[ManagedMethod::OnEnable] = m_ScriptClass->GetMethod("OnEnabled", 0);
+		m_ManagedMethods[ManagedMethod::OnDisable] = m_ScriptClass->GetMethod("OnDisabled", 0);
 		m_ManagedMethods[ManagedMethod::OnGui] = m_ScriptClass->GetMethod("OnGui", 0);
 
-		// Call C# Entity constructor
-		ScriptEngine::EntityConstructorRuntime(entity.GetUUID(), m_Instance);
+		SharedReference<ScriptClass> coreEntityClass = ScriptEngine::GetCoreEntityClass();
+		m_EntityConstructor = coreEntityClass->GetMethod(".ctor", 1);
+	}
+
+	void ScriptInstance::InvokeConstructor(UUID entityUUID)
+	{
+		void* param = (void*)&entityUUID;
+		ScriptUtils::InvokeMethod(m_Instance, m_EntityConstructor, &param);
 	}
 
 	void ScriptInstance::InvokeOnAwake()
 	{
-		if (!MethodExists(ManagedMethod::OnAwake))
+		ManagedMethod method = ManagedMethod::OnAwake;
+		if (!MethodExists(method))
+		{
 			return;
+		}
 
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnAwake]);
+		MonoMethod* onAwakeMethod = m_ManagedMethods[method];
+		ScriptUtils::InvokeMethod(m_Instance, onAwakeMethod);
 	}
 
 	void ScriptInstance::InvokeOnCreate()
 	{
-		if (!MethodExists(ManagedMethod::OnCreate))
+		ManagedMethod method = ManagedMethod::OnCreate;
+		if (!MethodExists(method))
+		{
 			return;
+		}
 
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCreate]);
+		MonoMethod* onCreateMethod = m_ManagedMethods[method];
+		ScriptUtils::InvokeMethod(m_Instance, onCreateMethod);
 	}
 
 	void ScriptInstance::InvokeOnUpdate(TimeStep delta)
@@ -74,86 +88,132 @@ namespace Vortex {
 
 	void ScriptInstance::InvokeOnDestroy()
 	{
-		if (!MethodExists(ManagedMethod::OnDestroy))
+		ManagedMethod method = ManagedMethod::OnDestroy;
+		if (!MethodExists(method))
+		{
 			return;
+		}
 
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnDestroy]);
+		MonoMethod* onDestroyMethod = m_ManagedMethods[method];
+		ScriptUtils::InvokeMethod(m_Instance, onDestroyMethod);
 	}
 
 	void ScriptInstance::InvokeOnCollisionEnter(const Collision& collision)
 	{
-		if (!MethodExists(ManagedMethod::OnCollisionEnter))
+		ManagedMethod method = ManagedMethod::OnCollisionEnter;
+		if (!MethodExists(method))
+		{
 			return;
+		}
 
 		void* param = (void*)&collision;
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCollisionEnter], &param);
+		MonoMethod* onCollisionEnterMethod = m_ManagedMethods[method];
+		ScriptUtils::InvokeMethod(m_Instance, onCollisionEnterMethod, &param);
 	}
 
 	void ScriptInstance::InvokeOnCollisionExit(const Collision& collision)
 	{
-		if (!MethodExists(ManagedMethod::OnCollisionExit))
+		ManagedMethod method = ManagedMethod::OnCollisionExit;
+		if (!MethodExists(method))
+		{
 			return;
+		}
 
 		void* param = (void*)&collision;
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCollisionExit], &param);
+		MonoMethod* onCollisionExitMethod = m_ManagedMethods[method];
+		ScriptUtils::InvokeMethod(m_Instance, onCollisionExitMethod, &param);
 	}
 
 	void ScriptInstance::InvokeOnTriggerEnter(const Collision& collision)
 	{
-		if (!MethodExists(ManagedMethod::OnTriggerEnter))
+		ManagedMethod method = ManagedMethod::OnTriggerEnter;
+		if (!MethodExists(method))
+		{
 			return;
+		}
 
 		void* param = (void*)&collision;
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnTriggerEnter], &param);
+		MonoMethod* onTriggerEnterMethod = m_ManagedMethods[method];
+		ScriptUtils::InvokeMethod(m_Instance, onTriggerEnterMethod, &param);
 	}
 
 	void ScriptInstance::InvokeOnTriggerExit(const Collision& collision)
 	{
-		if (!MethodExists(ManagedMethod::OnTriggerExit))
+		ManagedMethod method = ManagedMethod::OnTriggerExit;
+		if (!MethodExists(method))
+		{
 			return;
+		}
 
 		void* param = (void*)&collision;
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnTriggerExit], &param);
+		MonoMethod* onTriggerExitMethod = m_ManagedMethods[method];
+		ScriptUtils::InvokeMethod(m_Instance, onTriggerExitMethod, &param);
 	}
 
 	void ScriptInstance::InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
 	{
-		if (!MethodExists(ManagedMethod::OnFixedJointDisconnected))
+		ManagedMethod method = ManagedMethod::OnFixedJointDisconnected;
+		if (!MethodExists(method))
+		{
 			return;
+		}
 
 		void* params[] = { (void*)&forceAndTorque.first, (void*)&forceAndTorque.second };
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected], params);
+		MonoMethod* onFixedJointDisconnectedMethod = m_ManagedMethods[method];
+		ScriptUtils::InvokeMethod(m_Instance, onFixedJointDisconnectedMethod, params);
 	}
 
-	void ScriptInstance::InvokeOnEnabled()
+	void ScriptInstance::InvokeOnEnable()
 	{
-		if (!MethodExists(ManagedMethod::OnEnabled))
+		ManagedMethod method = ManagedMethod::OnEnable;
+		if (!MethodExists(method))
+		{
 			return;
+		}
 
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnEnabled]);
+		MonoMethod* onEnabledMethod = m_ManagedMethods[method];
+		ScriptUtils::InvokeMethod(m_Instance, onEnabledMethod);
 	}
 
-	void ScriptInstance::InvokeOnDisabled()
+	void ScriptInstance::InvokeOnDisable()
 	{
-		if (!MethodExists(ManagedMethod::OnDisabled))
+		ManagedMethod method = ManagedMethod::OnDisable;
+		if (!MethodExists(method))
+		{
 			return;
+		}
 
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnDisabled]);
+		MonoMethod* onDisabledMethod = m_ManagedMethods[method];
+		ScriptUtils::InvokeMethod(m_Instance, onDisabledMethod);
 	}
 
 	void ScriptInstance::InvokeOnGui()
 	{
-		if (!MethodExists(ManagedMethod::OnGui))
+		ManagedMethod method = ManagedMethod::OnGui;
+		if (!MethodExists(method))
+		{
 			return;
+		}
 
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnGui]);
+		MonoMethod* onGuiMethod = m_ManagedMethods[method];
+		ScriptUtils::InvokeMethod(m_Instance, onGuiMethod);
 	}
 
 	bool ScriptInstance::MethodExists(ManagedMethod method) const
 	{
 		const bool contained = m_ManagedMethods.contains(method);
-		const bool ptr = (bool)m_ManagedMethods.at(method);
-		return contained && ptr;
+		if (!contained)
+		{
+			return false;
+		}
+
+		const MonoMethod* ptr = m_ManagedMethods.at(method);
+		if (ptr == nullptr)
+		{
+			return false;
+		}
+
+		return true;
     }
 
 	bool ScriptInstance::GetFieldValueInternal(const std::string& fieldName, void* buffer)

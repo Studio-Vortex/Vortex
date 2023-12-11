@@ -103,12 +103,12 @@ namespace Vortex {
 
 		s_Data->ContextScene = contextScene;
 
-		TraverseSceneForUninitializedActors();
+		InitializeUninitializedActors();
 	}
 
 	void Physics::OnSimulationUpdate(TimeStep delta)
 	{
-		TraverseSceneForUninitializedActors();
+		InitializeUninitializedActors();
 
 		SimulationStep();
 
@@ -126,25 +126,33 @@ namespace Vortex {
 		std::vector<UUID> actorsToDestroy;
 
 		for (const auto& [entityUUID, fixedJoint] : s_Data->ActiveFixedJoints)
+		{
 			actorsToDestroy.emplace_back(entityUUID);
+		}
 
 		for (const auto& [entityUUID, characterController] : s_Data->ActiveControllers)
+		{
 			actorsToDestroy.emplace_back(entityUUID);
+		}
 
 		for (const auto& [entityUUID, actor] : s_Data->ActiveActors)
+		{
 			actorsToDestroy.emplace_back(entityUUID);
+		}
 
 		std::set<UUID> uniqueActors;
 
 		uint32_t size = actorsToDestroy.size();
 		for (uint32_t i = 0; i < size; i++)
+		{
 			uniqueActors.insert(actorsToDestroy[i]);
+		}
 
 		actorsToDestroy.assign(uniqueActors.begin(), uniqueActors.end());
 
-		for (auto& uuid : actorsToDestroy)
+		for (UUID uuid : actorsToDestroy)
 		{
-			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(uuid);
+			Entity entity = contextScene->TryGetEntityWithUUID(uuid);
 			VX_CORE_ASSERT(entity, "Trying to destroy physics actor with invalid entity!");
 			DestroyPhysicsActor(entity);
 		}
@@ -717,7 +725,7 @@ namespace Vortex {
 		physx::PxRigidBodyExt::updateMassAndInertia(*dynamicActor, rigidbody.Mass);
 	}
 
-	void Physics::TraverseSceneForUninitializedActors()
+	void Physics::InitializeUninitializedActors()
 	{
 		// Create Rigidbodies, Controllers
 
@@ -751,11 +759,13 @@ namespace Vortex {
 		
 		uint32_t size = actorsToCreate.size();
 		for (uint32_t i = 0; i < size; i++)
+		{
 			uniqueActors.insert(actorsToCreate[i]);
+		}
 
 		actorsToCreate.assign(uniqueActors.begin(), uniqueActors.end());
 
-		for (auto& uuid : actorsToCreate)
+		for (UUID uuid : actorsToCreate)
 		{
 			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(uuid);
 			VX_CORE_ASSERT(entity, "Trying to create physics actor with invalid entity!");

@@ -22,8 +22,8 @@ namespace Vortex {
 
 			if (callMethod)
 			{
-				// Call Entity.OnDisabled
-				ScriptEngine::CallMethod(ManagedMethod::OnDisabled, self);
+				// Invoke Entity.OnDisabled
+				ScriptEngine::Invoke(ManagedMethod::OnDisable, self);
 			}
 
 			return;
@@ -33,8 +33,8 @@ namespace Vortex {
 
 		if (callMethod)
 		{
-			// Call Entity.OnEnabled
-			ScriptEngine::CallMethod(ManagedMethod::OnEnabled, self);
+			// Invoke Entity.OnEnabled
+			ScriptEngine::Invoke(ManagedMethod::OnEnable, self);
 		}
 	}
 

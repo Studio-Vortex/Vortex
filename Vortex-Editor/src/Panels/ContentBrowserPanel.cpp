@@ -442,7 +442,7 @@ public class Untitled : Entity
 			}
 
 			const Fs::Path newFilepath = m_CurrentDirectory / Fs::Path(buffer);
-			const bool equivalent = FileSystem::Equivalent(currentPath, newFilepath);
+			const bool equivalent = currentPath == newFilepath;
 			const bool validRename = !inputEmpty && !equivalent;
 
 			if (!validRename)

@@ -18,16 +18,14 @@ namespace Vortex {
 		void OnEvent(Event& e) override;
 
 	private:
-		void OnRuntimeScenePlay();
-		void OnRuntimeSceneStop();
+		void OnScenePlay();
+		void OnSceneStop();
 
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 
 		bool OpenProject(const std::filesystem::path& filepath);
 		void CloseProject();
-		bool OpenScene(const AssetMetadata& sceneMetadata);
-
-		void SetSceneBuildIndexFromMetadata(const AssetMetadata& sceneMetadata);
+		bool OpenScene(const AssetMetadata& metadata);
 
 		void QueueSceneTransition();
 

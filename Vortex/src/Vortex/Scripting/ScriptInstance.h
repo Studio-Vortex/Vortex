@@ -26,6 +26,8 @@ namespace Vortex {
 		ScriptInstance(SharedReference<ScriptClass>& scriptClass, Entity entity);
 		~ScriptInstance() = default;
 
+		void InvokeConstructor(UUID entityUUID);
+
 		void InvokeOnAwake();
 		void InvokeOnCreate();
 		void InvokeOnUpdate(TimeStep delta);
@@ -35,8 +37,8 @@ namespace Vortex {
 		void InvokeOnTriggerEnter(const Collision& collision);
 		void InvokeOnTriggerExit(const Collision& collision);
 		void InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque);
-		void InvokeOnEnabled();
-		void InvokeOnDisabled();
+		void InvokeOnEnable();
+		void InvokeOnDisable();
 		void InvokeOnGui();
 
 		bool MethodExists(ManagedMethod method) const;
@@ -74,6 +76,7 @@ namespace Vortex {
 
 		MonoObject* m_Instance = nullptr;
 
+		MonoMethod* m_EntityConstructor = nullptr;
 		std::unordered_map<ManagedMethod, MonoMethod*> m_ManagedMethods;
 
 		inline static char s_FieldValueBuffer[VX_SCRIPT_FIELD_MAX_BYTES];

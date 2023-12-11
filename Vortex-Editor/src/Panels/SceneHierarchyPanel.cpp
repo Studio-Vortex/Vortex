@@ -2202,10 +2202,12 @@ namespace Vortex {
 		int32_t currentBodyType = (int32_t)component.Type;
 		if (UI::PropertyDropdown("Body Type", bodyTypes, VX_ARRAYSIZE(bodyTypes), currentBodyType))
 		{
-			const bool recreateActor = component.Type != (RigidBodyType)currentBodyType;
+			const bool bodyTypeChanged = component.Type != (RigidBodyType)currentBodyType;
 			component.Type = (RigidBodyType)currentBodyType;
 
-			if (m_ContextScene->IsRunning() && recreateActor)
+			const bool simulationRunning = m_ContextScene->IsRunning() || m_ContextScene->IsSimulating();
+
+			if (simulationRunning && bodyTypeChanged)
 			{
 				Physics::ReCreateActor(entity);
 			}

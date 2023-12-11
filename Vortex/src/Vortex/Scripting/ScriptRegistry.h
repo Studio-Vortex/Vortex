@@ -41,9 +41,6 @@ namespace Vortex {
 		static void RegisterComponents();
 		static void SetHoveredEntity(Entity entity);
 		static void SetSceneStartTime(float startTime);
-		static bool HasPendingTransitionQueued();
-		static uint32_t GetNextBuildIndex();
-		static void ResetBuildIndex();
 	};
 
 	namespace InternalCalls {
@@ -99,15 +96,12 @@ namespace Vortex {
 		void Scene_Pause();
 		void Scene_Resume();
 		uint64_t Scene_GetHoveredEntity();
-		uint32_t Scene_GetCurrentBuildIndex();
 
 #pragma endregion
 
 #pragma region SceneManager
 
 		void SceneManager_LoadScene(MonoString* sceneName);
-		void SceneManager_LoadSceneFromBuildIndex(uint32_t buildIndex);
-		MonoString* SceneManager_GetActiveScene();
 
 #pragma endregion
 

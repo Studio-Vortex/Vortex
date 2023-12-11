@@ -17,8 +17,8 @@ namespace Vortex {
 			if (str == "OnTriggerEnter")           return ManagedMethod::OnTriggerEnter;
 			if (str == "OnTriggerExit")            return ManagedMethod::OnTriggerExit;
 			if (str == "OnFixedJointDisconnected") return ManagedMethod::OnFixedJointDisconnected;
-			if (str == "OnEnabled")                return ManagedMethod::OnEnabled;
-			if (str == "OnDisabled")               return ManagedMethod::OnDisabled;
+			if (str == "OnEnable")                 return ManagedMethod::OnEnable;
+			if (str == "OnDisable")                return ManagedMethod::OnDisable;
 			if (str == "OnGui")                    return ManagedMethod::OnGui;
 
 			VX_CORE_ASSERT(false, "Unknown Managed Method!");
@@ -39,8 +39,8 @@ namespace Vortex {
 				case ManagedMethod::OnTriggerEnter:           return "OnTriggerEnter";
 				case ManagedMethod::OnTriggerExit:            return "OnTriggerExit";
 				case ManagedMethod::OnFixedJointDisconnected: return "OnFixedJointDisconnected";
-				case ManagedMethod::OnEnabled:                return "OnEnabled";
-				case ManagedMethod::OnDisabled:               return "OnDisabled";
+				case ManagedMethod::OnEnable:                 return "OnEnabled";
+				case ManagedMethod::OnDisable:                return "OnDisabled";
 				case ManagedMethod::OnGui:                    return "OnGui";
 			}
 

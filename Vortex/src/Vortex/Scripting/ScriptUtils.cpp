@@ -121,11 +121,13 @@ namespace Vortex {
 
 	ScriptFieldType ScriptUtils::MonoTypeToScriptFieldType(MonoType* monoType)
 	{
-		std::string typeName = mono_type_get_name(monoType);
+		const std::string typeName = mono_type_get_name(monoType);
 
 		auto it = s_ScriptFieldTypeMap.find(typeName);
 		if (it == s_ScriptFieldTypeMap.end())
+		{
 			return ScriptFieldType::None;
+		}
 
 		return it->second;
 	}

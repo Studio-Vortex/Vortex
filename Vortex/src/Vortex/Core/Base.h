@@ -18,7 +18,7 @@
 	#endif
 #else
 	#error "Vortex only supports Windows!"
-#endif // End of DLL support
+#endif // DLL support
 
 #ifdef VX_DEBUG
 	#if defined(VX_PLATFORM_WINDOWS)
@@ -42,6 +42,12 @@
 	#define VX_CORE_ASSERT(x, ...)
 #endif // VX_ENABLE_ASSERTS
 
+#ifdef VX_64BIT
+	#define VX_POINTER_WIDTH 8
+#elif
+	#define VX_POINTER_WIDTH 4
+#endif // VX_64
+
 #define VX_VERIFY(x) { if(!(x)) { VX_DEBUGBREAK(); } }
 #define VX_CORE_VERIFY(x) { if (!(x)) { VX_DEBUGBREAK(); } }
 
@@ -51,9 +57,9 @@
 
 #define VX_BIND_CALLBACK(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
-#define BIT(x) (1 << x)
-
 #define VORTEX_BUILD_ID "v0.1a"
+
+#define BIT(x) (1 << x)
 
 namespace Vortex {
 

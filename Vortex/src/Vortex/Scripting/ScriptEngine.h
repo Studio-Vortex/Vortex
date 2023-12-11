@@ -4,6 +4,7 @@
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Asset/Asset.h"
 
+#include "Vortex/Scripting/RuntimeMethodArgument.h"
 #include "Vortex/Scripting/MonoAssemblyTypeInfo.h"
 #include "Vortex/Scripting/ScriptFieldInstance.h"
 #include "Vortex/Scripting/ScriptFieldTypes.h"
@@ -29,7 +30,6 @@ namespace Vortex {
 
 	class ScriptClass;
 	class ScriptInstance;
-	union RuntimeMethodArgument;
 
 	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
 
@@ -52,10 +52,10 @@ namespace Vortex {
 		static bool EntityClassExists(const std::string& fullyQualifiedClassName);
 		static bool EntityInstanceExists(UUID entityUUID);
 		static void EntityConstructorRuntime(UUID entityUUID, MonoObject* instance);
-		static void CreateEntityScriptInstanceRuntime(Entity entity);
+		static void RT_CreateEntityScriptInstance(Entity entity);
 
-		static bool CallMethod(const std::string& methodName, Entity entity, const std::initializer_list<RuntimeMethodArgument*>& argumentList);
-		static bool CallMethod(ManagedMethod method, Entity entity, const std::initializer_list<RuntimeMethodArgument*>& argumentList = {});
+		static bool Invoke(const std::string& methodName, Entity entity, const std::vector<RuntimeMethodArgument>& argumentList);
+		static bool Invoke(ManagedMethod method, Entity entity, const std::vector<RuntimeMethodArgument>& argumentList = {});
 
 		static SharedReference<ScriptClass> GetCoreEntityClass();
 
