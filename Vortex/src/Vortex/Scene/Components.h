@@ -566,7 +566,10 @@ namespace Vortex {
 		// Rendering
 		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent, StaticMeshRendererComponent,
 		SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent,
-		TextMeshComponent, AnimatorComponent, AnimationComponent,
+		AnimatorComponent, AnimationComponent,
+
+		// UI
+		TextMeshComponent, ButtonComponent,
 
 		// Audio
 		AudioSourceComponent, AudioListenerComponent,

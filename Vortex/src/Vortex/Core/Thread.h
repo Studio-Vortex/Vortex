@@ -10,13 +10,13 @@ namespace Vortex {
 	class VORTEX_API Thread
 	{
 	public:
-		using ThreadFn = std::function<void()>;
-
+		using Fn = std::function<void()>;
 	public:
 		Thread() = default;
-		Thread(const ThreadFn& func);
+		Thread(const Fn& fn);
 		~Thread();
 
+		bool Joinable() const;
 		void Join();
 
 	private:

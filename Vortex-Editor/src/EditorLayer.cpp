@@ -120,11 +120,11 @@ namespace Vortex {
 		VX_CORE_ASSERT(m_ActiveScene, "Failed to open a scene!");
 
 		SharedReference<Project> project = Project::GetActive();
-		const ProjectProperties& projectProperties = project->GetProperties();
+		const ProjectProperties& properties = project->GetProperties();
 
 		EditorCameraProperties editorCameraProperties;
 		editorCameraProperties.ViewportSize = m_ViewportPanelSize;
-		editorCameraProperties.FOV = projectProperties.EditorProps.EditorCameraFOV;
+		editorCameraProperties.FOV = properties.EditorProps.EditorCameraFOV;
 		editorCameraProperties.NearPlane = 0.1f;
 		editorCameraProperties.FarPlane = 1000.0f;
 
@@ -250,7 +250,7 @@ namespace Vortex {
 			}
 		}
 
-		if (m_SceneState == SceneState::Play)
+		if (m_SceneState != SceneState::Play)
 		{
 			OnOverlayRender(m_EditorCamera);
 		}
@@ -509,8 +509,8 @@ namespace Vortex {
 		const auto boldFont = io.Fonts->Fonts[0];
 		const auto largeFont = io.Fonts->Fonts[1];
 
-		SharedReference<Project> activeProject = Project::GetActive();
-		ProjectProperties& projectProps = activeProject->GetProperties();
+		SharedReference<Project> project = Project::GetActive();
+		ProjectProperties& properties = project->GetProperties();
 
 		if (Gui::BeginMenuBar())
 		{
@@ -706,7 +706,7 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("View"))
 			{
-				if (Gui::MenuItem("Maximize On Play", nullptr, &projectProps.EditorProps.MaximizeOnPlay))
+				if (Gui::MenuItem("Maximize On Play", nullptr, &properties.EditorProps.MaximizeOnPlay))
 				{
 					Gui::CloseCurrentPopup();
 				}
@@ -756,9 +756,9 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Script"))
 			{
-				auto projectSolutionFilename = Fs::Path(activeProject->GetName());
+				auto projectSolutionFilename = Fs::Path(project->GetName());
 				projectSolutionFilename.replace_extension(".sln");
-				Fs::Path scriptsFolder = Fs::Path("Projects") / activeProject->GetName() / "Assets\\Scripts";
+				Fs::Path scriptsFolder = Fs::Path("Projects") / project->GetName() / "Assets\\Scripts";
 				Fs::Path solutionPath = scriptsFolder / projectSolutionFilename;
 
 				if (Gui::MenuItem("Create Script"))
@@ -912,9 +912,10 @@ namespace Vortex {
 			UIViewportSettingsToolbar();
 		}
 
-		if (m_SceneViewportHovered || !m_SecondViewportPanelOpen)
+		const bool notInPlayMode = m_SceneState != SceneState::Play;
+		if ((m_SceneViewportHovered || !m_SecondViewportPanelOpen) && notInPlayMode)
 		{
-			OnGizmosRender(m_EditorCamera, m_ViewportBounds, false);
+			OnGizmosRender(m_EditorCamera, m_ViewportBounds);
 		}
 
 		Gui::End();
@@ -1148,52 +1149,43 @@ namespace Vortex {
 		OnMeshImportPopupRender();
 	}
 
-	void EditorLayer::OnGizmosRender(EditorCamera* editorCamera, const ViewportBounds& viewportBounds, bool allowInPlayMode)
+	void EditorLayer::OnGizmosRender(EditorCamera* editorCamera, const ViewportBounds& viewportBounds)
 	{
 		VX_PROFILE_FUNCTION();
 
-		SharedReference<Project> activeProject = Project::GetActive();
-		const ProjectProperties& projectProps = activeProject->GetProperties();
-
-		// Render Gizmos
 		Entity selectedEntity = SelectionManager::GetSelectedEntity();
+		if (!selectedEntity)
+		{
+			return;
+		}
 
-		const bool notInPlayMode = m_SceneState != SceneState::Play;
 		const bool validGizmoTool = m_GizmoType != -1;
 		const bool altDown = Input::IsKeyDown(KeyCode::LeftAlt) || Input::IsKeyDown(KeyCode::RightAlt);
 		const bool rightMouseButtonDown = Input::IsMouseButtonDown(MouseButton::Right);
-		bool showGizmos;
-
-		if (allowInPlayMode)
-		{
-			showGizmos = (selectedEntity && validGizmoTool && !altDown && !rightMouseButtonDown);
-		}
-		else
-		{
-			showGizmos = (selectedEntity && validGizmoTool && !altDown && !rightMouseButtonDown && notInPlayMode);
-		}
+		const bool showGizmos = (selectedEntity && validGizmoTool && !altDown && !rightMouseButtonDown);
 
 		if (showGizmos)
 		{
-			ImGuizmo::Enable(projectProps.GizmoProps.Enabled);
-			ImGuizmo::SetOrthographic(projectProps.GizmoProps.IsOrthographic);
+			SharedReference<Project> project = Project::GetActive();
+			const ProjectProperties& properties = project->GetProperties();
+
+			ImGuizmo::Enable(properties.GizmoProps.Enabled);
+			ImGuizmo::SetOrthographic(properties.GizmoProps.IsOrthographic);
 			ImGuizmo::SetDrawlist();
 
 			ImGuizmo::SetRect(viewportBounds.MinBound.x, viewportBounds.MinBound.y, viewportBounds.MaxBound.x - viewportBounds.MinBound.x, viewportBounds.MaxBound.y - viewportBounds.MinBound.y);
 
-			// Editor camera
 			const Math::mat4& cameraProjection = editorCamera->GetProjectionMatrix();
-			Math::mat4 cameraView = editorCamera->GetViewMatrix();
+			const Math::mat4& cameraView = editorCamera->GetViewMatrix();
 
-			// Entity transform
 			TransformComponent& entityTransform = selectedEntity.GetTransform();
 			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
 
 			// Snapping
 			const bool controlDown = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
-			const bool snapEnabled = projectProps.GizmoProps.SnapEnabled && controlDown;
+			const bool snapEnabled = properties.GizmoProps.SnapEnabled && controlDown;
 
-			const float snapValue = m_GizmoType == ImGuizmo::ROTATE ? projectProps.GizmoProps.RotationSnapValue : projectProps.GizmoProps.SnapValue;
+			const float snapValue = m_GizmoType == ImGuizmo::ROTATE ? properties.GizmoProps.RotationSnapValue : properties.GizmoProps.SnapValue;
 			std::array<float, 3> snapValues{};
 			snapValues.fill(snapValue);
 
@@ -1207,18 +1199,16 @@ namespace Vortex {
 				snapEnabled ? snapValues.data() : nullptr
 			);
 
-			if (projectProps.GizmoProps.DrawGrid)
+			if (properties.GizmoProps.DrawGrid)
 			{
-				ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(transform), projectProps.GizmoProps.GridSize);
+				ImGuizmo::DrawGrid(Math::ValuePtr(cameraView), Math::ValuePtr(cameraProjection), Math::ValuePtr(transform), properties.GizmoProps.GridSize);
 			}
 
 			if (ImGuizmo::IsUsing())
 			{
-				Entity parent = m_ActiveScene->TryGetEntityWithUUID(selectedEntity.GetParentUUID());
-
-				if (parent)
+				if (Entity parent = selectedEntity.GetParent())
 				{
-					Math::mat4 parentTransform = m_ActiveScene->GetWorldSpaceTransformMatrix(parent);
+					const Math::mat4 parentTransform = m_ActiveScene->GetWorldSpaceTransformMatrix(parent);
 					transform = Math::Inverse(parentTransform) * transform;
 				}
 
@@ -1296,7 +1286,7 @@ namespace Vortex {
 
 		if (m_SecondViewportHovered)
 		{
-			OnGizmosRender(m_SecondEditorCamera, m_SecondViewportBounds, true);
+			OnGizmosRender(m_SecondEditorCamera, m_SecondViewportBounds);
 		}
 
 		Gui::End();
@@ -1398,8 +1388,8 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		SharedReference<Project> activeProject = Project::GetActive();
-		const ProjectProperties& projectProps = activeProject->GetProperties();
+		SharedReference<Project> project = Project::GetActive();
+		const ProjectProperties& properties = project->GetProperties();
 
 		const UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 		const UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -1504,7 +1494,7 @@ namespace Vortex {
 				SharedReference<Texture2D> icon = EditorResources::StepIcon;
 				if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 				{
-					m_ActiveScene->Step(projectProps.EditorProps.FrameStepCount);
+					m_ActiveScene->Step(properties.EditorProps.FrameStepCount);
 					Gui::SetWindowFocus("Scene");
 				}
 
@@ -1530,8 +1520,8 @@ namespace Vortex {
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		SharedReference<Project> activeProject = Project::GetActive();
-		ProjectProperties& projectProps = activeProject->GetProperties();
+		SharedReference<Project> project = Project::GetActive();
+		ProjectProperties& properties = project->GetProperties();
 
 		const UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 		const UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -1607,24 +1597,24 @@ namespace Vortex {
 					UI::Draw::Underline();
 					UI::BeginPropertyGrid(columnWidth);
 
-					if (UI::ImageButton("Maximize On Play", EditorResources::MaximizeOnPlayIcon, textureSize, projectProps.EditorProps.MaximizeOnPlay ? bgColor : normalColor, tintColor))
+					if (UI::ImageButton("Maximize On Play", EditorResources::MaximizeOnPlayIcon, textureSize, properties.EditorProps.MaximizeOnPlay ? bgColor : normalColor, tintColor))
 					{
-						projectProps.EditorProps.MaximizeOnPlay = !projectProps.EditorProps.MaximizeOnPlay;
+						properties.EditorProps.MaximizeOnPlay = !properties.EditorProps.MaximizeOnPlay;
 					}
 
-					if (UI::ImageButton(projectProps.EditorProps.DrawEditorGrid ? "Hide Grid" : "Show Grid", EditorResources::ShowGridIcon, textureSize, projectProps.EditorProps.DrawEditorGrid ? normalColor : bgColor, tintColor))
+					if (UI::ImageButton(properties.EditorProps.DrawEditorGrid ? "Hide Grid" : "Show Grid", EditorResources::ShowGridIcon, textureSize, properties.EditorProps.DrawEditorGrid ? normalColor : bgColor, tintColor))
 					{
-						projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
+						properties.EditorProps.DrawEditorGrid = !properties.EditorProps.DrawEditorGrid;
 					}
 
-					if (UI::ImageButton(projectProps.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders", EditorResources::PhysicsCollidersIcon, textureSize, projectProps.PhysicsProps.ShowColliders ? bgColor : normalColor, tintColor))
+					if (UI::ImageButton(properties.PhysicsProps.ShowColliders ? "Hide Colliders" : "Show Colliders", EditorResources::PhysicsCollidersIcon, textureSize, properties.PhysicsProps.ShowColliders ? bgColor : normalColor, tintColor))
 					{
-						projectProps.PhysicsProps.ShowColliders = !projectProps.PhysicsProps.ShowColliders;
+						properties.PhysicsProps.ShowColliders = !properties.PhysicsProps.ShowColliders;
 					}
 
-					if (UI::ImageButton(projectProps.EditorProps.ShowBoundingBoxes ? "Hide Bounding Boxes" : "Show Bounding Boxes", EditorResources::BoundingBoxesIcon, textureSize, projectProps.EditorProps.ShowBoundingBoxes ? bgColor : normalColor, tintColor))
+					if (UI::ImageButton(properties.EditorProps.ShowBoundingBoxes ? "Hide Bounding Boxes" : "Show Bounding Boxes", EditorResources::BoundingBoxesIcon, textureSize, properties.EditorProps.ShowBoundingBoxes ? bgColor : normalColor, tintColor))
 					{
-						projectProps.EditorProps.ShowBoundingBoxes = !projectProps.EditorProps.ShowBoundingBoxes;
+						properties.EditorProps.ShowBoundingBoxes = !properties.EditorProps.ShowBoundingBoxes;
 					}
 
 					static const char* selectionModes[] = { "Entity", "Submesh" };
@@ -1636,9 +1626,9 @@ namespace Vortex {
 
 					UI::Property("Selected Entity Outline", m_ShowSelectedEntityOutline);
 
-					if (UI::ImageButton(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio", EditorResources::MuteAudioSourcesIcons, textureSize, projectProps.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
+					if (UI::ImageButton(properties.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio", EditorResources::MuteAudioSourcesIcons, textureSize, properties.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
 					{
-						projectProps.EditorProps.MuteAudioSources = !projectProps.EditorProps.MuteAudioSources;
+						properties.EditorProps.MuteAudioSources = !properties.EditorProps.MuteAudioSources;
 					}
 
 					UI::EndPropertyGrid();
@@ -1651,7 +1641,7 @@ namespace Vortex {
 					UI::Draw::Underline();
 					UI::BeginPropertyGrid(columnWidth);
 
-					UI::Property("Gimzo Size", projectProps.GizmoProps.GizmoSize, 0.05f, 0.05f);
+					UI::Property("Gimzo Size", properties.GizmoProps.GizmoSize, 0.05f, 0.05f);
 
 					if (UI::ImageButton("Local Mode", EditorResources::LocalModeIcon, textureSize, m_TranslationMode == 0 ? bgColor : normalColor, tintColor))
 					{
@@ -1663,8 +1653,8 @@ namespace Vortex {
 						m_TranslationMode = (uint32_t)ImGuizmo::MODE::WORLD;
 					}
 
-					if (UI::ImageButton(projectProps.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos", EditorResources::DisplaySceneIconsIcon, textureSize, projectProps.RendererProps.DisplaySceneIconsInEditor ? normalColor : bgColor, tintColor))
-						projectProps.RendererProps.DisplaySceneIconsInEditor = !projectProps.RendererProps.DisplaySceneIconsInEditor;
+					if (UI::ImageButton(properties.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos", EditorResources::DisplaySceneIconsIcon, textureSize, properties.RendererProps.DisplaySceneIconsInEditor ? normalColor : bgColor, tintColor))
+						properties.RendererProps.DisplaySceneIconsInEditor = !properties.RendererProps.DisplaySceneIconsInEditor;
 
 					UI::EndPropertyGrid();
 				}
@@ -1680,7 +1670,7 @@ namespace Vortex {
 					if (UI::Property("Field of View", degFOV))
 					{
 						m_EditorCamera->SetVerticalFOV(degFOV);
-						projectProps.EditorProps.EditorCameraFOV = degFOV;
+						properties.EditorProps.EditorCameraFOV = degFOV;
 					}
 
 					UI::Property("Camera Speed", m_EditorCamera->m_NormalSpeed, 0.001f, 0.0002f, 0.5f, "%.4f");
@@ -1723,31 +1713,31 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		SharedReference<Project> activeProject = Project::GetActive();
-		const ProjectProperties& projectProps = activeProject->GetProperties();
+		SharedReference<Project> project = Project::GetActive();
+		const ProjectProperties& properties = project->GetProperties();
 
 		Renderer2D::BeginScene(editorCamera);
 
 		// Render Editor Grid
-		if (m_SceneState != SceneState::Play && projectProps.EditorProps.DrawEditorGrid)
+		if (properties.EditorProps.DrawEditorGrid)
 		{
-			OverlayRenderGrid(projectProps.EditorProps.DrawEditorAxes);
+			OverlayRenderGrid(properties.EditorProps.DrawEditorAxes);
 		}
 
-		const Math::vec4 colliderColor = projectProps.PhysicsProps.Physics3DColliderColor;
-		const Math::vec4 spriteColliderColor = projectProps.PhysicsProps.Physics2DColliderColor;
+		const Math::vec4 colliderColor = properties.PhysicsProps.Physics3DColliderColor;
+		const Math::vec4 spriteColliderColor = properties.PhysicsProps.Physics2DColliderColor;
 		const Math::vec4 boundingBoxColor = ColorToVec4(Color::Orange);
 		const Math::vec4 outlineColor = boundingBoxColor;
 
 		// Render Physics Colliders
-		if (projectProps.PhysicsProps.ShowColliders)
+		if (properties.PhysicsProps.ShowColliders)
 		{
 			OverlayRenderMeshColliders(colliderColor);
 			OverlayRenderSpriteColliders(editorCamera, spriteColliderColor);
 		}
 
 		// Render Bounding Boxes
-		if (projectProps.EditorProps.ShowBoundingBoxes)
+		if (properties.EditorProps.ShowBoundingBoxes)
 		{
 			OverlayRenderMeshBoundingBoxes(boundingBoxColor);
 			OverlayRenderSpriteBoundingBoxes(boundingBoxColor);
@@ -2559,9 +2549,9 @@ namespace Vortex {
 			{
 				if (m_SceneState == SceneState::Edit)
 				{
-					SharedReference<Project> activeProject = Project::GetActive();
-					ProjectProperties& projectProps = activeProject->GetProperties();
-					projectProps.EditorProps.DrawEditorGrid = !projectProps.EditorProps.DrawEditorGrid;
+					SharedReference<Project> project = Project::GetActive();
+					ProjectProperties& properties = project->GetProperties();
+					properties.EditorProps.DrawEditorGrid = !properties.EditorProps.DrawEditorGrid;
 				}
 
 				break;
@@ -2948,15 +2938,15 @@ namespace Vortex {
 
 		m_SceneState = SceneState::Play;
 
-		SharedReference<Project> activeProject = Project::GetActive();
-		ProjectProperties projectProps = activeProject->GetProperties();
+		SharedReference<Project> project = Project::GetActive();
+		ProjectProperties properties = project->GetProperties();
 
-		if (projectProps.ScriptingProps.ReloadAssemblyOnPlay)
+		if (properties.ScriptingProps.ReloadAssemblyOnPlay)
 		{
 			ScriptEngine::ReloadAssembly();
 		}
 
-		m_SceneViewportMaximized = projectProps.EditorProps.MaximizeOnPlay;
+		m_SceneViewportMaximized = properties.EditorProps.MaximizeOnPlay;
 
 		SharedReference<ConsolePanel> consolePanel = m_PanelManager->GetPanel<ConsolePanel>();
 		if (consolePanel->ClearOnPlay())
@@ -2969,7 +2959,7 @@ namespace Vortex {
 
 		ScriptRegistry::SetSceneStartTime(Time::GetTime());
 
-		m_ActiveScene->OnRuntimeStart(projectProps.EditorProps.MuteAudioSources);
+		m_ActiveScene->OnRuntimeStart(properties.EditorProps.MuteAudioSources);
 
 		SetSceneContext(m_ActiveScene);
 
@@ -3004,8 +2994,8 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(m_SceneState != SceneState::Edit, "Invalid scene state!");
 
-		SharedReference<Project> activeProject = Project::GetActive();
-		ProjectProperties& projectProps = activeProject->GetProperties();
+		SharedReference<Project> project = Project::GetActive();
+		ProjectProperties& properties = project->GetProperties();
 
 		if (m_SceneState == SceneState::Play)
 		{
@@ -3018,7 +3008,7 @@ namespace Vortex {
 
 		m_SceneState = SceneState::Edit;
 
-		if (projectProps.EditorProps.MaximizeOnPlay)
+		if (properties.EditorProps.MaximizeOnPlay)
 		{
 			m_SceneViewportMaximized = false;
 		}

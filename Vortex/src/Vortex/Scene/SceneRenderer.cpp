@@ -1,6 +1,8 @@
 #include "vxpch.h"
 #include "SceneRenderer.h"
 
+#include "Vortex/Core/Thread.h"
+
 #include "Vortex/Asset/AssetManager.h"
 
 #include "Vortex/Project/Project.h"
@@ -70,6 +72,12 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		std::map<float, Entity> sortedGeometry;
+
+		Thread sortThread([&]() {
+			SortMeshGeometry(renderPacket, sortedGeometry);
+		});
+
 		const Math::mat4* view = (const Math::mat4*)&renderPacket.MainCameraViewMatrix;
 		const Math::mat4* projection = (const Math::mat4*)&renderPacket.MainCameraProjectionMatrix;
 
@@ -80,7 +88,9 @@ namespace Vortex {
 
 		BeginScene(renderPacket);
 
-		const bool hasEnvironment = s_EnvironmentHandle != 0 && view && projection && environment;
+		const bool foundEnvironment = environment != nullptr;
+		const bool hasSceneCamera = (view != nullptr && projection != nullptr);
+		const bool hasEnvironment = hasSceneCamera && foundEnvironment;
 
 		if (hasEnvironment)
 		{
@@ -93,9 +103,11 @@ namespace Vortex {
 
 		LightPass(renderPacket);
 
-		const std::map<float, Entity>& sortedEntities = SortMeshGeometry(renderPacket);
+		if (sortThread.Joinable()) {
+			sortThread.Join();
+		}
 
-		GeometryPass(renderPacket, sortedEntities);
+		GeometryPass(renderPacket, sortedGeometry);
 
 		EndScene();
 	}
@@ -442,7 +454,7 @@ namespace Vortex {
 		}
 	}
 
-	std::map<float, Entity> SceneRenderer::SortMeshGeometry(const SceneRenderPacket& renderPacket)
+	void SceneRenderer::SortMeshGeometry(const SceneRenderPacket& renderPacket, std::map<float, Entity>& sortedGeometry)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -450,7 +462,6 @@ namespace Vortex {
 		Scene* scene = renderPacket.Scene;
 
 		// Sort All Meshes by distance from camera
-		std::map<float, Entity> sortedEntities;
 
 		// Sort Meshes
 		{
@@ -476,14 +487,14 @@ namespace Vortex {
 					Math::vec3 cameraPosition = editorCamera->GetPosition();
 					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
-					SortEntityByDistance(sortedEntities, distance, entity, i);
+					SortEntityByDistance(sortedGeometry, distance, entity, i);
 				}
 				else
 				{
 					Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTranslation;
 					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
-					SortEntityByDistance(sortedEntities, distance, entity, i);
+					SortEntityByDistance(sortedGeometry, distance, entity, i);
 				}
 
 				i++;
@@ -514,14 +525,14 @@ namespace Vortex {
 					Math::vec3 cameraPosition = editorCamera->GetPosition();
 					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
-					SortEntityByDistance(sortedEntities, distance, entity, i);
+					SortEntityByDistance(sortedGeometry, distance, entity, i);
 				}
 				else
 				{
 					Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTranslation;
 					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
-					SortEntityByDistance(sortedEntities, distance, entity, i);
+					SortEntityByDistance(sortedGeometry, distance, entity, i);
 				}
 
 				i++;
@@ -530,12 +541,11 @@ namespace Vortex {
 
 		RenderTime& renderTime = Renderer::GetRenderTime();
 		renderTime.PreGeometryPassSortTime += timer.ElapsedMS();
-
-		return sortedEntities;
 	}
 
 	void SceneRenderer::SortEntityByDistance(std::map<float, Entity>& sortedEntities, float distance, Entity entity, uint32_t offset)
 	{
+		std::scoped_lock<std::mutex> lock(m_GeometrySortMutex);
 		if (sortedEntities.find(distance) == sortedEntities.end())
 		{
 			sortedEntities[distance] = entity;
@@ -546,7 +556,7 @@ namespace Vortex {
 		sortedEntities[distance + (0.01f * offset)] = entity;
 	}
 
-	void SceneRenderer::GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Entity>& sortedEntities)
+	void SceneRenderer::GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Entity>& sortedGeometry)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -556,7 +566,7 @@ namespace Vortex {
 		SceneLightDescription sceneLightDesc = Renderer::GetSceneLightDescription();
 		
 		// Render in reverse to blend correctly
-		for (auto it = sortedEntities.crbegin(); it != sortedEntities.crend(); it++)
+		for (auto it = sortedGeometry.crbegin(); it != sortedGeometry.crend(); it++)
 		{
 			Entity entity = it->second;
 

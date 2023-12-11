@@ -2,7 +2,6 @@
 #include "Application.h"
 
 #include "Vortex/Core/Input/Input.h"
-#include "Vortex/Core/Thread/ThreadPool.h"
 
 #include "Vortex/Events/KeyEvent.h"
 
@@ -105,7 +104,6 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		// ThreadPool::Init();
 		Networking::Init();
 		Renderer::Init();
 		SystemManager::RegisterSystem<UISystem>();
@@ -135,7 +133,6 @@ namespace Vortex {
 		SystemManager::UnRegisterAssetSystem<ParticleSystem>();
 		Renderer::Shutdown();
 		Networking::Shutdown();
-		// ThreadPool::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)

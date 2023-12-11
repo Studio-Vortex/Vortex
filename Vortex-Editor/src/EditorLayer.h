@@ -24,7 +24,7 @@ namespace Vortex {
 		void OnScenePanelRender();
 		void UIHandleAssetDrop();
 		void UIOnPopupRender();
-		void OnGizmosRender(EditorCamera* editorCamera, const ViewportBounds& viewportBounds, bool allowInPlayMode = false);
+		void OnGizmosRender(EditorCamera* editorCamera, const ViewportBounds& viewportBounds);
 		void OnSecondViewportPanelRender();
 		void OnEvent(Event& e) override;
 

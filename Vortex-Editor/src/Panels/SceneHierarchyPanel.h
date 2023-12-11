@@ -74,9 +74,10 @@ namespace Vortex {
 		void SpriteRendererComponentOnGuiRender(SpriteRendererComponent& component, Entity entity);
 		void CircleRendererComponentOnGuiRender(CircleRendererComponent& component, Entity entity);
 		void ParticleEmitterComponentOnGuiRender(ParticleEmitterComponent& component, Entity entity);
-		void TextMeshComponentOnGuiRender(TextMeshComponent& component, Entity entity);
 		void AnimatorComponentOnGuiRender(AnimatorComponent& component, Entity entity);
 		void AnimationComponentOnGuiRender(AnimationComponent& component, Entity entity);
+		void TextMeshComponentOnGuiRender(TextMeshComponent& component, Entity entity);
+		void ButtonComponentOnGuiRender(ButtonComponent& component, Entity entity);
 		void AudioSourceComponentOnGuiRender(AudioSourceComponent& component, Entity entity);
 		void AudioListenerComponentOnGuiRender(AudioListenerComponent& component, Entity entity);
 		void RigidBodyComponentOnGuiRender(RigidBodyComponent& component, Entity entity);

@@ -3,15 +3,19 @@
 
 namespace Vortex {
 
-	Thread::Thread(const ThreadFn& func)
-		: m_Thread(func)
+	Thread::Thread(const Fn& fn)
+		: m_Thread(fn)
 	{
-		
 	}
 
 	Thread::~Thread()
 	{
+		
+	}
 
+	bool Thread::Joinable() const
+	{
+		return m_Thread.joinable();
 	}
 
 	void Thread::Join()

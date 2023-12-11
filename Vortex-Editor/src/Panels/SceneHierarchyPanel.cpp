@@ -580,12 +580,14 @@ namespace Vortex {
 					DisplayAddComponentMenuItem<CircleRendererComponent>(componentName, (const char*)VX_ICON_CIRCLE);
 				if (const char* componentName = "Particle Emitter"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 					DisplayAddComponentMenuItem<ParticleEmitterComponent>(componentName, (const char*)VX_ICON_BOMB);
-				if (const char* componentName = "Text Mesh"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayAddComponentMenuItem<TextMeshComponent>(componentName, (const char*)VX_ICON_TEXT_HEIGHT);
 				if (const char* componentName = "Animator"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 					DisplayAddComponentMenuItem<AnimatorComponent>(componentName, (const char*)VX_ICON_CLOCK_O);
 				if (const char* componentName = "Animation"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 					DisplayAddComponentMenuItem<AnimationComponent>(componentName, (const char*)VX_ICON_ADJUST);
+				if (const char* componentName = "Text Mesh"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<TextMeshComponent>(componentName, (const char*)VX_ICON_TEXT_HEIGHT);
+				if (const char* componentName = "Button"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
+					DisplayAddComponentMenuItem<ButtonComponent>(componentName, (const char*)VX_ICON_TEXT_WIDTH);
 				if (const char* componentName = "RigidBody"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 					DisplayAddComponentMenuItem<RigidBodyComponent>(componentName, (const char*)VX_ICON_VIDEO_CAMERA);
 				if (const char* componentName = "Character Controller"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
@@ -613,7 +615,7 @@ namespace Vortex {
 				if (const char* componentName = "Nav Mesh Agent"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
 					DisplayAddComponentMenuItem<NavMeshAgentComponent>(componentName, (const char*)VX_ICON_LAPTOP);
 				if (const char* componentName = "Script"; m_ComponentSearchInputTextFilter.PassFilter(componentName))
-					DisplayAddComponentMenuItem<ScriptComponent>(componentName, (const char*)VX_ICON_FILE_CODE_O);	
+					DisplayAddComponentMenuItem<ScriptComponent>(componentName, (const char*)VX_ICON_FILE_CODE_O, false);
 			}
 			else
 			{
@@ -628,9 +630,18 @@ namespace Vortex {
 					DisplayAddComponentMenuItem<SpriteRendererComponent>("Sprite Renderer", (const char*)VX_ICON_SPINNER);
 					DisplayAddComponentMenuItem<CircleRendererComponent>("Circle Renderer", (const char*)VX_ICON_CIRCLE);
 					DisplayAddComponentMenuItem<ParticleEmitterComponent>("Particle Emitter", (const char*)VX_ICON_BOMB);
-					DisplayAddComponentMenuItem<TextMeshComponent>("Text Mesh", (const char*)VX_ICON_TEXT_HEIGHT);
 					DisplayAddComponentMenuItem<AnimatorComponent>("Animator", (const char*)VX_ICON_CLOCK_O);
 					DisplayAddComponentMenuItem<AnimationComponent>("Animation", (const char*)VX_ICON_ADJUST, false);
+
+					Gui::EndMenu();
+				}
+				UI::Draw::Underline();
+				Gui::Spacing();
+
+				if (Gui::BeginMenu("UI"))
+				{
+					DisplayAddComponentMenuItem<TextMeshComponent>("Text Mesh", (const char*)VX_ICON_TEXT_HEIGHT);
+					DisplayAddComponentMenuItem<ButtonComponent>("Button", (const char*)VX_ICON_TEXT_WIDTH, false);
 
 					Gui::EndMenu();
 				}
@@ -1186,11 +1197,6 @@ namespace Vortex {
 		particleEmitterComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = ParticleEmitterComponent(); };
 		DrawComponent<ParticleEmitterComponent>("Particle Emitter", entity, particleEmitterComponentCallbacks);
 
-		ComponentUICallbacks<TextMeshComponent> textMeshComponentCallbacks;
-		textMeshComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::TextMeshComponentOnGuiRender);
-		textMeshComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = TextMeshComponent(); };
-		DrawComponent<TextMeshComponent>("Text Mesh", entity, textMeshComponentCallbacks);
-
 		ComponentUICallbacks<AnimatorComponent> animatorComponentCallbacks;
 		animatorComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::AnimatorComponentOnGuiRender);
 		animatorComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = AnimatorComponent(); };
@@ -1200,6 +1206,16 @@ namespace Vortex {
 		animationComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::AnimationComponentOnGuiRender);
 		animationComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = AnimationComponent(); };
 		DrawComponent<AnimationComponent>("Animation", entity, animationComponentCallbacks);
+
+		ComponentUICallbacks<TextMeshComponent> textMeshComponentCallbacks;
+		textMeshComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::TextMeshComponentOnGuiRender);
+		textMeshComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = TextMeshComponent(); };
+		DrawComponent<TextMeshComponent>("Text Mesh", entity, textMeshComponentCallbacks);
+
+		ComponentUICallbacks<ButtonComponent> buttonComponentCallbacks;
+		buttonComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::ButtonComponentOnGuiRender);
+		buttonComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = ButtonComponent(); };
+		DrawComponent<ButtonComponent>("Button", entity, buttonComponentCallbacks);
 
 		ComponentUICallbacks<AudioSourceComponent> audioSourceComponentCallbacks;
 		audioSourceComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::AudioSourceComponentOnGuiRender);
@@ -1769,6 +1785,42 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
+	void SceneHierarchyPanel::AnimatorComponentOnGuiRender(AnimatorComponent& component, Entity entity)
+	{
+		UI::BeginPropertyGrid();
+
+		SharedRef<Animator> animator = component.Animator;
+
+		if (animator)
+		{
+			if (Gui::Button((const char*)VX_ICON_PLAY))
+				animator->PlayAnimation();
+			UI::SetTooltip("Play");
+
+			Gui::SameLine();
+
+			if (Gui::Button((const char*)VX_ICON_STOP))
+				animator->Stop();
+			UI::SetTooltip("Stop");
+		}
+
+		UI::EndPropertyGrid();
+	}
+
+	void SceneHierarchyPanel::AnimationComponentOnGuiRender(AnimationComponent& component, Entity entity)
+	{
+		UI::BeginPropertyGrid();
+
+		SharedRef<Animation> animation = component.Animation;
+
+		if (animation)
+		{
+
+		}
+
+		UI::EndPropertyGrid();
+	}
+
 	void SceneHierarchyPanel::TextMeshComponentOnGuiRender(TextMeshComponent& component, Entity entity)
 	{
 		UI::BeginPropertyGrid();
@@ -1835,39 +1887,9 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::AnimatorComponentOnGuiRender(AnimatorComponent& component, Entity entity)
+	void SceneHierarchyPanel::ButtonComponentOnGuiRender(ButtonComponent& component, Entity entity)
 	{
 		UI::BeginPropertyGrid();
-
-		SharedRef<Animator> animator = component.Animator;
-
-		if (animator)
-		{
-			if (Gui::Button((const char*)VX_ICON_PLAY))
-				animator->PlayAnimation();
-			UI::SetTooltip("Play");
-
-			Gui::SameLine();
-
-			if (Gui::Button((const char*)VX_ICON_STOP))
-				animator->Stop();
-			UI::SetTooltip("Stop");
-		}
-
-		UI::EndPropertyGrid();
-	}
-
-	void SceneHierarchyPanel::AnimationComponentOnGuiRender(AnimationComponent& component, Entity entity)
-	{
-		UI::BeginPropertyGrid();
-
-		SharedRef<Animation> animation = component.Animation;
-
-		if (animation)
-		{
-
-		}
-
 		UI::EndPropertyGrid();
 	}
 

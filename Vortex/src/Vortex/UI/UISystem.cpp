@@ -6,6 +6,7 @@
 #include "Vortex/Module/Module.h"
 
 #include "Vortex/Scene/Scene.h"
+#include "Vortex/Scene/Entity.h"
 
 namespace Vortex {
 
@@ -57,6 +58,13 @@ namespace Vortex {
 
 	void UISystem::OnUpdateRuntime(Scene* context)
 	{
+		auto view = context->GetAllEntitiesWith<ButtonComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, context };
+			
+		}
 	}
 
 	void UISystem::OnRuntimeScenePaused(Scene* context)

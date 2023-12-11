@@ -63,9 +63,9 @@ namespace Vortex {
 		void EndScene();
 
 		void LightPass(const SceneRenderPacket& renderPacket);
-		std::map<float, Entity> SortMeshGeometry(const SceneRenderPacket& renderPacket);
+		void SortMeshGeometry(const SceneRenderPacket& renderPacket, std::map<float, Entity>& sortedGeometry);
 		void SortEntityByDistance(std::map<float, Entity>& sortedEntities, float distance, Entity entity, uint32_t offset = 0);
-		void GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Entity>& sortedEntities);
+		void GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Entity>& sortedGeometry);
 		void RenderMesh(Scene* scene, Entity entity, const SceneLightDescription& sceneLightDesc);
 		void RenderStaticMesh(Scene* scene, Entity entity, const SceneLightDescription& sceneLightDesc);
 
@@ -80,6 +80,9 @@ namespace Vortex {
 
 		void SetMaterialFlags(const SharedReference<Material>& material);
 		void ResetMaterialFlags();
+
+	private:
+		std::mutex m_GeometrySortMutex;
 	};
 
 }

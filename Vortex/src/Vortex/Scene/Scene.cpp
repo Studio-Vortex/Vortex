@@ -547,6 +547,7 @@ namespace Vortex {
 		SceneCamera* primarySceneCamera = nullptr;
 		TransformComponent primarySceneCameraTransform;
 
+		// Render from the primary camera's point of view
 		if (Entity primaryCameraEntity = GetPrimaryCameraEntity())
 		{
 			auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
@@ -586,6 +587,8 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		ExecutePreUpdateQueue();
+
 		if (!m_IsPaused || m_StepFrames > 0)
 		{
 			OnPhysicsSimulationUpdate(delta);
@@ -617,6 +620,8 @@ namespace Vortex {
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera* camera)
 	{
 		VX_PROFILE_FUNCTION();
+
+		ExecutePreUpdateQueue();
 
 		// Update Animators
 		OnAnimatorUpdateRuntime(delta);
@@ -700,6 +705,10 @@ namespace Vortex {
 		for (const auto e : view)
 		{
 			Entity entity{ e, this };
+
+			if (!entity.IsActive())
+				continue;
+
 			ScriptEngine::Invoke(ManagedMethod::OnGui, entity);
 		}
 	}
@@ -708,15 +717,17 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(m_IsRunning, "Scene must be running!");
 
-		if ((m_IsPaused && paused) || (!m_IsPaused && !paused))
+		const bool consistent = (m_IsPaused && paused) || (!m_IsPaused && !paused);
+
+		if (consistent)
 			return;
 
 		m_IsPaused = paused;
 
-		switch (m_IsPaused)
+		switch ((uint32_t)m_IsPaused)
 		{
-			case true:  SystemManager::OnRuntimeScenePaused(this);  break;
-			case false: SystemManager::OnRuntimeSceneResumed(this); break;
+			case 1: SystemManager::OnRuntimeScenePaused(this);  break;
+			case 0: SystemManager::OnRuntimeSceneResumed(this); break;
 		}
 	}
 
@@ -730,17 +741,18 @@ namespace Vortex {
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 
-		// Resize non-FixedAspectRatio cameras
+		// Resize all non-FixedAspectRatio cameras
 		auto view = GetAllEntitiesWith<CameraComponent>();
 
 		for (const auto entity : view)
 		{
-			auto& cameraComponent = view.get<CameraComponent>(entity);
+			CameraComponent& cameraComponent = view.get<CameraComponent>(entity);
 
 			if (cameraComponent.FixedAspectRatio)
 				continue;
 
-			cameraComponent.Camera.SetViewportSize(width, height);
+			SceneCamera& camera = cameraComponent.Camera;
+			camera.SetViewportSize(width, height);
 		}
 	}
 
@@ -754,20 +766,15 @@ namespace Vortex {
 		{
 			UnparentEntity(parent);
 
-			Entity newParent = TryGetEntityWithUUID(entity.GetParentUUID());
-			if (newParent)
+			if (Entity newParent = entity.GetParent())
 			{
 				UnparentEntity(entity);
 				ParentEntity(parent, newParent);
 			}
 		}
-		else
+		else if (Entity previousParent = entity.GetParent())
 		{
-			Entity previousParent = TryGetEntityWithUUID(entity.GetParentUUID());
-			if (previousParent)
-			{
-				UnparentEntity(entity);
-			}
+			UnparentEntity(entity);
 		}
 
 		entity.SetParentUUID(parent.GetUUID());
@@ -815,7 +822,7 @@ namespace Vortex {
 
 			child.SetActive(true);
 
-			if (!child.Children().empty())
+			if (child.Children().size() > 0)
 			{
 				ActiveateChildren(child);
 			}
@@ -838,7 +845,7 @@ namespace Vortex {
 
 			child.SetActive(false);
 
-			if (!child.Children().empty())
+			if (child.Children().size() > 0)
 			{
 				DeactiveateChildren(child);
 			}
@@ -1273,10 +1280,15 @@ namespace Vortex {
 		CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
 
 		if (m_ViewportWidth != 0 && m_ViewportHeight != 0)
-			cameraComponent.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		{
+			SceneCamera& camera = cameraComponent.Camera;
+			camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		}
 
 		if (cameraComponent.Primary)
+		{
 			RenderCommand::SetClearColor(cameraComponent.ClearColor);
+		}
 	}
 
 	void Scene::OnStaticMeshConstruct(entt::registry& registry, entt::entity e)
