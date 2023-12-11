@@ -109,6 +109,7 @@ namespace Vortex {
 	}
 
 	static SceneRenderer s_SceneRenderer;
+	static QueueFreeData s_NullQueueFreeData;
 
 	Scene::Scene(SharedReference<Framebuffer>& targetFramebuffer)
 		: m_TargetFramebuffer(targetFramebuffer)
@@ -221,6 +222,11 @@ namespace Vortex {
 		DestroyEntityInternal(queueFreeData);
 	}
 
+	void Scene::ClearEntities()
+	{
+		m_Registry.clear();
+	}
+
 	const QueueFreeData& Scene::GetQueueFreeStatus(UUID entityUUID) const
 	{
 		VX_CORE_ASSERT(m_QueueFreeMap.contains(entityUUID), "entity was not found in queue free map!");
@@ -229,6 +235,8 @@ namespace Vortex {
 		{
 			return m_QueueFreeMap.at(entityUUID);
 		}
+
+		return s_NullQueueFreeData;
 	}
 
 	void Scene::DestroyEntityInternal(Entity entity, bool excludeChildren)

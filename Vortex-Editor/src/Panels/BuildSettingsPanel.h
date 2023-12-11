@@ -34,6 +34,8 @@ namespace Vortex {
 
 		Fs::Path m_ProjectPath;
 		Fs::Path m_StartupScene;
+
+		ImGuiTextFilter m_StartSceneSearchTextFilter;
 	};
 
 }

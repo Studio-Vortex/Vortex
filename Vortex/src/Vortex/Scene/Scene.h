@@ -55,6 +55,8 @@ namespace Vortex {
 		void SubmitToDestroyEntity(Entity entity, bool excludeChildren = false);
 		void SubmitToDestroyEntity(const QueueFreeData& queueFreeData);
 
+		void ClearEntities();
+
 		const QueueFreeData& GetQueueFreeStatus(UUID entityUUID) const;
 
 	private:

@@ -30,17 +30,23 @@ namespace Vortex {
 		UI::Property("Project Location", projectPath, true);
 
 		std::string startScenePath = m_StartupScene.string();
-		AssetHandle sceneHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(Project::GetAssetDirectory() / m_StartupScene);
-		if (AssetManager::IsHandleValid(sceneHandle))
+		std::vector<std::string> sceneFilepathStrings;
+		std::vector<const char*> sceneFilepaths;
+
+		const AssetRegistry& assetRegistry = Project::GetEditorAssetManager()->GetAssetRegistry();
+		for (const auto& [assetHandle, metadata] : assetRegistry)
 		{
-			if (UI::PropertyAssetReference<Scene>("Start Scene", startScenePath, sceneHandle, nullptr, Project::GetEditorAssetManager()->GetAssetRegistry()))
-			{
-				if (AssetManager::IsHandleValid(sceneHandle))
-				{
-					const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(sceneHandle);
-					m_StartupScene = metadata.Filepath;
-				}
-			}
+			if (metadata.Type != AssetType::SceneAsset)
+				continue;
+
+			std::string sceneFilepath = metadata.Filepath.string();
+			sceneFilepathStrings.push_back(sceneFilepath);
+			sceneFilepaths.push_back(sceneFilepathStrings.back().c_str());
+		}
+
+		if (UI::PropertyDropdownSearch("Start Scene", sceneFilepaths.data(), sceneFilepaths.size(), startScenePath, m_StartSceneSearchTextFilter))
+		{
+			Project::GetActive()->GetProperties().General.StartScene = m_StartupScene = Fs::Path(startScenePath);
 		}
 
 		UI::EndPropertyGrid();
