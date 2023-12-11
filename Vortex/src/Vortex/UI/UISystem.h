@@ -6,6 +6,7 @@ namespace Vortex {
 
 	class VORTEX_API UISystem : public ISystem
 	{
+	public:
 		UISystem();
 		virtual ~UISystem() override = default;
 

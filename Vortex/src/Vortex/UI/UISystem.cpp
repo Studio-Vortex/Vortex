@@ -29,7 +29,7 @@ namespace Vortex {
 		SubModuleProperties moduleProps;
 		moduleProps.ModuleName = "UI";
 		moduleProps.APIVersion = Version(1, 0, 0);
-		moduleProps.RequiredModules = {};
+		moduleProps.RequiredModules = { "Renderer" };
 		s_Data.Module.Init(moduleProps);
 
 		Application::Get().AddModule(s_Data.Module);

@@ -87,7 +87,9 @@ namespace Vortex {
 
 		// Overlay
 
-		void OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode);
+		void OnOverlayRender(EditorCamera* editorCamera);
+
+		void OverlayRenderSelectedEntityOutline(const Math::vec4& outlineColor);
 
 		void OverlayRenderMeshBoundingBox(Entity entity, const Math::mat4& transform, const Math::vec4& boundingBoxColor);
 		void OverlayRenderMeshBoundingBoxes(const Math::vec4& boundingBoxColor);
@@ -176,7 +178,7 @@ namespace Vortex {
 
 		bool m_SceneViewportPanelOpen = true;
 		bool m_SecondViewportPanelOpen = false;
-		bool m_ShowSceneCreateEntityMenu = false;
+		bool m_ShowViewportCreateEntityMenu = false;
 		bool m_SceneViewportFocused = false;
 		bool m_SceneViewportHovered = false;
 		bool m_SecondViewportFocused = false;
@@ -186,7 +188,6 @@ namespace Vortex {
 		bool m_AllowSecondViewportCameraEvents = false;
 		bool m_StartedClickInViewport = false;
 		bool m_StartedClickInSecondViewport = false;
-		bool m_ShowSelectedEntityCollider = false;
 		bool m_ShowSelectedEntityOutline = true;
 		bool m_CaptureSceneViewportFramebufferToDiskOnSave = false;
 		bool m_TransitionedFromStartScene = false;

@@ -175,7 +175,7 @@ namespace Vortex {
 		}
 
 		template <typename TSystemType>
-		VX_FORCE_INLINE static bool SetSystemEnabled(bool enabled)
+		VX_FORCE_INLINE static void SetSystemEnabled(bool enabled)
 		{
 			static_assert(std::is_base_of<ISystem, TSystemType>::value, "SetSystemEnabled only works with types derived from ISystem!");
 

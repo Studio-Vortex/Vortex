@@ -17,6 +17,8 @@
 
 #include "Vortex/Network/Networking.h"
 
+#include "Vortex/UI/UISystem.h"
+
 #include "Vortex/System/SystemManager.h"
 
 #include "Vortex/Utils/FileSystem.h"
@@ -106,6 +108,7 @@ namespace Vortex {
 		// ThreadPool::Init();
 		Networking::Init();
 		Renderer::Init();
+		SystemManager::RegisterSystem<UISystem>();
 		SystemManager::RegisterAssetSystem<ParticleSystem>();
 		Physics::Init();
 		SystemManager::RegisterAssetSystem<AudioSystem>();
@@ -125,6 +128,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Input::Shutdown();
+		SystemManager::UnRegisterSystem<UISystem>();
 		SystemManager::UnRegisterAssetSystem<AudioSystem>();
 		Physics::Shutdown();
 		Font::Shutdown();

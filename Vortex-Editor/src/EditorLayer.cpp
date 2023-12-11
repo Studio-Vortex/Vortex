@@ -250,7 +250,10 @@ namespace Vortex {
 			}
 		}
 
-		OnOverlayRender(m_EditorCamera, false);
+		if (m_SceneState == SceneState::Play)
+		{
+			OnOverlayRender(m_EditorCamera);
+		}
 
 		m_Framebuffer->Unbind();
 
@@ -316,7 +319,7 @@ namespace Vortex {
 				}
 			}
 
-			OnOverlayRender(m_SecondEditorCamera, true);
+			OnOverlayRender(m_SecondEditorCamera);
 
 			m_SecondViewportFramebuffer->Unbind();
 		}
@@ -475,18 +478,18 @@ namespace Vortex {
 			OnSecondViewportPanelRender();
 		}
 
-		if (m_ShowSceneCreateEntityMenu)
+		if (m_ShowViewportCreateEntityMenu)
 		{
-			Gui::OpenPopup("SceneCreateEntityMenu");
-			m_ShowSceneCreateEntityMenu = false;
+			Gui::OpenPopup("ViewportCreateEntityMenu");
+			m_ShowViewportCreateEntityMenu = false;
 		}
 
-		if (Gui::IsPopupOpen("SceneCreateEntityMenu"))
+		if (Gui::IsPopupOpen("ViewportCreateEntityMenu"))
 		{
 			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
 		}
 
-		if (Gui::BeginPopup("SceneCreateEntityMenu", ImGuiWindowFlags_NoMove))
+		if (Gui::BeginPopup("ViewportCreateEntityMenu", ImGuiWindowFlags_NoMove))
 		{
 			EditorCamera* camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
 			m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateEntityMenu(camera);
@@ -1632,7 +1635,6 @@ namespace Vortex {
 					}
 
 					UI::Property("Selected Entity Outline", m_ShowSelectedEntityOutline);
-					UI::Property("Selected Entity Collider", m_ShowSelectedEntityCollider);
 
 					if (UI::ImageButton(projectProps.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio", EditorResources::MuteAudioSourcesIcons, textureSize, projectProps.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
 					{
@@ -1717,27 +1719,14 @@ namespace Vortex {
 		Platform::LaunchProcess(runtimeAppPath.c_str(), projectPath.c_str());
 	}
 
-	void EditorLayer::OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode)
+	void EditorLayer::OnOverlayRender(EditorCamera* editorCamera)
 	{
 		VX_PROFILE_FUNCTION();
 
 		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
-		if (m_SceneState == SceneState::Play && !renderInPlayMode)
-		{
-			if (Entity primaryCameraEntity = m_ActiveScene->GetPrimaryCameraEntity())
-			{
-				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(primaryCameraEntity);
-				const SceneCamera& camera = primaryCameraEntity.GetComponent<CameraComponent>().Camera;
-				const Math::mat4 view = Math::Inverse(transform);
-				Renderer2D::BeginScene(camera, view);
-			}
-		}
-		else
-		{
-			Renderer2D::BeginScene(editorCamera);
-		}
+		Renderer2D::BeginScene(editorCamera);
 
 		// Render Editor Grid
 		if (m_SceneState != SceneState::Play && projectProps.EditorProps.DrawEditorGrid)
@@ -1748,7 +1737,7 @@ namespace Vortex {
 		const Math::vec4 colliderColor = projectProps.PhysicsProps.Physics3DColliderColor;
 		const Math::vec4 spriteColliderColor = projectProps.PhysicsProps.Physics2DColliderColor;
 		const Math::vec4 boundingBoxColor = ColorToVec4(Color::Orange);
-		const Math::vec4 outlineColor = ColorToVec4(Color::Orange);
+		const Math::vec4 outlineColor = boundingBoxColor;
 
 		// Render Physics Colliders
 		if (projectProps.PhysicsProps.ShowColliders)
@@ -1822,116 +1811,114 @@ namespace Vortex {
 			}
 		}
 
-		// Draw selected entity outline + colliders
+		// Draw selected entity outline
+		if (m_ShowSelectedEntityOutline)
 		{
-			if (Entity selectedEntity = SelectionManager::GetSelectedEntity(); selectedEntity)
+			if (Entity selectedEntity = SelectionManager::GetSelectedEntity())
 			{
-				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
-
-				if (m_ShowSelectedEntityCollider)
-				{
-					OverlayRenderMeshCollider(selectedEntity, transform, colliderColor);
-					OverlayRenderSpriteCollider(editorCamera, selectedEntity, transform, spriteColliderColor);
-				}
-
-				if (m_ShowSelectedEntityOutline)
-				{
-					Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
-
-					if (selectedEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
-					{
-						OverlayRenderMeshOutline(selectedEntity, scaledTransform, outlineColor);
-					}
-
-					if (selectedEntity.HasAny<SpriteRendererComponent, CircleRendererComponent>())
-					{
-						OverlayRenderSpriteOutline(selectedEntity, scaledTransform, outlineColor);
-					}
-
-					if (selectedEntity.HasComponent<TextMeshComponent>())
-					{
-						const TextMeshComponent& textMesh = selectedEntity.GetComponent<TextMeshComponent>();
-
-						// TODO calculate the text size and scale transform
-						Renderer2D::DrawRect(transform, outlineColor);
-					}
-
-					if (selectedEntity.HasComponent<CameraComponent>())
-					{
-						const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
-
-						switch (sceneCamera.GetProjectionType())
-						{
-							case SceneCamera::ProjectionType::Perspective:
-							{
-								const Camera* camera = &sceneCamera;
-								Math::mat4 view = Math::Inverse(transform);
-								std::vector<Math::vec4> corners = GetCameraFrustumCornersWorldSpace(camera, view);
-
-								const Math::vec4 frustumColor = ColorToVec4(Color::LightBlue);
-
-								Renderer::DrawFrustum(corners, frustumColor);
-								break;
-							}
-							case SceneCamera::ProjectionType::Orthographic:
-							{
-								const Math::mat4 scaled = transform * Math::Scale({ sceneCamera.GetOrthographicSize() * 1.6f, sceneCamera.GetOrthographicSize() * 0.9f, 1.0f });
-								Renderer2D::DrawRect(scaled, outlineColor);
-								break;
-							}
-						}
-					}
-
-					if (selectedEntity.HasComponent<LightSourceComponent>())
-					{
-						const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
-
-						const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
-						const Math::vec3 translation = worldSpaceTransform.Translation;
-						const Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
-
-						switch (lightSourceComponent.Type)
-						{
-							case LightType::Directional:
-							{
-								const Math::vec3 midpoint = Math::Midpoint(translation, Math::vec3(0.0f));
-
-								const Math::quaternion rotation = worldSpaceTransform.GetRotation();
-
-								const Math::vec3 left = Math::Rotate(rotation, Math::vec3(-1.0f, 0.0f, 0.0f)) * 0.5f;
-								const Math::vec3 right = Math::Rotate(rotation, Math::vec3(1.0f, 0.0f, 0.0f)) * 0.5f;
-								const Math::vec3 up = Math::Rotate(rotation, Math::vec3(0.0f, 1.0f, 0.0f)) * 0.5f;
-								const Math::vec3 down = Math::Rotate(rotation, Math::vec3(0.0f, -1.0f, 0.0f)) * 0.5f;
-
-								Renderer2D::DrawLine(translation, midpoint, color);
-								Renderer2D::DrawLine(translation + left, midpoint + left, color);
-								Renderer2D::DrawLine(translation + right, midpoint + right, color);
-								Renderer2D::DrawLine(translation + up, midpoint + up, color);
-								Renderer2D::DrawLine(translation + down, midpoint + down, color);
-
-								break;
-							}
-							case LightType::Point:
-							{
-								const float radius = lightSourceComponent.Intensity * 0.5f;
-
-								Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, color);
-								Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, color);
-								Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, color);
-
-								break;
-							}
-							case LightType::Spot:
-							{
-								break;
-							}
-						}
-					}
-				}
+				OverlayRenderSelectedEntityOutline(outlineColor);
 			}
 		}
 
 		Renderer2D::EndScene();
+	}
+
+	void EditorLayer::OverlayRenderSelectedEntityOutline(const Math::vec4& outlineColor)
+	{
+		Entity selectedEntity = SelectionManager::GetSelectedEntity();
+		const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
+
+		if (selectedEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
+		{
+			const Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
+			OverlayRenderMeshOutline(selectedEntity, scaledTransform, outlineColor);
+		}
+
+		if (selectedEntity.HasAny<SpriteRendererComponent, CircleRendererComponent>())
+		{
+			const Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
+			OverlayRenderSpriteOutline(selectedEntity, scaledTransform, outlineColor);
+		}
+
+		if (selectedEntity.HasComponent<TextMeshComponent>())
+		{
+			const TextMeshComponent& textMesh = selectedEntity.GetComponent<TextMeshComponent>();
+
+			// TODO calculate the text size and scale transform
+			Renderer2D::DrawRect(transform, outlineColor);
+		}
+
+		if (selectedEntity.HasComponent<CameraComponent>())
+		{
+			const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
+
+			switch (sceneCamera.GetProjectionType())
+			{
+				case SceneCamera::ProjectionType::Perspective:
+				{
+					const Camera* camera = &sceneCamera;
+					const Math::mat4 view = Math::Inverse(transform);
+					std::vector<Math::vec4> corners = GetCameraFrustumCornersWorldSpace(camera, view);
+
+					const Math::vec4 frustumColor = ColorToVec4(Color::LightBlue);
+
+					Renderer::DrawFrustum(corners, frustumColor);
+					break;
+				}
+				case SceneCamera::ProjectionType::Orthographic:
+				{
+					const Math::mat4 scaled = transform * Math::Scale({ sceneCamera.GetOrthographicSize() * 1.6f, sceneCamera.GetOrthographicSize() * 0.9f, 1.0f });
+					Renderer2D::DrawRect(scaled, outlineColor);
+					break;
+				}
+			}
+		}
+
+		if (selectedEntity.HasComponent<LightSourceComponent>())
+		{
+			const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
+
+			const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
+			const Math::vec3 translation = worldSpaceTransform.Translation;
+			const Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
+
+			switch (lightSourceComponent.Type)
+			{
+				case LightType::Directional:
+				{
+					const Math::vec3 midpoint = Math::Midpoint(translation, Math::vec3(0.0f));
+
+					const Math::quaternion rotation = worldSpaceTransform.GetRotation();
+
+					const Math::vec3 left = Math::Rotate(rotation, Math::vec3(-1.0f, 0.0f, 0.0f)) * 0.5f;
+					const Math::vec3 right = Math::Rotate(rotation, Math::vec3(1.0f, 0.0f, 0.0f)) * 0.5f;
+					const Math::vec3 up = Math::Rotate(rotation, Math::vec3(0.0f, 1.0f, 0.0f)) * 0.5f;
+					const Math::vec3 down = Math::Rotate(rotation, Math::vec3(0.0f, -1.0f, 0.0f)) * 0.5f;
+
+					Renderer2D::DrawLine(translation, midpoint, color);
+					Renderer2D::DrawLine(translation + left, midpoint + left, color);
+					Renderer2D::DrawLine(translation + right, midpoint + right, color);
+					Renderer2D::DrawLine(translation + up, midpoint + up, color);
+					Renderer2D::DrawLine(translation + down, midpoint + down, color);
+
+					break;
+				}
+				case LightType::Point:
+				{
+					const float radius = lightSourceComponent.Intensity * 0.5f;
+
+					Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, color);
+					Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, color);
+					Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, color);
+
+					break;
+				}
+				case LightType::Spot:
+				{
+					break;
+				}
+			}
+		}
 	}
 
 	void EditorLayer::OnCreateScriptPopupRender()
@@ -2584,7 +2571,7 @@ namespace Vortex {
 			{
 				if (controlDown)
 				{
-					m_ShowSceneCreateEntityMenu = true;
+					m_ShowViewportCreateEntityMenu = true;
 				}
 
 				break;
