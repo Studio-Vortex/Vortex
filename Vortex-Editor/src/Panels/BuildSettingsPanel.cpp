@@ -5,13 +5,13 @@ namespace Vortex {
 	BuildSettingsPanel::BuildSettingsPanel(const BuildAndRunFn& func0, const BuildFn& func1)
 		: m_BuildAndRunFn(func0), m_BuildFn(func1) { }
 
-	void BuildSettingsPanel::OnEditorAttach()
+	void BuildSettingsPanel::OnPanelAttach()
 	{
 		m_ProjectPath = Project::GetProjectFilepath();
 		m_StartupScene = Project::GetActive()->GetProperties().General.StartScene;
 	}
 
-	void BuildSettingsPanel::OnEditorDetach() { }
+	void BuildSettingsPanel::OnPanelDetach() { }
 
 	void BuildSettingsPanel::OnGuiRender()
 	{

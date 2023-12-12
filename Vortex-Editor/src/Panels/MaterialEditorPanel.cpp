@@ -7,14 +7,12 @@ namespace Vortex {
 
 	void MaterialEditorPanel::OnGuiRender()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
 		if (!IsOpen)
 			return;
 
-		Gui::Begin(m_PanelName.c_str(), &IsOpen);
+		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
+
+		Gui::Begin(m_PanelName.c_str(), &IsOpen, flags);
 
 		if (Entity selected = SelectionManager::GetSelectedEntity())
 		{

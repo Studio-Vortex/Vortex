@@ -59,8 +59,8 @@ namespace Vortex {
 
 		SharedReference<EditorPanel> GetPanel(EditorPanelType type);
 
-		void OnEditorAttach();
-		void OnEditorDetach();
+		void OnEditorCreate();
+		void OnEditorDestroy();
 
 		template <typename TPanel>
 		void SetProjectContext(SharedReference<Project> project)

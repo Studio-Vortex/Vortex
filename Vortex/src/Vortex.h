@@ -9,6 +9,7 @@
 #include "Vortex/Core/Buffer.h"
 #include "Vortex/Core/Window.h"
 #include "Vortex/Core/Platform.h"
+#include "Vortex/Core/Timer.h"
 #include "Vortex/Core/TimeStep.h"
 #include "Vortex/System/SystemManager.h"
 #include "Vortex/ReferenceCounting/SharedRef.h"

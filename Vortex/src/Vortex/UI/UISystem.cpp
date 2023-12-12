@@ -60,9 +60,21 @@ namespace Vortex {
 
 	void UISystem::OnUpdateRuntime(Scene* context)
 	{
-		auto view = context->GetAllEntitiesWith<ButtonComponent>();
+		auto buttonView = context->GetAllEntitiesWith<ButtonComponent>();
 
-		for (const auto e : view)
+		Entity primaryCamera = context->GetPrimaryCameraEntity();
+		if (!primaryCamera)
+			return;
+
+		const CameraComponent& cc = primaryCamera.GetComponent<CameraComponent>();
+		const SceneCamera& camera = cc.Camera;
+
+		const Math::mat4 transform = context->GetWorldSpaceTransformMatrix(primaryCamera);
+		const Math::mat4 view = Math::Inverse(transform);
+
+		Renderer2D::BeginScene(camera, view);
+
+		for (const auto e : buttonView)
 		{
 			Entity entity{ e, context };
 			
@@ -72,6 +84,8 @@ namespace Vortex {
 
 			Renderer2D::DrawQuad(transform, buttonColor);
 		}
+
+		Renderer2D::EndScene();
 	}
 
 	void UISystem::OnRuntimeScenePaused(Scene* context)

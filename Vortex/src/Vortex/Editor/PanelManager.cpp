@@ -26,19 +26,19 @@ namespace Vortex {
 		return m_Panels[type];
     }
 
-    void PanelManager::OnEditorAttach()
+    void PanelManager::OnEditorCreate()
     {
 		ForEach([](SharedReference<EditorPanel> panel)
 		{
-			panel->OnEditorAttach();
+			panel->OnPanelAttach();
 		});
     }
 
-    void PanelManager::OnEditorDetach()
+    void PanelManager::OnEditorDestroy()
     {
 		ForEach([](SharedReference<EditorPanel> panel)
 		{
-			panel->OnEditorDetach();
+			panel->OnPanelDetach();
 		});
     }
 

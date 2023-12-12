@@ -2,7 +2,7 @@
 
 namespace Vortex {
 
-	void NetworkManagerPanel::OnEditorAttach()
+	void NetworkManagerPanel::OnPanelAttach()
 	{
 		m_ServerInfo.SocketOptions.AF = AddressFamily::InternetIPv4;
 		m_ServerInfo.SocketOptions.Type = ConnectionType::Udp;

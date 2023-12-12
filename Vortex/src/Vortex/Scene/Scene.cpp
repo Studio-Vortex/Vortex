@@ -20,6 +20,8 @@
 #include "Vortex/Animation/Animator.h"
 #include "Vortex/Animation/Animation.h"
 
+#include "Vortex/UI/UISystem.h"
+
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/Mesh.h"
@@ -111,6 +113,7 @@ namespace Vortex {
 
 	static SceneRenderer s_SceneRenderer;
 	static QueueFreeData s_NullQueueFreeData;
+	static Timer s_NullTimer = Timer("", 0.0f, nullptr);
 
 	Scene::Scene(SharedReference<Framebuffer>& targetFramebuffer)
 		: m_TargetFramebuffer(targetFramebuffer)
@@ -388,6 +391,44 @@ namespace Vortex {
 		m_EntitiesToBeRemovedFromQueue.clear();
 	}
 
+	void Scene::UpdateEntityTimers(TimeStep delta)
+	{
+		for (auto& [entityUUID, entityTimers] : m_Timers)
+		{
+			// update all the timers for each entity
+			for (Timer& timer : entityTimers)
+			{
+				if (timer.IsFinished())
+				{
+					m_FinishedTimers.push_back(timer);
+					continue;
+				}
+
+				timer.OnUpdate(delta);
+			}
+
+			// remove finished timers
+			for (Timer& timer : m_FinishedTimers)
+			{
+				const std::string& timerName = timer.GetName();
+				const size_t timerCount = entityTimers.size();
+
+				for (size_t pos = 0; pos < timerCount; pos++)
+				{
+					const std::string& potential = entityTimers[pos].GetName();
+
+					if (!String::FastCompare(timerName, potential))
+						continue;
+
+					entityTimers.erase(entityTimers.begin() + pos);
+					break;
+				}
+			}
+
+			m_FinishedTimers.clear();
+		}
+	}
+
 	void Scene::OnRuntimeStart(bool muteAudio)
 	{
 		VX_PROFILE_FUNCTION();
@@ -466,6 +507,8 @@ namespace Vortex {
 
 		StopAnimatorsRuntime();
 		OnPhysicsSimulationStop();
+
+		m_Timers.clear();
 	}
 
 	void Scene::OnPhysicsSimulationStart()
@@ -570,13 +613,15 @@ namespace Vortex {
 			}
 		}
 
-		// Update Components
+		// Update remaining Components/Systems
 		OnMeshUpdateRuntime();
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
+		SystemManager::GetSystem<UISystem>()->OnUpdateRuntime(this);
 
 		if (updateCurrentFrame)
 		{
 			UpdateQueueFreeTimers(delta);
+			UpdateEntityTimers(delta);
 		}
 
 		ExecutePostUpdateQueue();
@@ -612,6 +657,7 @@ namespace Vortex {
 		// Update Components
 		OnMeshUpdateRuntime();
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
+		SystemManager::GetSystem<UISystem>()->OnUpdateRuntime(this);
 
 		ExecutePostUpdateQueue();
 	}
@@ -649,6 +695,7 @@ namespace Vortex {
 		// Update Components
 		OnMeshUpdateRuntime();
 		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
+		SystemManager::GetSystem<UISystem>()->OnUpdateRuntime(this);
 
 		ExecutePostUpdateQueue();
 	}
@@ -669,6 +716,8 @@ namespace Vortex {
 
 	void Scene::ExecutePreUpdateQueue()
 	{
+		VX_PROFILE_FUNCTION();
+
 		std::scoped_lock<std::mutex> lock(m_PreUpdateQueueMutex);
 
 		for (const auto& fn : m_PreUpdateQueue)
@@ -681,6 +730,8 @@ namespace Vortex {
 
 	void Scene::ExecutePostUpdateQueue()
 	{
+		VX_PROFILE_FUNCTION();
+
 		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
 
 		for (const auto& fn : m_PostUpdateQueue)
@@ -714,6 +765,8 @@ namespace Vortex {
 
 	void Scene::SetPaused(bool paused)
 	{
+		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(m_IsRunning, "Scene must be running!");
 
 		const bool consistent = (m_IsPaused && paused) || (!m_IsPaused && !paused);
@@ -755,9 +808,42 @@ namespace Vortex {
 		}
 	}
 
+    const Timer& Scene::TryGetTimerByName(Entity entity, const std::string& name)
+    {
+		return (const Timer&)TryGetMutableTimerByName(entity, name);
+    }
+
+	Timer& Scene::TryGetMutableTimerByName(Entity entity, const std::string& name)
+	{
+		std::vector<Timer> entityTimers = m_Timers[entity];
+
+		for (Timer& timer : entityTimers)
+		{
+			const std::string& timerName = timer.GetName();
+			if (!String::FastCompare(timerName, name))
+				continue;
+
+			return timer;
+		}
+
+		return s_NullTimer;
+	}
+
+	void Scene::AddOrReplaceTimer(Entity entity, const Timer& timer)
+	{
+		if (Timer& existing = TryGetMutableTimerByName(entity, timer.GetName()); timer != s_NullTimer)
+		{
+			existing = std::move(timer);
+			return;
+		}
+
+		m_Timers[entity].push_back(timer);
+	}
+
 	void Scene::ParentEntity(Entity entity, Entity parent)
 	{
 		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(entity, "Entity was invalid!");
 		VX_CORE_ASSERT(parent, "Parent was invalid!");
 
@@ -785,6 +871,7 @@ namespace Vortex {
 	void Scene::UnparentEntity(Entity entity, bool convertToWorldSpace)
 	{
 		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(entity, "Entity was invalid!");
 
 		Entity parent = entity.GetParent();
@@ -808,6 +895,7 @@ namespace Vortex {
 	void Scene::ActiveateChildren(Entity entity)
 	{
 		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(entity, "Entity was invalid!");
 
 		const std::vector<UUID>& children = entity.Children();
@@ -831,6 +919,7 @@ namespace Vortex {
 	void Scene::DeactiveateChildren(Entity entity)
 	{
 		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(entity, "Entity was invalid!");
 
 		const std::vector<UUID>& children = entity.Children();

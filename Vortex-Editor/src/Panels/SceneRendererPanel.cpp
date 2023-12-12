@@ -4,10 +4,6 @@ namespace Vortex {
 
 	void SceneRendererPanel::OnGuiRender()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
 		if (!IsOpen)
 			return;
 
@@ -53,7 +49,9 @@ namespace Vortex {
 			}
 		}
 
-		Gui::Begin(m_PanelName.c_str(), &IsOpen);
+		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
+
+		Gui::Begin(m_PanelName.c_str(), &IsOpen, flags);
 
 		if (Entity skyLightEntity = m_ContextScene->GetSkyLightEntity())
 		{
@@ -73,9 +71,9 @@ namespace Vortex {
 
 		if (UI::PropertyGridHeader("Shaders", false))
 		{
-			Gui::PushFont(boldFont);
+			UI::PushFont("Bold");
 			Gui::Text("%u Loaded Shaders", (uint32_t)s_Loaded2DShaders.size() + (uint32_t)s_Loaded3DShaders.size());
-			Gui::PopFont();
+			UI::PopFont();
 
 			Gui::SameLine();
 			const char* buttonText = "Recompile All";

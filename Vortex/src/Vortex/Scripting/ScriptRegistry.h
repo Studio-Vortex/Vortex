@@ -120,7 +120,9 @@ namespace Vortex {
 		bool Entity_RemoveChild(UUID parentUUID, UUID childUUID);
 		MonoObject* Entity_GetScriptInstance(UUID entityUUID);
 		void Entity_Destroy(UUID entityUUID, bool excludeChildren);
-		void Entity_DestroyTimed(UUID entityUUID, float waitTime, bool excludeChildren);
+		void Entity_DestroyWithDelay(UUID entityUUID, float delay, bool excludeChildren);
+		void Entity_Invoke(UUID entityUUID, MonoString* methodName);
+		void Entity_InvokeWithDelay(UUID entityUUID, MonoString* methodName, float delay);
 		void Entity_SetActive(UUID entityUUID, bool isActive);
 
 #pragma endregion

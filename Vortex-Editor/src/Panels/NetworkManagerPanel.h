@@ -11,7 +11,7 @@ namespace Vortex {
 	public:
 		~NetworkManagerPanel() override = default;
 
-		void OnEditorAttach() override;
+		void OnPanelAttach() override;
 
 		void OnGuiRender() override;
 

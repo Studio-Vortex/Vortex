@@ -3,6 +3,7 @@
 #include "Vortex/Asset/Asset.h"
 
 #include "Vortex/Core/UUID.h"
+#include "Vortex/Core/Timer.h"
 #include "Vortex/Core/TimeStep.h"
 
 #include "Vortex/Project/ProjectType.h"
@@ -63,6 +64,7 @@ namespace Vortex {
 		void DestroyEntityInternal(const QueueFreeData& queueFreeData);
 
 		void UpdateQueueFreeTimers(TimeStep delta);
+		void UpdateEntityTimers(TimeStep delta);
 
 	public:
 		void OnRuntimeStart(bool muteAudio = false);
@@ -104,6 +106,12 @@ namespace Vortex {
 		void Step(uint32_t frames = 1) { m_StepFrames = frames; }
 
 		void OnViewportResize(uint32_t width, uint32_t height);
+
+		const Timer& TryGetTimerByName(Entity entity, const std::string& name);
+	private:
+		Timer& TryGetMutableTimerByName(Entity entity, const std::string& name);
+	public:
+		void AddOrReplaceTimer(Entity entity, const Timer& timer);
 
 		void ParentEntity(Entity entity, Entity parent);
 		void UnparentEntity(Entity entity, bool convertToWorldSpace = true);
@@ -202,6 +210,9 @@ namespace Vortex {
 		using QueueFreeMap = std::unordered_map<UUID, QueueFreeData>;
 		QueueFreeMap m_QueueFreeMap;
 		std::vector<UUID> m_EntitiesToBeRemovedFromQueue;
+
+		std::unordered_map<UUID, std::vector<Timer>> m_Timers;
+		std::vector<Timer> m_FinishedTimers;
 
 		std::vector<std::function<void()>> m_PreUpdateQueue;
 		std::mutex m_PreUpdateQueueMutex;

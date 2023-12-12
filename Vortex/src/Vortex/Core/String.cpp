@@ -5,11 +5,13 @@ namespace Vortex {
 
     bool String::FastCompare(const std::string_view& lhs, const std::string_view& rhs)
     {
+		// if the sizes are different they definitely aren't the same
 		if (lhs.size() != rhs.size())
 		{
 			return false;
 		}
 
+		// we have no choice but to perform an equality check
 		return lhs == rhs;
     }
     

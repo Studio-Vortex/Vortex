@@ -134,7 +134,7 @@ namespace Vortex {
 
 		m_SecondEditorCamera = CreateEditorCamera(editorCameraProperties);
 
-		m_PanelManager->OnEditorAttach();
+		m_PanelManager->OnEditorCreate();
 		m_PanelManager->SetSceneContext(m_ActiveScene);
 		m_PanelManager->SetProjectContext(project);
 	}
@@ -143,7 +143,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		m_PanelManager->OnEditorDetach();
+		m_PanelManager->OnEditorDestroy();
 		m_PanelManager->SetSceneContext(nullptr);
 		m_PanelManager->SetProjectContext(nullptr);
 
@@ -2715,7 +2715,12 @@ namespace Vortex {
 			return false;
 		}
 
-		if (ImGuizmo::IsOver())
+		if (m_SceneViewportHovered && !InEditSceneState())
+		{
+			return false;
+		}
+
+		if (m_GizmoType != -1 && ImGuizmo::IsOver())
 		{
 			return false;
 		}

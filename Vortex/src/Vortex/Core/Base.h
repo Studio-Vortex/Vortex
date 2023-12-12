@@ -48,8 +48,8 @@
 	#define VX_POINTER_WIDTH 4
 #endif // VX_64
 
-#define VX_VERIFY(x) { if(!(x)) { VX_DEBUGBREAK(); } }
-#define VX_CORE_VERIFY(x) { if (!(x)) { VX_DEBUGBREAK(); } }
+#define VX_VERIFY(x) { if(!(x)) { VX_ERROR("Verify Failed: {} {}", __FILE__, __LINE__); } }
+#define VX_CORE_VERIFY(x) { if (!(x)) { VX_ERROR("Verify Failed: {} {}", __FILE__, __LINE__); } }
 
 #define VX_FORCE_INLINE inline
 
@@ -67,28 +67,28 @@ namespace Vortex {
 	VORTEX_API void ShutdownEngine();
 
 	template <typename T>
-	using UniqueRef = std::unique_ptr<T>;
+	using VORTEX_API UniqueRef = std::unique_ptr<T>;
 
 	template <typename T>
-	using SharedRef = std::shared_ptr<T>;
+	using VORTEX_API SharedRef = std::shared_ptr<T>;
 
 	template <typename T>
-	using WeakRef = std::weak_ptr<T>;
+	using VORTEX_API WeakRef = std::weak_ptr<T>;
 
 	template <typename T, typename... Args>
-	constexpr UniqueRef<T> CreateUnique(Args&&... args)
+	VORTEX_API constexpr UniqueRef<T> CreateUnique(Args&&... args)
 	{
 		return std::make_unique<T>(std::forward<Args>(args)...);
 	}
 
 	template <typename T, typename... Args>
-	constexpr SharedRef<T> CreateShared(Args&&... args)
+	VORTEX_API constexpr SharedRef<T> CreateShared(Args&&... args)
 	{
 		return std::make_shared<T>(std::forward<Args>(args)...);
 	}
 
 	template <typename T, typename... Args>
-	constexpr WeakRef<T> CreateWeak(SharedRef<T> ptr)
+	VORTEX_API constexpr WeakRef<T> CreateWeak(SharedRef<T> ptr)
 	{
 		return WeakRef<T>(ptr);
 	}

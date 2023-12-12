@@ -13,9 +13,10 @@
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"
 
-#include "Vortex/Scripting/ScriptUtils.h"
-#include "Vortex/Scripting/ScriptClass.h"
 #include "Vortex/Scripting/ScriptEngine.h"
+#include "Vortex/Scripting/ScriptClass.h"
+#include "Vortex/Scripting/ScriptInstance.h"
+#include "Vortex/Scripting/ScriptUtils.h"
 
 #include "Vortex/Audio/Audio.h"
 #include "Vortex/Audio/AudioSource.h"
@@ -590,10 +591,16 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Entity entity = GetEntity(entityUUID);
 
+			if (!entity)
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Entity.Destroy with invalid entity!");
+				return;
+			}
+
 			contextScene->SubmitToDestroyEntity(entity, excludeChildren);
 		}
 
-		void Entity_DestroyTimed(UUID entityUUID, float waitTime, bool excludeChildren)
+		void Entity_DestroyWithDelay(UUID entityUUID, float delay, bool excludeChildren)
 		{
 			Scene* contextScene = GetContextScene();
 			Entity entity = GetEntity(entityUUID);
@@ -601,9 +608,74 @@ namespace Vortex {
 			QueueFreeData queueFreeData;
 			queueFreeData.EntityUUID = entityUUID;
 			queueFreeData.ExcludeChildren = excludeChildren;
-			queueFreeData.WaitTime = waitTime;
+			queueFreeData.WaitTime = delay;
 
 			contextScene->SubmitToDestroyEntity(queueFreeData);
+		}
+
+		void Entity_Invoke(UUID entityUUID, MonoString* methodName)
+		{
+			Scene* contextScene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
+
+			VX_CORE_VERIFY(contextScene);
+
+			if (!entity.HasComponent<ScriptComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Entity.Invoke without a script component!");
+				return;
+			}
+
+			const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+			const std::string& className = scriptComponent.ClassName;
+
+			if (!ScriptEngine::EntityClassExists(className))
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Entity.Invoke with an invalid script class!");
+				return;
+			}
+
+			SharedReference<ScriptClass> scriptClass = ScriptEngine::GetEntityClass(className);
+
+			char* managedString = mono_string_to_utf8(methodName);
+			const std::string methodNameString = std::string(managedString);
+			mono_free(managedString);
+
+			const int paramCount = 0;
+			MonoMethod* method = scriptClass->GetMethod(methodNameString, paramCount);
+
+			if (method == nullptr)
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Entity.Invoke with an invalid method name '{}'", methodNameString);
+				return;
+			}
+
+			SharedReference<ScriptInstance> instance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+			if (instance == nullptr)
+			{
+				VX_CONSOLE_LOG_ERROR("Calling Entity.Invoke with invalid script instance!");
+				return;
+			}
+
+			MonoObject* managedScriptInstance = instance->GetManagedObject();
+			if (managedScriptInstance == nullptr)
+			{
+				return;
+			}
+
+			ScriptUtils::InvokeMethod(managedScriptInstance, method, nullptr);
+		}
+
+		void Entity_InvokeWithDelay(UUID entityUUID, MonoString* methodName, float delay)
+		{
+			Scene* scene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
+
+			auto onTimerFinishedFn = [&]() { Entity_Invoke(entityUUID, methodName); };
+			Timer timer("InvokeWithDelay", delay, onTimerFinishedFn);
+			timer.Start();
+
+			scene->AddOrReplaceTimer(entity, timer);
 		}
 
 		void Entity_SetActive(UUID entityUUID, bool isActive)
@@ -8709,7 +8781,9 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Entity_RemoveChild);
 		VX_REGISTER_INTERNAL_CALL(Entity_GetScriptInstance);
 		VX_REGISTER_INTERNAL_CALL(Entity_Destroy);
-		VX_REGISTER_INTERNAL_CALL(Entity_DestroyTimed);
+		VX_REGISTER_INTERNAL_CALL(Entity_DestroyWithDelay);
+		VX_REGISTER_INTERNAL_CALL(Entity_Invoke);
+		VX_REGISTER_INTERNAL_CALL(Entity_InvokeWithDelay);
 		VX_REGISTER_INTERNAL_CALL(Entity_SetActive);
 
 		VX_REGISTER_INTERNAL_CALL(AssetHandle_IsValid);

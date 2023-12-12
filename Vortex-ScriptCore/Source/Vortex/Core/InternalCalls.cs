@@ -175,7 +175,13 @@ namespace Vortex {
 		internal extern static ulong Entity_Destroy(ulong entityID, bool excludeChildren);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Entity_DestroyTimed(ulong entityID, float waitTime, bool excludeChildren);
+		internal extern static ulong Entity_DestroyWithDelay(ulong entityID, float delay, bool excludeChildren);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_Invoke(ulong entityID, string method);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_InvokeWithDelay(ulong entityID, string method, float delay);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_SetActive(ulong entityID, bool isActive);

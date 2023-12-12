@@ -41,7 +41,7 @@ namespace Vortex {
 				Gui::SameLine();
 				Gui::AlignTextToFramePadding();
 
-				if (Gui::MenuItem(name.c_str()))
+				if (Gui::MenuItem(name.c_str()) || (Gui::IsItemFocused() && Gui::IsKeyPressed(ImGuiKey_Enter)))
 				{
 					selectedEntity.AddComponent<TComponent>();
 					Gui::CloseCurrentPopup();

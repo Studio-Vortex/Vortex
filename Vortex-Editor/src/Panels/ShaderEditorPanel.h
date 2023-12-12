@@ -13,8 +13,8 @@ namespace Vortex {
 	public:
 		~ShaderEditorPanel() override = default;
 
-		void OnEditorAttach() override;
-		void OnEditorDetach() override;
+		void OnPanelAttach() override;
+		void OnPanelDetach() override;
 
 		void OnGuiRender() override;
 

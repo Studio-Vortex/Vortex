@@ -24,8 +24,8 @@ namespace Vortex {
 	public:
 		virtual ~EditorPanel() = default;
 
- 		virtual void OnEditorAttach() {}
-		virtual void OnEditorDetach() {}
+ 		virtual void OnPanelAttach() {}
+		virtual void OnPanelDetach() {}
 
 		virtual void OnGuiRender() = 0;
 

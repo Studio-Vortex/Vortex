@@ -5,6 +5,7 @@
 #include <Vortex/Audio/AudioUtils.h>
 
 #include <Vortex/Scripting/ScriptEngine.h>
+
 #include <Vortex/Editor/EditorResources.h>
 
 #include <imgui_internal.h>
@@ -529,18 +530,20 @@ namespace Vortex {
 			}
 			else
 			{
-				const char* name = "(null)";
+				std::string name = "(null)";
 
 				if (m_ContextScene && hoveredEntity && hoveredEntity.HasComponent<TagComponent>())
 				{
-					const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
+					const std::string& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
 
 					if (!tag.empty())
-						name = tag.c_str();
+					{
+						name = tag;
+					}
 				}
 
 				Gui::SetCursorPosX(10.0f);
-				Gui::Text("Hovered Entity: %s", name);
+				Gui::Text("Hovered Entity: %s", name.c_str());
 			}
 
 			Gui::End();
@@ -987,8 +990,8 @@ namespace Vortex {
 
 		// Tag Component
 		{
-			auto& tagComponent = entity.GetComponent<TagComponent>();
-			auto& tag = tagComponent.Tag;
+			TagComponent& tagComponent = entity.GetComponent<TagComponent>();
+			std::string& tag = tagComponent.Tag;
 
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
@@ -1013,6 +1016,8 @@ namespace Vortex {
 				m_EntityShouldBeRenamed = false;
 				m_IsEditingEntityName = false;
 			}
+
+			m_IsEditingEntityName = Gui::IsItemActive();
 
 			UI::DrawItemActivityOutline();
 
