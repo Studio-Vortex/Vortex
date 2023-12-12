@@ -11,8 +11,8 @@
 #include "Vortex/Core/Platform.h"
 #include "Vortex/Core/TimeStep.h"
 #include "Vortex/System/SystemManager.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
+#include "Vortex/ReferenceCounting/SharedRef.h"
+#include "Vortex/ReferenceCounting/RefCounted.h"
 /// ---------------------------------------------------
 
 /// Events
@@ -22,17 +22,17 @@
 /// ---------------------------------------------------
 
 /// Input
-#include "Vortex/Core/Input/Input.h"
-#include "Vortex/Core/Input/Gamepad.h"
-#include "Vortex/Core/Input/KeyCodes.h"
-#include "Vortex/Core/Input/MouseCodes.h"
+#include "Vortex/Input/Input.h"
+#include "Vortex/Input/Gamepad.h"
+#include "Vortex/Input/KeyCodes.h"
+#include "Vortex/Input/MouseCodes.h"
 /// ---------------------------------------------------
 
 /// Math
-#include "Vortex/Core/Math/Math.h"
-#include "Vortex/Core/Math/Ray.h"
-#include "Vortex/Core/Math/AABB.h"
-#include "Vortex/Core/Math/Noise.h"
+#include "Vortex/Math/Math.h"
+#include "Vortex/Math/Ray.h"
+#include "Vortex/Math/AABB.h"
+#include "Vortex/Math/Noise.h"
 /// ---------------------------------------------------
 
 /// Module

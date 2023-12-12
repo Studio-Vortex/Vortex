@@ -1,8 +1,11 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/Math/Math.h"
+
+#include "Vortex/Math/Math.h"
+
 #include "Vortex/Animation/Bone.h"
+
 #include "Vortex/Renderer/Mesh.h"
 
 #include <string>

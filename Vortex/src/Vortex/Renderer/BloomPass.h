@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Vortex/Core/Math/Math.h"
-
 #include "Vortex/Renderer/Shader.h"
+
+#include "Vortex/Math/Math.h"
 
 #include "Vortex/Utils/FileSystem.h"
 

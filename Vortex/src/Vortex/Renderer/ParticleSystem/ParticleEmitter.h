@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Vortex/Core/Base.h"
-#include "Vortex/Core/TimeStep.h"
-
 #include "Vortex/Asset/Asset.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Renderer/ParticleSystem/Particle.h"
 #include "Vortex/Renderer/ParticleSystem/ParticleEmitterProperties.h"
+
+#include "Vortex/Core/TimeStep.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include <string>
 

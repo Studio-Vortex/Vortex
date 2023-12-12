@@ -1,11 +1,16 @@
 #pragma once
 
-#include "Vortex/Core/Math/Math.h"
+#include "Vortex/Core/Base.h"
+
+#include "Vortex/Math/Math.h"
+
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Components.h"
+
 #include "Vortex/Physics/3D/PhysicsMaterial.h"
 #include "Vortex/Physics/3D/PhysXAPIHelpers.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 namespace physx {
 
@@ -15,7 +20,7 @@ namespace physx {
 
 namespace Vortex {
 
-	class ColliderShape : public RefCounted
+	class VORTEX_API ColliderShape : public RefCounted
 	{
 	protected:
 		ColliderShape(ColliderType type, Entity entity, bool isShared = false);
@@ -52,7 +57,7 @@ namespace Vortex {
 		bool m_IsShared = false;
 	};
 
-	class BoxColliderShape : public ColliderShape
+	class VORTEX_API BoxColliderShape : public ColliderShape
 	{
 	public:
 		BoxColliderShape(BoxColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
@@ -80,7 +85,7 @@ namespace Vortex {
 		physx::PxShape* m_Shape = nullptr;
 	};
 
-	class SphereColliderShape : public ColliderShape
+	class VORTEX_API SphereColliderShape : public ColliderShape
 	{
 	public:
 		SphereColliderShape(SphereColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
@@ -108,7 +113,7 @@ namespace Vortex {
 		physx::PxShape* m_Shape = nullptr;
 	};
 
-	class CapsuleColliderShape : public ColliderShape
+	class VORTEX_API CapsuleColliderShape : public ColliderShape
 	{
 	public:
 		CapsuleColliderShape(CapsuleColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
@@ -139,7 +144,7 @@ namespace Vortex {
 		physx::PxShape* m_Shape = nullptr;
 	};
 
-	class ConvexMeshShape : public ColliderShape
+	class VORTEX_API ConvexMeshShape : public ColliderShape
 	{
 	public:
 		ConvexMeshShape(MeshColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
@@ -164,7 +169,7 @@ namespace Vortex {
 		std::vector<physx::PxShape*> m_Shapes;
 	};
 
-	class TriangleMeshShape : public ColliderShape
+	class VORTEX_API TriangleMeshShape : public ColliderShape
 	{
 	public:
 		TriangleMeshShape(MeshColliderComponent& component, physx::PxRigidActor& actor, Entity entity);

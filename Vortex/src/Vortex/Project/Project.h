@@ -2,14 +2,14 @@
 
 #include "Vortex/Core/Base.h"
 
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+#include "Vortex/Project/ProjectProperties.h"
 
 #include "Vortex/Asset/AssetManager/IAssetManager.h"
 #include "Vortex/Asset/AssetManager/EditorAssetManager.h"
 #include "Vortex/Asset/AssetManager/RuntimeAssetManager.h"
 
-#include "Vortex/Project/ProjectProperties.h"
+#include "Vortex/ReferenceCounting/RefCounted.h"
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Utils/FileSystem.h"
 

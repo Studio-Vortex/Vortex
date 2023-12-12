@@ -18,8 +18,8 @@ namespace Vortex {
 		void OnGuiRender() override {}
 		void SetSceneContext(SharedReference<Scene> scene) override;
 
-		inline bool IsEditingEntityName() const { return m_IsEditingEntityName; }
-		inline void FocusOnEntityName(bool enabled) { m_EntityShouldBeRenamed = enabled; }
+		inline bool IsFocusedOnEntityName() const { return m_IsEditingEntityName; }
+		inline void FocusOnEntityName(bool shouldFocus) { m_EntityShouldBeRenamed = shouldFocus; }
 
 		void DisplayCreateEntityMenu(const EditorCamera* editorCamera);
 

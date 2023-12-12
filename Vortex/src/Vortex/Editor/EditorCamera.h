@@ -5,7 +5,8 @@
 #include "Vortex/Renderer/Camera.h"
 
 #include "Vortex/Core/TimeStep.h"
-#include "Vortex/Core/Math/Math.h"
+
+#include "Vortex/Math/Math.h"
 
 #include "Vortex/Events/Event.h"
 #include "Vortex/Events/MouseEvent.h"

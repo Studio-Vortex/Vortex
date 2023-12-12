@@ -1,8 +1,6 @@
 #include "vxpch.h"
 #include "EditorResources.h"
 
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
-
 namespace Vortex {
 
 	void EditorResources::Init()

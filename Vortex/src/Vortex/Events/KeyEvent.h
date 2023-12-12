@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Vortex/Events/Event.h"
-#include "Vortex/Core/Input/KeyCodes.h"
+
+#include "Vortex/Input/KeyCodes.h"
 
 namespace Vortex {
 

@@ -1,15 +1,19 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Core/TimeStep.h"
+
 #include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Physics/3D/PhysicsData.h"
 #include "Vortex/Physics/3D/PhysicsShapes.h"
+
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"
 #include "Vortex/Scene/Components.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include <unordered_map>
 

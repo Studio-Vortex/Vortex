@@ -2,10 +2,11 @@
 #include "ScriptRegistry.h"
 
 #include "Vortex/Core/Application.h"
-#include "Vortex/Core/Input/Input.h"
 #include "Vortex/Core/Log.h"
 
-#include "Vortex/Core/Math/Noise.h"
+#include "Vortex/Input/Input.h"
+
+#include "Vortex/Math/Noise.h"
 
 #include "Vortex/Asset/AssetManager.h"
 
@@ -1392,7 +1393,7 @@ namespace Vortex {
 			cameraComponent.ClearColor = *color;
 		}
 
-		void CameraComponent_CastRay(UUID entityUUID, Math::vec3* position, float maxDistance, Math::Ray* outRay)
+		void CameraComponent_Raycast(UUID entityUUID, Math::vec3* position, float maxDistance, Math::Ray* outRay)
 		{
 			Scene* contextScene = GetContextScene();
 			Entity entity = GetEntity(entityUUID);
@@ -1409,7 +1410,7 @@ namespace Vortex {
 			const Math::mat4 transform = contextScene->GetWorldSpaceTransformMatrix(entity);
 			const Math::mat4 view = Math::Inverse(transform);
 
-			*outRay = sceneCamera.CastRay(*position, entity.GetTransform().Translation, maxDistance, view);
+			*outRay = sceneCamera.Raycast(*position, entity.GetTransform().Translation, maxDistance, view);
 		}
 
 		void CameraComponent_ScreenToWorldPoint(UUID entityUUID, Math::vec2* position, float maxDistance, Math::vec3* outWorldPoint)
@@ -8756,7 +8757,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
 		VX_REGISTER_INTERNAL_CALL(CameraComponent_GetClearColor);
 		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetClearColor);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_CastRay);
+		VX_REGISTER_INTERNAL_CALL(CameraComponent_Raycast);
 		VX_REGISTER_INTERNAL_CALL(CameraComponent_ScreenToWorldPoint);
 		VX_REGISTER_INTERNAL_CALL(CameraComponent_ScreenToViewportPoint);
 

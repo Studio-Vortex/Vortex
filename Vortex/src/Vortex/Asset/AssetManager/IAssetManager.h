@@ -2,7 +2,8 @@
 
 #include "Vortex/Asset/Asset.h"
 #include "Vortex/Asset/AssetTypes.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include <unordered_map>
 #include <unordered_set>

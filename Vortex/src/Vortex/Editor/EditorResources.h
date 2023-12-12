@@ -3,6 +3,8 @@
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/StaticMesh.h"
 
+#include "Vortex/ReferenceCounting/SharedRef.h"
+
 #include <vector>
 
 namespace Vortex {

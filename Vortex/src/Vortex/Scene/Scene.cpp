@@ -1,8 +1,9 @@
 #include "vxpch.h"
 #include "Scene.h"
 
-#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Core/String.h"
+
+#include "Vortex/Math/Math.h"
 
 #include "Vortex/Asset/AssetManager.h"
 
@@ -137,8 +138,6 @@ namespace Vortex {
 	Scene::~Scene()
 	{
 		SystemManager::OnContextSceneDestroyed(this);
-
-		//DestroyAudioSources();
 
 		m_Registry.on_construct<CameraComponent>().disconnect();
 		m_Registry.on_construct<StaticMeshRendererComponent>().disconnect();
@@ -1402,7 +1401,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Entity entity = { e, this };
-		// TODO
+		// TODO do we need to do anything here?
 	}
 
 	void Scene::OnAudioListenerConstruct(entt::registry& registry, entt::entity e)

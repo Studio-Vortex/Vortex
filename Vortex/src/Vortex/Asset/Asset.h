@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/UUID.h"
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
 
 #include "Vortex/Asset/AssetTypes.h"
+
+#include "Vortex/Core/UUID.h"
+
+#include "Vortex/ReferenceCounting/RefCounted.h"
 
 namespace Vortex {
 

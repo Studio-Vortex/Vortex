@@ -79,7 +79,7 @@ namespace Vortex {
 		}
 	}
 
-	Math::Ray SceneCamera::CastRay(const Math::vec2& point, const Math::vec3& cameraPosition, float maxDistance, const Math::mat4& view) const
+	Math::Ray SceneCamera::Raycast(const Math::vec2& point, const Math::vec3& cameraPosition, float maxDistance, const Math::mat4& view) const
 	{
 		const Math::vec4 mouseClipPos = { point.x, point.y, -1.0f, 1.0f };
 

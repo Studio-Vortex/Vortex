@@ -109,7 +109,6 @@ namespace Vortex {
 		{
 			PostProcessProperties postProcessProps{};
 			postProcessProps.TargetFramebuffer = m_Framebuffer;
-
 			Math::vec3 cameraPos = primaryCamera.GetTransform().Translation;
 			postProcessProps.CameraPosition = cameraPos;
 			postProcessProps.ViewportInfo = Viewport{ 0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y };

@@ -1,7 +1,7 @@
 #include "vxpch.h"
 #include "EditorCamera.h"
 
-#include "Vortex/Core/Input/Input.h"
+#include "Vortex/Input/Input.h"
 
 #include "Vortex/Editor/UI/UI.h"
 

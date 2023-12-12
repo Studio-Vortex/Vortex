@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
 
 #include "Vortex/Editor/EditorPanel.h"
 
 #include "Vortex/Editor/UI/UI.h"
+
+#include "Vortex/ReferenceCounting/RefCounted.h"
 
 #include <unordered_map>
 #include <functional>

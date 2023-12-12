@@ -4,7 +4,8 @@
 #include "Vortex/Renderer/RenderCommand.h"
 #include "Vortex/Renderer/VertexArray.h"
 #include "Vortex/Renderer/Shader.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Renderer/Font/MSDFData.h"
 

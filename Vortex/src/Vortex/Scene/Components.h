@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/UUID.h"
+
 #include "Vortex/Asset/Asset.h"
 
 #include "Vortex/Scene/SceneCamera.h"

@@ -2,9 +2,9 @@
 
 #include "Vortex/Core/UUID.h"
 
-#include "Vortex/Core/Math/Math.h"
-#include "Vortex/Core/Math/AABB.h"
-#include "Vortex/Core/Math/Ray.h"
+#include "Vortex/Math/Math.h"
+#include "Vortex/Math/AABB.h"
+#include "Vortex/Math/Ray.h"
 
 #include "Vortex/Scene/Components.h"
 
@@ -180,7 +180,7 @@ namespace Vortex {
 		void CameraComponent_SetFixedAspectRatio(UUID entityUUID, bool fixedAspectRatio);
 		void CameraComponent_GetClearColor(UUID entityUUID, Math::vec3* outColor);
 		void CameraComponent_SetClearColor(UUID entityUUID, Math::vec3* color);
-		void CameraComponent_CastRay(UUID entityUUID, Math::vec3* position, float maxDistance, Math::Ray* outRay);
+		void CameraComponent_Raycast(UUID entityUUID, Math::vec3* position, float maxDistance, Math::Ray* outRay);
 		void CameraComponent_ScreenToWorldPoint(UUID entityUUID, Math::vec2* position, float maxDistance, Math::vec3* outWorldPoint);
 		void CameraComponent_ScreenToViewportPoint(UUID entityUUID, Math::vec2* position, Math::vec2* outViewportPoint);
 

@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Vortex/Core/Base.h"
+#include "Vortex/Asset/Asset.h"
+
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Core/TimeStep.h"
-
-#include "Vortex/Asset/Asset.h"
 
 #include "Vortex/Project/ProjectType.h"
 

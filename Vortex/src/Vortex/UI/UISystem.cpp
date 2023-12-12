@@ -8,6 +8,8 @@
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Entity.h"
 
+#include "Vortex/Renderer/Renderer2D.h"
+
 namespace Vortex {
 
 	struct UISystemInternalData
@@ -64,6 +66,11 @@ namespace Vortex {
 		{
 			Entity entity{ e, context };
 			
+			const Math::mat4 transform = context->GetWorldSpaceTransformMatrix(entity);
+
+			const Math::vec4& buttonColor = ColorToVec4(Color::Red);
+
+			Renderer2D::DrawQuad(transform, buttonColor);
 		}
 	}
 

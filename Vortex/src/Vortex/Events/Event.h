@@ -10,7 +10,7 @@ namespace Vortex {
 	enum class VORTEX_API EventType
 	{
 		None = 0,
-		WindowClose, WindowResize, WindowFocused, WindowLostFocus, WindowMoved, WindowDragDrop,
+		WindowClose, WindowResize, WindowFocused, WindowLostFocus, WindowMove, WindowDragDrop,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
 	};

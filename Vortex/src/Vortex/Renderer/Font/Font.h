@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Vortex/Core/Base.h"
-
 #include "Vortex/Asset/Asset.h"
 
 #include "Vortex/Renderer/Texture.h"

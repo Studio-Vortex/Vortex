@@ -1,15 +1,16 @@
 #pragma once
 
-#include "Vortex/Core/Base.h"
 #include "Vortex/Asset/Asset.h"
+
 #include "Vortex/Renderer/Image.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include <string>
 
 namespace Vortex {
 
-	struct TextureProperties
+	struct VORTEX_API TextureProperties
 	{
 		std::string Filepath = "";
 		uint32_t Width = 0;

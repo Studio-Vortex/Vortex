@@ -1,23 +1,23 @@
 Vortex Engine v0.1a
 Initalizing...
 Creating window 'Vortex Launcher - (Release x64)' (1000.000, 600.000)
-Shader Loaded: 'Renderer_PBR' - path /Resources/Shaders/Renderer_PBR.glsl
-Shader Loaded: 'Renderer_PBR_Static' - path /Resources/Shaders/Renderer_PBR_Static.glsl
-Shader Loaded: 'PBR_Equirectangular_to_Cubemap' - path /Resources/Shaders/PBR_Equirectangular_to_Cubemap.glsl
-Shader Loaded: 'PBR_Irradiance_Convolution' - path /Resources/Shaders/PBR_Irradiance_Convolution.glsl
-Shader Loaded: 'PBR_IBL_Prefilter' - path /Resources/Shaders/PBR_IBL_Prefilter.glsl
-Shader Loaded: 'PBR_BRDF_LUT' - path /Resources/Shaders/PBR_BRDF_LUT.glsl
-Shader Loaded: 'PBR_Environment' - path /Resources/Shaders/PBR_Environment.glsl
-Shader Loaded: 'Renderer_SkyLightShadow' - path /Resources/Shaders/Renderer_SkyLightShadow.glsl
-Shader Loaded: 'Renderer_PointLightShadow' - path /Resources/Shaders/Renderer_PointLightShadow.glsl
-Shader Loaded: 'Renderer_SpotLightShadow' - path /Resources/Shaders/Renderer_SpotLightShadow.glsl
-Shader Loaded: 'Renderer_Stencil' - path /Resources/Shaders/Renderer_Stencil.glsl
-Shader Loaded: 'Bloom_Upsample' - path /Resources/Shaders/Bloom_Upsample.glsl
-Shader Loaded: 'Bloom_Downsample' - path /Resources/Shaders/Bloom_Downsample.glsl
-Shader Loaded: 'Bloom' - path /Resources/Shaders/Bloom.glsl
-Shader Loaded: 'Bloom_FinalComposite' - path /Resources/Shaders/Bloom_FinalComposite.glsl
-Shader Loaded: 'Renderer2D_Quad' - path /Resources/Shaders/Renderer2D_Quad.glsl
-Shader Loaded: 'Renderer2D_Circle' - path /Resources/Shaders/Renderer2D_Circle.glsl
-Shader Loaded: 'Renderer2D_Line' - path /Resources/Shaders/Renderer2D_Line.glsl
-Shader Loaded: 'Renderer2D_Text' - path /Resources/Shaders/Renderer2D_Text.glsl
+[Renderer] Shader Loaded: 'Renderer_PBR'
+[Renderer] Shader Loaded: 'Renderer_PBR_Static'
+[Renderer] Shader Loaded: 'PBR_Equirectangular_to_Cubemap'
+[Renderer] Shader Loaded: 'PBR_Irradiance_Convolution'
+[Renderer] Shader Loaded: 'PBR_IBL_Prefilter'
+[Renderer] Shader Loaded: 'PBR_BRDF_LUT'
+[Renderer] Shader Loaded: 'PBR_Environment'
+[Renderer] Shader Loaded: 'Renderer_SkyLightShadow'
+[Renderer] Shader Loaded: 'Renderer_PointLightShadow'
+[Renderer] Shader Loaded: 'Renderer_SpotLightShadow'
+[Renderer] Shader Loaded: 'Renderer_Stencil'
+[Renderer] Shader Loaded: 'Bloom_Upsample'
+[Renderer] Shader Loaded: 'Bloom_Downsample'
+[Renderer] Shader Loaded: 'Bloom'
+[Renderer] Shader Loaded: 'Bloom_FinalComposite'
+[Renderer] Shader Loaded: 'Renderer2D_Quad'
+[Renderer] Shader Loaded: 'Renderer2D_Circle'
+[Renderer] Shader Loaded: 'Renderer2D_Line'
+[Renderer] Shader Loaded: 'Renderer2D_Text'
 Shutting down...

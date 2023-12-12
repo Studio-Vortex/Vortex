@@ -2,10 +2,12 @@
 
 #include "Vortex/Core/Base.h"
 
-#include "Vortex/Core/Input/KeyCodes.h"
-#include "Vortex/Core/Input/MouseCodes.h"
-#include "Vortex/Core/Input/Gamepad.h"
-#include "Vortex/Core/Math/Math.h"
+#include "Vortex/Input/KeyCodes.h"
+#include "Vortex/Input/MouseCodes.h"
+#include "Vortex/Input/Gamepad.h"
+
+#include "Vortex/Math/Math.h"
+
 #include "Vortex/Events/Event.h"
 
 namespace Vortex {

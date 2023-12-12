@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
 
 #include "Vortex/Scripting/ScriptField.h"
+
+#include "Vortex/ReferenceCounting/RefCounted.h"
 
 #include <string>
 #include <map>
@@ -17,7 +18,7 @@ extern "C"
 
 namespace Vortex {
 
-	class ScriptClass : public RefCounted
+	class VORTEX_API ScriptClass : public RefCounted
 	{
 	public:
 		ScriptClass() = default;

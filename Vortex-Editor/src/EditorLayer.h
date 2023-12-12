@@ -9,6 +9,9 @@ namespace Vortex {
 
 	class EditorCamera;
 
+	enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
+	enum class SelectionMode { Entity, Submesh };
+
 	class EditorLayer : public Layer
 	{
 	public:
@@ -80,10 +83,10 @@ namespace Vortex {
 
 		// Gizmos
 
-		void OnNoGizmoSelected();
-		void OnTranslationToolSelected();
-		void OnRotationToolSelected();
-		void OnScaleToolSelected();
+		void OnSelectGizmoToolSelected();
+		void OnTranslationGizmoToolSelected();
+		void OnRotationGizmoToolSelected();
+		void OnScaleToolGizmoSelected();
 
 		// Overlay
 
@@ -100,7 +103,7 @@ namespace Vortex {
 		void OverlayRenderSpriteColliders(EditorCamera* editorCamera, const Math::vec4& colliderColor);
 		void OverlayRenderSpriteBoundingBoxes(const Math::vec4& boundingBoxColor);
 		void OverlayRenderSpriteOutline(Entity entity, const Math::mat4& transform, const Math::vec4& outlineColor);
-		void OverlayRenderGrid(bool drawAxis);
+		void OverlayRenderGrid(bool drawAxes);
 
 		// Editor Callbacks
 
@@ -116,10 +119,18 @@ namespace Vortex {
 		void CaptureSceneViewportFramebufferImageToDisk();
 		void ReplaceSceneFileExtensionIfNeeded(std::string& filepath);
 
+		void ToggleGrid() const;
+		void ToggleSceneViewportMaximized() const;
+
+		void SwitchSceneState(SceneState state);
+		bool InEditSceneState() const;
+		bool InPlaySceneState() const;
+		bool InSimulateSceneState() const;
+
 		std::vector<Math::vec4> GetCameraFrustumCornersWorldSpace(const Camera* camera, const Math::mat4& view);
 
 		std::pair<float, float> GetEditorCameraMouseViewportSpace(bool mainViewport);
-		Math::Ray CastRay(EditorCamera* editorCamera, float mx, float my);
+		Math::Ray Raycast(EditorCamera* editorCamera, float mx, float my);
 
 		Entity GetHoveredMeshEntityFromRaycast();
 
@@ -183,7 +194,7 @@ namespace Vortex {
 		bool m_SceneViewportHovered = false;
 		bool m_SecondViewportFocused = false;
 		bool m_SecondViewportHovered = false;
-		bool m_SceneViewportMaximized = false;
+		mutable bool m_SceneViewportMaximized = false;
 		bool m_AllowViewportCameraEvents = false;
 		bool m_AllowSecondViewportCameraEvents = false;
 		bool m_StartedClickInViewport = false;
@@ -199,10 +210,7 @@ namespace Vortex {
 
 		SharedReference<PanelManager> m_PanelManager = nullptr;
 
-		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;
-
-		enum class SelectionMode { Entity, Submesh };
 		SelectionMode m_SelectionMode = SelectionMode::Entity;
 	};
 

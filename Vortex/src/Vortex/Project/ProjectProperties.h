@@ -2,7 +2,7 @@
 
 #include "Vortex/Core/Base.h"
 
-#include "Vortex/Core/Math/Math.h"
+#include "Vortex/Math/Math.h"
 
 #include "Vortex/Renderer/Color.h"
 #include "Vortex/Physics/3D/PhysXTypes.h"

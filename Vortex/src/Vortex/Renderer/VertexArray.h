@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Vortex/Renderer/Buffer.h"
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/ReferenceCounting/RefCounted.h"
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 

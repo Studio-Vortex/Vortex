@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Vortex/Core/ReferenceCounting/InstancePool.h"
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
+#include "Vortex/ReferenceCounting/InstancePool.h"
+#include "Vortex/ReferenceCounting/RefCounted.h"
 
 namespace Vortex {
 

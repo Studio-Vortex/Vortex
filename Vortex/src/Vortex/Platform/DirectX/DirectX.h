@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/Math/Math.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/Math/Math.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include <Windows.h>
 #include <d3d11.h>

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Vortex/Core/Math/Math.h"
+#include "Vortex/Math/Math.h"
+
 #include "Vortex/Physics/3D/PhysXTypes.h"
 #include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 

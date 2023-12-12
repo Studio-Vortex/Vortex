@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Vortex/Core/Math/Math.h"
+#include "Vortex/Core/Base.h"
+
+#include "Vortex/Math/Math.h"
 
 namespace Vortex::Math {
 
-	struct AABB
+	struct VORTEX_API AABB
 	{
 		Math::vec3 Min;
 		Math::vec3 Max;

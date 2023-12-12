@@ -1,7 +1,7 @@
 #include "vxpch.h"
 #include "Application.h"
 
-#include "Vortex/Core/Input/Input.h"
+#include "Vortex/Input/Input.h"
 
 #include "Vortex/Events/KeyEvent.h"
 

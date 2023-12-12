@@ -72,10 +72,10 @@ namespace Vortex {
 		Backspace          = 259,
 		Insert             = 260,
 		Delete             = 261,
-		eRight              = 262,
-		eLeft               = 263,
-		eDown               = 264,
-		eUp                 = 265,
+		eRight             = 262,
+		eLeft              = 263,
+		eDown              = 264,
+		eUp                = 265,
 		PageUp             = 266,
 		PageDown           = 267,
 		Home               = 268,
@@ -139,8 +139,8 @@ namespace Vortex {
 		RightSuper         = 347,
 		Menu               = 348,
 
-		StartingKey = Space,
-		MaxKeys            = 348,
+		FirstKey           = Space,
+		MaxKeys            = Menu,
 	};
 
 	inline std::ostream& operator<<(std::ostream& stream, KeyCode keyCode)

@@ -1,11 +1,13 @@
 #pragma once
 
-#include "Vortex/Core/Math/Math.h"
-#include "Vortex/Core/Math/AABB.h"
+#include "Vortex/Core/Base.h"
+
+#include "Vortex/Math/Math.h"
+#include "Vortex/Math/AABB.h"
 
 namespace Vortex::Math {
 
-	struct Ray
+	struct VORTEX_API Ray
 	{
 		Math::vec3 Origin;
 		Math::vec3 Direction;

@@ -1,5 +1,5 @@
 #include "vxpch.h"
-#include "Vortex/Core/Input/Input.h"
+#include "Vortex/Input/Input.h"
 
 #include "Vortex/Core/Application.h"
 

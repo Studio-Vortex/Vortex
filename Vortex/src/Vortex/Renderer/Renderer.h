@@ -11,7 +11,7 @@
 #include "Vortex/Renderer/RendererAPI.h"
 #include "Vortex/Renderer/RenderCommand.h"
 
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include <vector>
 

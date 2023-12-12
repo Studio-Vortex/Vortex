@@ -2,8 +2,9 @@
 
 #include "Vortex/Core/Base.h"
 
-#include "Vortex/Core/Math/Ray.h"
 #include "Vortex/Renderer/Camera.h"
+
+#include "Vortex/Math/Ray.h"
 
 namespace Vortex {
 
@@ -39,7 +40,7 @@ namespace Vortex {
 		VX_FORCE_INLINE ProjectionType GetProjectionType() const { return m_ProjectionType; }
 		void SetProjectionType(ProjectionType type);
 
-		Math::Ray CastRay(const Math::vec2& point, const Math::vec3& cameraPosition, float maxDistance, const Math::mat4& view) const;
+		Math::Ray Raycast(const Math::vec2& point, const Math::vec3& cameraPosition, float maxDistance, const Math::mat4& view) const;
 		Math::vec3 ScreenPointToWorldPoint(const Math::vec2& point, const Math::vec2& viewportMinBound, const Math::vec3& cameraPosition, const float maxDistance, const Math::mat4& view) const;
 		Math::vec2 ScreenPointToViewportPoint(const Math::vec2& point) const;
 

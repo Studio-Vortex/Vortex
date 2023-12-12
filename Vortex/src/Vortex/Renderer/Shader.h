@@ -2,9 +2,10 @@
 
 #include "Vortex/Core/Base.h"
 
-#include "Vortex/Core/Math/Math.h"
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+#include "Vortex/Math/Math.h"
+
+#include "Vortex/ReferenceCounting/RefCounted.h"
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Collections/ILibraryMap.h"
 

@@ -284,9 +284,9 @@ namespace Vortex {
 			set => InternalCalls.CameraComponent_SetClearColor(Entity.ID, ref value);
 		}
 
-		public Ray CastRay(Vector2 position, float maxDistance)
+		public Ray Raycast(Vector2 position, float maxDistance)
 		{
-			InternalCalls.CameraComponent_CastRay(Entity.ID, ref position, maxDistance, out Ray result);
+			InternalCalls.CameraComponent_Raycast(Entity.ID, ref position, maxDistance, out Ray result);
 			return result;
 		}
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Vortex/Core/Base.h"
 #include "Vortex/Asset/Asset.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Utils/FileSystem.h"
 

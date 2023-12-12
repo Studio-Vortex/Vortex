@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Scene/Scene.h"
+
 #include "Vortex/Asset/Asset.h"
+
+#include "Vortex/Scene/Scene.h"
 
 #include "Vortex/Scripting/RuntimeMethodArgument.h"
 #include "Vortex/Scripting/MonoAssemblyTypeInfo.h"

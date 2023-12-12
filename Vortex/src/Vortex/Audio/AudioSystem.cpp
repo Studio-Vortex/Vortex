@@ -7,18 +7,16 @@
 
 #include "Vortex/Asset/AssetManager.h"
 
-#include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
-
 #include "Vortex/Audio/Audio.h"
 #include "Vortex/Audio/AudioSource.h"
+
+#include "Vortex/Scene/Scene.h"
+#include "Vortex/Scene/Entity.h"
 
 namespace Vortex {
 
 	struct AudioSystemInternalData
 	{
-		using AudioSourceData = std::unordered_map<UUID, AssetHandle>;
-		AudioSourceData SourceData;
 		std::vector<AssetHandle> PausedAudioSources;
 
 		SubModule Module;
@@ -48,8 +46,6 @@ namespace Vortex {
 	{
 		Audio::Shutdown();
 
-		s_Data.SourceData.clear();
-
 		Application::Get().RemoveModule(s_Data.Module);
 		s_Data.Module.Shutdown();
 	}
@@ -57,15 +53,31 @@ namespace Vortex {
 	void AudioSystem::OnContextSceneCreated(Scene* context)
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
-
-		s_Data.SourceData.clear();
 	}
 
 	void AudioSystem::OnContextSceneDestroyed(Scene* context)
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
-		s_Data.SourceData.clear();
+		auto view = context->GetAllEntitiesWith<AudioSourceComponent>();
+
+		for (const auto e : view)
+		{
+			Entity entity{ e, context };
+
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			if (!AssetManager::IsHandleValid(asc.AudioHandle))
+				continue;
+
+			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+			if (!audioSource)
+				continue;
+
+			if (!audioSource->GetPlaybackDevice().GetSound().IsPlaying())
+				continue;
+
+			audioSource->GetPlaybackDevice().Stop();
+		}
 	}
 
 	void AudioSystem::CreateAsset(Entity& entity)
@@ -84,13 +96,13 @@ namespace Vortex {
 
 		auto view = context->GetAllEntitiesWith<AudioSourceComponent>();
 
-		for (const auto& e : view)
+		for (const auto e : view)
 		{
 			Entity entity{ e, context };
 			if (!entity.IsActive())
 				continue;
 
-			const auto& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 				continue;
 
@@ -98,7 +110,8 @@ namespace Vortex {
 			if (!audioSource)
 				continue;
 
-			// First we check to see if it's already playing
+			// First we have to check if the audio source
+			// was playing while editing the scene, and if so, stop it
 			if (audioSource->GetPlaybackDevice().GetSound().IsPlaying())
 			{
 				audioSource->GetPlaybackDevice().Stop();
@@ -120,13 +133,13 @@ namespace Vortex {
 
 		auto view = context->GetAllEntitiesWith<AudioSourceComponent>();
 
-		for (const auto& e : view)
+		for (const auto e : view)
 		{
 			Entity entity{ e, context };
 			if (!entity.IsActive())
 				continue;
 
-			const auto& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 				continue;
 
@@ -154,7 +167,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
-		for (const auto& assetHandle : s_Data.PausedAudioSources)
+		for (AssetHandle assetHandle : s_Data.PausedAudioSources)
 		{
 			if (!AssetManager::IsHandleValid(assetHandle))
 				continue;
@@ -186,13 +199,13 @@ namespace Vortex {
 
 		auto view = context->GetAllEntitiesWith<AudioSourceComponent>();
 
-		for (const auto& e : view)
+		for (const auto e : view)
 		{
 			Entity entity{ e, context };
 			if (!entity.IsActive())
 				continue;
 
-			const auto& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 				continue;
 

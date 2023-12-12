@@ -4,8 +4,9 @@
 
 #include "Vortex/Core/Base.h"
 
+#include "Vortex/Math/Math.h"
+
 #include "Vortex/Events/Event.h"
-#include "Vortex/Core/Math/Math.h"
 
 namespace Vortex {
 
@@ -24,7 +25,7 @@ namespace Vortex {
 	class VORTEX_API Window
 	{
 	public:
-		using EventCallbackFn = std::function<void(Event&)>;
+		using VORTEX_API EventCallbackFn = std::function<void(Event&)>;
 
 		virtual ~Window() = default;
 

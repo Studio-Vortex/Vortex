@@ -1,16 +1,18 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
-#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Core/TimeStep.h"
+
+#include "Vortex/Math/Math.h"
 
 #include "Vortex/Scene/Entity.h"
 
 #include "Vortex/Scripting/ScriptClass.h"
 #include "Vortex/Scripting/ManagedMethods.h"
 #include "Vortex/Scripting/ScriptFieldInstance.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include <unordered_map>
 #include <string>

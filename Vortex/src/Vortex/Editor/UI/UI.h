@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Vortex/Core/Math/Math.h"
 #include "Vortex/Core/String.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/Math/Math.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Gui/Colors.h"
 
@@ -1577,8 +1579,11 @@ namespace Vortex::UI {
 			if (path.empty())
 				continue;
 
-			filepaths.push_back(path.string());
-			options.push_back(filepaths.back().c_str());
+			const std::string pathAsString = path.string();
+
+			filepaths.push_back(pathAsString);
+			const std::string& back = filepaths.back();
+			options.push_back(back.c_str());
 			handles.push_back(assetHandle);
 		}
 

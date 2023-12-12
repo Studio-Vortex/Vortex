@@ -322,7 +322,7 @@ namespace Vortex {
 		internal extern static void CameraComponent_SetClearColor(ulong entityID, ref Color3 clearColor);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void CameraComponent_CastRay(ulong entityID, ref Vector2 position, float maxDistance, out Ray result);
+		internal extern static void CameraComponent_Raycast(ulong entityID, ref Vector2 position, float maxDistance, out Ray result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_ScreenToWorldPoint(ulong entityID, ref Vector2 position, float maxDistance, out Vector3 result);

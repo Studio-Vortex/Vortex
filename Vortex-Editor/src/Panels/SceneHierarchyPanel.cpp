@@ -519,29 +519,32 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::DisplayInsectorPanel(Entity hoveredEntity)
 	{
-		Gui::Begin("Inspector", &s_ShowInspectorPanel);
+		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
 
-		if (Entity selected = SelectionManager::GetSelectedEntity())
+		if (Gui::Begin("Inspector", &s_ShowInspectorPanel, flags))
 		{
-			DrawComponents(selected);
-		}
-		else
-		{
-			const char* name = "(null)";
-
-			if (m_ContextScene && hoveredEntity && hoveredEntity.HasComponent<TagComponent>())
+			if (Entity selected = SelectionManager::GetSelectedEntity())
 			{
-				const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
+				DrawComponents(selected);
+			}
+			else
+			{
+				const char* name = "(null)";
 
-				if (!tag.empty())
-					name = tag.c_str();
+				if (m_ContextScene && hoveredEntity && hoveredEntity.HasComponent<TagComponent>())
+				{
+					const auto& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
+
+					if (!tag.empty())
+						name = tag.c_str();
+				}
+
+				Gui::SetCursorPosX(10.0f);
+				Gui::Text("Hovered Entity: %s", name);
 			}
 
-			Gui::SetCursorPosX(10.0f);
-			Gui::Text("Hovered Entity: %s", name);
+			Gui::End();
 		}
-
-		Gui::End();
 	}
 
 	void SceneHierarchyPanel::DisplayAddComponentPopup()
@@ -1902,7 +1905,8 @@ namespace Vortex {
 		if (audioSource)
 		{
 			PlaybackDevice device = audioSource->GetPlaybackDevice();
-			if (device.GetEngine().GetID() != Wave::ID::Invalid && (device.GetSound().IsPlaying() || device.GetSound().IsPaused()))
+			const bool validEngineID = device.GetEngine().GetID() != Wave::ID::Invalid;
+			if (validEngineID && (device.GetSound().IsPlaying() || device.GetSound().IsPaused()))
 			{
 				Gui::BeginDisabled(!device.GetSound().IsPlaying());
 				const float fraction = device.GetSound().GetCursorInSeconds() / device.GetSound().GetLengthInSeconds();
@@ -1910,6 +1914,7 @@ namespace Vortex {
 				Gui::EndDisabled();
 			}
 
+			if (validEngineID)
 			{
 				Gui::BeginDisabled(device.GetSound().IsPlaying());
 				if (Gui::Button((const char*)VX_ICON_PLAY))
@@ -1960,14 +1965,15 @@ namespace Vortex {
 				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::AudioAsset)
 				{
 					if (device.GetSound().IsPlaying())
+					{
 						device.Stop();
+					}
 
 					if (FileSystem::GetFileExtension(filepath) != ".vsound")
 					{
 						std::string filename = FileSystem::RemoveFileExtension(filepath);
 						filename += ".vsound";
-						auto asset = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, filepath);
-
+						SharedReference<AudioSource> asset = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, filepath);
 						component.AudioHandle = asset->Handle;
 					}
 					else
@@ -1985,23 +1991,35 @@ namespace Vortex {
 			UI::BeginPropertyGrid();
 			if (UI::PropertyAssetReference<AudioSource>("Source", relativePath, component.AudioHandle, OnAudioSourceDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry()))
 			{
+				if (device.GetSound().IsPlaying())
+				{
+					device.Stop();
+				}
+
 				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.AudioHandle);
-				if (component.AudioHandle != 0 && !metadata.Filepath.string().ends_with(".vsound"))
+				const std::string metadataFilepath = metadata.Filepath.string();
+
+				if (component.AudioHandle != 0 && !metadataFilepath.ends_with(".vsound"))
 				{
 					// TODO
-					// we need to check if theres another vsound before creating one, we don't need to keep creating them if one alreay exists
+					// we need to check if theres another vsound before creating one, we don't need to keep creating them if one already exists
 					std::string filename = FileSystem::RemoveFileExtension(metadata.Filepath);
 					filename += ".vsound";
 					audioSource = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, metadata.Filepath);
-
 					component.AudioHandle = audioSource->Handle;
+				}
+
+				// Asset cleared
+				if (component.AudioHandle == 0)
+				{
+					component.AudioHandle = AssetManager::CreateMemoryOnlyAsset<AudioSource>();
 				}
 			}
 			UI::EndPropertyGrid();
 
 			Gui::BeginDisabled(audioSource == nullptr);
 
-			if (audioSource)
+			if (validEngineID && audioSource)
 			{
 				UI::BeginPropertyGrid();
 

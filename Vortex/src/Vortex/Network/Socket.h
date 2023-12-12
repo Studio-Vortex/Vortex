@@ -4,8 +4,8 @@
 
 #include "Vortex/Core/UUID.h"
 
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
+#include "Vortex/ReferenceCounting/SharedRef.h"
+#include "Vortex/ReferenceCounting/RefCounted.h"
 
 #include "Vortex/Network/Port.h"
 #include "Vortex/Network/IpAddress.h"
