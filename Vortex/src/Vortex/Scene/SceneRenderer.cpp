@@ -286,15 +286,19 @@ namespace Vortex {
 			if (!textMeshComponent.Visible)
 				continue;
 
-			AssetHandle fontAssetHandle = textMeshComponent.FontAsset;
+			const AssetHandle fontHandle = textMeshComponent.FontAsset;
 			SharedReference<Font> font = nullptr;
 
-			if (AssetManager::IsHandleValid(fontAssetHandle))
-				font = AssetManager::GetAsset<Font>(fontAssetHandle);
+			if (AssetManager::IsHandleValid(fontHandle))
+			{
+				font = AssetManager::GetAsset<Font>(fontHandle);
+			}
 			else
+			{
 				font = Font::GetDefaultFont();
+			}
 
-			Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+			const Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
 
 			Renderer2D::DrawString(
 				textMeshComponent.TextString,
@@ -471,7 +475,7 @@ namespace Vortex {
 			for (const auto e : meshRendererView)
 			{
 				Entity entity{ e, scene };
-				const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+				const MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
 				if (!entity.IsActive())
 					continue;
@@ -479,20 +483,20 @@ namespace Vortex {
 				if (!meshRendererComponent.Visible)
 					continue;
 
-				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
+				const Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
 
 				if (renderPacket.EditorScene)
 				{
-					EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
-					Math::vec3 cameraPosition = editorCamera->GetPosition();
-					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+					const EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
+					const Math::vec3 cameraPosition = editorCamera->GetPosition();
+					const float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
 					SortEntityByDistance(sortedGeometry, distance, entity, i);
 				}
 				else
 				{
-					Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTranslation;
-					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+					const Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTranslation;
+					const float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
 					SortEntityByDistance(sortedGeometry, distance, entity, i);
 				}
@@ -509,7 +513,7 @@ namespace Vortex {
 			for (const auto e : staticMeshRendererView)
 			{
 				Entity entity{ e, scene };
-				const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+				const StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
 
 				if (!entity.IsActive())
 					continue;
@@ -517,20 +521,20 @@ namespace Vortex {
 				if (!staticMeshRendererComponent.Visible)
 					continue;
 
-				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
+				const Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
 
 				if (renderPacket.EditorScene)
 				{
-					EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
-					Math::vec3 cameraPosition = editorCamera->GetPosition();
-					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+					const EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
+					const Math::vec3 cameraPosition = editorCamera->GetPosition();
+					const float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
 					SortEntityByDistance(sortedGeometry, distance, entity, i);
 				}
 				else
 				{
-					Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTranslation;
-					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+					const Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTranslation;
+					const float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
 					SortEntityByDistance(sortedGeometry, distance, entity, i);
 				}
@@ -601,14 +605,14 @@ namespace Vortex {
 			return;
 
 		SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-		if (!mesh)
+		if (mesh == nullptr)
 			return;
 
 		Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
 		auto& submesh = mesh->GetSubmesh();
 
 		SharedReference<Material> material = submesh.GetMaterial();
-		if (!material)
+		if (material == nullptr)
 			return;
 
 		SetMaterialFlags(material);
@@ -658,7 +662,7 @@ namespace Vortex {
 			return;
 
 		SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-		if (!staticMesh)
+		if (staticMesh == nullptr)
 			return;
 
 		Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
@@ -676,7 +680,7 @@ namespace Vortex {
 				continue;
 
 			SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-			if (!material)
+			if (material == nullptr)
 				continue;
 
 			SetMaterialFlags(material);

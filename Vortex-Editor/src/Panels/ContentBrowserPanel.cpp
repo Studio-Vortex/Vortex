@@ -550,7 +550,7 @@ public class Untitled : Entity
 	SharedReference<Texture2D> ContentBrowserPanel::FindSuitableItemIcon(const std::filesystem::directory_entry& directoryEntry, const Fs::Path& currentItemPath)
 	{
 		const std::string extension = FileSystem::GetFileExtension(currentItemPath);
-		SharedReference<Texture2D> itemIcon = nullptr;
+		SharedReference<Texture2D> itemIcon = EditorResources::FileIcon;
 
 		if (directoryEntry.is_directory())
 		{
@@ -558,16 +558,9 @@ public class Untitled : Entity
 			return itemIcon;
 		}
 
-		AssetType assetType = AssetType::None;
-		if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromExtension(extension);
-			type != AssetType::None)
-		{
-			assetType = type;
-		}
-		
+		const AssetType assetType = Project::GetEditorAssetManager()->GetAssetTypeFromExtension(extension);
 		if (assetType == AssetType::None)
 		{
-			itemIcon = EditorResources::FileIcon;
 			return itemIcon;
 		}
 
@@ -586,12 +579,6 @@ public class Untitled : Entity
 			case AssetType::StaticMeshAsset:      itemIcon = FindMeshIcon(extension);                             break;
 			case AssetType::EnvironmentAsset:     itemIcon = FindEnvironmentMapFromAssetManager(currentItemPath); break;
 			case AssetType::PhysicsMaterialAsset: break;
-		}
-
-		// This means we either haven't implemented an Icon for this extension or it's just a random extension
-		if (itemIcon == nullptr)
-		{
-			itemIcon = EditorResources::FileIcon;
 		}
 
 		return itemIcon;

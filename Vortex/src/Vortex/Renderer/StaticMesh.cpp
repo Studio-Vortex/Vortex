@@ -140,15 +140,19 @@ namespace Vortex {
 		m_BoundingBox.Min = m_Vertices.at(0).Position;
 		m_BoundingBox.Max = m_Vertices.at(0).Position;
 
-		for (auto& vertex : m_Vertices)
+		for (const auto& vertex : m_Vertices)
 		{
 			for (uint32_t i = 0; i < 3; i++)
 			{
 				if (vertex.Position[i] < m_BoundingBox.Min[i])
+				{
 					m_BoundingBox.Min[i] = vertex.Position[i];
+				}
 
 				if (vertex.Position[i] > m_BoundingBox.Max[i])
+				{
 					m_BoundingBox.Max[i] = vertex.Position[i];
+				}
 			}
 		}
 	}
@@ -158,7 +162,7 @@ namespace Vortex {
 		VX_CORE_ASSERT(AssetManager::IsHandleValid(materialHandle), "Invalid Material!");
 
 		SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-		if (!material)
+		if (material == nullptr)
 		{
 			VX_CORE_ASSERT(false, "Invalid Material!");
 			return;
@@ -234,15 +238,15 @@ namespace Vortex {
 		std::vector<uint32_t> indices;
 
 		const TransformComponent& importTransform = importOptions.MeshTransformation;
-		Math::vec3 rotation = importTransform.GetRotationEuler();
-		Math::mat4 transform = Math::Translate(importTransform.Translation) *
+		const Math::vec3 rotation = importTransform.GetRotationEuler();
+		const Math::mat4 transform = Math::Translate(importTransform.Translation) *
 			Math::Rotate(Math::Deg2Rad(rotation.x), { 1.0f, 0.0f, 0.0f }) *
 			Math::Rotate(Math::Deg2Rad(rotation.y), { 0.0f, 1.0f, 0.0f }) *
 			Math::Rotate(Math::Deg2Rad(rotation.z), { 0.0f, 0.0f, 1.0f }) *
 			Math::Scale(importTransform.Scale);
 
 		const char* nameCStr = mesh->mName.C_Str();
-		std::string submeshName = std::string(nameCStr);
+		const std::string submeshName = std::string(nameCStr);
 
 		// process vertices
 		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
@@ -287,7 +291,7 @@ namespace Vortex {
 
 #endif
 
-			std::string directory = FileSystem::GetParentDirectory(filepath).string();
+			const std::string directory = FileSystem::GetParentDirectory(filepath).string();
 
 			materialTextures = 
 			{
@@ -302,8 +306,8 @@ namespace Vortex {
 
 		// Get or Create Material
 		AssetHandle materialHandle = 0;
-		std::string materialName = m_MaterialNames[submeshIndex];
-		std::string filename = materialName + ".vmaterial";;
+		const std::string materialName = m_MaterialNames[submeshIndex];
+		const std::string filename = materialName + ".vmaterial";;
 		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata("Materials/" + filename);
 
 		if (AssetManager::IsHandleValid(metadata.Handle))
@@ -383,12 +387,14 @@ namespace Vortex {
 		aiString textureFilepath;
 
 		if (material->GetTexture((aiTextureType)textureType, index, &textureFilepath) != AI_SUCCESS)
+		{
 			return result;
+		}
 
 		const char* pathCStr = textureFilepath.C_Str();
-		Fs::Path filepath = Fs::Path(pathCStr).filename();
-		Fs::Path relativePath = directory / filepath;
-		Fs::Path directoryName = directory.filename();
+		const Fs::Path filepath = Fs::Path(pathCStr).filename();
+		const Fs::Path relativePath = directory / filepath;
+		const Fs::Path directoryName = directory.filename();
 
 		if (FileSystem::Exists(relativePath))
 		{
@@ -397,15 +403,19 @@ namespace Vortex {
 
 		if (!AssetManager::IsHandleValid(result))
 		{
-			Fs::Path texturesPath = "Assets/Textures" / filepath;
+			const Fs::Path texturesPath = "Assets/Textures" / filepath;
 			if (FileSystem::Exists(texturesPath))
+			{
 				result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(texturesPath);
+			}
 
 			if (!AssetManager::IsHandleValid(result))
 			{
-				Fs::Path texturesPathWithDirectory = "Assets/Textures" / directoryName / filepath;
+				const Fs::Path texturesPathWithDirectory = "Assets/Textures" / directoryName / filepath;
 				if (FileSystem::Exists(texturesPathWithDirectory))
+				{
 					result = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(texturesPathWithDirectory);
+				}
 			}
 		}
 
@@ -414,7 +424,7 @@ namespace Vortex {
 
 	void StaticMesh::CreateBoundingBoxFromSubmeshes()
 	{
-		const auto& firstBoundingBox = m_Submeshes.at(0).GetBoundingBox();
+		const Math::AABB& firstBoundingBox = m_Submeshes.at(0).GetBoundingBox();
 		m_BoundingBox = firstBoundingBox;
 
 		for (const auto& [submeshIndex, submesh] : m_Submeshes)
@@ -424,10 +434,14 @@ namespace Vortex {
 			for (uint32_t i = 0; i < 3; i++)
 			{
 				if (boundingBox.Min[i] < m_BoundingBox.Min[i])
+				{
 					m_BoundingBox.Min[i] = boundingBox.Min[i];
+				}
 
 				if (boundingBox.Max[i] > m_BoundingBox.Max[i])
+				{
 					m_BoundingBox.Max[i] = boundingBox.Max[i];
+				}
 			}
 		}
 	}
@@ -445,17 +459,19 @@ namespace Vortex {
 				continue;
 
 			SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-			if (!material)
+			if (material == nullptr)
 				continue;
 
 			std::vector<StaticVertex>& vertices = submesh.GetVertices();
 
-			size_t dataSize = vertices.size();
+			const size_t dataSize = vertices.size();
 			for (uint32_t i = 0; i < dataSize; i++)
 			{
 				StaticVertex& vertex = vertices[i];
 
-				dirty = vertex.TexScale != material->GetUV() || vertex.EntityID != entityID;
+				const bool uvChanged = vertex.TexScale != material->GetUV();
+				const bool entityIDChanged = vertex.EntityID != entityID;
+				dirty = (uvChanged || entityIDChanged);
 				if (!dirty)
 					continue;
 
@@ -502,9 +518,13 @@ namespace Vortex {
 			AssetHandle userSetHandle = m_MaterialHandles[currentSubmeshIndex];
 
 			if (AssetManager::IsHandleValid(initalHandle))
+			{
 				handles[currentSubmeshIndex] = initalHandle;
+			}
 			if (AssetManager::IsHandleValid(userSetHandle))
+			{
 				handles[currentSubmeshIndex] = userSetHandle;
+			}
 
 			VX_CORE_ASSERT(handles.contains(currentSubmeshIndex), "Failed to find material for submesh!");
 

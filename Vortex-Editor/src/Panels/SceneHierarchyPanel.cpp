@@ -1836,10 +1836,6 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::TextMeshComponentOnGuiRender(TextMeshComponent& component, Entity entity)
 	{
-		UI::BeginPropertyGrid();
-
-		UI::Property("Visible", component.Visible);
-
 		std::string relativePath = "Default Font";
 
 		if (AssetManager::IsHandleValid(component.FontAsset))
@@ -1848,46 +1844,45 @@ namespace Vortex {
 			relativePath = metadata.Filepath.stem().string();
 		}
 
-		UI::Property("Font Source", relativePath, true);
-
-		UI::EndPropertyGrid();
-
-		// Accept a Font from the content browser
-		if (Gui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		auto OnFontDroppedFn = [&](const Fs::Path& filepath) {
+			// Make sure we are recieving an actual font otherwise we will have trouble opening it
+			if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::FontAsset)
 			{
-				const wchar_t* path = (const wchar_t*)payload->Data;
-				Fs::Path fontPath = Fs::Path(path);
-
-				// Make sure we are recieving an actual font otherwise we will have trouble opening it
-				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(fontPath); type == AssetType::FontAsset)
+				const std::string extension = FileSystem::GetFileExtension(filepath);
+				if (extension == ".vfa")
 				{
-					AssetHandle fontAssetHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(fontPath);
+					const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(filepath);
+					component.FontAsset = metadata.Handle;
+				}
+				else
+				{
+					AssetHandle fontAssetHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
 					if (AssetManager::IsHandleValid(fontAssetHandle))
 					{
 						component.FontAsset = fontAssetHandle;
 					}
 					else
 					{
-						VX_CONSOLE_LOG_WARN("Could not load font {}", fontPath.filename().string());
+						VX_CONSOLE_LOG_WARN("Could not load font {}", filepath.filename().string());
 					}
 				}
-				else
-				{
-					VX_CONSOLE_LOG_WARN("Could not load font, not a '.tff' - {}", fontPath.filename().string());
-				}
 			}
+			else
+			{
+				VX_CONSOLE_LOG_WARN("Could not load font, not a '.tff' - {}", filepath.filename().string());
+			}
+		};
 
-			Gui::EndDragDropTarget();
-		}
+		UI::BeginPropertyGrid();
+		UI::PropertyAssetReference<Font>("Font Source", relativePath, component.FontAsset, OnFontDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry());
+		UI::EndPropertyGrid();
 
 		UI::BeginPropertyGrid();
 
-		std::string textString = component.TextString;
-		if (UI::MultilineTextBox("Text", textString))
+		UI::Property("Visible", component.Visible);
+
+		if (UI::MultilineTextBox("Text", component.TextString))
 		{
-			component.TextString = textString;
 			component.TextHash = std::hash<std::string>()(component.TextString);
 		}
 

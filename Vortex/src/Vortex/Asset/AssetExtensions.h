@@ -12,13 +12,14 @@ namespace Vortex {
 		{ ".vanimation", AssetType::AnimationAsset },
 		{ ".vanimator", AssetType::AnimatorAsset },
 
+		{ ".vsound", AssetType::AudioAsset },
 		{ ".wav", AssetType::AudioAsset },
 		{ ".mp3", AssetType::AudioAsset },
-		{ ".vsound", AssetType::AudioAsset },
 
 		{ ".hdr", AssetType::EnvironmentAsset },
 		{ ".HDR", AssetType::EnvironmentAsset },
 		
+		{ ".vfa", AssetType::FontAsset },
 		{ ".ttf", AssetType::FontAsset },
 		{ ".TTF", AssetType::FontAsset },
 		{ ".otc", AssetType::FontAsset },
@@ -55,8 +56,8 @@ namespace Vortex {
 		{ ".obj", AssetType::StaticMeshAsset },
 		{ ".OBJ", AssetType::StaticMeshAsset },
 
-		{ ".vprefab", AssetType::PrefabAsset },
 		{ ".vortex", AssetType::SceneAsset },
+		{ ".vprefab", AssetType::PrefabAsset },
 
 		{ ".cs", AssetType::ScriptAsset },
 

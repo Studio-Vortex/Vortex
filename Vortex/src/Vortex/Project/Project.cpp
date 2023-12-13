@@ -52,7 +52,7 @@ namespace Vortex {
 	Fs::Path Project::GetCacheDirectory()
 	{
 		VX_CORE_ASSERT(s_ActiveProject, "No active project!");
-		return GetProjectDirectory() / "Cache";
+		return GetAssetDirectory() / "Cache";
 	}
 
 	SharedReference<IAssetManager> Project::GetAssetManager()

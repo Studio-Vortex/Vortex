@@ -47,7 +47,14 @@ namespace Vortex {
 
 		static Fs::Path GetCacheDirectory()
 		{
-			return "Resources/Cache/FontAtlases";
+			if (Project::GetActive())
+			{
+				return Project::GetCacheDirectory() / "FontAtlases";
+			}
+			else
+			{
+				return "Resources/Cache/FontAtlases";
+			}
 		}
 
 		static void CreateCacheDirectoryIfNeeded()
