@@ -111,7 +111,7 @@ namespace Vortex {
 	private:
 		Timer& TryGetMutableTimerByName(Entity entity, const std::string& name);
 	public:
-		void AddOrReplaceTimer(Entity entity, const Timer& timer);
+		void AddOrReplaceTimer(Entity entity, const Timer&& timer);
 
 		void ParentEntity(Entity entity, Entity parent);
 		void UnparentEntity(Entity entity, bool convertToWorldSpace = true);

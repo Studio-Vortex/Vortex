@@ -675,7 +675,7 @@ namespace Vortex {
 			Timer timer("InvokeWithDelay", delay, onTimerFinishedFn);
 			timer.Start();
 
-			scene->AddOrReplaceTimer(entity, timer);
+			scene->AddOrReplaceTimer(entity, std::move(timer));
 		}
 
 		void Entity_SetActive(UUID entityUUID, bool isActive)

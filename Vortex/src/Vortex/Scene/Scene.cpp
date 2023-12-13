@@ -641,7 +641,9 @@ namespace Vortex {
 			OnAnimatorUpdateRuntime(delta);
 
 			if (m_StepFrames)
+			{
 				m_StepFrames--;
+			}
 		}
 
 		// Render
@@ -686,7 +688,7 @@ namespace Vortex {
 		Entity primaryCameraEntity = GetPrimaryCameraEntity();
 		if (primaryCameraEntity)
 		{
-			const auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
 
 			// Set Clear color
 			RenderCommand::SetClearColor(cameraComponent.ClearColor);
@@ -796,9 +798,10 @@ namespace Vortex {
 		// Resize all non-FixedAspectRatio cameras
 		auto view = GetAllEntitiesWith<CameraComponent>();
 
-		for (const auto entity : view)
+		for (const auto e : view)
 		{
-			CameraComponent& cameraComponent = view.get<CameraComponent>(entity);
+			Entity entity{ e, this };
+			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
 
 			if (cameraComponent.FixedAspectRatio)
 				continue;
@@ -829,7 +832,7 @@ namespace Vortex {
 		return s_NullTimer;
 	}
 
-	void Scene::AddOrReplaceTimer(Entity entity, const Timer& timer)
+	void Scene::AddOrReplaceTimer(Entity entity, const Timer&& timer)
 	{
 		if (Timer& existing = TryGetMutableTimerByName(entity, timer.GetName()); timer != s_NullTimer)
 		{
@@ -862,8 +865,8 @@ namespace Vortex {
 			UnparentEntity(entity);
 		}
 
-		entity.SetParentUUID(parent.GetUUID());
-		parent.Children().push_back(entity.GetUUID());
+		entity.SetParentUUID(parent);
+		parent.AddChild(entity);
 
 		ConvertToLocalSpace(entity);
 	}
@@ -971,14 +974,15 @@ namespace Vortex {
 
 		auto view = GetAllEntitiesWith<CameraComponent>();
 
-		for (const auto entity : view)
+		for (const auto e : view)
 		{
-			const CameraComponent& cc = view.get<CameraComponent>(entity);
+			Entity entity{ e, this };
+			const CameraComponent& cc = entity.GetComponent<CameraComponent>();
 
 			if (!cc.Primary)
 				continue;
 			
-			return { entity, this };
+			return entity;
 		}
 
 		return Entity{};
@@ -990,9 +994,10 @@ namespace Vortex {
 
 		auto view = GetAllEntitiesWith<SkyboxComponent>();
 
-		for (const auto entity : view)
+		for (const auto e : view)
 		{
-			return { entity, this };
+			Entity entity{ e, this };
+			return entity;
 		}
 
 		return Entity{};
@@ -1004,14 +1009,15 @@ namespace Vortex {
 
 		auto view = GetAllEntitiesWith<LightSourceComponent>();
 
-		for (const auto entity : view)
+		for (const auto e : view)
 		{
-			const LightSourceComponent& lsc = view.get<LightSourceComponent>(entity);
+			Entity entity{ e, this };
+			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
 
 			if (lsc.Type != LightType::Directional)
 				continue;
 
-			return { entity, this };
+			return entity;
 		}
 
 		return Entity{};

@@ -317,7 +317,6 @@ namespace Vortex {
 		const bool is2DProject = m_Properties.ProjectType == ProjectType::e2D;
 		const Fs::Path sceneTemplateFilepath = Fs::Path("Resources/Templates") / (is2DProject ? "SampleScene2DTemplate.vortex" : "SampleScene3DTemplate.vortex");
 
-		Fs::Path wd = FileSystem::GetWorkingDirectory();
 		const std::string contents = FileSystem::ReadText(sceneTemplateFilepath);
 
 		const Fs::Path startSceneFilepath = projectProps.General.StartScene;
@@ -349,10 +348,10 @@ namespace Vortex {
 
 	void LauncherLayer::GenerateProjectSolution()
 	{
-		std::string projectName = m_Properties.ProjectNameBuffer;
+		const std::string projectName = m_Properties.ProjectNameBuffer;
 		FileSystem::SetWorkingDirectory("Projects/" + projectName + "/Assets/Scripts");
 		
-		Platform::LaunchProcess("Win64Gen.bat", "");
+		Platform::LaunchProcess("Win64-GenProject.bat", "");
 		
 		ResetWorkingDirectory();
 	}
@@ -364,7 +363,7 @@ namespace Vortex {
 		const Fs::Path solutionPath = Fs::Path("..\\..\\") / "Projects" / m_Properties.ProjectNameBuffer / "Assets\\Scripts" / projectSolutionFilename;
 
 		FileSystem::SetWorkingDirectory("Resources/HelperScripts");
-		Platform::LaunchProcess("BuildSolution.bat", solutionPath.string().c_str());
+		Platform::LaunchProcess("Win64-BuildSolution.bat", solutionPath.string().c_str());
 
 		ResetWorkingDirectory();
 	}
