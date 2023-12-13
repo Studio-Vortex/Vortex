@@ -1597,7 +1597,12 @@ namespace Vortex {
 			}
 		};
 
-		UI::PropertyAssetReference<StaticMesh>("Mesh Source", relativePath, component.StaticMesh, OnStaticMeshDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry());
+		if (UI::PropertyAssetReference<StaticMesh>("Mesh Source", relativePath, component.StaticMesh, OnStaticMeshDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry()))
+		{
+			const bool isDefaultStaticMesh = Project::GetEditorAssetManager()->IsDefaultStaticMesh(component.StaticMesh);
+
+			component.Type = isDefaultStaticMesh ? (MeshType)DefaultMesh::GetStaticMeshType(component.StaticMesh) : MeshType::Custom;
+		}
 
 		if (AssetManager::IsHandleValid(component.StaticMesh))
 		{
@@ -1645,7 +1650,7 @@ namespace Vortex {
 							Project::GetEditorAssetManager()->AddMemoryOnlyAsset(Renderer::GetWhiteMaterial());
 						}
 
-						materialTable->SetMaterial(0, Renderer::GetWhiteMaterial()->Handle);
+						materialTable->SetMaterial(submeshIndex, Renderer::GetWhiteMaterial()->Handle);
 					}
 
 					break;
