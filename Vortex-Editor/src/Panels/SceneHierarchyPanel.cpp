@@ -1525,7 +1525,7 @@ namespace Vortex {
 			if (component.CastShadows)
 			{
 				UI::Property("Soft Shadows", component.SoftShadows);
-				UI::Property("Shadow Bias", component.ShadowBias, 1.0f, FLT_MIN, FLT_MAX);
+				UI::Property("Shadow Bias", component.ShadowBias, 0.01f, FLT_MIN, FLT_MAX);
 			}
 
 			UI::EndPropertyGrid();
