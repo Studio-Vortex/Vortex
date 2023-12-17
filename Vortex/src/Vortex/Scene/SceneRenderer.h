@@ -26,10 +26,10 @@ namespace Vortex {
 
 	struct VORTEX_API SceneRenderPacket
 	{
-		Camera* MainCamera = nullptr;
-		Math::mat4 MainCameraViewMatrix = {};
-		Math::mat4 MainCameraProjectionMatrix = {};
-		Math::vec3 MainCameraWorldSpaceTranslation = {};
+		Camera* PrimaryCamera = nullptr;
+		Math::mat4 PrimaryCameraViewMatrix = {};
+		Math::mat4 PrimaryCameraProjectionMatrix = {};
+		Math::vec3 PrimaryCameraWorldSpaceTranslation = {};
 		SharedReference<Framebuffer> TargetFramebuffer = nullptr;
 		Scene* Scene = nullptr;
 		bool EditorScene = false;
@@ -64,6 +64,7 @@ namespace Vortex {
 		void EndScene();
 
 		void LightPass(const SceneRenderPacket& renderPacket);
+		void EmissiveMeshPass(const SceneRenderPacket& renderPacket);
 		void SortMeshGeometry(const SceneRenderPacket& renderPacket, std::map<float, Entity>& sortedGeometry);
 		void SortEntityByDistance(std::map<float, Entity>& sortedEntities, float distance, Entity entity, uint32_t offset = 0);
 		void GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Entity>& sortedGeometry);

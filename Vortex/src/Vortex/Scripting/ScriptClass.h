@@ -26,7 +26,7 @@ namespace Vortex {
 		~ScriptClass() = default;
 
 		MonoObject* Instantiate();
-		MonoMethod* GetMethod(const std::string& name, int parameterCount);
+		MonoMethod* GetMethod(const std::string& name, uint32_t parameterCount);
 
 		const std::string& GetClassNamespace() const;
 		// Note: can't name this 'GetClassName' because of windows api

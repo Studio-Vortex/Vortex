@@ -1330,21 +1330,22 @@ namespace Vortex {
 		if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 		{
 			float perspectiveVerticalFOV = Math::Rad2Deg(camera.GetPerspectiveVerticalFOVRad());
-			if (UI::Property("Field of View", perspectiveVerticalFOV, 1.0f, 1.0f))
+			if (UI::Property("Field of View", perspectiveVerticalFOV, 1.0f, FLT_MIN, 180.0f))
 			{
 				camera.SetPerspectiveVerticalFOVRad(Math::Deg2Rad(perspectiveVerticalFOV));
 				modified = true;
 			}
 
 			float nearClip = camera.GetPerspectiveNearClip();
-			if (UI::Property("Near", nearClip, 1.0f, 1.0f))
+			float farClip = camera.GetPerspectiveFarClip();
+
+			if (UI::Property("Near", nearClip, 0.1f, FLT_MIN, farClip))
 			{
 				camera.SetPerspectiveNearClip(nearClip);
 				modified = true;
 			}
 
-			float farClip = camera.GetPerspectiveFarClip();
-			if (UI::Property("Far", farClip, 1.0f, 1.0f))
+			if (UI::Property("Far", farClip, 0.1f, nearClip, FLT_MAX))
 			{
 				camera.SetPerspectiveFarClip(farClip);
 				modified = true;
@@ -1353,21 +1354,22 @@ namespace Vortex {
 		else
 		{
 			float orthoSize = camera.GetOrthographicSize();
-			if (UI::Property("Size", orthoSize, 1.0f, 1.0f))
+			if (UI::Property("Size", orthoSize, 0.1f, FLT_MIN, FLT_MAX))
 			{
 				camera.SetOrthographicSize(orthoSize);
 				modified = true;
 			}
 
 			float nearClip = camera.GetOrthographicNearClip();
-			if (UI::Property("Near", nearClip, 1.0f, 1.0f))
+			float farClip = camera.GetOrthographicFarClip();
+
+			if (UI::Property("Near", nearClip, 0.1f, FLT_MIN, farClip))
 			{
 				camera.SetOrthographicNearClip(nearClip);
 				modified = true;
 			}
 
-			float farClip = camera.GetOrthographicFarClip();
-			if (UI::Property("Far", farClip, 1.0f, 1.0f))
+			if (UI::Property("Far", farClip, 0.1f, nearClip, FLT_MAX))
 			{
 				camera.SetOrthographicFarClip(farClip);
 				modified = true;
@@ -1429,7 +1431,7 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			UI::Property("Rotation", component.Rotation);
+			UI::Property("Rotation", component.Rotation, 1.0f, FLT_MIN, FLT_MAX);
 			if (Gui::IsItemFocused())
 			{
 				// Nasty hack to reload skybox
@@ -1439,7 +1441,7 @@ namespace Vortex {
 				}
 			}
 
-			UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
+			UI::Property("Intensity", component.Intensity, 0.01f, FLT_MIN, FLT_MAX);
 
 			UI::EndPropertyGrid();
 		}
@@ -1468,15 +1470,15 @@ namespace Vortex {
 			}
 			case LightType::Spot:
 			{
-				UI::Property("CutOff", component.Cutoff, 0.5f, 0.5f, component.OuterCutoff);
-				UI::Property("Outer CutOff", component.OuterCutoff, 0.5f, component.Cutoff, 100.0f);
+				UI::Property("CutOff", component.Cutoff, 0.5f, FLT_MIN, component.OuterCutoff);
+				UI::Property("Outer CutOff", component.OuterCutoff, 0.5f, component.Cutoff, FLT_MAX);
 
 				break;
 			}
 		}
 
 		UI::Property("Radiance", &component.Radiance);
-		UI::Property("Intensity", component.Intensity, 0.05f, 0.05f);
+		UI::Property("Intensity", component.Intensity, 0.01f, FLT_MIN, FLT_MAX);
 
 		UI::EndPropertyGrid();
 
@@ -1495,7 +1497,7 @@ namespace Vortex {
 			if (component.CastShadows)
 			{
 				UI::Property("Soft Shadows", component.SoftShadows);
-				UI::Property("Shadow Bias", component.ShadowBias, 1.0f, 0.0f, 1000.0f);
+				UI::Property("Shadow Bias", component.ShadowBias, 1.0f, FLT_MIN, FLT_MAX);
 			}
 
 			UI::EndPropertyGrid();
@@ -1731,7 +1733,7 @@ namespace Vortex {
 		UI::BeginPropertyGrid();
 
 		UI::Property("Color", &component.SpriteColor);
-		UI::Property("UV", component.TextureUV, 0.05f);
+		UI::Property("UV", component.TextureUV, 0.01f, FLT_MIN, FLT_MAX);
 
 		UI::EndPropertyGrid();
 	}
@@ -1743,8 +1745,8 @@ namespace Vortex {
 		UI::Property("Visible", component.Visible);
 
 		UI::Property("Color", &component.Color);
-		UI::Property("Thickness", component.Thickness, 0.025f, 0.0f, 1.0f);
-		UI::Property("Fade", component.Fade, 0.00025f, 0.0f, 1.0f);
+		UI::Property("Thickness", component.Thickness, 0.01f, FLT_MIN, 1.0f);
+		UI::Property("Fade", component.Fade, 0.01f, FLT_MIN, 1.0f);
 
 		UI::EndPropertyGrid();
 	}
@@ -1776,12 +1778,12 @@ namespace Vortex {
 			if (Gui::Button("Stop"))
 				particleEmitter->Stop();
 
-			UI::Property("Velocity", emitterProperties.Velocity, 0.25f, 0.1f);
-			UI::Property("Velocity Variation", emitterProperties.VelocityVariation, 0.25f, 0.1f);
-			UI::Property("Offset", emitterProperties.Offset, 0.25f);
-			UI::Property("Size Start", emitterProperties.SizeBegin, 0.25f, 0.1f);
-			UI::Property("Size End", emitterProperties.SizeEnd, 0.25f, 0.1f);
-			UI::Property("Size Variation", emitterProperties.SizeVariation, 0.25f, 0.1f);
+			UI::Property("Velocity", emitterProperties.Velocity, 0.01f, FLT_MIN, FLT_MAX);
+			UI::Property("Velocity Variation", emitterProperties.VelocityVariation, 0.01f, FLT_MIN, FLT_MAX);
+			UI::Property("Offset", emitterProperties.Offset, 0.01f, FLT_MIN, FLT_MAX);
+			UI::Property("Size Start", emitterProperties.SizeBegin, 0.01f, FLT_MIN, FLT_MAX);
+			UI::Property("Size End", emitterProperties.SizeEnd, 0.01f, FLT_MIN, FLT_MAX);
+			UI::Property("Size Variation", emitterProperties.SizeVariation, 0.01f, FLT_MIN, FLT_MAX);
 
 			UI::Property("Generate Random Colors", emitterProperties.GenerateRandomColors);
 
@@ -1791,8 +1793,8 @@ namespace Vortex {
 				UI::Property("Color End", &emitterProperties.ColorEnd);
 			}
 
-			UI::Property("Rotation", emitterProperties.Rotation, 0.1f, 0.0f);
-			UI::Property("Lifetime", emitterProperties.LifeTime, 0.25f, 0.1f);
+			UI::Property("Rotation", emitterProperties.Rotation, 0.1f, FLT_MIN, FLT_MAX);
+			UI::Property("Lifetime", emitterProperties.LifeTime, 0.1f, FLT_MIN, FLT_MAX);
 		}
 
 		UI::EndPropertyGrid();
@@ -1888,9 +1890,9 @@ namespace Vortex {
 
 		UI::Property("Color", &component.Color);
 		UI::Property("Background Color", &component.BgColor);
-		UI::Property("Line Spacing", component.LineSpacing, 1.0f);
-		UI::Property("Kerning", component.Kerning, 1.0f);
-		UI::Property("Max Width", component.MaxWidth, 1.0f);
+		UI::Property("Line Spacing", component.LineSpacing, 0.1f, FLT_MIN, FLT_MAX);
+		UI::Property("Kerning", component.Kerning, 0.1f, FLT_MIN, FLT_MAX);
+		UI::Property("Max Width", component.MaxWidth, 0.1f, FLT_MIN, FLT_MAX);
 
 		UI::EndPropertyGrid();
 	}
@@ -2029,11 +2031,11 @@ namespace Vortex {
 				UI::BeginPropertyGrid();
 
 				float pitch = device.GetSound().GetPitch();
-				if (UI::Property("Pitch", pitch, 0.01f, 0.2f, 2.0f))
+				if (UI::Property("Pitch", pitch, 0.01f, FLT_MIN, FLT_MAX))
 					device.GetSound().SetPitch(pitch);
 
 				float volume = device.GetSound().GetVolume();
-				if (UI::Property("Volume", volume, 0.1f))
+				if (UI::Property("Volume", volume, 0.1f, FLT_MIN, FLT_MAX))
 					device.GetSound().SetVolume(volume);
 
 				//if (UI::Property("Play On Start", props.PlayOnStart))
@@ -2085,11 +2087,11 @@ namespace Vortex {
 					UI::BeginPropertyGrid();
 
 					float minGain = device.GetSound().GetMinGain();
-					if (UI::Property("Min Gain", minGain))
+					if (UI::Property("Min Gain", minGain, 0.1f, FLT_MIN, FLT_MAX))
 						device.GetSound().SetMinGain(minGain);
 
 					float maxGain = device.GetSound().GetMaxGain();
-					if (UI::Property("Max Gain", maxGain))
+					if (UI::Property("Max Gain", maxGain, 0.1f, FLT_MIN, FLT_MAX))
 						device.GetSound().SetMaxGain(maxGain);
 
 					static const char* attenuationModels[] = { "None", "Inverse", "Linear", "Exponential" };
@@ -2099,7 +2101,7 @@ namespace Vortex {
 						device.GetSound().SetAttenuationModel(Utils::ToWaveAttenuationModel(currentAttenuationModel));
 
 					float pan = device.GetSound().GetPan();
-					if (UI::Property("Pan", pan))
+					if (UI::Property("Pan", pan, 0.1f, FLT_MIN, FLT_MAX))
 						device.GetSound().SetPan(pan);
 
 					static const char* panModes[] = { "Balance", "Pan" };
@@ -2115,19 +2117,19 @@ namespace Vortex {
 						device.GetSound().SetPositioning(Utils::ToWavePositioningMode(currentPositioningMode));
 
 					float falloff = device.GetSound().GetFalloff();
-					if (UI::Property("Falloff", falloff))
+					if (UI::Property("Falloff", falloff, 0.1f, FLT_MIN, FLT_MAX))
 						device.GetSound().SetFalloff(falloff);
 
 					float minDistance = device.GetSound().GetMinDistance();
-					if (UI::Property("Min Distance", minDistance, 0.1f))
+					if (UI::Property("Min Distance", minDistance, 0.1f, FLT_MIN, FLT_MAX))
 						device.GetSound().SetMinDistance(minDistance);
 
 					float maxDistance = device.GetSound().GetMaxDistance();
-					if (UI::Property("Max Distance", maxDistance, 0.1f))
+					if (UI::Property("Max Distance", maxDistance, 0.1f, FLT_MIN, FLT_MAX))
 						device.GetSound().SetMaxDistance(maxDistance);
 
 					float dopplerFactor = device.GetSound().GetDopplerFactor();
-					if (UI::Property("Doppler Factor", dopplerFactor, 0.1f))
+					if (UI::Property("Doppler Factor", dopplerFactor, 0.01f, FLT_MIN, FLT_MAX))
 						device.GetSound().SetDopplerFactor(dopplerFactor);
 
 					float directionalAttenuationFactor = device.GetSound().GetDirectionalAttenuationFactor();
@@ -2146,21 +2148,21 @@ namespace Vortex {
 					bool modified = false;
 
 					float innerAngle = Math::Rad2Deg(cone.InnerAngle);
-					if (UI::Property("Inner Angle", innerAngle, 0.5f))
+					if (UI::Property("Inner Angle", innerAngle, 1.0f, FLT_MIN, FLT_MAX))
 					{
 						cone.InnerAngle = innerAngle;
 						modified = true;
 					}
 
 					float outerAngle = Math::Rad2Deg(cone.OuterAngle);
-					if (UI::Property("Outer Angle", outerAngle, 0.5f))
+					if (UI::Property("Outer Angle", outerAngle, 1.0f, FLT_MIN, FLT_MAX))
 					{
 						cone.OuterAngle = outerAngle;
 						modified = true;
 					}
 
 					float outerGain = cone.OuterGain;
-					if (UI::Property("Outer Gain", outerGain, 0.5f))
+					if (UI::Property("Outer Gain", outerGain, 1.0f, FLT_MIN, FLT_MAX))
 					{
 						cone.OuterGain = outerGain;
 						modified = true;
@@ -2186,9 +2188,9 @@ namespace Vortex {
 					float currentFadeVolume = device.GetSound().GetCurrentFadeVolume();
 					UI::Property("Current Fade Volume", currentFadeVolume);
 
-					auto one = device.GetSound().GetTimeInMilliseconds();
+					uint64_t one = device.GetSound().GetTimeInMilliseconds();
 					UI::Property("Time in ms", one);
-					auto two = device.GetSound().GetTimeInPCMFrames();
+					uint64_t two = device.GetSound().GetTimeInPCMFrames();
 					UI::Property("Time in pcm frames", two);
 
 					uint32_t listenerIndex = device.GetSound().GetListenerIndex();
@@ -2266,24 +2268,28 @@ namespace Vortex {
 		}
 		else
 		{
-			if (UI::Property("Mass", component.Mass, 0.01f, 0.01f, 1.0f))
+			if (UI::Property("Mass", component.Mass, 0.01f, FLT_MIN, FLT_MAX))
 				modified = true;
 			UI::Property("Linear Velocity", component.LinearVelocity);
-			UI::Property("Max Linear Velocity", component.MaxLinearVelocity);
-			UI::Property("Linear Drag", component.LinearDrag, 0.01f, 0.01f, 1.0f);
+			UI::Property("Max Linear Velocity", component.MaxLinearVelocity, 1.0f, FLT_MIN, FLT_MAX);
+			UI::Property("Linear Drag", component.LinearDrag, 0.01f, FLT_MIN, FLT_MAX);
 			UI::Property("Angular Velocity", component.AngularVelocity);
-			UI::Property("Max Angular Velocity", component.MaxAngularVelocity);
-			UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f, "%.2f");
+			UI::Property("Max Angular Velocity", component.MaxAngularVelocity, 1.0f, FLT_MIN, FLT_MAX);
+			UI::Property("Angular Drag", component.AngularDrag, 0.01f, FLT_MIN, FLT_MAX, "%.2f");
 
 			if (UI::Property("Disable Gravity", component.DisableGravity))
 				modified = true;
 
-			UI::Property("IsKinematic", component.IsKinematic);
+			if (UI::Property("IsKinematic", component.IsKinematic))
+				modified = true;
 
 			const char* collisionDetectionTypes[] = { "Discrete", "Continuous", "Continuous Speclative" };
 			int32_t currentCollisionDetectionType = (uint32_t)component.CollisionDetection;
 			if (UI::PropertyDropdown("Collision Detection", collisionDetectionTypes, VX_ARRAYSIZE(collisionDetectionTypes), currentCollisionDetectionType))
+			{
 				component.CollisionDetection = (CollisionDetectionType)currentCollisionDetectionType;
+				modified = true;
+			}
 
 			UI::EndPropertyGrid();
 
@@ -2381,9 +2387,13 @@ namespace Vortex {
 
 			}
 
-			if (modified && m_ContextScene->IsRunning())
+			if (modified)
 			{
-				Physics::WakeUpActor(entity);
+				const bool simulationRunning = m_ContextScene->IsRunning() || m_ContextScene->IsSimulating();
+				if (simulationRunning)
+				{
+					Physics::WakeUpActor(entity);
+				}
 			}
 		}
 	}
@@ -2392,9 +2402,9 @@ namespace Vortex {
 	{
 		UI::BeginPropertyGrid();
 
-		UI::Property("Slope Limit", component.SlopeLimitDegrees);
-		UI::Property("Step Offset", component.StepOffset);
-		UI::Property("Contact Offset", component.ContactOffset);
+		UI::Property("Slope Limit", component.SlopeLimitDegrees, 1.0f, FLT_MIN, FLT_MAX);
+		UI::Property("Step Offset", component.StepOffset, 1.0f, FLT_MIN, FLT_MAX);
+		UI::Property("Contact Offset", component.ContactOffset, 1.0f, FLT_MIN, FLT_MAX);
 		UI::Property("Disable Gravity", component.DisableGravity);
 
 		Gui::BeginDisabled();
@@ -2446,8 +2456,8 @@ namespace Vortex {
 
 		if (component.IsBreakable)
 		{
-			UI::Property("Break Force", component.BreakForce);
-			UI::Property("Break Torque", component.BreakTorque);
+			UI::Property("Break Force", component.BreakForce, 1.0f, FLT_MIN, FLT_MAX);
+			UI::Property("Break Torque", component.BreakTorque, 1.0f, FLT_MIN, FLT_MAX);
 		}
 
 		UI::Property("Enable Collision", component.EnableCollision);
@@ -2460,7 +2470,7 @@ namespace Vortex {
 	{
 		UI::BeginPropertyGrid();
 
-		UI::Property("Half Size", component.HalfSize, 0.01f);
+		UI::Property("Half Size", component.HalfSize, 0.01f, FLT_MIN, FLT_MAX);
 		UI::Property("Offset", component.Offset, 0.01f);
 		UI::Property("Visible", component.Visible);
 		UI::Property("Is Trigger", component.IsTrigger);
@@ -2472,7 +2482,7 @@ namespace Vortex {
 	{
 		UI::BeginPropertyGrid();
 
-		UI::Property("Radius", component.Radius, 0.01f);
+		UI::Property("Radius", component.Radius, 0.01f, FLT_MIN, FLT_MAX);
 		UI::Property("Offset", component.Offset, 0.01f);
 		UI::Property("Visible", component.Visible);
 		UI::Property("Is Trigger", component.IsTrigger);
@@ -2484,8 +2494,8 @@ namespace Vortex {
 	{
 		UI::BeginPropertyGrid();
 
-		UI::Property("Radius", component.Radius, 0.01f);
-		UI::Property("Height", component.Height, 0.01f);
+		UI::Property("Radius", component.Radius, 0.01f, FLT_MIN, FLT_MAX);
+		UI::Property("Height", component.Height, 0.01f, FLT_MIN, FLT_MAX);
 		UI::Property("Offset", component.Offset, 0.01f);
 		UI::Property("Visible", component.Visible);
 		UI::Property("Is Trigger", component.IsTrigger);
@@ -2501,7 +2511,9 @@ namespace Vortex {
 		uint32_t currentCollisionComplexity = (uint32_t)component.CollisionComplexity;
 
 		if (UI::PropertyDropdown("Collision Complexity", collisionComplexities, VX_ARRAYSIZE(collisionComplexities), currentCollisionComplexity))
+		{
 			component.CollisionComplexity = (ECollisionComplexity)currentCollisionComplexity;
+		}
 
 		UI::Property("Visible", component.Visible);
 		UI::Property("Is Trigger", component.IsTrigger);
@@ -2517,15 +2529,17 @@ namespace Vortex {
 		const char* bodyTypes[] = { "Static", "Dynamic", "Kinematic" };
 		int32_t currentBodyType = (uint32_t)component.Type;
 		if (UI::PropertyDropdown("Body Type", bodyTypes, VX_ARRAYSIZE(bodyTypes), currentBodyType))
+		{
 			component.Type = (RigidBody2DType)currentBodyType;
+		}
 
 		if (component.Type == RigidBody2DType::Dynamic)
 		{
 			UI::Property("Velocity", component.Velocity, 0.01f);
-			UI::Property("Drag", component.Drag, 0.01f, 0.01f, 1.0f);
+			UI::Property("Drag", component.Drag, 0.01f, FLT_MIN, 1.0f);
 			UI::Property("Angular Velocity", component.AngularVelocity);
-			UI::Property("Angular Drag", component.AngularDrag, 0.01f, 0.01f, 1.0f);
-			UI::Property("Gravity Scale", component.GravityScale, 0.01f, 0.01f, 1.0f);
+			UI::Property("Angular Drag", component.AngularDrag, 0.01f, FLT_MIN, 1.0f);
+			UI::Property("Gravity Scale", component.GravityScale, 0.01f, FLT_MIN, 1.0f);
 			UI::Property("Freeze Rotation", component.FixedRotation);
 		}
 
@@ -2538,10 +2552,10 @@ namespace Vortex {
 
 		UI::Property("Offset", component.Offset, 0.01f);
 		UI::Property("Size", component.Size, 0.01f);
-		UI::Property("Density", component.Density, 0.01f, 0.0f, 1.0f);
-		UI::Property("Friction", component.Friction, 0.01f, 0.0f, 1.0f);
-		UI::Property("Restitution", component.Restitution, 0.01f, 0.0f, 1.0f);
-		UI::Property("Threshold", component.RestitutionThreshold, 0.1f, 0.0f);
+		UI::Property("Density", component.Density, 0.01f, FLT_MIN, 1.0f);
+		UI::Property("Friction", component.Friction, 0.01f, FLT_MIN, 1.0f);
+		UI::Property("Restitution", component.Restitution, 0.01f, FLT_MIN, 1.0f);
+		UI::Property("Threshold", component.RestitutionThreshold, 0.1f, FLT_MIN, FLT_MAX);
 		UI::Property("Visible", component.Visible);
 		UI::Property("Is Tigger", component.IsTrigger);
 
@@ -2553,11 +2567,11 @@ namespace Vortex {
 		UI::BeginPropertyGrid();
 
 		UI::Property("Offset", component.Offset, 0.01f);
-		UI::Property("Radius", component.Radius, 0.01, 0.01f);
-		UI::Property("Density", component.Density, 0.01f, 0.0f, 1.0f);
-		UI::Property("Friction", component.Friction, 0.01f, 0.0f, 1.0f);
-		UI::Property("Restitution", component.Restitution, 0.01f, 0.0f, 1.0f);
-		UI::Property("Threshold", component.RestitutionThreshold, 0.1f, 0.0f);
+		UI::Property("Radius", component.Radius, 0.01, FLT_MIN, FLT_MAX);
+		UI::Property("Density", component.Density, 0.01f, FLT_MIN, 1.0f);
+		UI::Property("Friction", component.Friction, 0.01f, FLT_MIN, 1.0f);
+		UI::Property("Restitution", component.Restitution, 0.01f, FLT_MIN, 1.0f);
+		UI::Property("Threshold", component.RestitutionThreshold, 0.1f, FLT_MIN, FLT_MAX);
 		UI::Property("Visible", component.Visible);
 
 		UI::EndPropertyGrid();

@@ -219,9 +219,11 @@ namespace Vortex {
 		{
 			VX_PROFILE_SCOPE("Application Loop");
 
+			m_FrameTime.Clear();
+
 			const float currentTime = Time::GetTime();
-			const TimeStep deltaTime = currentTime - m_LastFrameTimeStamp;
-			Time::SetDeltaTime(deltaTime);
+			m_FrameTime.DeltaTime = currentTime - m_LastFrameTimeStamp;
+			Time::SetDeltaTime(m_FrameTime.DeltaTime);
 			m_LastFrameTimeStamp = currentTime;
 
 			ExecuteMainThreadQueue();
@@ -232,7 +234,7 @@ namespace Vortex {
 
 				for (Layer* layer : m_Layers)
 				{
-					layer->OnUpdate(deltaTime);
+					layer->OnUpdate(m_FrameTime.DeltaTime);
 				}
 			}
 

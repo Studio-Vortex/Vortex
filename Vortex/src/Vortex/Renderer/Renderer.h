@@ -36,6 +36,8 @@ namespace Vortex {
 		uint32_t ActivePointLights = 0;
 		uint32_t SpotLightIndex = 0;
 		uint32_t ActiveSpotLights = 0;
+		uint32_t EmissiveMeshIndex = 0;
+		uint32_t ActiveEmissiveMeshes = 0;
 	};
 
 	struct VORTEX_API RenderTime
@@ -82,6 +84,7 @@ namespace Vortex {
 		static void DrawIndexed(const SharedReference<Shader>& shader, const SharedReference<VertexArray>& vertexArray);
 
 		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent);
+		static void RenderEmissiveEntity(const Math::vec3& translation, const Math::vec3& radiance, float intensity);
 		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment);
 
 		static void DrawFrustum(const std::vector<Math::vec4>& corners, const Math::vec4& color);
@@ -160,7 +163,7 @@ namespace Vortex {
 	private:
 		// Helpers
 
-		static void BindRenderTarget(SharedReference<Framebuffer>& renderTarget);
+		static void BindRenderTarget(SharedReference<Framebuffer> renderTarget);
 		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraTranslation);
 
 		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);

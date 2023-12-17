@@ -1,5 +1,5 @@
 #type vertex
-#version 330 core
+#version 460 core
 
 layout (location = 0) in vec2 aPosition;
 layout (location = 1) in vec2 aTexCoord;
@@ -14,7 +14,7 @@ void main()
 
 
 #type fragment
-#version 330 core
+#version 460 core
 
 // This shader performs upsampling on a texture,
 // as taken from Call Of Duty method, presented at ACM Siggraph 2014.
@@ -25,8 +25,8 @@ void main()
 uniform sampler2D srcTexture;
 uniform float filterRadius;
 
-in vec2 texCoord;
 layout (location = 0) out vec3 upsample;
+layout (location = 0) in vec2 texCoord;
 
 void main()
 {

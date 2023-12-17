@@ -20,7 +20,7 @@ namespace Vortex {
 		return ScriptUtils::InstantiateClass(m_MonoClass);
 	}
 
-	MonoMethod* ScriptClass::GetMethod(const std::string& name, int parameterCount)
+	MonoMethod* ScriptClass::GetMethod(const std::string& name, uint32_t parameterCount)
 	{
 		return ScriptUtils::GetManagedMethodFromName(m_MonoClass, name.c_str(), parameterCount);
 	}

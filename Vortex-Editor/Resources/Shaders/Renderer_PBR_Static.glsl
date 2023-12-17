@@ -148,6 +148,13 @@ struct SpotLight
 	float ShadowBias;
 };
 
+struct EmissiveMesh
+{
+	vec3 Radiance;
+	vec3 Position;
+	float Intensity;
+};
+
 struct FragmentProperties
 {
 	vec3 Albedo;
@@ -166,6 +173,7 @@ struct SceneProperties
 	bool HasSkyLight;
 	int ActivePointLights;
 	int ActiveSpotLights;
+	int ActiveEmissiveMeshes;
 
 	samplerCube IrradianceMap;
 	samplerCube PrefilterMap;
@@ -180,11 +188,13 @@ struct SceneProperties
 
 #define MAX_POINT_LIGHTS 50
 #define MAX_SPOT_LIGHTS 50
+#define MAX_EMISSIVE_MESHES 50
 
 uniform Material        u_Material;
 uniform SkyLight        u_SkyLight;
 uniform PointLight      u_PointLights[MAX_POINT_LIGHTS];
 uniform SpotLight       u_SpotLights[MAX_SPOT_LIGHTS];
+uniform EmissiveMesh    u_EmissiveMeshes[MAX_EMISSIVE_MESHES];
 uniform SceneProperties u_SceneProperties;
 uniform samplerCube     u_PointLightShadowMaps[MAX_POINT_LIGHTS];
 uniform sampler2D       u_SpotLightShadowMaps[MAX_SPOT_LIGHTS];
@@ -193,6 +203,7 @@ uniform sampler2D       u_SpotLightShadowMaps[MAX_SPOT_LIGHTS];
 const vec3 Fdielectric = vec3(0.04);
 const float PI = 3.14159265359;
 const float EPSILON = 0.0001;
+const float MAX_REFLECTION_LOD = 4.0;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float gaSchlickG1(float cosTheta, float k);
@@ -206,8 +217,8 @@ float CubemapShadowCalculation(vec3 fragPos, vec3 lightPos, samplerCube shadowMa
 
 void main()
 {
-	vec3 viewDir = normalize(fragmentIn.TBN * u_SceneProperties.CameraPosition - fragmentIn.TBN * fragmentIn.Position);
-	vec2 textureCoords = ((u_Material.HasPOMap) ? ParallaxOcclusionMapping(fragmentIn.TexCoord * fragmentIn.TexScale, viewDir) : fragmentIn.TexCoord * fragmentIn.TexScale);
+	const vec3 viewDir = normalize(fragmentIn.TBN * u_SceneProperties.CameraPosition - fragmentIn.TBN * fragmentIn.Position);
+	const vec2 textureCoords = ((u_Material.HasPOMap) ? ParallaxOcclusionMapping(fragmentIn.TexCoord * fragmentIn.TexScale, viewDir) : fragmentIn.TexCoord * fragmentIn.TexScale);
 
 	FragmentProperties properties;
 	properties.Albedo = ((u_Material.HasAlbedoMap) ? pow(texture(u_Material.AlbedoMap, textureCoords).rgb, vec3(u_SceneProperties.Gamma)) * u_Material.Albedo : u_Material.Albedo);
@@ -224,11 +235,11 @@ void main()
 	properties.Metallic = max(0.05, properties.Metallic);
 	properties.Roughness = min(0.99, properties.Roughness);
 
-	vec3 N = properties.Normal;
-	vec3 V = normalize(u_SceneProperties.CameraPosition - fragmentIn.Position);
-	vec3 R = reflect(-V, N);
+	const vec3 N = properties.Normal;
+	const vec3 V = normalize(u_SceneProperties.CameraPosition - fragmentIn.Position);
+	const vec3 R = reflect(-V, N);
 
-	float NdotV = max(dot(N, V), 0.0);
+	const float NdotV = max(dot(N, V), 0.0);
 
 	// Calculate reflectance at normal incidence, i.e. how much the surface reflects when looking directly at it
 	// if dia-electric (like plastic) use F0 of 0.04
@@ -236,47 +247,45 @@ void main()
 	vec3 F0 = Fdielectric;
 	F0 = mix(F0, properties.Albedo, properties.Metallic);
 
-	float totalShadow = 0.0;
-
 	// Reflectance equation
 	vec3 Lo = vec3(0.0);
 
 	// Calculate sky-light radiance
 	if (u_SceneProperties.HasSkyLight)
 	{
-		vec3 L = normalize(-u_SkyLight.Direction);
-		vec3 H = normalize(V + L);
+		const vec3 L = normalize(-u_SkyLight.Direction);
+		const vec3 H = normalize(V + L);
 
-		vec3 radiance = u_SkyLight.Radiance * u_SkyLight.Intensity;
+		const float NdotL = max(dot(N, L), 0.0);
 
-		// Cook-Torrance Bi-directional Reflectance Distribution Function
-		float NDF = DistributionGGX(N, H, properties.Roughness);
-		float G = GeometrySmith(N, V, L, properties.Roughness);
-		float cosTheta = max(dot(H, V), 0.0);
-		vec3 F = FresnelSchlick(cosTheta, F0);
-
-		float NdotL = max(dot(N, L), 0.0);
-
-		float shadow = ShadowCalculation(fragmentIn.FragPosLight, NdotL, u_SkyLight.ShadowMap, u_SkyLight.ShadowBias, u_SkyLight.SoftShadows);
-		bool notInShadow = (1.0 - shadow) > 0.0;
-
-		totalShadow += 1.0 - shadow;
+		const float shadow = ShadowCalculation(fragmentIn.FragPosLight, NdotL, u_SkyLight.ShadowMap, u_SkyLight.ShadowBias, u_SkyLight.SoftShadows);
+		const bool notInShadow = (1.0 - shadow) > 0.0;
 
 		if (notInShadow)
 		{
-			vec3 numerator = NDF * G * F;
-			float denominator = 4.0 * NdotV * NdotL + EPSILON; // prevent division by 0
-			vec3 specular = numerator / denominator;
+			// Cook-Torrance Bi-directional Reflectance Distribution Function
+			const float NDF = DistributionGGX(N, H, properties.Roughness);
+			const float G = GeometrySmith(N, V, L, properties.Roughness);
+			const float cosTheta = max(dot(H, V), 0.0);
+			const vec3 F = FresnelSchlick(cosTheta, F0);
+
+			const vec3 numerator = NDF * G * F;
+			const float denominator = 4.0 * NdotV * NdotL + EPSILON; // prevent division by 0
+			const vec3 specular = numerator / denominator;
+
+			const vec3 emission = (u_Material.HasEmissionMap ? properties.EmissionMap : vec3(properties.Emission));
 
 			// kS is equal to Fresnel
-			vec3 kS = F;
+			const vec3 kS = F;
 			// For energy conservation, the diffuse and specular light can't
 			// be above 1.0 (unless the surface emits light); to preserve this
 			// relationship the diffuse component (kD) should equal 1.0 - kS
-			vec3 kD = vec3(1.0) - kS;
+			vec3 kD = emission + (vec3(1.0) - kS);
 			// Multiply kD by the inverse metalness such that only non-metals 
 			// have diffuse lighting, or a linear blend if partly metal (pure metals have no diffuse light)
 			kD *= 1.0 - properties.Metallic;
+
+			const vec3 radiance = u_SkyLight.Radiance * u_SkyLight.Intensity;
 
 			// Add to outgoing radiance Lo
 			// note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
@@ -294,26 +303,26 @@ void main()
 		//if (inShadow)
 			//continue;
 
-		vec3 L = normalize(pointLight.Position - fragmentIn.Position);
-		vec3 H = normalize(V + L);
-		float distance = length(pointLight.Position - fragmentIn.Position);
-		float attenuation = 1.0 / (distance * distance);
-		vec3 radiance = pointLight.Radiance * attenuation * pointLight.Intensity;
+		const vec3 L = normalize(pointLight.Position - fragmentIn.Position);
+		const vec3 H = normalize(V + L);
+		const float distance = length(pointLight.Position - fragmentIn.Position);
+		const float attenuation = 1.0 / (distance * distance);
+		const vec3 radiance = pointLight.Radiance * attenuation * pointLight.Intensity;
 
 		// Cook-Torrance Bi-directional Reflectance Distribution Function
-		float NDF = DistributionGGX(N, H, properties.Roughness);
-		float G = GeometrySmith(N, V, L, properties.Roughness);
-		float cosTheta = max(dot(H, V), 0.0);
-		vec3 F = FresnelSchlick(cosTheta, F0);
+		const float NDF = DistributionGGX(N, H, properties.Roughness);
+		const float G = GeometrySmith(N, V, L, properties.Roughness);
+		const float cosTheta = max(dot(H, V), 0.0);
+		const vec3 F = FresnelSchlick(cosTheta, F0);
 
-		float NdotL = max(dot(N, L), 0.0);
+		const float NdotL = max(dot(N, L), 0.0);
 
-		vec3 numerator = NDF * G * F;
-		float denominator = 4.0 * NdotV * NdotL + EPSILON; // prevent division by 0
-		vec3 specular = numerator / denominator;
+		const vec3 numerator = NDF * G * F;
+		const float denominator = 4.0 * NdotV * NdotL + EPSILON; // prevent division by 0
+		const vec3 specular = numerator / denominator;
 
 		// kS is equal to Fresnel
-		vec3 kS = F;
+		const vec3 kS = F;
 		// For energy conservation, the diffuse and specular light can't
 		// be above 1.0 (unless the surface emits light); to preserve this
 		// relationship the diffuse component (kD) should equal 1.0 - kS
@@ -330,55 +339,90 @@ void main()
 	{
 		SpotLight spotLight = u_SpotLights[i];
 
-		vec3 L = normalize(spotLight.Position - fragmentIn.Position);
-		vec3 H = normalize(V + L);
-		float distance = length(spotLight.Position - fragmentIn.Position);
-		float attenuation = 1.0 / (distance * distance);
-		vec3 radiance = spotLight.Radiance * attenuation * spotLight.Intensity;
+		const vec3 L = normalize(spotLight.Position - fragmentIn.Position);
+		const vec3 H = normalize(V + L);
+		const float distance = length(spotLight.Position - fragmentIn.Position);
+		const float attenuation = 1.0 / (distance * distance);
+		const vec3 radiance = spotLight.Radiance * attenuation * spotLight.Intensity;
 
 		// Cook-Torrance Bi-Directional Reflectance Distribution Function
-		float NDF = DistributionGGX(N, H, properties.Roughness);
-		float G = GeometrySmith(N, V, L, properties.Roughness);
-		float cosTheta = max(dot(H, V), 0.0f);
-		vec3 F = FresnelSchlick(cosTheta, F0);
+		const float NDF = DistributionGGX(N, H, properties.Roughness);
+		const float G = GeometrySmith(N, V, L, properties.Roughness);
+		const float cosTheta = max(dot(H, V), 0.0f);
+		const vec3 F = FresnelSchlick(cosTheta, F0);
 
-		float NdotL = max(dot(N, L), 0.0f);
+		const float NdotL = max(dot(N, L), 0.0f);
 
-		vec3 numerator = NDF * G * F;
-		float denominator = 4.0 * NdotV * NdotL + EPSILON; // prevent division by 0
-		vec3 specular = numerator / denominator;
+		const vec3 numerator = NDF * G * F;
+		const float denominator = 4.0 * NdotV * NdotL + EPSILON; // prevent division by 0
+		const vec3 specular = numerator / denominator;
 
 		// Spot Light
-		float theta = dot(L, normalize(-spotLight.Direction));
-		float epsilon = spotLight.CutOff - spotLight.OuterCutOff;
-		float intensity = clamp((theta - spotLight.OuterCutOff) / epsilon, 0.0, 1.0);
+		const float theta = dot(L, normalize(-spotLight.Direction));
+		const float epsilon = spotLight.CutOff - spotLight.OuterCutOff;
+		const float intensity = clamp((theta - spotLight.OuterCutOff) / epsilon, 0.0, 1.0);
 
-		vec3 kS = F;
+		const vec3 kS = F;
 		vec3 kD = vec3(1.0) - kS;
 		kD *= 1.0 - properties.Roughness;
 
 		Lo += intensity * (kD * properties.Albedo / PI + specular) * radiance * NdotL;
 	}
 
-	// Ambient lighting
-	vec3 F = FresnelSchlickRoughness(NdotV, F0, properties.Roughness);
+	for (int i = 0; i < u_SceneProperties.ActiveEmissiveMeshes; i++)
+	{
+		EmissiveMesh emissiveMesh = u_EmissiveMeshes[i];
 
-	vec3 kS = F;
+		const vec3 L = normalize(emissiveMesh.Position - fragmentIn.Position);
+		const vec3 H = normalize(V + L);
+		const float distance = length(emissiveMesh.Position - fragmentIn.Position);
+		const float attenuation = 1.0 / (distance * distance);
+		const vec3 radiance = emissiveMesh.Radiance * attenuation * emissiveMesh.Intensity;
+
+		// Cook-Torrance Bi-directional Reflectance Distribution Function
+		const float NDF = DistributionGGX(N, H, properties.Roughness);
+		const float G = GeometrySmith(N, V, L, properties.Roughness);
+		const float cosTheta = max(dot(H, V), 0.0);
+		const vec3 F = FresnelSchlick(cosTheta, F0);
+
+		const float NdotL = max(dot(N, L), 0.0);
+
+		const vec3 numerator = NDF * G * F;
+		const float denominator = 4.0 * NdotV * NdotL + EPSILON; // prevent division by 0
+		const vec3 specular = numerator / denominator;
+
+		// kS is equal to Fresnel
+		const vec3 kS = F;
+		// For energy conservation, the diffuse and specular light can't
+		// be above 1.0 (unless the surface emits light); to preserve this
+		// relationship the diffuse component (kD) should equal 1.0 - kS
+		vec3 kD = vec3(1.0) - kS;
+		// Multiply kD by the inverse metalness such that only non-metals 
+		// have diffuse lighting, or a linear blend if partly metal (pure metals have no diffuse light)
+		kD *= 1.0 - properties.Metallic;
+
+		// Add to outgoing radiance Lo
+		Lo += (kD * properties.Albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+	}
+
+	// Ambient lighting
+	const vec3 F = FresnelSchlickRoughness(NdotV, F0, properties.Roughness);
+
+	const vec3 kS = F;
 	vec3 kD = 1.0 - kS;
 	kD *= 1.0 - properties.Metallic;
 
-	vec3 irradiance = texture(u_SceneProperties.IrradianceMap, N).rgb;
-	vec3 diffuse = irradiance * properties.Albedo;
+	const vec3 irradiance = texture(u_SceneProperties.IrradianceMap, N).rgb;
+	const vec3 diffuse = irradiance * properties.Albedo;
 
 	// sample both the pre-filter map and the BRDF lut and combine them together
 	// as per the Split-Sum approximation to get the IBL specular part.
-	const float MAX_REFLECTION_LOD = 4.0;
-	vec3 prefilteredColor = textureLod(u_SceneProperties.PrefilterMap, R, properties.Roughness * MAX_REFLECTION_LOD).rgb;
-	vec2 brdf = texture(u_SceneProperties.BRDFLut, vec2(NdotV, properties.Roughness)).rg;
-	vec3 specular = prefilteredColor * (F * brdf.x + brdf.y) * u_SceneProperties.SkyboxIntensity;
+	const vec3 prefilteredColor = textureLod(u_SceneProperties.PrefilterMap, R, properties.Roughness * MAX_REFLECTION_LOD).rgb;
+	const vec2 brdf = texture(u_SceneProperties.BRDFLut, vec2(NdotV, properties.Roughness)).rg;
+	const vec3 specular = prefilteredColor * (F * brdf.x + brdf.y) * u_SceneProperties.SkyboxIntensity;
 
-	vec3 ambient = (kD * diffuse + specular) * (properties.AO);
-	vec3 color = ambient + Lo;
+	const vec3 ambient = (kD * diffuse + specular) * (properties.AO);
+	const vec3 color = ambient + Lo;
 
 	// Exposure tonemapping
 	vec3 mapped = vec3(1.0) - exp(-color * u_SceneProperties.Exposure);
@@ -386,30 +430,29 @@ void main()
 	// Gamma correct
 	mapped = pow(mapped, vec3(1.0 / u_SceneProperties.Gamma));
 
-	float alpha = properties.Opacity;
+	const float alpha = properties.Opacity;
 
 	// Discard the fragment if it has an alpha of zero
 	if (alpha == 0.0)
 		discard;
 
-	vec4 result = vec4(mapped, alpha) * properties.Color;
-	
-	if (u_Material.HasEmissionMap)
-		result += vec4(properties.EmissionMap, 0.0);
-	else
-		result += vec4(vec3(properties.Emission), 0.0);
+	const vec4 result = vec4(mapped, alpha);
 
 	o_Color = result;
 	o_EntityID = fragmentIn.EntityID;
 
 	// check whether fragment output is higher than threshold,
 	// if so, use output as brighness color
-	float brightness = dot(result.rgb, u_SceneProperties.BloomThreshold);
+	const float brightness = dot(result.rgb, u_SceneProperties.BloomThreshold);
 
 	if (brightness > 1.0)
+	{
 		o_BrightColor = vec4(result.rgb, 1.0);
+	}
 	else
+	{
 		o_BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+	}
 }
 
 // Towbridge-Reitz normal distribuion function
@@ -484,7 +527,7 @@ vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
 
 	while (currentLayerDepth < currentDepthValue)
 	{
-		currentTexCoords -= deltaTexCoords;
+		currentTexCoords += deltaTexCoords;
 		currentDepthValue = texture(u_Material.POMap, currentTexCoords).r;
 		currentLayerDepth += layerDepth;
 	}
@@ -496,7 +539,7 @@ vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
     float weight = afterDepth / (afterDepth - beforeDepth);
     vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
 
-	return currentTexCoords;
+	return finalTexCoords;
 }
 
 float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap, float shadowBias, bool softShadows)
@@ -513,7 +556,7 @@ float ShadowCalculation(vec4 fragPosLightSpace, float NdotL, sampler2D shadowMap
 	// get the current depth of the fragment from the light's perspective
 	float currentDepth = projCoords.z;
 
-	float bias = max(0.005 * (1.0 - NdotL), shadowBias);
+	float bias = max(0.000001 * (1.0 - NdotL), shadowBias);
 	float shadow = 0.0;
 
 	if (!softShadows)

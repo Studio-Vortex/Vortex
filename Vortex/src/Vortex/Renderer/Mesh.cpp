@@ -102,7 +102,7 @@ namespace Vortex {
 		}
 	}
 
-	void Submesh::Render()
+	void Submesh::Render() const
 	{
 		SharedReference<Shader> shader = m_Material->GetShader();
 		m_Material->Bind();

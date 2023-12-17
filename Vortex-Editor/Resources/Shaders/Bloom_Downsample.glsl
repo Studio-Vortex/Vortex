@@ -1,5 +1,5 @@
 #type vertex
-#version 330 core
+#version 460 core
 
 layout (location = 0) in vec2 aPosition;
 layout (location = 1) in vec2 aTexCoord;
@@ -14,7 +14,7 @@ void main()
 
 
 #type fragment
-#version 330 core
+#version 460 core
 
 // This shader performs downsampling on a texture,
 // as taken from Call Of Duty method, presented at ACM Siggraph 2014.
@@ -30,8 +30,8 @@ uniform vec2 srcResolution;
 // which mip we are writing to, used for Karis average
 uniform int mipLevel = 1;
 
-in vec2 texCoord;
 layout (location = 0) out vec3 downsample;
+layout (location = 0) in vec2 texCoord;
 
 vec3 PowVec3(vec3 v, float p)
 {
@@ -98,4 +98,32 @@ void main()
 	// contribute 0.5 to the final color output. The code below is written
 	// to effectively yield this sum. We get:
 	// 0.125*5 + 0.03125*4 + 0.0625*4 = 1
+
+	vec3 groups[5];
+	switch (mipLevel)
+	{
+		case 0:
+			// We are writing to mip 0, so we need to apply Karis average to each block
+			// of 4 samples to prevent fireflies (very bright subpixels, leads to pulsating
+			// artifacts).
+			groups[0] = (a+b+d+e) * (0.125f/4.0f);
+			groups[1] = (b+c+e+f) * (0.125f/4.0f);
+			groups[2] = (d+e+g+h) * (0.125f/4.0f);
+			groups[3] = (e+f+h+i) * (0.125f/4.0f);
+			groups[4] = (j+k+l+m) * (0.5f/4.0f);
+			groups[0] *= KarisAverage(groups[0]);
+			groups[1] *= KarisAverage(groups[1]);
+			groups[2] *= KarisAverage(groups[2]);
+			groups[3] *= KarisAverage(groups[3]);
+			groups[4] *= KarisAverage(groups[4]);
+			downsample = groups[0]+groups[1]+groups[2]+groups[3]+groups[4];
+			downsample = max(downsample, 0.0001f);
+			break;
+		default:
+			downsample = e*0.125;                // ok
+			downsample += (a+c+g+i)*0.03125;     // ok
+			downsample += (b+d+f+h)*0.0625;      // ok
+			downsample += (j+k+l+m)*0.125;       // ok
+			break;
+	}
 }

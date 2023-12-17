@@ -55,7 +55,7 @@ namespace Vortex {
 
 		if (Entity skyLightEntity = m_ContextScene->GetSkyLightEntity())
 		{
-			const auto& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
 			if (lsc.CastShadows)
 			{
 				if (UI::PropertyGridHeader("Shadow Maps", false))
@@ -113,7 +113,7 @@ namespace Vortex {
 			UI::BeginPropertyGrid();
 
 			float lineWidth = Renderer2D::GetLineWidth();
-			if (UI::Property("Line Width", lineWidth, 0.1f, 0.1f, 4.0f))
+			if (UI::Property("Line Width", lineWidth, 0.01f, FLT_MIN, 4.0f))
 				Renderer2D::SetLineWidth(lineWidth);
 
 			static const char* cullModes[4] = { "None", "Front", "Back", "Front And Back" };
@@ -216,30 +216,17 @@ namespace Vortex {
 					case 4: Renderer::SetShadowMapResolution(8192.0f); break;
 				}
 
-				LightSourceComponent skylight;
-				auto lightSourceView = m_ContextScene->GetAllEntitiesWith<LightSourceComponent>();
-				for (const auto e : lightSourceView)
-				{
-					Entity entity{ e, m_ContextScene.Raw() };
-					const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-					
-					if (lightSourceComponent.Type != LightType::Directional)
-						continue;
-
-					skylight = lightSourceComponent;
-				}
-
 				Renderer::CreateShadowMap(LightType::Directional);
 			}
 
 			float sceneExposure = Renderer::GetSceneExposure();
-			if (UI::Property("Exposure", sceneExposure, 0.01f, 0.01f))
+			if (UI::Property("Exposure", sceneExposure, 0.01f, FLT_MIN, FLT_MAX))
 			{
 				Renderer::SetSceneExposure(sceneExposure);
 			}
 
 			float gamma = Renderer::GetSceneGamma();
-			if (UI::Property("Gamma", gamma, 0.01f, 0.01f))
+			if (UI::Property("Gamma", gamma, 0.01f, FLT_MIN, FLT_MAX))
 			{
 				Renderer::SetSceneGamma(gamma);
 			}
@@ -272,11 +259,11 @@ namespace Vortex {
 				{
 					Math::vec3 bloomSettings = Renderer::GetBloomSettings();
 					bool modified = false;
-					if (UI::Property("Threshold", bloomSettings.x))
+					if (UI::Property("Threshold", bloomSettings.x, 0.01f, FLT_MIN, FLT_MAX))
 						modified = true;
-					if (UI::Property("Knee", bloomSettings.y))
+					if (UI::Property("Knee", bloomSettings.y, 0.01f, FLT_MIN, FLT_MAX))
 						modified = true;
-					if (UI::Property("Intensity", bloomSettings.z))
+					if (UI::Property("Intensity", bloomSettings.z, 0.01f, FLT_MIN, FLT_MAX))
 						modified = true;
 
 					if (modified)

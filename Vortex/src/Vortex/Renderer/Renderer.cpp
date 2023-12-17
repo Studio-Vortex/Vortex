@@ -32,6 +32,7 @@ namespace Vortex {
 
 		static constexpr inline uint32_t MaxPointLights = 50;
 		static constexpr inline uint32_t MaxSpotLights = 50;
+		static constexpr inline uint32_t MaxEmissiveMeshes = 50;
 		
 		SceneLightDescription SceneLightDesc{};
 
@@ -218,13 +219,19 @@ namespace Vortex {
 		{
 			case LightType::Directional:
 			{
-				Math::mat4 orthogonalProjection = Math::Ortho(-75.0f, 75.0f, -75.0f, 75.0f, 0.01f, 500.0f);
-				Math::mat4 lightView = Math::LookAt(transform.Translation, transform.GetRotationEuler(), Math::vec3(0.0f, 1.0f, 0.0f));
-				Math::mat4 lightProjection = orthogonalProjection * lightView;
+				const Math::mat4 orthogonalProjection = Math::Ortho(-75.0f, 75.0f, -75.0f, 75.0f, 0.01f, 500.0f);
+				const Math::mat4 lightView = Math::LookAt(transform.Translation, transform.GetRotationEuler(), Math::vec3(0.0f, 1.0f, 0.0f));
+				const Math::mat4 lightProjection = orthogonalProjection * lightView;
 
 				for (uint32_t i = 0; i < shaderCount; i++)
 				{
-					auto& shader = shaders[i];
+					SharedReference<Shader> shader = shaders[i];
+
+					if (shader == nullptr)
+					{
+						VX_CORE_ASSERT(false, "invalid shader!");
+						continue;
+					}
 
 					shader->Enable();
 					shader->SetFloat3("u_SkyLight.Radiance", lightSourceComponent.Radiance);
@@ -248,7 +255,13 @@ namespace Vortex {
 
 				for (uint32_t i = 0; i < shaderCount; i++)
 				{
-					auto& shader = shaders[i];
+					SharedReference<Shader> shader = shaders[i];
+
+					if (shader == nullptr)
+					{
+						VX_CORE_ASSERT(false, "invalid shader!");
+						continue;
+					}
 
 					shader->Enable();
 					shader->SetFloat3("u_PointLights[" + std::to_string(pointLightIndex) + "].Radiance", lightSourceComponent.Radiance);
@@ -269,7 +282,13 @@ namespace Vortex {
 
 				for (uint32_t i = 0; i < shaderCount; i++)
 				{
-					auto& shader = shaders[i];
+					SharedReference<Shader> shader = shaders[i];
+
+					if (shader == nullptr)
+					{
+						VX_CORE_ASSERT(false, "invalid shader!");
+						continue;
+					}
 
 					shader->Enable();
 					shader->SetFloat3("u_SpotLights[" + std::to_string(spotLightIndex) + "].Radiance", lightSourceComponent.Radiance);
@@ -287,12 +306,43 @@ namespace Vortex {
 		}
 	}
 
+	void Renderer::RenderEmissiveEntity(const Math::vec3& translation, const Math::vec3& radiance, float intensity)
+	{
+		SharedReference<Shader> shaders[] = { s_Data.ShaderLibrary.Get("PBR"), s_Data.ShaderLibrary.Get("PBR_Static") };
+		const uint32_t shaderCount = VX_ARRAYSIZE(shaders);
+
+		uint32_t& emissiveMeshIndex = s_Data.SceneLightDesc.EmissiveMeshIndex;
+
+		if (emissiveMeshIndex > RendererInternalData::MaxEmissiveMeshes - 1)
+			return;
+
+		for (uint32_t i = 0; i < shaderCount; i++)
+		{
+			SharedReference<Shader> shader = shaders[i];
+
+			if (shader == nullptr)
+			{
+				VX_CORE_ASSERT(false, "invalid shader!");
+				continue;
+			}
+
+			shader->Enable();
+			shader->SetFloat3("u_EmissiveMeshes[" + std::to_string(emissiveMeshIndex) + "].Radiance", radiance);
+			shader->SetFloat3("u_EmissiveMeshes[" + std::to_string(emissiveMeshIndex) + "].Position", translation);
+			shader->SetFloat("u_EmissiveMeshes[" + std::to_string(emissiveMeshIndex) + "].Intensity", intensity);
+		}
+
+		emissiveMeshIndex++;
+	}
+
 	void Renderer::DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
 	{
 		if (!s_Data.SceneLightDesc.HasEnvironment)
 			return;
 
 		RenderCommand::SetCullMode(RendererAPI::TriangleCullMode::None);
+
+		const float intensity = Math::Max(skyboxComponent.Intensity, 0.0f);
 
 		// Render Environment Map
 		{
@@ -305,7 +355,7 @@ namespace Vortex {
 			environmentShader->SetInt("u_EnvironmentMap", 0);
 			environmentShader->SetFloat("u_Gamma", s_Data.SceneGamma);
 			environmentShader->SetFloat("u_Exposure", s_Data.SceneExposure);
-			environmentShader->SetFloat("u_Intensity", Math::Max(skyboxComponent.Intensity, 0.0f));
+			environmentShader->SetFloat("u_Intensity", intensity);
 
 			SharedReference<VertexArray> skyboxMeshVA = s_Data.SkyboxMesh->GetSubmeshes().at(0).GetVertexArray();
 
@@ -315,25 +365,28 @@ namespace Vortex {
 			RenderCommand::EnableDepthMask();
 		}
 
-		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
-		pbrShader->Enable();
-		pbrShader->SetInt("u_SceneProperties.IrradianceMap", 1);
-		s_Data.HDRFramebuffer->BindIrradianceCubemap();
-		pbrShader->SetInt("u_SceneProperties.PrefilterMap", 2);
-		s_Data.HDRFramebuffer->BindPrefilterCubemap();
-		pbrShader->SetInt("u_SceneProperties.BRDFLut", 3);
-		s_Data.BRDF_LUT->Bind(3);
-		pbrShader->SetFloat("u_SceneProperties.SkyboxIntensity", Math::Max(skyboxComponent.Intensity, 0.0f));
+		SharedReference<Shader> shaders[] = { s_Data.ShaderLibrary.Get("PBR"), s_Data.ShaderLibrary.Get("PBR_Static") };
+		const uint32_t shaderCount = VX_ARRAYSIZE(shaders);
 
-		SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
-		pbrStaticShader->Enable();
-		pbrStaticShader->SetInt("u_SceneProperties.IrradianceMap", 1);
-		s_Data.HDRFramebuffer->BindIrradianceCubemap();
-		pbrStaticShader->SetInt("u_SceneProperties.PrefilterMap", 2);
-		s_Data.HDRFramebuffer->BindPrefilterCubemap();
-		pbrStaticShader->SetInt("u_SceneProperties.BRDFLut", 3);
-		s_Data.BRDF_LUT->Bind(3);
-		pbrStaticShader->SetFloat("u_SceneProperties.SkyboxIntensity", Math::Max(skyboxComponent.Intensity, 0.0f));
+		for (uint32_t i = 0; i < shaderCount; i++)
+		{
+			SharedReference<Shader> shader = shaders[i];
+			
+			if (shader == nullptr)
+			{
+				VX_CORE_ASSERT(false, "invalid shader!");
+				continue;
+			}
+
+			shader->Enable();
+			shader->SetInt("u_SceneProperties.IrradianceMap", 1);
+			s_Data.HDRFramebuffer->BindIrradianceCubemap();
+			shader->SetInt("u_SceneProperties.PrefilterMap", 2);
+			s_Data.HDRFramebuffer->BindPrefilterCubemap();
+			shader->SetInt("u_SceneProperties.BRDFLut", 3);
+			s_Data.BRDF_LUT->Bind(3);
+			shader->SetFloat("u_SceneProperties.SkyboxIntensity", intensity);
+		}
 
 		RenderCommand::SetCullMode(s_Data.CullMode);
 	}
@@ -632,34 +685,30 @@ namespace Vortex {
 		if (!s_Data.SkylightDepthMapFramebuffer)
 			return;
 
+		SharedReference<Shader> shaders[] = { s_Data.ShaderLibrary.Get("PBR"), s_Data.ShaderLibrary.Get("PBR_Static") };
+		const uint32_t shaderCount = VX_ARRAYSIZE(shaders);
+
+		for (uint32_t i = 0; i < shaderCount; i++)
 		{
-			SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
-			pbrShader->Enable();
+			SharedReference<Shader> shader = shaders[i];
+
+			if (shader == nullptr)
+			{
+				VX_CORE_ASSERT(false, "invalid shader!");
+				continue;
+			}
+
+			shader->Enable();
 
 			// TEMPORARY FIX
 			{
-				pbrShader->SetInt("u_SceneProperties.ActivePointLights", s_Data.SceneLightDesc.PointLightIndex);
-				pbrShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.SceneLightDesc.SpotLightIndex);
+				shader->SetInt("u_SceneProperties.ActivePointLights", s_Data.SceneLightDesc.PointLightIndex);
+				shader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.SceneLightDesc.SpotLightIndex);
+				shader->SetInt("u_SceneProperties.ActiveEmissiveMeshes", s_Data.SceneLightDesc.EmissiveMeshIndex);
 			}
 
 			s_Data.SkylightDepthMapFramebuffer->BindDepthTexture(4);
-			pbrShader->Enable();
-			pbrShader->SetInt("u_SkyLight.ShadowMap", 4);
-		}
-
-		{
-			SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
-			pbrStaticShader->Enable();
-
-			// TEMPORARY FIX
-			{
-				pbrStaticShader->SetInt("u_SceneProperties.ActivePointLights", s_Data.SceneLightDesc.PointLightIndex);
-				pbrStaticShader->SetInt("u_SceneProperties.ActiveSpotLights", s_Data.SceneLightDesc.SpotLightIndex);
-			}
-
-			s_Data.SkylightDepthMapFramebuffer->BindDepthTexture(4);
-			pbrStaticShader->Enable();
-			pbrStaticShader->SetInt("u_SkyLight.ShadowMap", 4);
+			shader->SetInt("u_SkyLight.ShadowMap", 4);
 		}
 	}
 
@@ -697,44 +746,50 @@ namespace Vortex {
 		}*/
 	}
 
-	void Renderer::BindRenderTarget(SharedReference<Framebuffer>& renderTarget)
+	void Renderer::BindRenderTarget(SharedReference<Framebuffer> renderTarget)
 	{
 		VX_CORE_ASSERT(renderTarget, "Invalid Render Target!");
 
-		if (renderTarget)
-		{
-			s_Data.TargetFramebuffer = renderTarget;
-			renderTarget->Bind();
-		}
+		if (renderTarget == nullptr)
+			return;
+		
+		s_Data.TargetFramebuffer = renderTarget;
+		renderTarget->Bind();
 	}
 
 	void Renderer::BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraTranslation)
 	{
 		VX_PROFILE_FUNCTION();
 
-		Math::mat4 viewProjection = projection * view;
+		const Math::mat4 viewProjection = projection * view;
 
-		Math::vec3 bloomSettings = { s_Data.BloomSettings.Threshold, s_Data.BloomSettings.Knee, s_Data.BloomSettings.Intensity };
+		const Math::vec3 bloomSettings = { s_Data.BloomSettings.Threshold, s_Data.BloomSettings.Knee, s_Data.BloomSettings.Intensity };
 
-		SharedReference<Shader> pbrShader = s_Data.ShaderLibrary.Get("PBR");
-		pbrShader->Enable();
-		pbrShader->SetMat4("u_ViewProjection", viewProjection);
-		pbrShader->SetFloat3("u_SceneProperties.CameraPosition", cameraTranslation);
-		pbrShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
-		pbrShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
-		pbrShader->SetFloat3("u_SceneProperties.BloomThreshold", bloomSettings);
+		SharedReference<Shader> shaders[] = { s_Data.ShaderLibrary.Get("PBR"), s_Data.ShaderLibrary.Get("PBR_Static") };
+		const uint32_t shaderCount = VX_ARRAYSIZE(shaders);
 
-		SharedReference<Shader> pbrStaticShader = s_Data.ShaderLibrary.Get("PBR_Static");
-		pbrStaticShader->Enable();
-		pbrStaticShader->SetMat4("u_ViewProjection", viewProjection);
-		pbrStaticShader->SetFloat3("u_SceneProperties.CameraPosition", cameraTranslation);
-		pbrStaticShader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
-		pbrStaticShader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
-		pbrStaticShader->SetFloat3("u_SceneProperties.BloomThreshold", bloomSettings);
+		for (uint32_t i = 0; i < shaderCount; i++)
+		{
+			SharedReference<Shader> shader = shaders[i];
+
+			if (shader == nullptr)
+			{
+				VX_CORE_ASSERT(false, "invalid shader!");
+				continue;
+			}
+
+			shader->Enable();
+			shader->SetMat4("u_ViewProjection", viewProjection);
+			shader->SetFloat3("u_SceneProperties.CameraPosition", cameraTranslation);
+			shader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
+			shader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
+			shader->SetFloat3("u_SceneProperties.BloomThreshold", bloomSettings);
+		}
 
 		s_Data.SceneLightDesc.HasSkyLight = false;
 		s_Data.SceneLightDesc.PointLightIndex = 0;
 		s_Data.SceneLightDesc.SpotLightIndex = 0;
+		s_Data.SceneLightDesc.EmissiveMeshIndex = 0;
 	}
 
 	void Renderer::RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes)
@@ -1030,7 +1085,7 @@ namespace Vortex {
 
 		for (uint32_t i = 0; i < count; i++)
 		{
-			uint32_t score = GetPostProcessStageScore(stages[i]);
+			const uint32_t score = GetPostProcessStageScore(stages[i]);
 			if (score > highestScore)
 			{
 				highestScore = score;
@@ -1104,6 +1159,7 @@ namespace Vortex {
 		s_Data.BloomSettings.Intensity = props.BloomThreshold.z;
 		s_Data.BloomSampleSize = props.BloomSampleSize;
 
+		s_Data.RenderFlags = 0;
 		ClearFlags();
 		s_Data.RenderFlags = props.RenderFlags;
 
@@ -1241,7 +1297,7 @@ namespace Vortex {
 
 	void Renderer::ClearFlags()
 	{
-		memset(&s_Data.RenderFlags, 0, sizeof(uint32_t));
+		s_Data.RenderFlags = 0;
 	}
 
 	SharedReference<Material> Renderer::GetWhiteMaterial()

@@ -82,7 +82,7 @@ namespace Vortex {
 		m_PanelManager->AddPanel<SceneHierarchyPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<ScriptRegistryPanel>();
 		m_PanelManager->AddPanel<MaterialEditorPanel>();
-		m_PanelManager->AddPanel<SceneRendererPanel>();
+		m_PanelManager->AddPanel<SceneRendererPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<AssetRegistryPanel>();
 		m_PanelManager->AddPanel<BuildSettingsPanel>(
 			VX_BIND_CALLBACK(BuildAndRunProject),
@@ -290,9 +290,9 @@ namespace Vortex {
 			m_SecondViewportFramebuffer->ClearAttachment(1, -1);
 
 			SceneRenderPacket renderPacket{};
-			renderPacket.MainCamera = m_SecondEditorCamera;
-			renderPacket.MainCameraViewMatrix = m_SecondEditorCamera->GetViewMatrix();
-			renderPacket.MainCameraProjectionMatrix = m_SecondEditorCamera->GetProjectionMatrix();
+			renderPacket.PrimaryCamera = m_SecondEditorCamera;
+			renderPacket.PrimaryCameraViewMatrix = m_SecondEditorCamera->GetViewMatrix();
+			renderPacket.PrimaryCameraProjectionMatrix = m_SecondEditorCamera->GetProjectionMatrix();
 			renderPacket.TargetFramebuffer = m_SecondViewportFramebuffer;
 			renderPacket.Scene = m_ActiveScene.Raw();
 			renderPacket.EditorScene = true;
@@ -622,7 +622,6 @@ namespace Vortex {
 
 						if (Gui::MenuItem("Delete Entity", "Del"))
 						{
-							SelectionManager::DeselectEntity();
 							m_ActiveScene->SubmitToDestroyEntity(selectedEntity);
 							Gui::CloseCurrentPopup();
 						}
@@ -2989,6 +2988,8 @@ namespace Vortex {
 
 		if (properties.ScriptingProps.ReloadAssemblyOnPlay)
 		{
+			using namespace std::chrono_literals;
+			std::this_thread::sleep_for(500ms);
 			ScriptEngine::ReloadAssembly();
 		}
 
@@ -3002,6 +3003,11 @@ namespace Vortex {
 
 		// Make a copy of the editors scene
 		m_ActiveScene = Scene::Copy(m_EditorScene);
+
+		if (!m_ActiveScene->GetPrimaryCameraEntity()) // we should let the user know
+		{
+			VX_CONSOLE_LOG_ERROR("Scene cannot render without a camera! Attach a camera component to an entity and enable 'Primary'");
+		}
 
 		ScriptRegistry::SetSceneStartTime(Time::GetTime());
 
@@ -3077,7 +3083,20 @@ namespace Vortex {
 
 	void EditorLayer::RestartScene()
 	{
+		VX_CORE_ASSERT(InPlaySceneState(), "active scene must be in play state!");
+
+		UUID selectedUUID = 0;
+		if (Entity selected = SelectionManager::GetSelectedEntity())
+		{
+			selectedUUID = selected.GetUUID();
+		}
+
 		OnScenePlay();
+
+		if (Entity selected = m_ActiveScene->TryGetEntityWithUUID(selectedUUID))
+		{
+			SelectionManager::SetSelectedEntity(selected);
+		}
 	}
 
 	void EditorLayer::OnSceneSimulate()
@@ -3089,10 +3108,10 @@ namespace Vortex {
 
 		SwitchSceneState(SceneState::Simulate);
 
-		if (Project::GetActive()->GetProperties().EditorProps.MaximizeOnPlay)
-		{
-			m_SceneViewportMaximized = true;
-		}
+		SharedReference<Project> project = Project::GetActive();
+		const ProjectProperties& properties = project->GetProperties();
+
+		m_SceneViewportMaximized = properties.EditorProps.MaximizeOnPlay;
 
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 		m_ActiveScene->OnPhysicsSimulationStart();
@@ -3102,6 +3121,8 @@ namespace Vortex {
 
 	void EditorLayer::RestartSceneSimulation()
 	{
+		VX_CORE_ASSERT(InSimulateSceneState(), "active scene must be in simulate state!");
+
 		OnSceneSimulate();
 	}
 
@@ -3109,7 +3130,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "Scene must be running to queue transition");
+		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "active scene must be running to queue transition");
 
 		Application::Get().SubmitToMainThreadQueue([=]()
 		{

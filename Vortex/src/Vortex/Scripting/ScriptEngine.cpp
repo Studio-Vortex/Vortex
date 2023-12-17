@@ -551,6 +551,11 @@ namespace Vortex {
 		return ScriptUtils::GetAssemblyTypeInfo(s_Data->CoreAssembly);
 	}
 
+	size_t ScriptEngine::GetScriptInstanceCount()
+	{
+		return s_Data->EntityInstances.size();
+	}
+
 	Scene* ScriptEngine::GetContextScene()
 	{
 		return s_Data->ContextScene;

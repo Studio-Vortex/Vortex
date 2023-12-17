@@ -27,8 +27,8 @@ namespace Vortex {
 		m_ManagedMethods[ManagedMethod::OnDisable] = m_ScriptClass->GetMethod("OnDisabled", 0);
 		m_ManagedMethods[ManagedMethod::OnGui] = m_ScriptClass->GetMethod("OnGui", 0);
 
-		SharedReference<ScriptClass> coreEntityClass = ScriptEngine::GetCoreEntityClass();
-		m_EntityConstructor = coreEntityClass->GetMethod(".ctor", 1);
+		SharedReference<ScriptClass> entityClass = ScriptEngine::GetCoreEntityClass();
+		m_EntityConstructor = entityClass->GetMethod(".ctor", 1);
 	}
 
 	void ScriptInstance::InvokeConstructor(UUID entityUUID)

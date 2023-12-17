@@ -79,6 +79,8 @@ namespace Vortex {
 
 		static std::vector<MonoAssemblyTypeInfo> GetCoreAssemblyTypeInfo();
 
+		static size_t GetScriptInstanceCount();
+
 	private:
 		static void InitMono();
 		static void ShutdownMono();

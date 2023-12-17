@@ -1,44 +1,52 @@
 #include "PerformancePanel.h"
 
+#include <Vortex/Scripting/ScriptEngine.h>
+
 namespace Vortex {
 
 	void PerformancePanel::OnGuiRender()
 	{
-		ImGuiIO& io = Gui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
 		if (!IsOpen)
 			return;
 
 		Gui::Begin("Performance", &IsOpen);
 
-		uint32_t activeID = Application::Get().GetGuiLayer()->GetActiveLayerID();
+		Application& application = Application::Get();
+
+		const GuiLayer* guiLayer = application.GetGuiLayer();
+		const uint32_t activeID = guiLayer->GetActiveLayerID();
 		Gui::Text("Active Panel ID: %u", activeID);
 
 		DrawHeading("Scene");
-		size_t entityCount = m_ContextScene->GetEntityCount();
+		const size_t entityCount = m_ContextScene->GetEntityCount();
 		Gui::Text("Entity Count: %u", entityCount);
+		const size_t scriptInstanceCount = ScriptEngine::GetScriptInstanceCount();
+		Gui::Text("Active Script Entities: %u", scriptInstanceCount);
 
 		DrawHeading("Renderer Frame Time");
+		const ImGuiIO& io = Gui::GetIO();
 		Gui::Text("Average Frame Time: %.3fms", 1000.0f / io.Framerate);
 		Gui::Text("FPS:  %.0f", io.Framerate);
 
-		RenderTime& renderTime = Renderer::GetRenderTime();
+		const RenderTime& renderTime = Renderer::GetRenderTime();
 		Gui::Text("Pre Geometry Pass Sort: %.4fms", renderTime.PreGeometryPassSortTime);
 		Gui::Text("Geometry Pass: %.4fms", renderTime.GeometryPassRenderTime);
 		Gui::Text("Shadow Pass: %.4fms", renderTime.ShadowMapRenderTime);
 		Gui::Text("Bloom Pass: %.4fms", renderTime.BloomPassRenderTime);
 
-		// intential copy because we modify below
-		auto stats = Renderer::GetStats();
-		const auto& temp = Renderer2D::GetStats();
+		DrawHeading("Application Frame Time");
+		const FrameTime& frameTime = application.GetFrameTime();
+		Gui::Text("Script Update: %.4fms", frameTime.ScriptUpdateTime);
+		Gui::Text("Physics Update: %.4fms", frameTime.PhysicsUpdateTime);
+
+		DrawHeading("Input Assembly");
+		RenderStatistics stats = Renderer::GetStats();
+		const RenderStatistics temp = Renderer2D::GetStats();
 
 		stats.DrawCalls += temp.DrawCalls;
 		stats.QuadCount += temp.QuadCount;
 		stats.LineCount += temp.LineCount;
 
-		DrawHeading("Input Assembly");
 		Gui::Text("Draw Calls: %i", stats.DrawCalls);
 		Gui::Text("Quads:      %i", stats.QuadCount);
 		Gui::Text("Triangles:  %i", stats.GetTriangleCount());
@@ -46,7 +54,7 @@ namespace Vortex {
 		Gui::Text("Indices:    %i", stats.GetIndexCount());
 
 		DrawHeading("Graphics API");
-		const auto& rendererInfo = Renderer::GetGraphicsAPIInfo();
+		const RendererAPI::Info& rendererInfo = Renderer::GetGraphicsAPIInfo();
 		Gui::Text("API:     %s", rendererInfo.Name);
 		Gui::Text("GPU:     %s", rendererInfo.GPU);
 		Gui::Text("Vendor:  %s", rendererInfo.Vendor);
@@ -58,12 +66,10 @@ namespace Vortex {
 
 	void PerformancePanel::DrawHeading(const char* title)
 	{
-		static const auto boldFont = Gui::GetIO().Fonts->Fonts[0];
-
 		Gui::Spacing();
-		Gui::PushFont(boldFont);
+		UI::PushFont("Bold");
 		Gui::Text(title);
-		Gui::PopFont();
+		UI::PopFont();
 		UI::Draw::Underline();
 	}
 

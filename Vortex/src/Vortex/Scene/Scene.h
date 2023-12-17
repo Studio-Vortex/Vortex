@@ -63,8 +63,8 @@ namespace Vortex {
 		void DestroyEntityInternal(Entity entity, bool excludeChildren = false);
 		void DestroyEntityInternal(const QueueFreeData& queueFreeData);
 
-		void UpdateQueueFreeTimers(TimeStep delta);
-		void UpdateEntityTimers(TimeStep delta);
+		void OnUpdateQueueFreeTimers(TimeStep delta);
+		void OnUpdateEntityTimers(TimeStep delta);
 
 	public:
 		void OnRuntimeStart(bool muteAudio = false);
@@ -85,6 +85,9 @@ namespace Vortex {
 		void ExecutePreUpdateQueue();
 		void ExecutePostUpdateQueue();
 
+		void OnComponentUpdate(TimeStep delta);
+		void OnSystemUpdate(TimeStep delta);
+
 	public:
 
 		void OnUpdateEntityGui();
@@ -102,6 +105,7 @@ namespace Vortex {
 		VX_FORCE_INLINE void SetViewportBounds(const ViewportBounds& viewportBounds) { m_ViewportBounds = viewportBounds; }
 
 		VX_FORCE_INLINE size_t GetEntityCount() const { return m_Registry.alive(); }
+		size_t GetScriptEntityCount();
 
 		void Step(uint32_t frames = 1) { m_StepFrames = frames; }
 
@@ -111,7 +115,7 @@ namespace Vortex {
 	private:
 		Timer& TryGetMutableTimerByName(Entity entity, const std::string& name);
 	public:
-		void AddOrReplaceTimer(Entity entity, const Timer&& timer);
+		void AddOrReplaceTimer(Entity entity, Timer&& timer);
 
 		void ParentEntity(Entity entity, Entity parent);
 		void UnparentEntity(Entity entity, bool convertToWorldSpace = true);
@@ -120,7 +124,6 @@ namespace Vortex {
 		void DeactiveateChildren(Entity entity);
 
 		Entity GetRootEntityInHierarchy(Entity child) const;
-		Entity TryGetEntityWithUUID(UUID uuid);
 
 		Entity GetPrimaryCameraEntity();
 		Entity GetEnvironmentEntity();
@@ -128,8 +131,9 @@ namespace Vortex {
 
 		Entity DuplicateEntity(Entity entity);
 
+		Entity TryGetEntityWithUUID(UUID uuid);
 		Entity FindEntityByName(std::string_view name);
-		Entity FindEntityWithID(entt::entity entity);
+		Entity FindEntityByID(entt::entity entity);
 
 		bool AreEntitiesRelated(Entity first, Entity second);
 

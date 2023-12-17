@@ -17,6 +17,18 @@ int main(int argc, char** argv);
 
 namespace Vortex {
 
+	struct VORTEX_API FrameTime
+	{
+		TimeStep DeltaTime = 0.0f;
+		float ScriptUpdateTime = 0.0f;
+		float PhysicsUpdateTime = 0.0f;
+
+		void Clear()
+		{
+			*this = FrameTime();
+		}
+	};
+
 	struct VORTEX_API ApplicationCommandLineArgs
 	{
 		int Count = 0;
@@ -73,12 +85,15 @@ namespace Vortex {
 		void SubmitToMainThreadQueue(const std::function<void()>& func);
 
 		// TODO: think of a better place to put these
-		std::string GetEditorBinaryPath() const { return "Vortex-Editor.exe"; }
-		std::string GetRuntimeBinaryPath() const { return "Vortex-Runtime.exe"; }
+		VX_FORCE_INLINE std::string GetEditorBinaryPath() const { return "Vortex-Editor.exe"; }
+		VX_FORCE_INLINE std::string GetRuntimeBinaryPath() const { return "Vortex-Runtime.exe"; }
 
 		void AddModule(const SubModule& submodule);
 		void RemoveModule(const SubModule& submodule);
 		const ModuleLibrary& GetModuleLibrary() const;
+
+		VX_FORCE_INLINE const FrameTime& GetFrameTime() const { return m_FrameTime; }
+		VX_FORCE_INLINE FrameTime& GetFrameTime() { return m_FrameTime; }
 
 	private:
 		void SetWorkingDirectory();
@@ -99,6 +114,7 @@ namespace Vortex {
 		static Application* s_Instance;
 
 	private:
+		FrameTime m_FrameTime;
 		ApplicationProperties m_Properties;
 		UniqueRef<Window> m_Window = nullptr;
 		GuiLayer* m_GuiLayer = nullptr;
@@ -117,7 +133,7 @@ namespace Vortex {
 		friend int ::main(int argc, char** argv);
 	};
 
-	// To be defined in CLIENT as part of Application Initialization
+	// To be defined in CLIENT
 	Application* CreateApplication(ApplicationCommandLineArgs args);
 
 }

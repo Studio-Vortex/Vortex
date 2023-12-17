@@ -1,6 +1,7 @@
 #include "vxpch.h"
 #include "Scene.h"
 
+#include "Vortex/Core/Application.h"
 #include "Vortex/Core/String.h"
 
 #include "Vortex/Math/Math.h"
@@ -356,7 +357,7 @@ namespace Vortex {
 		m_QueueFreeMap[queueFreeData.EntityUUID] = queueFreeData;
 	}
 
-	void Scene::UpdateQueueFreeTimers(TimeStep delta)
+	void Scene::OnUpdateQueueFreeTimers(TimeStep delta)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -391,7 +392,7 @@ namespace Vortex {
 		m_EntitiesToBeRemovedFromQueue.clear();
 	}
 
-	void Scene::UpdateEntityTimers(TimeStep delta)
+	void Scene::OnUpdateEntityTimers(TimeStep delta)
 	{
 		for (auto& [entityUUID, entityTimers] : m_Timers)
 		{
@@ -549,6 +550,10 @@ namespace Vortex {
 
 		if (updateCurrentFrame)
 		{
+#ifndef VX_DIST
+			InstrumentationTimer timer("Scene::OnUpdateRuntime - Script Update");
+#endif
+
 			// Update C++ Entity
 			GetAllEntitiesWith<NativeScriptComponent>().each([=](auto entityID, auto& nsc)
 			{
@@ -573,8 +578,21 @@ namespace Vortex {
 				ScriptEngine::Invoke(ManagedMethod::OnUpdate, entity, { arg0 });
 			}
 
+#ifndef VX_DIST
+			Application& application = Application::Get();
+			FrameTime& frameTime = application.GetFrameTime();
+			frameTime.ScriptUpdateTime += timer.ElapsedMS();
+#endif
+
+#ifndef VX_DIST
+			timer = InstrumentationTimer("Scene::OnUpdateRuntime - Physics Update");
+#endif
 			// Update Physics Bodies
 			OnPhysicsSimulationUpdate(delta);
+
+#ifndef VX_DIST
+			frameTime.PhysicsUpdateTime += timer.ElapsedMS();
+#endif
 
 			// Update Animators
 			OnAnimatorUpdateRuntime(delta);
@@ -592,7 +610,7 @@ namespace Vortex {
 		// Render from the primary camera's point of view
 		if (Entity primaryCameraEntity = GetPrimaryCameraEntity())
 		{
-			auto& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
+			CameraComponent& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
 			primarySceneCamera = &cameraComponent.Camera;
 			primarySceneCameraTransform = GetWorldSpaceTransform(primaryCameraEntity);
 
@@ -602,10 +620,10 @@ namespace Vortex {
 			if (primarySceneCamera)
 			{
 				SceneRenderPacket renderPacket{};
-				renderPacket.MainCamera = primarySceneCamera;
-				renderPacket.MainCameraViewMatrix = Math::Inverse(primarySceneCameraTransform.GetTransform());
-				renderPacket.MainCameraProjectionMatrix = primarySceneCamera->GetProjectionMatrix();
-				renderPacket.MainCameraWorldSpaceTranslation = primarySceneCameraTransform.Translation;
+				renderPacket.PrimaryCamera = primarySceneCamera;
+				renderPacket.PrimaryCameraViewMatrix = Math::Inverse(primarySceneCameraTransform.GetTransform());
+				renderPacket.PrimaryCameraProjectionMatrix = primarySceneCamera->GetProjectionMatrix();
+				renderPacket.PrimaryCameraWorldSpaceTranslation = primarySceneCameraTransform.Translation;
 				renderPacket.TargetFramebuffer = m_TargetFramebuffer;
 				renderPacket.Scene = this;
 				renderPacket.EditorScene = false;
@@ -613,15 +631,14 @@ namespace Vortex {
 			}
 		}
 
-		// Update remaining Components/Systems
-		OnMeshUpdateRuntime();
-		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
-		SystemManager::GetSystem<UISystem>()->OnUpdateRuntime(this);
+		// Update Components/Systems
+		OnComponentUpdate(delta);
+		OnSystemUpdate(delta);
 
 		if (updateCurrentFrame)
 		{
-			UpdateQueueFreeTimers(delta);
-			UpdateEntityTimers(delta);
+			OnUpdateQueueFreeTimers(delta);
+			OnUpdateEntityTimers(delta);
 		}
 
 		ExecutePostUpdateQueue();
@@ -648,18 +665,17 @@ namespace Vortex {
 
 		// Render
 		SceneRenderPacket renderPacket{};
-		renderPacket.MainCamera = camera;
-		renderPacket.MainCameraViewMatrix = camera->GetViewMatrix();
-		renderPacket.MainCameraProjectionMatrix = camera->GetProjectionMatrix();
+		renderPacket.PrimaryCamera = camera;
+		renderPacket.PrimaryCameraViewMatrix = camera->GetViewMatrix();
+		renderPacket.PrimaryCameraProjectionMatrix = camera->GetProjectionMatrix();
 		renderPacket.TargetFramebuffer = m_TargetFramebuffer;
 		renderPacket.Scene = this;
 		renderPacket.EditorScene = true;
 		s_SceneRenderer.RenderScene(renderPacket);
 
-		// Update Components
-		OnMeshUpdateRuntime();
-		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
-		SystemManager::GetSystem<UISystem>()->OnUpdateRuntime(this);
+		// Update Components/Systems
+		OnComponentUpdate(delta);
+		OnSystemUpdate(delta);
 
 		ExecutePostUpdateQueue();
 	}
@@ -676,17 +692,16 @@ namespace Vortex {
 		// Render
 		{
 			SceneRenderPacket renderPacket{};
-			renderPacket.MainCamera = camera;
-			renderPacket.MainCameraViewMatrix = camera->GetViewMatrix();
-			renderPacket.MainCameraProjectionMatrix = camera->GetProjectionMatrix();
+			renderPacket.PrimaryCamera = camera;
+			renderPacket.PrimaryCameraViewMatrix = camera->GetViewMatrix();
+			renderPacket.PrimaryCameraProjectionMatrix = camera->GetProjectionMatrix();
 			renderPacket.TargetFramebuffer = m_TargetFramebuffer;
 			renderPacket.Scene = this;
 			renderPacket.EditorScene = true;
 			s_SceneRenderer.RenderScene(renderPacket);
 		}
 
-		Entity primaryCameraEntity = GetPrimaryCameraEntity();
-		if (primaryCameraEntity)
+		if (Entity primaryCameraEntity = GetPrimaryCameraEntity())
 		{
 			const CameraComponent& cameraComponent = primaryCameraEntity.GetComponent<CameraComponent>();
 
@@ -694,10 +709,9 @@ namespace Vortex {
 			RenderCommand::SetClearColor(cameraComponent.ClearColor);
 		}
 
-		// Update Components
-		OnMeshUpdateRuntime();
-		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
-		SystemManager::GetSystem<UISystem>()->OnUpdateRuntime(this);
+		// Update Components/Systems
+		OnComponentUpdate(delta);
+		OnSystemUpdate(delta);
 
 		ExecutePostUpdateQueue();
 	}
@@ -744,6 +758,17 @@ namespace Vortex {
 		m_PostUpdateQueue.clear();
 	}
 
+	void Scene::OnComponentUpdate(TimeStep delta)
+	{
+		OnMeshUpdateRuntime();
+	}
+
+	void Scene::OnSystemUpdate(TimeStep delta)
+	{
+		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
+		SystemManager::GetSystem<UISystem>()->OnUpdateRuntime(this);
+	}
+
 	void Scene::OnUpdateEntityGui()
 	{
 		VX_PROFILE_FUNCTION();
@@ -783,6 +808,13 @@ namespace Vortex {
 			case 1: SystemManager::OnRuntimeScenePaused(this);  break;
 			case 0: SystemManager::OnRuntimeSceneResumed(this); break;
 		}
+	}
+
+	size_t Scene::GetScriptEntityCount()
+	{
+		auto view = GetAllEntitiesWith<ScriptComponent>();
+
+		return view.size();
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
@@ -832,7 +864,7 @@ namespace Vortex {
 		return s_NullTimer;
 	}
 
-	void Scene::AddOrReplaceTimer(Entity entity, const Timer&& timer)
+	void Scene::AddOrReplaceTimer(Entity entity, Timer&& timer)
 	{
 		if (Timer& existing = TryGetMutableTimerByName(entity, timer.GetName()); timer != s_NullTimer)
 		{
@@ -956,18 +988,6 @@ namespace Vortex {
 		return GetRootEntityInHierarchy(parent);
 	}
 
-	Entity Scene::TryGetEntityWithUUID(UUID uuid)
-	{
-		VX_PROFILE_FUNCTION();
-
-		if (auto it = m_EntityMap.find(uuid); it != m_EntityMap.end())
-		{
-			return it->second;
-		}
-
-		return Entity{};
-	}
-
 	Entity Scene::GetPrimaryCameraEntity()
 	{
 		VX_PROFILE_FUNCTION();
@@ -978,6 +998,9 @@ namespace Vortex {
 		{
 			Entity entity{ e, this };
 			const CameraComponent& cc = entity.GetComponent<CameraComponent>();
+
+			if (!entity.IsActive())
+				continue;
 
 			if (!cc.Primary)
 				continue;
@@ -997,6 +1020,10 @@ namespace Vortex {
 		for (const auto e : view)
 		{
 			Entity entity{ e, this };
+
+			if (!entity.IsActive())
+				continue;
+
 			return entity;
 		}
 
@@ -1013,6 +1040,9 @@ namespace Vortex {
 		{
 			Entity entity{ e, this };
 			const LightSourceComponent& lsc = entity.GetComponent<LightSourceComponent>();
+
+			if (!entity.IsActive())
+				continue;
 
 			if (lsc.Type != LightType::Directional)
 				continue;
@@ -1077,15 +1107,28 @@ namespace Vortex {
 		return duplicate;
 	}
 
+	Entity Scene::TryGetEntityWithUUID(UUID uuid)
+	{
+		VX_PROFILE_FUNCTION();
+
+		if (auto it = m_EntityMap.find(uuid); it != m_EntityMap.end())
+		{
+			return it->second;
+		}
+
+		return Entity{};
+	}
+
 	Entity Scene::FindEntityByName(std::string_view name)
 	{
 		VX_PROFILE_FUNCTION();
 
 		auto view = GetAllEntitiesWith<TagComponent>();
 
-		for (const auto entity : view)
+		for (const auto e : view)
 		{
-			const std::string& tag = view.get<TagComponent>(entity).Tag;
+			Entity entity{ e, this };
+			const std::string& tag = entity.GetName();
 			if (!String::FastCompare(name, tag))
 				continue;
 
@@ -1095,7 +1138,7 @@ namespace Vortex {
 		return Entity{};
 	}
 
-	Entity Scene::FindEntityWithID(entt::entity entity)
+	Entity Scene::FindEntityByID(entt::entity entity)
 	{
 		VX_PROFILE_FUNCTION();
 

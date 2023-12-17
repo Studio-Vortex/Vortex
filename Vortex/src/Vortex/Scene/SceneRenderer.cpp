@@ -78,8 +78,8 @@ namespace Vortex {
 			SortMeshGeometry(renderPacket, sortedGeometry);
 		});
 
-		const Math::mat4* view = (const Math::mat4*)&renderPacket.MainCameraViewMatrix;
-		const Math::mat4* projection = (const Math::mat4*)&renderPacket.MainCameraProjectionMatrix;
+		const Math::mat4* view = (const Math::mat4*)&renderPacket.PrimaryCameraViewMatrix;
+		const Math::mat4* projection = (const Math::mat4*)&renderPacket.PrimaryCameraProjectionMatrix;
 
 		SkyboxComponent skyboxComponent;
 		SharedReference<Skybox> environment = nullptr;
@@ -103,6 +103,8 @@ namespace Vortex {
 
 		LightPass(renderPacket);
 
+		EmissiveMeshPass(renderPacket);
+
 		if (sortThread.Joinable()) {
 			sortThread.Join();
 		}
@@ -116,14 +118,14 @@ namespace Vortex {
 	{
 		if (renderPacket.EditorScene)
 		{
-			EditorCamera* camera = (EditorCamera*)renderPacket.MainCamera;
+			EditorCamera* camera = (EditorCamera*)renderPacket.PrimaryCamera;
 
 			Renderer2D::BeginScene(camera);
 		}
 		else
 		{
-			const SceneCamera& camera = (const SceneCamera&)*renderPacket.MainCamera;
-			const Math::mat4 view = renderPacket.MainCameraViewMatrix;
+			const SceneCamera& camera = (const SceneCamera&)*renderPacket.PrimaryCamera;
+			const Math::mat4& view = renderPacket.PrimaryCameraViewMatrix;
 
 			Renderer2D::BeginScene(camera, view);
 		}
@@ -221,7 +223,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Scene* scene = renderPacket.Scene;
-		Math::mat4 cameraView = renderPacket.MainCameraViewMatrix;
+		Math::mat4 cameraView = renderPacket.PrimaryCameraViewMatrix;
 
 		auto view = scene->GetAllEntitiesWith<TransformComponent, ParticleEmitterComponent>();
 
@@ -323,7 +325,7 @@ namespace Vortex {
 		VX_CORE_ASSERT(renderPacket.EditorScene, "Scene Gizmos can only be rendered in a Editor Scene!");
 
 		Scene* scene = renderPacket.Scene;
-		const Math::mat4 cameraView = renderPacket.MainCameraViewMatrix;
+		const Math::mat4& cameraView = renderPacket.PrimaryCameraViewMatrix;
 
 		const ProjectProperties& projectProps = Project::GetActive()->GetProperties();
 
@@ -416,15 +418,15 @@ namespace Vortex {
 
 		if (renderPacket.EditorScene)
 		{
-			EditorCamera* camera = (EditorCamera*)renderPacket.MainCamera;
+			EditorCamera* camera = (EditorCamera*)renderPacket.PrimaryCamera;
 
 			Renderer::BeginScene(camera, framebuffer);
 		}
 		else
 		{
-			const SceneCamera& camera = (const SceneCamera&)*renderPacket.MainCamera;
-			const Math::mat4& view = renderPacket.MainCameraViewMatrix;
-			const Math::vec3& translation = renderPacket.MainCameraWorldSpaceTranslation;
+			const SceneCamera& camera = (const SceneCamera&)*renderPacket.PrimaryCamera;
+			const Math::mat4& view = renderPacket.PrimaryCameraViewMatrix;
+			const Math::vec3& translation = renderPacket.PrimaryCameraWorldSpaceTranslation;
 
 			Renderer::BeginScene(camera, view, translation, framebuffer);
 		}
@@ -458,6 +460,97 @@ namespace Vortex {
 		}
 	}
 
+	void SceneRenderer::EmissiveMeshPass(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
+
+		Scene* scene = renderPacket.Scene;
+
+		auto meshView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+
+		for (const auto e : meshView)
+		{
+			Entity entity{ e, scene };
+			const MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+
+			if (!entity.IsActive())
+				continue;
+
+			if (!AssetManager::IsHandleValid(meshRendererComponent.Mesh))
+				continue;
+
+			SharedReference<MaterialTable> materialTable = meshRendererComponent.Materials;
+			VX_CORE_ASSERT(materialTable, "invalid material table!");
+			const uint32_t materialCount = materialTable->GetMaterialCount();
+
+			const Math::vec3 translation = scene->GetWorldSpaceTransform(entity).Translation;
+
+			for (uint32_t i = 0; i < materialCount; i++)
+			{
+				AssetHandle materialHandle = materialTable->GetMaterial(i);
+				if (!AssetManager::IsHandleValid(materialHandle))
+					continue;
+
+				SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+				if (material == nullptr)
+					continue;
+
+				const float emission = material->GetEmission();
+
+				// emission should never be less than zero but this is just in case
+				if (emission <= 0.0f)
+					continue;
+
+				const Math::vec3& radiance = material->GetAlbedo();
+				const float intensity = emission;
+
+				Renderer::RenderEmissiveEntity(translation, radiance, intensity);
+			}
+		}
+
+		auto staticMeshView = scene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
+
+		for (const auto e : staticMeshView)
+		{
+			Entity entity{ e, scene };
+			const StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+
+			if (!entity.IsActive())
+				continue;
+
+			if (!AssetManager::IsHandleValid(staticMeshRendererComponent.StaticMesh))
+				continue;
+
+			SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
+			VX_CORE_ASSERT(materialTable, "invalid material table!");
+			const uint32_t materialCount = materialTable->GetMaterialCount();
+
+			const Math::vec3 translation = scene->GetWorldSpaceTransform(entity).Translation;
+
+			for (uint32_t i = 0; i < materialCount; i++)
+			{
+				AssetHandle materialHandle = materialTable->GetMaterial(i);
+				if (!AssetManager::IsHandleValid(materialHandle))
+					continue;
+
+				SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+				if (material == nullptr)
+					continue;
+
+				const float emission = material->GetEmission();
+
+				// emission should never be less than zero but this is just in case
+				if (emission <= 0.0f)
+					continue;
+
+				const Math::vec3& radiance = material->GetAlbedo();
+				const float intensity = emission;
+
+				Renderer::RenderEmissiveEntity(translation, radiance, intensity);
+			}
+		}
+	}
+
 	void SceneRenderer::SortMeshGeometry(const SceneRenderPacket& renderPacket, std::map<float, Entity>& sortedGeometry)
 	{
 		VX_PROFILE_FUNCTION();
@@ -466,8 +559,6 @@ namespace Vortex {
 		Scene* scene = renderPacket.Scene;
 
 		// Sort All Meshes by distance from camera
-
-		// Sort Meshes
 		{
 			auto meshRendererView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
 			uint32_t i = 0;
@@ -487,15 +578,15 @@ namespace Vortex {
 
 				if (renderPacket.EditorScene)
 				{
-					const EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
-					const Math::vec3 cameraPosition = editorCamera->GetPosition();
+					const EditorCamera* editorCamera = (EditorCamera*)renderPacket.PrimaryCamera;
+					const Math::vec3& cameraPosition = editorCamera->GetPosition();
 					const float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
 					SortEntityByDistance(sortedGeometry, distance, entity, i);
 				}
 				else
 				{
-					const Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTranslation;
+					const Math::vec3& cameraPosition = renderPacket.PrimaryCameraWorldSpaceTranslation;
 					const float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
 					SortEntityByDistance(sortedGeometry, distance, entity, i);
@@ -525,15 +616,15 @@ namespace Vortex {
 
 				if (renderPacket.EditorScene)
 				{
-					const EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
-					const Math::vec3 cameraPosition = editorCamera->GetPosition();
+					const EditorCamera* editorCamera = (EditorCamera*)renderPacket.PrimaryCamera;
+					const Math::vec3& cameraPosition = editorCamera->GetPosition();
 					const float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
 					SortEntityByDistance(sortedGeometry, distance, entity, i);
 				}
 				else
 				{
-					const Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTranslation;
+					const Math::vec3& cameraPosition = renderPacket.PrimaryCameraWorldSpaceTranslation;
 					const float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
 
 					SortEntityByDistance(sortedGeometry, distance, entity, i);
@@ -608,8 +699,8 @@ namespace Vortex {
 		if (mesh == nullptr)
 			return;
 
-		Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
-		auto& submesh = mesh->GetSubmesh();
+		const Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+		const auto& submesh = mesh->GetSubmesh();
 
 		SharedReference<Material> material = submesh.GetMaterial();
 		if (material == nullptr)
@@ -623,6 +714,7 @@ namespace Vortex {
 		shader->SetBool("u_SceneProperties.HasSkyLight", sceneLightDesc.HasSkyLight);
 		shader->SetInt("u_SceneProperties.ActivePointLights", sceneLightDesc.ActivePointLights);
 		shader->SetInt("u_SceneProperties.ActiveSpotLights", sceneLightDesc.ActiveSpotLights);
+		shader->SetInt("u_SceneProperties.ActiveEmissiveMeshes", sceneLightDesc.ActiveEmissiveMeshes);
 		shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
 
 		Renderer::BindSkyLightDepthMap();
@@ -665,7 +757,7 @@ namespace Vortex {
 		if (staticMesh == nullptr)
 			return;
 
-		Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+		const Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
 		const auto& submeshes = staticMesh->GetSubmeshes();
 
 		SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
@@ -691,6 +783,7 @@ namespace Vortex {
 			shader->SetBool("u_SceneProperties.HasSkyLight", sceneLightDesc.HasSkyLight);
 			shader->SetInt("u_SceneProperties.ActivePointLights", sceneLightDesc.ActivePointLights);
 			shader->SetInt("u_SceneProperties.ActiveSpotLights", sceneLightDesc.ActiveSpotLights);
+			shader->SetInt("u_SceneProperties.ActiveEmissiveMeshes", sceneLightDesc.ActiveEmissiveMeshes);
 			shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
 
 			Renderer::BindSkyLightDepthMap();
