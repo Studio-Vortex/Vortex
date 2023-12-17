@@ -1809,6 +1809,9 @@ namespace Vortex {
 	void EditorLayer::OverlayRenderSelectedEntityOutline(const Math::vec4& outlineColor)
 	{
 		Entity selectedEntity = SelectionManager::GetSelectedEntity();
+		if (!selectedEntity.IsActive())
+			return;
+
 		const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
 
 		if (selectedEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
