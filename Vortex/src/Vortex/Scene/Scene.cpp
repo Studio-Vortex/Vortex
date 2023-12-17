@@ -935,7 +935,7 @@ namespace Vortex {
 
 		const std::vector<UUID>& children = entity.Children();
 
-		for (const auto& uuid : children)
+		for (UUID uuid : children)
 		{
 			Entity child = TryGetEntityWithUUID(uuid);
 
@@ -959,7 +959,7 @@ namespace Vortex {
 
 		const std::vector<UUID>& children = entity.Children();
 
-		for (const auto& uuid : children)
+		for (UUID uuid : children)
 		{
 			Entity child = TryGetEntityWithUUID(uuid);
 

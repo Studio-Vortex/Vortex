@@ -671,7 +671,7 @@ namespace Vortex {
 			Scene* scene = GetContextScene();
 			Entity entity = GetEntity(entityUUID);
 
-			auto onTimerFinishedFn = [&]() { Entity_Invoke(entityUUID, methodName); };
+			auto onTimerFinishedFn = [=]() { Entity_Invoke(entityUUID, methodName); };
 			Timer timer("InvokeWithDelay", delay, onTimerFinishedFn);
 			timer.Start();
 
