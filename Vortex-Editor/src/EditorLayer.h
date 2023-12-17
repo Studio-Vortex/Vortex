@@ -127,6 +127,8 @@ namespace Vortex {
 		bool InPlaySceneState() const;
 		bool InSimulateSceneState() const;
 
+		EditorCamera* GetCurrentEditorCamera() const;
+
 		std::vector<Math::vec4> GetCameraFrustumCornersWorldSpace(const Camera* camera, const Math::mat4& view);
 
 		std::pair<float, float> GetEditorCameraMouseViewportSpace(bool mainViewport);

@@ -8,7 +8,7 @@ namespace Vortex {
 	{
 	public:
 		static Entity& GetSelectedEntity();
-		static void SetSelectedEntity(Entity entity);
+		static Entity& SetSelectedEntity(Entity entity);
 		static void DeselectEntity();
 
 	private:

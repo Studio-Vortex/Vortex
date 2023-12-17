@@ -490,7 +490,7 @@ namespace Vortex {
 
 		if (Gui::BeginPopup("ViewportCreateEntityMenu", ImGuiWindowFlags_NoMove))
 		{
-			EditorCamera* camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
+			EditorCamera* camera = GetCurrentEditorCamera();
 			m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateEntityMenu(camera);
 
 			Gui::PopStyleVar();
@@ -598,7 +598,7 @@ namespace Vortex {
 					{
 						if (Gui::BeginMenu("Create Entity"))
 						{
-							EditorCamera* camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
+							EditorCamera* camera = GetCurrentEditorCamera();
 							m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateEntityMenu(camera);
 
 							Gui::EndMenu();
@@ -1760,7 +1760,7 @@ namespace Vortex {
 
 			for (Entity entity : entities)
 			{
-				auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
 				OverlayRenderMeshCollider(entity, transform, colliderColor);
 			}
 		}
@@ -1789,7 +1789,7 @@ namespace Vortex {
 
 			for (Entity entity : entities)
 			{
-				auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
 				OverlayRenderSpriteCollider(editorCamera, entity, transform, colliderColor);
 			}
 		}
@@ -3285,6 +3285,17 @@ namespace Vortex {
 	bool EditorLayer::InSimulateSceneState() const
 	{
 		return m_SceneState == SceneState::Simulate;
+	}
+
+	EditorCamera* EditorLayer::GetCurrentEditorCamera() const
+	{
+		if (m_SceneViewportHovered || !m_SecondViewportPanelOpen)
+			return m_EditorCamera;
+
+		if (m_SecondViewportHovered)
+			return m_SecondEditorCamera;
+
+		return nullptr;
 	}
 
 	std::vector<Math::vec4> EditorLayer::GetCameraFrustumCornersWorldSpace(const Camera* camera, const Math::mat4& view)

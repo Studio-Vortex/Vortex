@@ -226,10 +226,13 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::DisplayCreateEntityMenu(const EditorCamera* editorCamera)
 	{
+		bool entityAdded = false;
+
 		if (Gui::MenuItem("Create Empty"))
 		{
-			SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Empty Entity"));
-			SelectionManager::GetSelectedEntity().GetTransform().Translation = editorCamera->GetFocalPoint();
+			Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Empty Entity"));
+			selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+			entityAdded = true;
 		}
 		UI::Draw::Underline();
 		Gui::Spacing();
@@ -241,6 +244,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Cube"))
 			{
 				CreateDefaultMesh("Cube", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -248,6 +252,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Sphere"))
 			{
 				CreateDefaultMesh("Sphere", DefaultMesh::StaticMeshType::Sphere, m_ContextScene, editorCamera);
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -255,6 +260,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Capsule"))
 			{
 				CreateDefaultMesh("Capsule", DefaultMesh::StaticMeshType::Capsule, m_ContextScene, editorCamera);
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -262,6 +268,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Cone"))
 			{
 				CreateDefaultMesh("Cone", DefaultMesh::StaticMeshType::Cone, m_ContextScene, editorCamera);
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -269,6 +276,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Cylinder"))
 			{
 				CreateDefaultMesh("Cylinder", DefaultMesh::StaticMeshType::Cylinder, m_ContextScene, editorCamera);
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -276,6 +284,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Plane"))
 			{
 				CreateDefaultMesh("Plane", DefaultMesh::StaticMeshType::Plane, m_ContextScene, editorCamera);
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -283,6 +292,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Torus"))
 			{
 				CreateDefaultMesh("Torus", DefaultMesh::StaticMeshType::Torus, m_ContextScene, editorCamera);
+				entityAdded = true;
 			}
 
 			Gui::EndMenu();
@@ -296,26 +306,26 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Quad"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Quad"));
-				Entity selected = SelectionManager::GetSelectedEntity();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Quad"));
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				selected.GetTransform().Translation.z = 0.0f;
 				selected.AddComponent<SpriteRendererComponent>();
 				selected.AddComponent<RigidBody2DComponent>();
 				selected.AddComponent<BoxCollider2DComponent>();
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Circle"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Circle"));
-				Entity selected = SelectionManager::GetSelectedEntity();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Circle"));
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				selected.GetTransform().Translation.z = 0.0f;
 				selected.AddComponent<CircleRendererComponent>();
 				selected.AddComponent<RigidBody2DComponent>();
 				selected.AddComponent<CircleCollider2DComponent>();
+				entityAdded = true;
 			}
 
 			Gui::EndMenu();
@@ -329,22 +339,22 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Perspective"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Camera"));
-				Entity selected = SelectionManager::GetSelectedEntity();
-				auto& cameraComponent = selected.AddComponent<CameraComponent>();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Camera"));
+				CameraComponent& cameraComponent = selected.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Orthographic"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Camera"));
-				Entity selected = SelectionManager::GetSelectedEntity();
-				auto& cameraComponent = selected.AddComponent<CameraComponent>();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Camera"));
+				CameraComponent& cameraComponent = selected.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				entityAdded = true;
 			}
 
 			Gui::EndMenu();
@@ -358,33 +368,33 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Directional"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Directional Light"));
-				Entity selected = SelectionManager::GetSelectedEntity();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Directional Light"));
 				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Directional;
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Point"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Point Light"));
-				Entity selected = SelectionManager::GetSelectedEntity();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Point Light"));
 				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Point;
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Spot"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Spot Light"));
-				Entity selected = SelectionManager::GetSelectedEntity();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Spot Light"));
 				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Spot;
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				entityAdded = true;
 			}
 
 			Gui::EndMenu();
@@ -399,6 +409,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Box Collider"))
 			{
 				CreateDefaultMesh("Box Collider", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -406,6 +417,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Sphere Collider"))
 			{
 				CreateDefaultMesh("Sphere Collider", DefaultMesh::StaticMeshType::Sphere, m_ContextScene, editorCamera);
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -413,6 +425,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Capsule Collider"))
 			{
 				CreateDefaultMesh("Capsule Collider", DefaultMesh::StaticMeshType::Capsule, m_ContextScene, editorCamera);
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -420,6 +433,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Mesh Collider"))
 			{
 				CreateDefaultMesh("Mesh Collider", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -427,30 +441,31 @@ namespace Vortex {
 			if (Gui::MenuItem("Fixed Joint"))
 			{
 				CreateDefaultMesh("Fixed Joint", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Box Collider 2D"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Box Collider2D"));
-				Entity selected = SelectionManager::GetSelectedEntity();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Box Collider2D"));
 				selected.AddComponent<SpriteRendererComponent>();
 				selected.AddComponent<RigidBody2DComponent>();
 				selected.AddComponent<BoxCollider2DComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Circle Collider 2D"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Circle Collider2D"));
-				Entity selected = SelectionManager::GetSelectedEntity();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Circle Collider2D"));
 				selected.AddComponent<CircleRendererComponent>();
 				selected.AddComponent<RigidBody2DComponent>();
 				selected.AddComponent<CircleCollider2DComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				entityAdded = true;
 			}
 
 			Gui::EndMenu();
@@ -464,20 +479,20 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Source Entity"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Audio Source"));
-				Entity selected = SelectionManager::GetSelectedEntity();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Audio Source"));
 				selected.AddComponent<AudioSourceComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				entityAdded = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Listener Entity"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Audio Listener"));
-				Entity selected = SelectionManager::GetSelectedEntity();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Audio Listener"));
 				selected.AddComponent<AudioListenerComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				entityAdded = true;
 			}
 
 			Gui::EndMenu();
@@ -491,10 +506,18 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Text"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Text"));
-				Entity selected = SelectionManager::GetSelectedEntity();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("UI Text"));
 				selected.AddComponent<TextMeshComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				entityAdded = true;
+			}
+
+			if (Gui::MenuItem("Button"))
+			{
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("UI Button"));
+				selected.AddComponent<ButtonComponent>();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				entityAdded = true;
 			}
 
 			Gui::EndMenu();
@@ -508,13 +531,18 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Particles"))
 			{
-				SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Particle Emitter"));
-				Entity selected = SelectionManager::GetSelectedEntity();
+				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Particle Emitter"));
 				selected.AddComponent<ParticleEmitterComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				entityAdded = true;
 			}
 
 			Gui::EndMenu();
+		}
+
+		if (entityAdded)
+		{
+			FocusOnEntityName(true);
 		}
 	}
 

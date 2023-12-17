@@ -8,9 +8,10 @@ namespace Vortex {
 		return s_SelectedEntity;
 	}
 
-	void SelectionManager::SetSelectedEntity(Entity entity)
+	Entity& SelectionManager::SetSelectedEntity(Entity entity)
 	{
 		s_SelectedEntity = entity;
+		return GetSelectedEntity();
 	}
 
 	void SelectionManager::DeselectEntity()
