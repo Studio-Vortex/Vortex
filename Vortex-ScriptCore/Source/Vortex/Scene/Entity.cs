@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Vortex {
@@ -19,6 +20,12 @@ namespace Vortex {
 		{
 			get => InternalCalls.Entity_GetMarker(ID);
 			set => InternalCalls.Entity_SetMarker(ID, value);
+		}
+
+		public Timer AddTimer(float delay, [CallerLineNumber] int lineNumber = 0)
+		{
+			string name = Tag + lineNumber;
+			return AddTimer(name, delay);
 		}
 
 		public Timer AddTimer(string name, float delay)

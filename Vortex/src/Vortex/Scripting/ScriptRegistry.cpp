@@ -794,26 +794,6 @@ namespace Vortex {
 			timer.Start();
 		}
 
-		void Timer_Stop(UUID entityUUID, MonoString* name)
-		{
-			Scene* scene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
-
-			char* managedString = mono_string_to_utf8(name);
-			std::string timerName = std::string(managedString);
-			mono_free(managedString);
-
-			Timer& timer = scene->TryGetMutableTimerByName(entity, timerName);
-
-			if (timer.GetName().empty())
-			{
-				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", entity.GetName(), timerName);
-			}
-
-			timer.Start();
-		}
-
 #pragma endregion
 
 #pragma region Transform Component
@@ -8913,7 +8893,6 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Timer_IsStarted);
 		VX_REGISTER_INTERNAL_CALL(Timer_IsFinished);
 		VX_REGISTER_INTERNAL_CALL(Timer_Start);
-		VX_REGISTER_INTERNAL_CALL(Timer_Stop);
 
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetTranslation);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetTranslation);

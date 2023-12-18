@@ -212,10 +212,6 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Timer_Start(ulong entityID, string name);
 
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Timer_Stop(ulong entityID, string name);
-
-
 		#endregion
 
 		#region Transform

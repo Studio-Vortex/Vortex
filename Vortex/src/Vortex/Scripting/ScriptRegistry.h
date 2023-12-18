@@ -139,7 +139,6 @@ namespace Vortex {
 		float Timer_GetTimeLeft(UUID entityUUID, MonoString* name);
 		bool Timer_IsStarted(UUID entityUUID, MonoString* name);
 		bool Timer_IsFinished(UUID entityUUID, MonoString* name);
-		void Timer_Stop(UUID entityUUID, MonoString* name);
 		void Timer_Start(UUID entityUUID, MonoString* name);
 
 #pragma endregion
