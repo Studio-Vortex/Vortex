@@ -14,6 +14,9 @@ namespace Vortex {
 		void OnGuiRender() override;
 
 		EDITOR_PANEL_TYPE(PhysicsStats)
+
+	private:
+		void RenderPhysicsStats() const;
 	};
 
 }
