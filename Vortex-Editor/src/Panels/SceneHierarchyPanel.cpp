@@ -32,119 +32,12 @@ namespace Vortex {
 	{
 		if (IsOpen)
 		{
-			Gui::Begin(m_PanelName.c_str(), &IsOpen);
-
-			ImRect windowRect = ImRect(Gui::GetWindowContentRegionMin(), Gui::GetWindowContentRegionMax());
-
-			// Search Bar + Filtering
-			Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize((const char*)VX_ICON_PLUS).x * 2.0f - 4.0f);
-			const bool isSearching = Gui::InputTextWithHint("##ActorSearch", "Search...", m_ActorSearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_ActorSearchInputTextFilter.InputBuf));
-			if (isSearching)
-				m_ActorSearchInputTextFilter.Build();
-
-			Gui::SameLine();
-
-			UI::ShiftCursorX(-4.0f);
-			if (Gui::Button((const char*)VX_ICON_PLUS, { 30.0f, 0.0f }))
-				Gui::OpenPopup("CreateActor");
-
-			if (Gui::BeginPopup("CreateActor"))
-			{
-				DisplayCreateActorMenu(editorCamera);
-
-				Gui::EndPopup();
-			}
-
-			Gui::Spacing();
-			UI::Draw::Underline();
-
-			if (m_ContextScene)
-			{
-				uint32_t searchDepth = 0;
-				const bool isSearching = strlen(m_ActorSearchInputTextFilter.InputBuf) != 0;
-				std::vector<UUID> rootActorsInHierarchy;
-
-				m_ContextScene->m_Registry.each([&](auto actorID)
-				{
-					Actor actor{ actorID, m_ContextScene.Raw() };
-					
-					if (!actor)
-						return;
-
-					const bool isChild = actor.HasParent();
-
-					if (isChild)
-						return;
-
-					rootActorsInHierarchy.push_back(actor.GetUUID());
-
-					const bool matchingSearch = m_ActorSearchInputTextFilter.PassFilter(actor.GetName().c_str());
-					
-					if (!matchingSearch)
-						return;
-
-					DrawActorNode(actor, editorCamera);
-				});
-
-				if (isSearching)
-				{
-					for (const auto& rootActor : rootActorsInHierarchy)
-					{
-						RecursiveActorSearch(rootActor, editorCamera, searchDepth);
-					}
-				}
-
-				if (ImGui::BeginDragDropTargetCustom(windowRect, ImGui::GetCurrentWindow()->ID))
-				{
-					const auto flags = ImGuiDragDropFlags_AcceptNoDrawDefaultRect;
-					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM", flags);
-
-					if (payload)
-					{
-						Actor& actor = *(Actor*)payload->Data;
-						m_ContextScene->UnparentActor(actor);
-					}
-
-					ImGui::EndDragDropTarget();
-				}
-
-				// Left click anywhere on the panel to deselect actor
-				if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
-				{
-					SelectionManager::DeselectActor();
-					m_ActorShouldBeRenamed = false;
-					m_ActorShouldBeDestroyed = false;
-				}
-
-				// Right-click on blank space in scene hierarchy panel
-				if (Gui::BeginPopupContextWindow(0, 1, false))
-				{
-					DisplayCreateActorMenu(editorCamera);
-
-					Gui::EndPopup();
-				}
-
-				Actor selected = SelectionManager::GetSelectedActor();
-
-				// destroy if requested
-				if (m_ActorShouldBeDestroyed && selected)
-				{
-					Actor actor = selected;
-
-					SelectionManager::DeselectActor();
-					m_ActorShouldBeRenamed = false;
-					m_ActorShouldBeDestroyed = false;
-
-					m_ContextScene->SubmitToDestroyActor(actor);
-				}
-			}
-
-			Gui::End();
+			RenderSceneHierarchy(hoveredActor, editorCamera);
 		}
 
 		if (s_ShowInspectorPanel)
 		{
-			DisplayInsectorPanel(hoveredActor);
+			RenderInsectorPanel(hoveredActor);
 		}
 	}
 
@@ -548,7 +441,119 @@ namespace Vortex {
 		}
 	}
 
-	void SceneHierarchyPanel::DisplayInsectorPanel(Actor hoveredActor)
+	void SceneHierarchyPanel::RenderSceneHierarchy(Actor hoveredActor, const EditorCamera* editorCamera)
+	{
+		Gui::Begin(m_PanelName.c_str(), &IsOpen);
+
+		ImRect windowRect = ImRect(Gui::GetWindowContentRegionMin(), Gui::GetWindowContentRegionMax());
+
+		// Search Bar + Filtering
+		Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize((const char*)VX_ICON_PLUS).x * 2.0f - 4.0f);
+		const bool isSearching = Gui::InputTextWithHint("##ActorSearch", "Search...", m_ActorSearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_ActorSearchInputTextFilter.InputBuf));
+		if (isSearching)
+			m_ActorSearchInputTextFilter.Build();
+
+		Gui::SameLine();
+
+		UI::ShiftCursorX(-4.0f);
+		if (Gui::Button((const char*)VX_ICON_PLUS, { 30.0f, 0.0f }))
+			Gui::OpenPopup("CreateActor");
+
+		if (Gui::BeginPopup("CreateActor"))
+		{
+			DisplayCreateActorMenu(editorCamera);
+
+			Gui::EndPopup();
+		}
+
+		Gui::Spacing();
+		UI::Draw::Underline();
+
+		if (m_ContextScene)
+		{
+			uint32_t searchDepth = 0;
+			const bool isSearching = strlen(m_ActorSearchInputTextFilter.InputBuf) != 0;
+			std::vector<UUID> rootActorsInHierarchy;
+
+			m_ContextScene->m_Registry.each([&](auto actorID)
+			{
+				Actor actor{ actorID, m_ContextScene.Raw() };
+
+				if (!actor)
+					return;
+
+				const bool isChild = actor.HasParent();
+
+				if (isChild)
+					return;
+
+				rootActorsInHierarchy.push_back(actor.GetUUID());
+
+				const bool matchingSearch = m_ActorSearchInputTextFilter.PassFilter(actor.GetName().c_str());
+
+				if (!matchingSearch)
+					return;
+
+				DrawActorNode(actor, editorCamera);
+			});
+
+			if (isSearching)
+			{
+				for (const auto& rootActor : rootActorsInHierarchy)
+				{
+					RecursiveActorSearch(rootActor, editorCamera, searchDepth);
+				}
+			}
+
+			if (ImGui::BeginDragDropTargetCustom(windowRect, ImGui::GetCurrentWindow()->ID))
+			{
+				const auto flags = ImGuiDragDropFlags_AcceptNoDrawDefaultRect;
+				const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM", flags);
+
+				if (payload)
+				{
+					Actor& actor = *(Actor*)payload->Data;
+					m_ContextScene->UnparentActor(actor);
+				}
+
+				ImGui::EndDragDropTarget();
+			}
+
+			// Left click anywhere on the panel to deselect actor
+			if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
+			{
+				SelectionManager::DeselectActor();
+				m_ActorShouldBeRenamed = false;
+				m_ActorShouldBeDestroyed = false;
+			}
+
+			// Right-click on blank space in scene hierarchy panel
+			if (Gui::BeginPopupContextWindow(0, 1, false))
+			{
+				DisplayCreateActorMenu(editorCamera);
+
+				Gui::EndPopup();
+			}
+
+			Actor selected = SelectionManager::GetSelectedActor();
+
+			// destroy if requested
+			if (m_ActorShouldBeDestroyed && selected)
+			{
+				Actor actor = selected;
+
+				SelectionManager::DeselectActor();
+				m_ActorShouldBeRenamed = false;
+				m_ActorShouldBeDestroyed = false;
+
+				m_ContextScene->SubmitToDestroyActor(actor);
+			}
+		}
+
+		Gui::End();
+	}
+
+	void SceneHierarchyPanel::RenderInsectorPanel(Actor hoveredActor)
 	{
 		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
 

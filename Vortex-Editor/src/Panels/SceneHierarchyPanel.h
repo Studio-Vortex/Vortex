@@ -28,7 +28,8 @@ namespace Vortex {
 		EDITOR_PANEL_TYPE(SceneHierarchy)
 
 	private:
-		void DisplayInsectorPanel(Actor hoveredActor);
+		void RenderSceneHierarchy(Actor hoveredActor, const EditorCamera* editorCamera);
+		void RenderInsectorPanel(Actor hoveredActor);
 
 		template <typename TComponent>
 		void DisplayAddComponentMenuItem(const std::string& name, const char* icon, bool drawUnderline = true)
