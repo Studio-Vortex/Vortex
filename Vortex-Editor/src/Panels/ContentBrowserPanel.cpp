@@ -1,5 +1,6 @@
 #include "ContentBrowserPanel.h"
 
+#include <Vortex/Serialization/SceneSerializer.h>
 #include <Vortex/Editor/EditorResources.h>
 
 #include <imgui_internal.h>
@@ -66,6 +67,12 @@ namespace Vortex {
 
 		RenderFileExplorer();
 
+		Gui::Spacing();
+		UI::Draw::Underline();
+		Gui::Spacing();
+
+		RenderThumbnailSlider();
+
 		Gui::EndChild();
 		Gui::EndGroup();
 
@@ -79,9 +86,12 @@ namespace Vortex {
 		{
 			if (Gui::BeginMenu("Create"))
 			{
+				const Fs::Path currentDirectory = m_CurrentDirectory.filename();
+
 				if (Gui::MenuItem("Folder"))
 				{
-					m_ItemPathToRename = m_CurrentDirectory / Fs::Path("New Folder");
+					const std::string filename = "New Folder";
+					m_ItemPathToRename = m_CurrentDirectory / filename;
 					FileSystem::CreateDirectoryV(m_ItemPathToRename);
 
 					Gui::CloseCurrentPopup();
@@ -90,10 +100,11 @@ namespace Vortex {
 
 				if (Gui::MenuItem("Scene"))
 				{
-					std::ofstream fout(m_ItemPathToRename);
-					VX_CORE_ASSERT(fout.is_open(), "Failed to open file!");
-					fout << "Scene: Untitled\nEntities:";
-					fout.close();
+					const std::string filename = "Untitled.vortex";
+					SharedReference<Scene> scene = Project::GetEditorAssetManager()->CreateNewAsset<Scene>(currentDirectory.string(), filename);
+					SceneSerializer serializer(scene);
+					serializer.Serialize((m_CurrentDirectory / filename).string());
+					VX_CORE_ASSERT(scene, "Failed to create scene!");
 
 					Gui::CloseCurrentPopup();
 				}
@@ -104,7 +115,7 @@ namespace Vortex {
 					const std::string filename = "NewMaterial.vmaterial";
 					SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("PBR_Static");
 					MaterialProperties properties = MaterialProperties();
-					SharedReference<Material> material = Project::GetEditorAssetManager()->CreateNewAsset<Material>("Materials", filename, shader, properties);
+					SharedReference<Material> material = Project::GetEditorAssetManager()->CreateNewAsset<Material>(currentDirectory.string(), filename, shader, properties);
 					VX_CORE_ASSERT(material, "Failed to create material!");
 
 					Gui::CloseCurrentPopup();
@@ -146,21 +157,18 @@ public class Untitled : Actor
 
 	void ContentBrowserPanel::RenderFileExplorer()
 	{
-		ImGuiIO& io = Gui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
 		RenderMenuBar();
-
 		Gui::Spacing();
 		UI::Draw::Underline();
 
-		float cellSize = m_ThumbnailSize + m_ThumbnailPadding;
+		const float cellSize = m_ThumbnailSize + m_ThumbnailPadding;
+		const float panelWidth = Gui::GetContentRegionAvail().x;
 
-		float panelWidth = Gui::GetContentRegionAvail().x;
 		int columnCount = (int)(panelWidth / cellSize);
 		if (columnCount < 1)
+		{
 			columnCount = 1;
+		}
 		
 		//                                                leave some space for the thumbnail size slider
 		Gui::BeginChild("##FileExplorer", ImVec2(0, Gui::GetContentRegionAvail().y - 45.0f), false);
@@ -169,14 +177,18 @@ public class Untitled : Actor
 
 		for (const auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
-			const auto& currentPath = directoryEntry.path();
-			const Fs::Path relativePath = currentPath;
-			const std::string filenameString = relativePath.filename().string();
-			const bool skipDirectoryEntry = !m_SearchInputTextFilter.PassFilter(relativePath.string().c_str());
-			const bool isHiddenFile = !directoryEntry.is_directory()
-				&& !Project::GetEditorAssetManager()->IsValidAssetExtension(FileSystem::GetFileExtension(currentPath));
+			const Fs::Path& currentPath = directoryEntry.path();
+			const std::string extension = FileSystem::GetFileExtension(currentPath);
+			const std::string filenameString = currentPath.filename().string();
+			const bool matchingSearch = !m_SearchInputTextFilter.PassFilter(currentPath.string().c_str());
+			const bool isDirectory = directoryEntry.is_directory();
+			const bool validAssetExtension = Project::GetEditorAssetManager()->IsValidAssetExtension(extension);
+			const bool isHiddenFile = !isDirectory && !validAssetExtension;
 
-			if (skipDirectoryEntry || isHiddenFile)
+			if (matchingSearch)
+				continue;
+
+			if (isHiddenFile)
 				continue;
 
 			Gui::PushID(filenameString.c_str());
@@ -192,7 +204,7 @@ public class Untitled : Actor
 			// Drag items from the content browser to else-where in the editor
 			if (Gui::BeginDragDropSource())
 			{
-				const wchar_t* itemPath = relativePath.c_str();
+				const wchar_t* itemPath = currentPath.c_str();
 				Gui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath, (wcslen(itemPath) + 1) * sizeof(wchar_t), ImGuiCond_Once);
 				Gui::BeginTooltip();
 
@@ -258,12 +270,6 @@ public class Untitled : Actor
 			}
 			Gui::EndDragDropTarget();
 		}
-
-		Gui::Spacing();
-		UI::Draw::Underline();
-		Gui::Spacing();
-
-		RenderThumbnailSlider();
 	}
 
 	void ContentBrowserPanel::RenderMenuBar()
@@ -300,7 +306,22 @@ public class Untitled : Actor
 
 		Gui::SameLine();
 
-		Fs::Path relativePath = FileSystem::Relative(m_CurrentDirectory, m_BaseDirectory);
+		RenderCurrentWorkingDirectory();
+
+		// Search Bar + Filtering
+		const float inputTextSize = Gui::GetWindowWidth() / 3.0f;
+		UI::ShiftCursorX(Gui::GetContentRegionAvail().x - inputTextSize);
+		Gui::SetNextItemWidth(inputTextSize);
+		const bool isSearching = Gui::InputTextWithHint("##ItemAssetSearch", "Search...", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
+		if (isSearching)
+		{
+			m_SearchInputTextFilter.Build();
+		}
+	}
+
+	void ContentBrowserPanel::RenderCurrentWorkingDirectory()
+	{
+		const Fs::Path relativePath = FileSystem::Relative(m_CurrentDirectory, m_BaseDirectory);
 		std::vector<std::string> splitPath = String::SplitString(relativePath.string(), "/\\");
 
 		if (splitPath[0] != ".")
@@ -321,11 +342,24 @@ public class Untitled : Actor
 			const std::string label = entry + "##" + std::to_string(i);
 			if (Gui::Button(label.c_str()))
 			{
-				// TODO fix this
-				// currently crashes when you click any of these buttons
-				if (!FileSystem::Equivalent(m_CurrentDirectory, entry))
+				const Fs::Path currentDirectory = m_CurrentDirectory.filename();
+				if (currentDirectory.string() != entry)
 				{
-					m_CurrentDirectory = FileSystem::Relative(entry, m_BaseDirectory);
+					// find the directory
+					Fs::Path directory = m_CurrentDirectory;
+					for (uint32_t j = 0; j < numPaths; j++)
+					{
+						directory = directory.parent_path();
+
+						const Fs::Path directoryFilename = directory.filename();
+
+						if (directoryFilename != entry)
+							continue;
+
+						// we found the path
+						m_CurrentDirectory = directory;
+						break;
+					}
 				}
 
 				memset(m_SearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
@@ -343,16 +377,6 @@ public class Untitled : Actor
 			Gui::Text((const char*)VX_ICON_CHEVRON_RIGHT);
 
 			Gui::SameLine();
-		}
-
-		// Search Bar + Filtering
-		const float inputTextSize = Gui::GetWindowWidth() / 3.0f;
-		UI::ShiftCursorX(Gui::GetContentRegionAvail().x - inputTextSize);
-		Gui::SetNextItemWidth(inputTextSize);
-		const bool isSearching = Gui::InputTextWithHint("##ItemAssetSearch", "Search...", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
-		if (isSearching)
-		{
-			m_SearchInputTextFilter.Build();
 		}
 	}
 
@@ -648,7 +672,7 @@ public class Untitled : Actor
 
 			const ImVec2 button_size(Gui::GetFontSize() * 8.65f, 0.0f);
 
-			Gui::TextCentered(fmt::format("Are you sure you want to permanently delete '{}' ?", currentFilename).c_str(), 40.0f);
+			Gui::TextCentered(fmt::format("Are you sure you want to permanently delete '{}'?", currentFilename).c_str(), 40.0f);
 
 			Gui::Spacing();
 			UI::Draw::Underline();
@@ -656,7 +680,10 @@ public class Untitled : Actor
 
 			if (Gui::Button("Yes", button_size))
 			{
+				Fs::Path path = Project::GetEditorAssetManager()->GetRelativePath(currentPath);
+				VX_CONSOLE_LOG_INFO("{} deleted from asset directory.", path.string());
 				FileSystem::Remove(currentPath);
+				// TODO we need to remove the asset from the asset manager
 				Gui::CloseCurrentPopup();
 			}
 			Gui::SameLine();
