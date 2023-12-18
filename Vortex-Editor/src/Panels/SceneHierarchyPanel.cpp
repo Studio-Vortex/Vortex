@@ -1631,9 +1631,26 @@ namespace Vortex {
 
 		if (UI::PropertyAssetReference<StaticMesh>("Mesh Source", relativePath, component.StaticMesh, OnStaticMeshDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry()))
 		{
-			const bool isDefaultStaticMesh = Project::GetEditorAssetManager()->IsDefaultStaticMesh(component.StaticMesh);
+			if (AssetManager::IsHandleValid(component.StaticMesh))
+			{
+				const bool isDefaultStaticMesh = Project::GetEditorAssetManager()->IsDefaultStaticMesh(component.StaticMesh);
 
-			component.Type = isDefaultStaticMesh ? (MeshType)DefaultMesh::GetStaticMeshType(component.StaticMesh) : MeshType::Custom;
+				if (isDefaultStaticMesh)
+				{
+					component.Type = (MeshType)DefaultMesh::GetStaticMeshType(component.StaticMesh);
+				}
+				else
+				{
+					component.Type = MeshType::Custom;
+				}
+
+				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+				if (staticMesh)
+				{
+					component.Materials->Clear();
+					staticMesh->LoadMaterialTable(component.Materials);
+				}
+			}
 		}
 
 		if (AssetManager::IsHandleValid(component.StaticMesh))
