@@ -511,6 +511,8 @@ namespace Vortex {
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				actorCreated = true;
 			}
+			UI::Draw::Underline();
+			Gui::Spacing();
 
 			if (Gui::MenuItem("Button"))
 			{
