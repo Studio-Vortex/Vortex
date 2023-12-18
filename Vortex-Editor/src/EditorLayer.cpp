@@ -2038,6 +2038,12 @@ namespace Vortex {
 			UI::ShiftCursorY(10.0f);
 			UI::ShiftCursorX(7.0f);
 
+			auto resetPopup = [&]() {
+				m_MeshImportPopupOpen = false;
+				m_MeshImportPopupData.MeshFilepath = "";
+				m_MeshImportPopupData.ModelImportOptions = MeshImportOptions();
+			};
+
 			if (Gui::Button("Import", buttonSize))
 			{
 				if (m_MeshImportPopupData.MeshActorToEdit.HasComponent<MeshRendererComponent>())
@@ -2063,9 +2069,7 @@ namespace Vortex {
 					}
 				}
 
-				m_MeshImportPopupData.MeshFilepath = "";
-				m_MeshImportPopupData.ModelImportOptions = MeshImportOptions();
-
+				resetPopup();
 				Gui::CloseCurrentPopup();
 			}
 
@@ -2073,10 +2077,7 @@ namespace Vortex {
 
 			if (Gui::Button("Cancel", buttonSize))
 			{
-				m_MeshImportPopupOpen = false;
-				m_MeshImportPopupData.MeshFilepath = "";
-				m_MeshImportPopupData.ModelImportOptions = MeshImportOptions();
-
+				resetPopup();
 				Gui::CloseCurrentPopup();
 			}
 
