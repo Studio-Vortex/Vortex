@@ -10,7 +10,7 @@
 #include "Vortex/Physics/3D/PhysicsShapes.h"
 
 #include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 #include "Vortex/Scene/Components.h"
 
 #include "Vortex/ReferenceCounting/SharedRef.h"
@@ -46,34 +46,34 @@ namespace Vortex {
 		static void OnSimulationUpdate(TimeStep delta);
 		static void OnSimulationStop(Scene* contextScene);
 
-		static void CreatePhysicsActor(Entity entity);
-		static void ReCreateActor(Entity entity);
-		static void DestroyPhysicsActor(Entity entity);
+		static void CreatePhysicsActor(Actor actor);
+		static void ReCreateActor(Actor actor);
+		static void DestroyPhysicsActor(Actor actor);
 
-		static void WakeUpActor(Entity entity);
+		static void WakeUpActor(Actor actor);
 		static void WakeUpActors();
 
 		static bool Raycast(const Math::vec3& origin, const Math::vec3& direction, float maxDistance, RaycastHit* outHitInfo);
 
-		static bool IsConstraintBroken(UUID entityUUID);
-		static void BreakJoint(UUID entityUUID);
+		static bool IsConstraintBroken(UUID actorUUID);
+		static void BreakJoint(UUID actorUUID);
 
-		static void OnCharacterControllerUpdateRuntime(UUID entityUUID, const Math::vec3& displacement);
+		static void OnCharacterControllerUpdateRuntime(UUID actorUUID, const Math::vec3& displacement);
 
 	public:
 		static const std::unordered_map<UUID, physx::PxRigidActor*>& GetActors();
 		static const std::unordered_map<UUID, physx::PxController*>& GetControllers();
 		static const std::unordered_map<UUID, physx::PxFixedJoint*> GetFixedJoints();
 
-		static physx::PxRigidActor* GetActor(UUID entityUUID);
-		static const std::vector<SharedReference<ColliderShape>>& GetEntityColliders(UUID entityUUID);
-		static physx::PxController* GetController(UUID entityUUID);
-		static physx::PxFixedJoint* GetFixedJoint(UUID entityUUID);
+		static physx::PxRigidActor* GetActor(UUID actorUUID);
+		static const std::vector<SharedReference<ColliderShape>>& GetActorColliders(UUID actorUUID);
+		static physx::PxController* GetController(UUID actorUUID);
+		static physx::PxFixedJoint* GetFixedJoint(UUID actorUUID);
 
 		static const std::pair<Math::vec3, Math::vec3>& GetLastReportedFixedJointForces(physx::PxFixedJoint* fixedJoint);
 
-		static const PhysicsBodyData* GetPhysicsBodyData(UUID entityUUID);
-		static const ConstrainedJointData* GetConstrainedJointData(UUID entityUUID);
+		static const PhysicsBodyData* GetPhysicsBodyData(UUID actorUUID);
+		static const ConstrainedJointData* GetConstrainedJointData(UUID actorUUID);
 
 		static Scene* GetContextScene();
 
@@ -111,27 +111,27 @@ namespace Vortex {
 		static void UpdateControllers();
 		static void UpdateFixedJoints();
 
-		static void RegisterPhysicsActor(Entity entity, physx::PxRigidActor* actor);
-		static physx::PxRigidActor* CreateRuntimeActor(Entity entity, RigidBodyComponent& rigidbody);
-		static void CreatePhysicsActorInternal(Entity entity);
-		static void CreateCharacterControllerInternal(Entity entity);
+		static void RegisterPhysicsActor(Actor actor, physx::PxRigidActor* pxActor);
+		static physx::PxRigidActor* CreateRuntimeActor(Actor actor, RigidBodyComponent& rigidbody);
+		static void CreatePhysicsActorInternal(Actor actor);
+		static void CreateCharacterControllerInternal(Actor actor);
 
-		static void CreateCollider(Entity entity, physx::PxRigidActor* actor);
-		static void AddColliderShape(Entity entity, physx::PxRigidActor* actor, ColliderType type);
-		static physx::PxMaterial* AddControllerColliderShape(Entity entity, physx::PxRigidActor* actor, ColliderType type);
-		static void CreateFixedJoint(Entity entity);
-		static physx::PxController* CreateController(Entity entity, physx::PxRigidActor* actor);
+		static void CreateCollider(Actor actor, physx::PxRigidActor* pxActor);
+		static void AddColliderShape(Actor actor, physx::PxRigidActor* pxActor, ColliderType type);
+		static physx::PxMaterial* AddControllerColliderShape(Actor actor, physx::PxRigidActor* pxActor, ColliderType type);
+		static void CreateFixedJoint(Actor actor);
+		static physx::PxController* CreateController(Actor actor, physx::PxRigidActor* pxActor);
 
 		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask);
 		static void UpdateDynamicActorProperties(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor);
 		static void InitializeUninitializedActors();
 
-		static void DestroyFixedJointInternal(UUID entityUUID);
-		static void DestroyCharacterControllerInternal(UUID entityUUID);
-		static void DestroyPhysicsActorInternal(UUID entityUUID);
-		static void DestroyColliderShapesInternal(UUID entityUUID);
-		static void DestroyPhysicsBodyDataInternal(UUID entityUUID);
-		static void DestroyConstrainedJointDataInternal(UUID entityUUID);
+		static void DestroyFixedJointInternal(UUID actorUUID);
+		static void DestroyCharacterControllerInternal(UUID actorUUID);
+		static void DestroyPhysicsActorInternal(UUID actorUUID);
+		static void DestroyColliderShapesInternal(UUID actorUUID);
+		static void DestroyPhysicsBodyDataInternal(UUID actorUUID);
+		static void DestroyConstrainedJointDataInternal(UUID actorUUID);
 	};
 
 }

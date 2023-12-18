@@ -18,7 +18,7 @@ extern "C"
 
 namespace Vortex {
 
-	class Entity;
+	class Actor;
 	struct RaycastHit;
 	struct RaycastHit2D;
 	enum class KeyCode : uint16_t;
@@ -39,7 +39,7 @@ namespace Vortex {
 	public:
 		static void RegisterMethods();
 		static void RegisterComponents();
-		static void SetHoveredEntity(Entity entity);
+		static void SetHoveredActor(Actor actor);
 		static void SetSceneStartTime(float startTime);
 	};
 
@@ -78,7 +78,7 @@ namespace Vortex {
 		void DebugRenderer_DrawCircleVec2(Math::vec2* translation, Math::vec2* size, Math::vec4* color, float thickness, float fade);
 		void DebugRenderer_DrawCircleVec3(Math::vec3* translation, Math::vec3* size, Math::vec4* color, float thickness, float fade);
 		void DebugRenderer_DrawBoundingBox(Math::vec3* worldPosition, Math::vec3* size, Math::vec4* color);
-		void DebugRenderer_DrawBoundingBoxFromTransform(UUID entityUUID, Math::vec4* color);
+		void DebugRenderer_DrawBoundingBoxFromTransform(UUID actorUUID, Math::vec4* color);
 		void DebugRenderer_Flush();
 
 #pragma endregion
@@ -86,16 +86,16 @@ namespace Vortex {
 #pragma region Scene
 		
 		uint64_t Scene_GetPrimaryCamera();
-		bool Scene_FindEntityByID(UUID entityUUID);
-		uint64_t Scene_FindEntityByName(MonoString* name);
-		uint64_t Scene_FindChildByName(UUID entityUUID, MonoString* childName);
-		uint64_t Scene_CreateEntity(MonoString* name);
-		uint64_t Scene_Instantiate(UUID entityUUID);
-		uint64_t Scene_InstantiateAsChild(UUID entityUUID, UUID parentUUID);
+		bool Scene_FindActorByID(UUID actorUUID);
+		uint64_t Scene_FindActorByName(MonoString* name);
+		uint64_t Scene_FindChildByName(UUID actorUUID, MonoString* childName);
+		uint64_t Scene_CreateActor(MonoString* name);
+		uint64_t Scene_Instantiate(UUID actorUUID);
+		uint64_t Scene_InstantiateAsChild(UUID actorUUID, UUID parentUUID);
 		bool Scene_IsPaused();
 		void Scene_Pause();
 		void Scene_Resume();
-		uint64_t Scene_GetHoveredEntity();
+		uint64_t Scene_GetHoveredActor();
 
 #pragma endregion
 
@@ -105,26 +105,26 @@ namespace Vortex {
 
 #pragma endregion
 
-#pragma region Entity
+#pragma region Actor
 
-		void Entity_AddComponent(UUID entityUUID, MonoReflectionType* componentType);
-		bool Entity_HasComponent(UUID entityUUID, MonoReflectionType* componentType);
-		void Entity_RemoveComponent(UUID entityUUID, MonoReflectionType* componentType);
-		MonoArray* Entity_GetChildren(UUID entityUUID);
-		uint64_t Entity_GetChild(UUID entityUUID, uint32_t index);
-		MonoString* Entity_GetTag(UUID entityUUID);
-		void Entity_SetTag(UUID entityUUID, MonoString* tag);
-		MonoString* Entity_GetMarker(UUID entityUUID);
-		void Entity_SetMarker(UUID entityUUID, MonoString* marker);
-		bool Entity_AddChild(UUID parentUUID, UUID childUUID);
-		bool Entity_RemoveChild(UUID parentUUID, UUID childUUID);
-		MonoObject* Entity_GetScriptInstance(UUID entityUUID);
-		void Entity_Destroy(UUID entityUUID, bool excludeChildren);
-		void Entity_DestroyWithDelay(UUID entityUUID, float delay, bool excludeChildren);
-		void Entity_Invoke(UUID entityUUID, MonoString* methodName);
-		void Entity_InvokeWithDelay(UUID entityUUID, MonoString* methodName, float delay);
-		void Entity_SetActive(UUID entityUUID, bool isActive);
-		void Entity_AddTimer(UUID entityUUID, MonoString* name, float delay);
+		void Actor_AddComponent(UUID actorUUID, MonoReflectionType* componentType);
+		bool Actor_HasComponent(UUID actorUUID, MonoReflectionType* componentType);
+		void Actor_RemoveComponent(UUID actorUUID, MonoReflectionType* componentType);
+		MonoArray* Actor_GetChildren(UUID actorUUID);
+		uint64_t Actor_GetChild(UUID actorUUID, uint32_t index);
+		MonoString* Actor_GetTag(UUID actorUUID);
+		void Actor_SetTag(UUID actorUUID, MonoString* tag);
+		MonoString* Actor_GetMarker(UUID actorUUID);
+		void Actor_SetMarker(UUID actorUUID, MonoString* marker);
+		bool Actor_AddChild(UUID parentUUID, UUID childUUID);
+		bool Actor_RemoveChild(UUID parentUUID, UUID childUUID);
+		MonoObject* Actor_GetScriptInstance(UUID actorUUID);
+		void Actor_Destroy(UUID actorUUID, bool excludeChildren);
+		void Actor_DestroyWithDelay(UUID actorUUID, float delay, bool excludeChildren);
+		void Actor_Invoke(UUID actorUUID, MonoString* methodName);
+		void Actor_InvokeWithDelay(UUID actorUUID, MonoString* methodName, float delay);
+		void Actor_SetActive(UUID actorUUID, bool isActive);
+		void Actor_AddTimer(UUID actorUUID, MonoString* name, float delay);
 
 #pragma endregion
 
@@ -136,134 +136,134 @@ namespace Vortex {
 
 #pragma region Timer
 
-		float Timer_GetTimeLeft(UUID entityUUID, MonoString* name);
-		bool Timer_IsStarted(UUID entityUUID, MonoString* name);
-		bool Timer_IsFinished(UUID entityUUID, MonoString* name);
-		void Timer_Start(UUID entityUUID, MonoString* name);
+		float Timer_GetTimeLeft(UUID actorUUID, MonoString* name);
+		bool Timer_IsStarted(UUID actorUUID, MonoString* name);
+		bool Timer_IsFinished(UUID actorUUID, MonoString* name);
+		void Timer_Start(UUID actorUUID, MonoString* name);
 
 #pragma endregion
 
 #pragma region Transform Component
 
-		void TransformComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation);
-		void TransformComponent_SetTranslation(UUID entityUUID, Math::vec3* translation);
-		void TransformComponent_GetRotation(UUID entityUUID, Math::quaternion* outRotation);
-		void TransformComponent_SetRotation(UUID entityUUID, Math::quaternion* rotation);
-		void TransformComponent_GetEulerAngles(UUID entityUUID, Math::vec3* outEulerAngles);
-		void TransformComponent_SetEulerAngles(UUID entityUUID, Math::vec3* eulerAngles);
-		void TransformComponent_Rotate(UUID entityUUID, Math::vec3* eulers, Space relativeTo);
-		void TransformComponent_RotateAround(UUID entityUUID, Math::vec3* worldPoint, Math::vec3* axis, float angle);
-		void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* rotation);
-		void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale);
-		void TransformComponent_SetScale(UUID entityUUID, Math::vec3* scale);
-		void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::quaternion* outRotation, Math::vec3* outEulers, Math::vec3* outScale);
-		void TransformComponent_GetTransformMatrix(UUID entityUUID, Math::mat4* outTransform);
-		void TransformComponent_SetTransformMatrix(UUID entityUUID, Math::mat4* transform);
-		void TransformComponent_GetForwardDirection(UUID entityUUID, Math::vec3* outDirection);
-		void TransformComponent_GetUpDirection(UUID entityUUID, Math::vec3* outDirection);
-		void TransformComponent_GetRightDirection(UUID entityUUID, Math::vec3* outDirection);
-		void TransformComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint);
-		uint64_t TransformComponent_GetParent(UUID entityUUID);
+		void TransformComponent_GetTranslation(UUID actorUUID, Math::vec3* outTranslation);
+		void TransformComponent_SetTranslation(UUID actorUUID, Math::vec3* translation);
+		void TransformComponent_GetRotation(UUID actorUUID, Math::quaternion* outRotation);
+		void TransformComponent_SetRotation(UUID actorUUID, Math::quaternion* rotation);
+		void TransformComponent_GetEulerAngles(UUID actorUUID, Math::vec3* outEulerAngles);
+		void TransformComponent_SetEulerAngles(UUID actorUUID, Math::vec3* eulerAngles);
+		void TransformComponent_Rotate(UUID actorUUID, Math::vec3* eulers, Space relativeTo);
+		void TransformComponent_RotateAround(UUID actorUUID, Math::vec3* worldPoint, Math::vec3* axis, float angle);
+		void TransformComponent_SetTranslationAndRotation(UUID actorUUID, Math::vec3* translation, Math::vec3* rotation);
+		void TransformComponent_GetScale(UUID actorUUID, Math::vec3* outScale);
+		void TransformComponent_SetScale(UUID actorUUID, Math::vec3* scale);
+		void TransformComponent_GetWorldSpaceTransform(UUID actorUUID, Math::vec3* outTranslation, Math::quaternion* outRotation, Math::vec3* outEulers, Math::vec3* outScale);
+		void TransformComponent_GetTransformMatrix(UUID actorUUID, Math::mat4* outTransform);
+		void TransformComponent_SetTransformMatrix(UUID actorUUID, Math::mat4* transform);
+		void TransformComponent_GetForwardDirection(UUID actorUUID, Math::vec3* outDirection);
+		void TransformComponent_GetUpDirection(UUID actorUUID, Math::vec3* outDirection);
+		void TransformComponent_GetRightDirection(UUID actorUUID, Math::vec3* outDirection);
+		void TransformComponent_LookAt(UUID actorUUID, Math::vec3* worldPoint);
+		uint64_t TransformComponent_GetParent(UUID actorUUID);
 		void TransformComponent_SetParent(UUID childUUID, UUID parentUUID);
-		void TransformComponent_Unparent(UUID entityUUID);
+		void TransformComponent_Unparent(UUID actorUUID);
 		void TransformComponent_Multiply(TransformComponent* a, TransformComponent* b, TransformComponent* outTransform);
 
 #pragma endregion
 
 #pragma region Camera Component
 
-		SceneCamera::ProjectionType CameraComponent_GetProjectionType(UUID entityUUID);
-		void CameraComponent_SetProjectionType(UUID entityUUID, SceneCamera::ProjectionType type);
-		void CameraComponent_GetPrimary(UUID entityUUID, bool* outPrimary);
-		void CameraComponent_SetPrimary(UUID entityUUID, bool primary);
-		float CameraComponent_GetPerspectiveVerticalFOV(UUID entityUUID);
-		void CameraComponent_SetPerspectiveVerticalFOV(UUID entityUUID, float perspectiveVerticalFOV);
-		float CameraComponent_GetNearClip(UUID entityUUID);
-		void CameraComponent_SetNearClip(UUID entityUUID, float nearClip);
-		float CameraComponent_GetFarClip(UUID entityUUID);
-		void CameraComponent_SetFarClip(UUID entityUUID, float farClip);
-		float CameraComponent_GetOrthographicSize(UUID entityUUID);
-		void CameraComponent_SetOrthographicSize(UUID entityUUID, float orthographicSize);
-		float CameraComponent_GetOrthographicNear(UUID entityUUID);
-		void CameraComponent_SetOrthographicNear(UUID entityUUID, float orthographicNear);
-		float CameraComponent_GetOrthographicFar(UUID entityUUID);
-		void CameraComponent_SetOrthographicFar(UUID entityUUID, float orthographicFar);
-		void CameraComponent_GetFixedAspectRatio(UUID entityUUID, bool* outFixedAspectRatio);
-		void CameraComponent_SetFixedAspectRatio(UUID entityUUID, bool fixedAspectRatio);
-		void CameraComponent_GetClearColor(UUID entityUUID, Math::vec3* outColor);
-		void CameraComponent_SetClearColor(UUID entityUUID, Math::vec3* color);
-		void CameraComponent_Raycast(UUID entityUUID, Math::vec3* position, float maxDistance, Math::Ray* outRay);
-		void CameraComponent_ScreenToWorldPoint(UUID entityUUID, Math::vec2* position, float maxDistance, Math::vec3* outWorldPoint);
-		void CameraComponent_ScreenToViewportPoint(UUID entityUUID, Math::vec2* position, Math::vec2* outViewportPoint);
+		SceneCamera::ProjectionType CameraComponent_GetProjectionType(UUID actorUUID);
+		void CameraComponent_SetProjectionType(UUID actorUUID, SceneCamera::ProjectionType type);
+		void CameraComponent_GetPrimary(UUID actorUUID, bool* outPrimary);
+		void CameraComponent_SetPrimary(UUID actorUUID, bool primary);
+		float CameraComponent_GetPerspectiveVerticalFOV(UUID actorUUID);
+		void CameraComponent_SetPerspectiveVerticalFOV(UUID actorUUID, float perspectiveVerticalFOV);
+		float CameraComponent_GetNearClip(UUID actorUUID);
+		void CameraComponent_SetNearClip(UUID actorUUID, float nearClip);
+		float CameraComponent_GetFarClip(UUID actorUUID);
+		void CameraComponent_SetFarClip(UUID actorUUID, float farClip);
+		float CameraComponent_GetOrthographicSize(UUID actorUUID);
+		void CameraComponent_SetOrthographicSize(UUID actorUUID, float orthographicSize);
+		float CameraComponent_GetOrthographicNear(UUID actorUUID);
+		void CameraComponent_SetOrthographicNear(UUID actorUUID, float orthographicNear);
+		float CameraComponent_GetOrthographicFar(UUID actorUUID);
+		void CameraComponent_SetOrthographicFar(UUID actorUUID, float orthographicFar);
+		void CameraComponent_GetFixedAspectRatio(UUID actorUUID, bool* outFixedAspectRatio);
+		void CameraComponent_SetFixedAspectRatio(UUID actorUUID, bool fixedAspectRatio);
+		void CameraComponent_GetClearColor(UUID actorUUID, Math::vec3* outColor);
+		void CameraComponent_SetClearColor(UUID actorUUID, Math::vec3* color);
+		void CameraComponent_Raycast(UUID actorUUID, Math::vec3* position, float maxDistance, Math::Ray* outRay);
+		void CameraComponent_ScreenToWorldPoint(UUID actorUUID, Math::vec2* position, float maxDistance, Math::vec3* outWorldPoint);
+		void CameraComponent_ScreenToViewportPoint(UUID actorUUID, Math::vec2* position, Math::vec2* outViewportPoint);
 
 #pragma endregion
 
 #pragma region Light Source Component
 
-		LightType LightSourceComponent_GetLightType(UUID entityUUID);
-		void LightSourceComponent_SetLightType(UUID entityUUID, LightType type);
-		void LightSourceComponent_GetRadiance(UUID entityUUID, Math::vec3* outRadiance);
-		void LightSourceComponent_SetRadiance(UUID entityUUID, Math::vec3* radiance);
-		float LightSourceComponent_GetIntensity(UUID entityUUID);
-		void LightSourceComponent_SetIntensity(UUID entityUUID, float intensity);
-		float LightSourceComponent_GetCutoff(UUID entityUUID);
-		void LightSourceComponent_SetCutoff(UUID entityUUID, float cutoff);
-		float LightSourceComponent_GetOuterCutoff(UUID entityUUID);
-		void LightSourceComponent_SetOuterCutoff(UUID entityUUID, float outerCutoff);
-		float LightSourceComponent_GetShadowBias(UUID entityUUID);
-		void LightSourceComponent_SetShadowBias(UUID entityUUID, float shadowBias);
-		bool LightSourceComponent_GetCastShadows(UUID entityUUID);
-		void LightSourceComponent_SetCastShadows(UUID entityUUID, bool castShadows);
-		bool LightSourceComponent_GetSoftShadows(UUID entityUUID);
-		void LightSourceComponent_SetSoftShadows(UUID entityUUID, bool softShadows);
-		bool LightSourceComponent_IsVisible(UUID entityUUID);
-		void LightSourceComponent_SetVisible(UUID entityUUID, bool visible);
+		LightType LightSourceComponent_GetLightType(UUID actorUUID);
+		void LightSourceComponent_SetLightType(UUID actorUUID, LightType type);
+		void LightSourceComponent_GetRadiance(UUID actorUUID, Math::vec3* outRadiance);
+		void LightSourceComponent_SetRadiance(UUID actorUUID, Math::vec3* radiance);
+		float LightSourceComponent_GetIntensity(UUID actorUUID);
+		void LightSourceComponent_SetIntensity(UUID actorUUID, float intensity);
+		float LightSourceComponent_GetCutoff(UUID actorUUID);
+		void LightSourceComponent_SetCutoff(UUID actorUUID, float cutoff);
+		float LightSourceComponent_GetOuterCutoff(UUID actorUUID);
+		void LightSourceComponent_SetOuterCutoff(UUID actorUUID, float outerCutoff);
+		float LightSourceComponent_GetShadowBias(UUID actorUUID);
+		void LightSourceComponent_SetShadowBias(UUID actorUUID, float shadowBias);
+		bool LightSourceComponent_GetCastShadows(UUID actorUUID);
+		void LightSourceComponent_SetCastShadows(UUID actorUUID, bool castShadows);
+		bool LightSourceComponent_GetSoftShadows(UUID actorUUID);
+		void LightSourceComponent_SetSoftShadows(UUID actorUUID, bool softShadows);
+		bool LightSourceComponent_IsVisible(UUID actorUUID);
+		void LightSourceComponent_SetVisible(UUID actorUUID, bool visible);
 
 #pragma endregion
 
 #pragma region TextMesh Component
 
-		MonoString* TextMeshComponent_GetTextString(UUID entityUUID);
-		void TextMeshComponent_SetTextString(UUID entityUUID, MonoString* textString);
-		void TextMeshComponent_GetColor(UUID entityUUID, Math::vec4* outColor);
-		void TextMeshComponent_SetColor(UUID entityUUID, Math::vec4* color);
-		void TextMeshComponent_GetBackgroundColor(UUID entityUUID, Math::vec4* outBackgroundColor);
-		void TextMeshComponent_SetBackgroundColor(UUID entityUUID, Math::vec4* backgroundcolor);
-		float TextMeshComponent_GetLineSpacing(UUID entityUUID);
-		void TextMeshComponent_SetLineSpacing(UUID entityUUID, float lineSpacing);
-		float TextMeshComponent_GetKerning(UUID entityUUID);
-		void TextMeshComponent_SetKerning(UUID entityUUID, float kerning);
-		float TextMeshComponent_GetMaxWidth(UUID entityUUID);
-		void TextMeshComponent_SetMaxWidth(UUID entityUUID, float maxWidth);
-		bool TextMeshComponent_IsVisible(UUID entityUUID);
-		void TextMeshComponent_SetVisible(UUID entityUUID, bool visible);
+		MonoString* TextMeshComponent_GetTextString(UUID actorUUID);
+		void TextMeshComponent_SetTextString(UUID actorUUID, MonoString* textString);
+		void TextMeshComponent_GetColor(UUID actorUUID, Math::vec4* outColor);
+		void TextMeshComponent_SetColor(UUID actorUUID, Math::vec4* color);
+		void TextMeshComponent_GetBackgroundColor(UUID actorUUID, Math::vec4* outBackgroundColor);
+		void TextMeshComponent_SetBackgroundColor(UUID actorUUID, Math::vec4* backgroundcolor);
+		float TextMeshComponent_GetLineSpacing(UUID actorUUID);
+		void TextMeshComponent_SetLineSpacing(UUID actorUUID, float lineSpacing);
+		float TextMeshComponent_GetKerning(UUID actorUUID);
+		void TextMeshComponent_SetKerning(UUID actorUUID, float kerning);
+		float TextMeshComponent_GetMaxWidth(UUID actorUUID);
+		void TextMeshComponent_SetMaxWidth(UUID actorUUID, float maxWidth);
+		bool TextMeshComponent_IsVisible(UUID actorUUID);
+		void TextMeshComponent_SetVisible(UUID actorUUID, bool visible);
 
 #pragma endregion
 
 #pragma region Animator Component
 
-		bool AnimatorComponent_IsPlaying(UUID entityUUID);
-		void AnimatorComponent_Play(UUID entityUUID);
-		void AnimatorComponent_Stop(UUID entityUUID);
+		bool AnimatorComponent_IsPlaying(UUID actorUUID);
+		void AnimatorComponent_Play(UUID actorUUID);
+		void AnimatorComponent_Stop(UUID actorUUID);
 
 #pragma endregion
 
 #pragma region Mesh Renderer Component
 
-		bool MeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* outHandle);
-		bool MeshRendererComponent_IsVisible(UUID entityUUID);
-		void MeshRendererComponent_SetVisible(UUID entityUUID, bool visible);
+		bool MeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID actorUUID, AssetHandle* outHandle);
+		bool MeshRendererComponent_IsVisible(UUID actorUUID);
+		void MeshRendererComponent_SetVisible(UUID actorUUID, bool visible);
 
 #pragma endregion
 
 #pragma region Static Mesh Renderer Component
 
-		MeshType StaticMeshRendererComponent_GetMeshType(UUID entityUUID);
-		void StaticMeshRendererComponent_SetMeshType(UUID entityUUID, MeshType meshType);
-		void StaticMeshRendererComponent_SetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* materialHandle);
-		bool StaticMeshRendererComponent_IsVisible(UUID entityUUID);
-		void StaticMeshRendererComponent_SetVisible(UUID entityUUID, bool visible);
-		bool StaticMeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* outHandle);
+		MeshType StaticMeshRendererComponent_GetMeshType(UUID actorUUID);
+		void StaticMeshRendererComponent_SetMeshType(UUID actorUUID, MeshType meshType);
+		void StaticMeshRendererComponent_SetMaterialHandle(uint32_t submeshIndex, UUID actorUUID, AssetHandle* materialHandle);
+		bool StaticMeshRendererComponent_IsVisible(UUID actorUUID);
+		void StaticMeshRendererComponent_SetVisible(UUID actorUUID, bool visible);
+		bool StaticMeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID actorUUID, AssetHandle* outHandle);
 
 #pragma endregion
 
@@ -300,179 +300,179 @@ namespace Vortex {
 
 #pragma region Sprite Renderer Component
 
-		bool SpriteRendererComponent_GetTextureHandle(UUID entityUUID, AssetHandle* outHandle);
-		void SpriteRendererComponent_SetTextureHandle(UUID entityUUID, AssetHandle* textureHandle);
-		void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor);
-		void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color);
-		void SpriteRendererComponent_GetUV(UUID entityUUID, Math::vec2* outScale);
-		void SpriteRendererComponent_SetUV(UUID entityUUID, Math::vec2* scale);
-		bool SpriteRendererComponent_IsVisible(UUID entityUUID);
-		void SpriteRendererComponent_SetVisible(UUID entityUUID, bool visible);
+		bool SpriteRendererComponent_GetTextureHandle(UUID actorUUID, AssetHandle* outHandle);
+		void SpriteRendererComponent_SetTextureHandle(UUID actorUUID, AssetHandle* textureHandle);
+		void SpriteRendererComponent_GetColor(UUID actorUUID, Math::vec4* outColor);
+		void SpriteRendererComponent_SetColor(UUID actorUUID, Math::vec4* color);
+		void SpriteRendererComponent_GetUV(UUID actorUUID, Math::vec2* outScale);
+		void SpriteRendererComponent_SetUV(UUID actorUUID, Math::vec2* scale);
+		bool SpriteRendererComponent_IsVisible(UUID actorUUID);
+		void SpriteRendererComponent_SetVisible(UUID actorUUID, bool visible);
 
 #pragma endregion
 
 #pragma region Circle Renderer Component
 
-		void CircleRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor);
-		void CircleRendererComponent_SetColor(UUID entityUUID, Math::vec4* color);
-		void CircleRendererComponent_GetThickness(UUID entityUUID, float* outThickness);
-		void CircleRendererComponent_SetThickness(UUID entityUUID, float thickness);
-		void CircleRendererComponent_GetFade(UUID entityUUID, float* outFade);
-		void CircleRendererComponent_SetFade(UUID entityUUID, float fade);
-		bool CircleRendererComponent_IsVisible(UUID entityUUID);
-		void CircleRendererComponent_SetVisible(UUID entityUUID, bool visible);
+		void CircleRendererComponent_GetColor(UUID actorUUID, Math::vec4* outColor);
+		void CircleRendererComponent_SetColor(UUID actorUUID, Math::vec4* color);
+		void CircleRendererComponent_GetThickness(UUID actorUUID, float* outThickness);
+		void CircleRendererComponent_SetThickness(UUID actorUUID, float thickness);
+		void CircleRendererComponent_GetFade(UUID actorUUID, float* outFade);
+		void CircleRendererComponent_SetFade(UUID actorUUID, float fade);
+		bool CircleRendererComponent_IsVisible(UUID actorUUID);
+		void CircleRendererComponent_SetVisible(UUID actorUUID, bool visible);
 
 #pragma endregion
 		
 #pragma region Particle Emitter Component
 
-		void ParticleEmitterComponent_GetVelocity(UUID entityUUID, Math::vec3* outVelocity);
-		void ParticleEmitterComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity);
-		void ParticleEmitterComponent_GetVelocityVariation(UUID entityUUID, Math::vec3* outVelocityVariation);
-		void ParticleEmitterComponent_SetVelocityVariation(UUID entityUUID, Math::vec3* velocityVariation);
-		void ParticleEmitterComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset);
-		void ParticleEmitterComponent_SetOffset(UUID entityUUID, Math::vec3* offset);
-		void ParticleEmitterComponent_GetSizeBegin(UUID entityUUID, Math::vec2* outSizeBegin);
-		void ParticleEmitterComponent_SetSizeBegin(UUID entityUUID, Math::vec2* sizeBegin);
-		void ParticleEmitterComponent_GetSizeEnd(UUID entityUUID, Math::vec2* outSizeEnd);
-		void ParticleEmitterComponent_SetSizeEnd(UUID entityUUID, Math::vec2* sizeEnd);
-		void ParticleEmitterComponent_GetSizeVariation(UUID entityUUID, Math::vec2* outSizeVariation);
-		void ParticleEmitterComponent_SetSizeVariation(UUID entityUUID, Math::vec2* sizeVariation);
-		void ParticleEmitterComponent_GetColorBegin(UUID entityUUID, Math::vec4* outColorBegin);
-		void ParticleEmitterComponent_SetColorBegin(UUID entityUUID, Math::vec4* colorBegin);
-		void ParticleEmitterComponent_GetColorEnd(UUID entityUUID, Math::vec4* outColorEnd);
-		void ParticleEmitterComponent_SetColorEnd(UUID entityUUID, Math::vec4* colorEnd);
-		void ParticleEmitterComponent_GetRotation(UUID entityUUID, float* outRotation);
-		void ParticleEmitterComponent_SetRotation(UUID entityUUID, float colorEnd);
-		void ParticleEmitterComponent_GetLifeTime(UUID entityUUID, float* outLifeTime);
-		void ParticleEmitterComponent_SetLifeTime(UUID entityUUID, float lifetime);
-		void ParticleEmitterComponent_Start(UUID entityUUID);
-		void ParticleEmitterComponent_Stop(UUID entityUUID);
+		void ParticleEmitterComponent_GetVelocity(UUID actorUUID, Math::vec3* outVelocity);
+		void ParticleEmitterComponent_SetVelocity(UUID actorUUID, Math::vec3* velocity);
+		void ParticleEmitterComponent_GetVelocityVariation(UUID actorUUID, Math::vec3* outVelocityVariation);
+		void ParticleEmitterComponent_SetVelocityVariation(UUID actorUUID, Math::vec3* velocityVariation);
+		void ParticleEmitterComponent_GetOffset(UUID actorUUID, Math::vec3* outOffset);
+		void ParticleEmitterComponent_SetOffset(UUID actorUUID, Math::vec3* offset);
+		void ParticleEmitterComponent_GetSizeBegin(UUID actorUUID, Math::vec2* outSizeBegin);
+		void ParticleEmitterComponent_SetSizeBegin(UUID actorUUID, Math::vec2* sizeBegin);
+		void ParticleEmitterComponent_GetSizeEnd(UUID actorUUID, Math::vec2* outSizeEnd);
+		void ParticleEmitterComponent_SetSizeEnd(UUID actorUUID, Math::vec2* sizeEnd);
+		void ParticleEmitterComponent_GetSizeVariation(UUID actorUUID, Math::vec2* outSizeVariation);
+		void ParticleEmitterComponent_SetSizeVariation(UUID actorUUID, Math::vec2* sizeVariation);
+		void ParticleEmitterComponent_GetColorBegin(UUID actorUUID, Math::vec4* outColorBegin);
+		void ParticleEmitterComponent_SetColorBegin(UUID actorUUID, Math::vec4* colorBegin);
+		void ParticleEmitterComponent_GetColorEnd(UUID actorUUID, Math::vec4* outColorEnd);
+		void ParticleEmitterComponent_SetColorEnd(UUID actorUUID, Math::vec4* colorEnd);
+		void ParticleEmitterComponent_GetRotation(UUID actorUUID, float* outRotation);
+		void ParticleEmitterComponent_SetRotation(UUID actorUUID, float colorEnd);
+		void ParticleEmitterComponent_GetLifeTime(UUID actorUUID, float* outLifeTime);
+		void ParticleEmitterComponent_SetLifeTime(UUID actorUUID, float lifetime);
+		void ParticleEmitterComponent_Start(UUID actorUUID);
+		void ParticleEmitterComponent_Stop(UUID actorUUID);
 
 #pragma endregion
 		
 #pragma region Audio Source Component
 
-		void AudioSourceComponent_GetPosition(UUID entityUUID, Math::vec3* outPosition);
-		void AudioSourceComponent_SetPosition(UUID entityUUID, Math::vec3* position);
-		void AudioSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outPosition);
-		void AudioSourceComponent_SetDirection(UUID entityUUID, Math::vec3* position);
-		void AudioSourceComponent_GetVelocity(UUID entityUUID, Math::vec3* velocity);
-		void AudioSourceComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity);
-		float AudioSourceComponent_GetMinGain(UUID entityUUID);
-		void AudioSourceComponent_SetMinGain(UUID entityUUID, float minGain);
-		float AudioSourceComponent_GetMaxGain(UUID entityUUID);
-		void AudioSourceComponent_SetMaxGain(UUID entityUUID, float maxGain);
-		float AudioSourceComponent_GetDirectionalAttenuationFactor(UUID entityUUID);
-		void AudioSourceComponent_SetDirectionalAttenuationFactor(UUID entityUUID, float factor);
-		AttenuationModel AudioSourceComponent_GetAttenuationModel(UUID entityUUID);
-		void AudioSourceComponent_SetAttenuationModel(UUID entityUUID, AttenuationModel model);
-		float AudioSourceComponent_GetPan(UUID entityUUID);
-		void AudioSourceComponent_SetPan(UUID entityUUID, float pan);
-		PanMode AudioSourceComponent_GetPanMode(UUID entityUUID);
-		void AudioSourceComponent_SetPanMode(UUID entityUUID, PanMode mode);
-		PositioningMode AudioSourceComponent_GetPositioningMode(UUID entityUUID);
-		void AudioSourceComponent_SetPositioningMode(UUID entityUUID, PositioningMode mode);
-		float AudioSourceComponent_GetFalloff(UUID entityUUID);
-		void AudioSourceComponent_SetFalloff(UUID entityUUID, float falloff);
-		float AudioSourceComponent_GetMinDistance(UUID entityUUID);
-		void AudioSourceComponent_SetMinDistance(UUID entityUUID, float minDistance);
-		float AudioSourceComponent_GetMaxDistance(UUID entityUUID);
-		void AudioSourceComponent_SetMaxDistance(UUID entityUUID, float maxDistance);
-		float AudioSourceComponent_GetPitch(UUID entityUUID);
-		void AudioSourceComponent_SetPitch(UUID entityUUID, float pitch);
-		float AudioSourceComponent_GetDopplerFactor(UUID entityUUID);
-		void AudioSourceComponent_SetDopplerFactor(UUID entityUUID, float dopplerFactor);
-		float AudioSourceComponent_GetVolume(UUID entityUUID);
-		void AudioSourceComponent_SetVolume(UUID entityUUID, float volume);
-		void AudioSourceComponent_GetDirectionToListener(UUID entityUUID, Math::vec3* outDirection);
-		bool AudioSourceComponent_GetPlayOnStart(UUID entityUUID);
-		void AudioSourceComponent_SetPlayOnStart(UUID entityUUID, bool playOnStart);
-		bool AudioSourceComponent_GetIsSpacialized(UUID entityUUID);
-		void AudioSourceComponent_SetIsSpacialized(UUID entityUUID, bool spacialized);
-		bool AudioSourceComponent_GetIsLooping(UUID entityUUID);
-		void AudioSourceComponent_SetIsLooping(UUID entityUUID, bool loop);
-		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID);
-		bool AudioSourceComponent_GetIsPaused(UUID entityUUID);
-		uint64_t AudioSourceComponent_GetCursorInMilliseconds(UUID entityUUID);
-		uint32_t AudioSourceComponent_GetPinnedListenerIndex(UUID entityUUID);
-		void AudioSourceComponent_SetPinnedListenerIndex(UUID entityUUID, uint32_t listenerIndex);
-		void AudioSourceComponent_Play(UUID entityUUID);
-		void AudioSourceComponent_SetStartTimeInMilliseconds(UUID entityUUID, uint64_t millis);
-		void AudioSourceComponent_SetStartTimeInPCMFrames(UUID entityUUID, uint64_t frames);
-		void AudioSourceComponent_SetFadeInMilliseconds(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInMillis);
-		void AudioSourceComponent_SetFadeStartInMilliseconds(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInMillis, uint64_t absoluteGlobalTime);
-		void AudioSourceComponent_SetFadeInPCMFrames(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInFrames);
-		void AudioSourceComponent_SetFadeStartInPCMFrames(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInFrames, uint64_t absoluteGlobalTime);
-		float AudioSourceComponent_GetCurrentFadeVolume(UUID entityUUID);
-		void AudioSourceComponent_PlayOneShot(UUID entityUUID);
-		void AudioSourceComponent_Pause(UUID entityUUID);
-		void AudioSourceComponent_Restart(UUID entityUUID);
-		void AudioSourceComponent_Stop(UUID entityUUID);
-		void AudioSourceComponent_SetStopTimeInMilliseconds(UUID entityUUID, uint64_t millis);
-		void AudioSourceComponent_SetStopTimeInPCMFrames(UUID entityUUID, uint64_t frames);
-		void AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(UUID entityUUID, uint64_t stopTimeInMillis, uint64_t fadeLengthInMillis);
-		void AudioSourceComponent_SetStopTimeWithFadeInPCMFrames(UUID entityUUID, uint64_t stopTimeInFrames, uint64_t fadeLengthInFrames);
-		bool AudioSourceComponent_SeekToPCMFrame(UUID entityUUID, uint64_t frameIndex);
+		void AudioSourceComponent_GetPosition(UUID actorUUID, Math::vec3* outPosition);
+		void AudioSourceComponent_SetPosition(UUID actorUUID, Math::vec3* position);
+		void AudioSourceComponent_GetDirection(UUID actorUUID, Math::vec3* outPosition);
+		void AudioSourceComponent_SetDirection(UUID actorUUID, Math::vec3* position);
+		void AudioSourceComponent_GetVelocity(UUID actorUUID, Math::vec3* velocity);
+		void AudioSourceComponent_SetVelocity(UUID actorUUID, Math::vec3* velocity);
+		float AudioSourceComponent_GetMinGain(UUID actorUUID);
+		void AudioSourceComponent_SetMinGain(UUID actorUUID, float minGain);
+		float AudioSourceComponent_GetMaxGain(UUID actorUUID);
+		void AudioSourceComponent_SetMaxGain(UUID actorUUID, float maxGain);
+		float AudioSourceComponent_GetDirectionalAttenuationFactor(UUID actorUUID);
+		void AudioSourceComponent_SetDirectionalAttenuationFactor(UUID actorUUID, float factor);
+		AttenuationModel AudioSourceComponent_GetAttenuationModel(UUID actorUUID);
+		void AudioSourceComponent_SetAttenuationModel(UUID actorUUID, AttenuationModel model);
+		float AudioSourceComponent_GetPan(UUID actorUUID);
+		void AudioSourceComponent_SetPan(UUID actorUUID, float pan);
+		PanMode AudioSourceComponent_GetPanMode(UUID actorUUID);
+		void AudioSourceComponent_SetPanMode(UUID actorUUID, PanMode mode);
+		PositioningMode AudioSourceComponent_GetPositioningMode(UUID actorUUID);
+		void AudioSourceComponent_SetPositioningMode(UUID actorUUID, PositioningMode mode);
+		float AudioSourceComponent_GetFalloff(UUID actorUUID);
+		void AudioSourceComponent_SetFalloff(UUID actorUUID, float falloff);
+		float AudioSourceComponent_GetMinDistance(UUID actorUUID);
+		void AudioSourceComponent_SetMinDistance(UUID actorUUID, float minDistance);
+		float AudioSourceComponent_GetMaxDistance(UUID actorUUID);
+		void AudioSourceComponent_SetMaxDistance(UUID actorUUID, float maxDistance);
+		float AudioSourceComponent_GetPitch(UUID actorUUID);
+		void AudioSourceComponent_SetPitch(UUID actorUUID, float pitch);
+		float AudioSourceComponent_GetDopplerFactor(UUID actorUUID);
+		void AudioSourceComponent_SetDopplerFactor(UUID actorUUID, float dopplerFactor);
+		float AudioSourceComponent_GetVolume(UUID actorUUID);
+		void AudioSourceComponent_SetVolume(UUID actorUUID, float volume);
+		void AudioSourceComponent_GetDirectionToListener(UUID actorUUID, Math::vec3* outDirection);
+		bool AudioSourceComponent_GetPlayOnStart(UUID actorUUID);
+		void AudioSourceComponent_SetPlayOnStart(UUID actorUUID, bool playOnStart);
+		bool AudioSourceComponent_GetIsSpacialized(UUID actorUUID);
+		void AudioSourceComponent_SetIsSpacialized(UUID actorUUID, bool spacialized);
+		bool AudioSourceComponent_GetIsLooping(UUID actorUUID);
+		void AudioSourceComponent_SetIsLooping(UUID actorUUID, bool loop);
+		bool AudioSourceComponent_GetIsPlaying(UUID actorUUID);
+		bool AudioSourceComponent_GetIsPaused(UUID actorUUID);
+		uint64_t AudioSourceComponent_GetCursorInMilliseconds(UUID actorUUID);
+		uint32_t AudioSourceComponent_GetPinnedListenerIndex(UUID actorUUID);
+		void AudioSourceComponent_SetPinnedListenerIndex(UUID actorUUID, uint32_t listenerIndex);
+		void AudioSourceComponent_Play(UUID actorUUID);
+		void AudioSourceComponent_SetStartTimeInMilliseconds(UUID actorUUID, uint64_t millis);
+		void AudioSourceComponent_SetStartTimeInPCMFrames(UUID actorUUID, uint64_t frames);
+		void AudioSourceComponent_SetFadeInMilliseconds(UUID actorUUID, float volumeStart, float volumeEnd, uint64_t lengthInMillis);
+		void AudioSourceComponent_SetFadeStartInMilliseconds(UUID actorUUID, float volumeStart, float volumeEnd, uint64_t lengthInMillis, uint64_t absoluteGlobalTime);
+		void AudioSourceComponent_SetFadeInPCMFrames(UUID actorUUID, float volumeStart, float volumeEnd, uint64_t lengthInFrames);
+		void AudioSourceComponent_SetFadeStartInPCMFrames(UUID actorUUID, float volumeStart, float volumeEnd, uint64_t lengthInFrames, uint64_t absoluteGlobalTime);
+		float AudioSourceComponent_GetCurrentFadeVolume(UUID actorUUID);
+		void AudioSourceComponent_PlayOneShot(UUID actorUUID);
+		void AudioSourceComponent_Pause(UUID actorUUID);
+		void AudioSourceComponent_Restart(UUID actorUUID);
+		void AudioSourceComponent_Stop(UUID actorUUID);
+		void AudioSourceComponent_SetStopTimeInMilliseconds(UUID actorUUID, uint64_t millis);
+		void AudioSourceComponent_SetStopTimeInPCMFrames(UUID actorUUID, uint64_t frames);
+		void AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(UUID actorUUID, uint64_t stopTimeInMillis, uint64_t fadeLengthInMillis);
+		void AudioSourceComponent_SetStopTimeWithFadeInPCMFrames(UUID actorUUID, uint64_t stopTimeInFrames, uint64_t fadeLengthInFrames);
+		bool AudioSourceComponent_SeekToPCMFrame(UUID actorUUID, uint64_t frameIndex);
 
 #pragma endregion
 
 #pragma region Audio Clip
 
-		MonoString* AudioClip_GetName(UUID entityUUID);
-		float AudioClip_GetLength(UUID entityUUID);
+		MonoString* AudioClip_GetName(UUID actorUUID);
+		float AudioClip_GetLength(UUID actorUUID);
 
 #pragma endregion
 
 #pragma region Audio Cone
 
-		float AudioCone_GetInnerAngle(UUID entityUUID);
-		void AudioCone_SetInnerAngle(UUID entityUUID, float innerAngle);
-		float AudioCone_GetOuterAngle(UUID entityUUID);
-		void AudioCone_SetOuterAngle(UUID entityUUID, float outerAngle);
-		float AudioCone_GetOuterGain(UUID entityUUID);
-		void AudioCone_SetOuterGain(UUID entityUUID, float outerGain);
+		float AudioCone_GetInnerAngle(UUID actorUUID);
+		void AudioCone_SetInnerAngle(UUID actorUUID, float innerAngle);
+		float AudioCone_GetOuterAngle(UUID actorUUID);
+		void AudioCone_SetOuterAngle(UUID actorUUID, float outerAngle);
+		float AudioCone_GetOuterGain(UUID actorUUID);
+		void AudioCone_SetOuterGain(UUID actorUUID, float outerGain);
 
 #pragma endregion
 
 #pragma region RigidBody Component
 
-		RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID);
-		void RigidBodyComponent_SetBodyType(UUID entityUUID, RigidBodyType bodyType);
-		CollisionDetectionType RigidBodyComponent_GetCollisionDetectionType(UUID entityUUID);
-		void RigidBodyComponent_SetCollisionDetectionType(UUID entityUUID, CollisionDetectionType collisionDetectionType);
-		float RigidBodyComponent_GetMass(UUID entityUUID);
-		void RigidBodyComponent_SetMass(UUID entityUUID, float mass);
-		void RigidBodyComponent_GetLinearVelocity(UUID entityUUID, Math::vec3* outVelocity);
-		void RigidBodyComponent_SetLinearVelocity(UUID entityUUID, Math::vec3* velocity);
-		float RigidBodyComponent_GetMaxLinearVelocity(UUID entityUUID);
-		void RigidBodyComponent_SetMaxLinearVelocity(UUID entityUUID, float maxLinearVelocity);
-		float RigidBodyComponent_GetLinearDrag(UUID entityUUID);
-		void RigidBodyComponent_SetLinearDrag(UUID entityUUID, float drag);
-		void RigidBodyComponent_GetAngularVelocity(UUID entityUUID, Math::vec3* outVelocity);
-		void RigidBodyComponent_SetAngularVelocity(UUID entityUUID, Math::vec3* velocity);
-		float RigidBodyComponent_GetMaxAngularVelocity(UUID entityUUID);
-		void RigidBodyComponent_SetMaxAngularVelocity(UUID entityUUID, float maxAngularVelocity);
-		float RigidBodyComponent_GetAngularDrag(UUID entityUUID);
-		void RigidBodyComponent_SetAngularDrag(UUID entityUUID, float drag);
-		bool RigidBodyComponent_GetDisableGravity(UUID entityUUID);
-		void RigidBodyComponent_SetDisableGravity(UUID entityUUID, bool disabled);
-		bool RigidBodyComponent_GetIsKinematic(UUID entityUUID);
-		void RigidBodyComponent_SetIsKinematic(UUID entityUUID, bool isKinematic);
-		void RigidBodyComponent_GetKinematicTargetTranslation(UUID entityUUID, Math::vec3* outTranslation);
-		void RigidBodyComponent_SetKinematicTargetTranslation(UUID entityUUID, Math::vec3* translation);
-		void RigidBodyComponent_GetKinematicTargetRotation(UUID entityUUID, Math::quaternion* outRotation);
-		void RigidBodyComponent_SetKinematicTargetRotation(UUID entityUUID, Math::quaternion* rotation);
-		uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID);
-		void RigidBodyComponent_SetLockFlag(UUID entityUUID, ActorLockFlag flag, bool value, bool forceWake);
-		bool RigidBodyComponent_IsLockFlagSet(UUID entityUUID, ActorLockFlag flag);
-		bool RigidBodyComponent_IsSleeping(UUID entityUUID);
-		void RigidBodyComponent_WakeUp(UUID entityUUID);
-		void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode);
-		void RigidBodyComponent_AddForceAtPosition(UUID entityUUID, Math::vec3* force, Math::vec3* position, ForceMode mode);
-		void RigidBodyComponent_AddTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode);
-		void RigidBodyComponent_ClearTorque(UUID entityUUID, ForceMode mode);
-		void RigidBodyComponent_ClearForce(UUID entityUUID, ForceMode mode);
+		RigidBodyType RigidBodyComponent_GetBodyType(UUID actorUUID);
+		void RigidBodyComponent_SetBodyType(UUID actorUUID, RigidBodyType bodyType);
+		CollisionDetectionType RigidBodyComponent_GetCollisionDetectionType(UUID actorUUID);
+		void RigidBodyComponent_SetCollisionDetectionType(UUID actorUUID, CollisionDetectionType collisionDetectionType);
+		float RigidBodyComponent_GetMass(UUID actorUUID);
+		void RigidBodyComponent_SetMass(UUID actorUUID, float mass);
+		void RigidBodyComponent_GetLinearVelocity(UUID actorUUID, Math::vec3* outVelocity);
+		void RigidBodyComponent_SetLinearVelocity(UUID actorUUID, Math::vec3* velocity);
+		float RigidBodyComponent_GetMaxLinearVelocity(UUID actorUUID);
+		void RigidBodyComponent_SetMaxLinearVelocity(UUID actorUUID, float maxLinearVelocity);
+		float RigidBodyComponent_GetLinearDrag(UUID actorUUID);
+		void RigidBodyComponent_SetLinearDrag(UUID actorUUID, float drag);
+		void RigidBodyComponent_GetAngularVelocity(UUID actorUUID, Math::vec3* outVelocity);
+		void RigidBodyComponent_SetAngularVelocity(UUID actorUUID, Math::vec3* velocity);
+		float RigidBodyComponent_GetMaxAngularVelocity(UUID actorUUID);
+		void RigidBodyComponent_SetMaxAngularVelocity(UUID actorUUID, float maxAngularVelocity);
+		float RigidBodyComponent_GetAngularDrag(UUID actorUUID);
+		void RigidBodyComponent_SetAngularDrag(UUID actorUUID, float drag);
+		bool RigidBodyComponent_GetDisableGravity(UUID actorUUID);
+		void RigidBodyComponent_SetDisableGravity(UUID actorUUID, bool disabled);
+		bool RigidBodyComponent_GetIsKinematic(UUID actorUUID);
+		void RigidBodyComponent_SetIsKinematic(UUID actorUUID, bool isKinematic);
+		void RigidBodyComponent_GetKinematicTargetTranslation(UUID actorUUID, Math::vec3* outTranslation);
+		void RigidBodyComponent_SetKinematicTargetTranslation(UUID actorUUID, Math::vec3* translation);
+		void RigidBodyComponent_GetKinematicTargetRotation(UUID actorUUID, Math::quaternion* outRotation);
+		void RigidBodyComponent_SetKinematicTargetRotation(UUID actorUUID, Math::quaternion* rotation);
+		uint32_t RigidBodyComponent_GetLockFlags(UUID actorUUID);
+		void RigidBodyComponent_SetLockFlag(UUID actorUUID, ActorLockFlag flag, bool value, bool forceWake);
+		bool RigidBodyComponent_IsLockFlagSet(UUID actorUUID, ActorLockFlag flag);
+		bool RigidBodyComponent_IsSleeping(UUID actorUUID);
+		void RigidBodyComponent_WakeUp(UUID actorUUID);
+		void RigidBodyComponent_AddForce(UUID actorUUID, Math::vec3* force, ForceMode mode);
+		void RigidBodyComponent_AddForceAtPosition(UUID actorUUID, Math::vec3* force, Math::vec3* position, ForceMode mode);
+		void RigidBodyComponent_AddTorque(UUID actorUUID, Math::vec3* torque, ForceMode mode);
+		void RigidBodyComponent_ClearTorque(UUID actorUUID, ForceMode mode);
+		void RigidBodyComponent_ClearForce(UUID actorUUID, ForceMode mode);
 
 #pragma endregion
 
@@ -505,116 +505,116 @@ namespace Vortex {
 
 #pragma region Character Controller Component
 
-		void CharacterControllerComponent_Move(UUID entityUUID, Math::vec3* displacement);
-		void CharacterControllerComponent_Jump(UUID entityUUID, float jumpForce);
-		bool CharacterControllerComponent_IsGrounded(UUID entityUUID);
-		void CharacterControllerComponent_GetFootPosition(UUID entityUUID, Math::vec3* outFootPos);
-		float CharacterControllerComponent_GetSpeedDown(UUID entityUUID);
-		float CharacterControllerComponent_GetSlopeLimit(UUID entityUUID);
-		void CharacterControllerComponent_SetSlopeLimit(UUID entityUUID, float slopeLimit);
-		float CharacterControllerComponent_GetStepOffset(UUID entityUUID);
-		void CharacterControllerComponent_SetStepOffset(UUID entityUUID, float stepOffset);
-		float CharacterControllerComponent_GetContactOffset(UUID entityUUID);
-		void CharacterControllerComponent_SetContactOffset(UUID entityUUID, float contactOffset);
-		NonWalkableMode CharacterControllerComponent_GetNonWalkableMode(UUID entityUUID);
-		void CharacterControllerComponent_SetNonWalkableMode(UUID entityUUID, NonWalkableMode mode);
-		CapsuleClimbMode CharacterControllerComponent_GetClimbMode(UUID entityUUID);
-		void CharacterControllerComponent_SetClimbMode(UUID entityUUID, CapsuleClimbMode mode);
-		bool CharacterControllerComponent_GetDisableGravity(UUID entityUUID);
-		void CharacterControllerComponent_SetDisableGravity(UUID entityUUID, bool disableGravity);
+		void CharacterControllerComponent_Move(UUID actorUUID, Math::vec3* displacement);
+		void CharacterControllerComponent_Jump(UUID actorUUID, float jumpForce);
+		bool CharacterControllerComponent_IsGrounded(UUID actorUUID);
+		void CharacterControllerComponent_GetFootPosition(UUID actorUUID, Math::vec3* outFootPos);
+		float CharacterControllerComponent_GetSpeedDown(UUID actorUUID);
+		float CharacterControllerComponent_GetSlopeLimit(UUID actorUUID);
+		void CharacterControllerComponent_SetSlopeLimit(UUID actorUUID, float slopeLimit);
+		float CharacterControllerComponent_GetStepOffset(UUID actorUUID);
+		void CharacterControllerComponent_SetStepOffset(UUID actorUUID, float stepOffset);
+		float CharacterControllerComponent_GetContactOffset(UUID actorUUID);
+		void CharacterControllerComponent_SetContactOffset(UUID actorUUID, float contactOffset);
+		NonWalkableMode CharacterControllerComponent_GetNonWalkableMode(UUID actorUUID);
+		void CharacterControllerComponent_SetNonWalkableMode(UUID actorUUID, NonWalkableMode mode);
+		CapsuleClimbMode CharacterControllerComponent_GetClimbMode(UUID actorUUID);
+		void CharacterControllerComponent_SetClimbMode(UUID actorUUID, CapsuleClimbMode mode);
+		bool CharacterControllerComponent_GetDisableGravity(UUID actorUUID);
+		void CharacterControllerComponent_SetDisableGravity(UUID actorUUID, bool disableGravity);
 		
 #pragma endregion
 		
 #pragma region FixedJoint Component
 
-		uint64_t FixedJointComponent_GetConnectedEntity(UUID entityUUID);
-		void FixedJointComponent_SetConnectedEntity(UUID entityUUID, UUID connectedEntityUUID);
-		float FixedJointComponent_GetBreakForce(UUID entityUUID);
-		void FixedJointComponent_SetBreakForce(UUID entityUUID, float breakForce);
-		float FixedJointComponent_GetBreakTorque(UUID entityUUID);
-		void FixedJointComponent_SetBreakTorque(UUID entityUUID, float breakTorque);
-		void FixedJointComponent_SetBreakForceAndTorque(UUID entityUUID, float breakForce, float breakTorque);
-		bool FixedJointComponent_GetEnableCollision(UUID entityUUID);
-		void FixedJointComponent_SetCollisionEnabled(UUID entityUUID, bool enableCollision);
-		bool FixedJointComponent_GetPreProcessingEnabled(UUID entityUUID);
-		void FixedJointComponent_SetPreProcessingEnabled(UUID entityUUID, bool enablePreProcessing);
-		bool FixedJointComponent_IsBroken(UUID entityUUID);
-		bool FixedJointComponent_GetIsBreakable(UUID entityUUID);
-		void FixedJointComponent_SetIsBreakable(UUID entityUUID, bool isBreakable);
-		void FixedJointComponent_Break(UUID entityUUID);
+		uint64_t FixedJointComponent_GetConnectedActor(UUID actorUUID);
+		void FixedJointComponent_SetConnectedActor(UUID actorUUID, UUID connectedActorUUID);
+		float FixedJointComponent_GetBreakForce(UUID actorUUID);
+		void FixedJointComponent_SetBreakForce(UUID actorUUID, float breakForce);
+		float FixedJointComponent_GetBreakTorque(UUID actorUUID);
+		void FixedJointComponent_SetBreakTorque(UUID actorUUID, float breakTorque);
+		void FixedJointComponent_SetBreakForceAndTorque(UUID actorUUID, float breakForce, float breakTorque);
+		bool FixedJointComponent_GetEnableCollision(UUID actorUUID);
+		void FixedJointComponent_SetCollisionEnabled(UUID actorUUID, bool enableCollision);
+		bool FixedJointComponent_GetPreProcessingEnabled(UUID actorUUID);
+		void FixedJointComponent_SetPreProcessingEnabled(UUID actorUUID, bool enablePreProcessing);
+		bool FixedJointComponent_IsBroken(UUID actorUUID);
+		bool FixedJointComponent_GetIsBreakable(UUID actorUUID);
+		void FixedJointComponent_SetIsBreakable(UUID actorUUID, bool isBreakable);
+		void FixedJointComponent_Break(UUID actorUUID);
 
 #pragma endregion
 
 #pragma region BoxCollider Component
 
-		void BoxColliderComponent_GetHalfSize(UUID entityUUID, Math::vec3* outHalfSize);
-		void BoxColliderComponent_SetHalfSize(UUID entityUUID, Math::vec3* halfSize);
-		void BoxColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset);
-		void BoxColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset);
-		bool BoxColliderComponent_GetIsTrigger(UUID entityUUID);
-		void BoxColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger);
-		bool BoxColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle);
+		void BoxColliderComponent_GetHalfSize(UUID actorUUID, Math::vec3* outHalfSize);
+		void BoxColliderComponent_SetHalfSize(UUID actorUUID, Math::vec3* halfSize);
+		void BoxColliderComponent_GetOffset(UUID actorUUID, Math::vec3* outOffset);
+		void BoxColliderComponent_SetOffset(UUID actorUUID, Math::vec3* offset);
+		bool BoxColliderComponent_GetIsTrigger(UUID actorUUID);
+		void BoxColliderComponent_SetIsTrigger(UUID actorUUID, bool isTrigger);
+		bool BoxColliderComponent_GetMaterialHandle(UUID actorUUID, AssetHandle* outHandle);
 
 #pragma endregion
 
 #pragma region SphereCollider Component
 
-		float SphereColliderComponent_GetRadius(UUID entityUUID);
-		void SphereColliderComponent_SetRadius(UUID entityUUID, float radius);
-		void SphereColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset);
-		void SphereColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset);
-		bool SphereColliderComponent_GetIsTrigger(UUID entityUUID);
-		void SphereColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger);
-		bool SphereColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle);
+		float SphereColliderComponent_GetRadius(UUID actorUUID);
+		void SphereColliderComponent_SetRadius(UUID actorUUID, float radius);
+		void SphereColliderComponent_GetOffset(UUID actorUUID, Math::vec3* outOffset);
+		void SphereColliderComponent_SetOffset(UUID actorUUID, Math::vec3* offset);
+		bool SphereColliderComponent_GetIsTrigger(UUID actorUUID);
+		void SphereColliderComponent_SetIsTrigger(UUID actorUUID, bool isTrigger);
+		bool SphereColliderComponent_GetMaterialHandle(UUID actorUUID, AssetHandle* outHandle);
 
 #pragma endregion
 
 #pragma region CapsuleCollider Component
 
-		float CapsuleColliderComponent_GetRadius(UUID entityUUID);
-		void CapsuleColliderComponent_SetRadius(UUID entityUUID, float radius);
-		float CapsuleColliderComponent_GetHeight(UUID entityUUID);
-		void CapsuleColliderComponent_SetHeight(UUID entityUUID, float height);
-		void CapsuleColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset);
-		void CapsuleColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset);
-		bool CapsuleColliderComponent_GetIsTrigger(UUID entityUUID);
-		void CapsuleColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger);
-		bool CapsuleColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle);
+		float CapsuleColliderComponent_GetRadius(UUID actorUUID);
+		void CapsuleColliderComponent_SetRadius(UUID actorUUID, float radius);
+		float CapsuleColliderComponent_GetHeight(UUID actorUUID);
+		void CapsuleColliderComponent_SetHeight(UUID actorUUID, float height);
+		void CapsuleColliderComponent_GetOffset(UUID actorUUID, Math::vec3* outOffset);
+		void CapsuleColliderComponent_SetOffset(UUID actorUUID, Math::vec3* offset);
+		bool CapsuleColliderComponent_GetIsTrigger(UUID actorUUID);
+		void CapsuleColliderComponent_SetIsTrigger(UUID actorUUID, bool isTrigger);
+		bool CapsuleColliderComponent_GetMaterialHandle(UUID actorUUID, AssetHandle* outHandle);
 
 #pragma endregion
 
 #pragma region MeshCollider Component
 		
-		bool MeshColliderComponent_IsStaticMesh(UUID entityUUID);
-		bool MeshColliderComponent_IsColliderMeshValid(UUID entityUUID, AssetHandle* assetHandle);
-		bool MeshColliderComponent_GetColliderMesh(UUID entityUUID, AssetHandle* outHandle);
-		void MeshColliderComponent_SetColliderMesh(UUID entityUUID, AssetHandle assetHandle);
-		bool MeshColliderComponent_GetIsTrigger(UUID entityUUID);
-		void MeshColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger);
-		bool MeshColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle);
+		bool MeshColliderComponent_IsStaticMesh(UUID actorUUID);
+		bool MeshColliderComponent_IsColliderMeshValid(UUID actorUUID, AssetHandle* assetHandle);
+		bool MeshColliderComponent_GetColliderMesh(UUID actorUUID, AssetHandle* outHandle);
+		void MeshColliderComponent_SetColliderMesh(UUID actorUUID, AssetHandle assetHandle);
+		bool MeshColliderComponent_GetIsTrigger(UUID actorUUID);
+		void MeshColliderComponent_SetIsTrigger(UUID actorUUID, bool isTrigger);
+		bool MeshColliderComponent_GetMaterialHandle(UUID actorUUID, AssetHandle* outHandle);
 
 #pragma endregion
 
 #pragma region RigidBody2D Component
 
-		RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID);
-		void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DType bodyType);
-		void RigidBody2DComponent_GetVelocity(UUID entityUUID, Math::vec2* outVelocity);
-		void RigidBody2DComponent_SetVelocity(UUID entityUUID, Math::vec2* velocity);
-		float RigidBody2DComponent_GetDrag(UUID entityUUID);
-		void RigidBody2DComponent_SetDrag(UUID entityUUID, float drag);
-		float RigidBody2DComponent_GetAngularVelocity(UUID entityUUID);
-		void RigidBody2DComponent_SetAngularVelocity(UUID entityUUID, float angularVelocity);
-		float RigidBody2DComponent_GetAngularDrag(UUID entityUUID);
-		void RigidBody2DComponent_SetAngularDrag(UUID entityUUID, float angularDrag);
-		bool RigidBody2DComponent_GetFixedRotation(UUID entityUUID);
-		void RigidBody2DComponent_SetFixedRotation(UUID entityUUID, bool freeze);
-		float RigidBody2DComponent_GetGravityScale(UUID entityUUID);
-		void RigidBody2DComponent_SetGravityScale(UUID entityUUID, float gravityScale);
-		void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake);
-		void RigidBody2DComponent_ApplyForceToCenter(UUID entityUUID, Math::vec2* force, bool wake);
-		void RigidBody2DComponent_ApplyLinearImpulse(UUID entityUUID, Math::vec2* impulse, Math::vec2* point, bool wake);
-		void RigidBody2DComponent_ApplyLinearImpulseToCenter(UUID entityUUID, Math::vec2* impulse, bool wake);
+		RigidBody2DType RigidBody2DComponent_GetBodyType(UUID actorUUID);
+		void RigidBody2DComponent_SetBodyType(UUID actorUUID, RigidBody2DType bodyType);
+		void RigidBody2DComponent_GetVelocity(UUID actorUUID, Math::vec2* outVelocity);
+		void RigidBody2DComponent_SetVelocity(UUID actorUUID, Math::vec2* velocity);
+		float RigidBody2DComponent_GetDrag(UUID actorUUID);
+		void RigidBody2DComponent_SetDrag(UUID actorUUID, float drag);
+		float RigidBody2DComponent_GetAngularVelocity(UUID actorUUID);
+		void RigidBody2DComponent_SetAngularVelocity(UUID actorUUID, float angularVelocity);
+		float RigidBody2DComponent_GetAngularDrag(UUID actorUUID);
+		void RigidBody2DComponent_SetAngularDrag(UUID actorUUID, float angularDrag);
+		bool RigidBody2DComponent_GetFixedRotation(UUID actorUUID);
+		void RigidBody2DComponent_SetFixedRotation(UUID actorUUID, bool freeze);
+		float RigidBody2DComponent_GetGravityScale(UUID actorUUID);
+		void RigidBody2DComponent_SetGravityScale(UUID actorUUID, float gravityScale);
+		void RigidBody2DComponent_ApplyForce(UUID actorUUID, Math::vec2* force, Math::vec2* point, bool wake);
+		void RigidBody2DComponent_ApplyForceToCenter(UUID actorUUID, Math::vec2* force, bool wake);
+		void RigidBody2DComponent_ApplyLinearImpulse(UUID actorUUID, Math::vec2* impulse, Math::vec2* point, bool wake);
+		void RigidBody2DComponent_ApplyLinearImpulseToCenter(UUID actorUUID, Math::vec2* impulse, bool wake);
 
 #pragma endregion
 
@@ -632,35 +632,35 @@ namespace Vortex {
 
 #pragma region BoxCollider2D Component
 
-		void BoxCollider2DComponent_GetOffset(UUID entityUUID, Math::vec2* outOffset);
-		void BoxCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset);
-		void BoxCollider2DComponent_GetSize(UUID entityUUID, Math::vec2* outSize);
-		void BoxCollider2DComponent_SetSize(UUID entityUUID, Math::vec2* size);
-		void BoxCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity);
-		void BoxCollider2DComponent_SetDensity(UUID entityUUID, float density);
-		void BoxCollider2DComponent_GetFriction(UUID entityUUID, float* outFriction);
-		void BoxCollider2DComponent_SetFriction(UUID entityUUID, float friction);
-		void BoxCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution);
-		void BoxCollider2DComponent_SetRestitution(UUID entityUUID, float restitution);
-		void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold);
-		void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold);
+		void BoxCollider2DComponent_GetOffset(UUID actorUUID, Math::vec2* outOffset);
+		void BoxCollider2DComponent_SetOffset(UUID actorUUID, Math::vec2* offset);
+		void BoxCollider2DComponent_GetSize(UUID actorUUID, Math::vec2* outSize);
+		void BoxCollider2DComponent_SetSize(UUID actorUUID, Math::vec2* size);
+		void BoxCollider2DComponent_GetDensity(UUID actorUUID, float* outDensity);
+		void BoxCollider2DComponent_SetDensity(UUID actorUUID, float density);
+		void BoxCollider2DComponent_GetFriction(UUID actorUUID, float* outFriction);
+		void BoxCollider2DComponent_SetFriction(UUID actorUUID, float friction);
+		void BoxCollider2DComponent_GetRestitution(UUID actorUUID, float* outRestitution);
+		void BoxCollider2DComponent_SetRestitution(UUID actorUUID, float restitution);
+		void BoxCollider2DComponent_GetRestitutionThreshold(UUID actorUUID, float* outRestitutionThreshold);
+		void BoxCollider2DComponent_SetRestitutionThreshold(UUID actorUUID, float restitutionThreshold);
 
 #pragma endregion
 
 #pragma region CircleCollider2D Component
 
-		void CircleCollider2DComponent_GetOffset(UUID entityUUID, Math::vec2* outOffset);
-		void CircleCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset);
-		void CircleCollider2DComponent_GetRadius(UUID entityUUID, float* outRadius);
-		void CircleCollider2DComponent_SetRadius(UUID entityUUID, float radius);
-		void CircleCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity);
-		void CircleCollider2DComponent_SetDensity(UUID entityUUID, float density);
-		void CircleCollider2DComponent_GetFriction(UUID entityUUID, float* outFriction);
-		void CircleCollider2DComponent_SetFriction(UUID entityUUID, float friction);
-		void CircleCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution);
-		void CircleCollider2DComponent_SetRestitution(UUID entityUUID, float restitution);
-		void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold);
-		void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold);
+		void CircleCollider2DComponent_GetOffset(UUID actorUUID, Math::vec2* outOffset);
+		void CircleCollider2DComponent_SetOffset(UUID actorUUID, Math::vec2* offset);
+		void CircleCollider2DComponent_GetRadius(UUID actorUUID, float* outRadius);
+		void CircleCollider2DComponent_SetRadius(UUID actorUUID, float radius);
+		void CircleCollider2DComponent_GetDensity(UUID actorUUID, float* outDensity);
+		void CircleCollider2DComponent_SetDensity(UUID actorUUID, float density);
+		void CircleCollider2DComponent_GetFriction(UUID actorUUID, float* outFriction);
+		void CircleCollider2DComponent_SetFriction(UUID actorUUID, float friction);
+		void CircleCollider2DComponent_GetRestitution(UUID actorUUID, float* outRestitution);
+		void CircleCollider2DComponent_SetRestitution(UUID actorUUID, float restitution);
+		void CircleCollider2DComponent_GetRestitutionThreshold(UUID actorUUID, float* outRestitutionThreshold);
+		void CircleCollider2DComponent_SetRestitutionThreshold(UUID actorUUID, float restitutionThreshold);
 
 #pragma endregion
 

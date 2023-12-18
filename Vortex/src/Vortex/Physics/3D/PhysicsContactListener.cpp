@@ -11,7 +11,7 @@ namespace Vortex {
 
 	namespace Utils {
 
-		bool HasValidScriptInstance(Entity entity)
+		bool HasValidScriptInstance(Actor entity)
 		{
 			if (!entity.HasComponent<ScriptComponent>())
 			{
@@ -19,12 +19,12 @@ namespace Vortex {
 			}
 
 			const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
-			return ScriptEngine::EntityClassExists(scriptComponent.ClassName);
+			return ScriptEngine::ActorClassExists(scriptComponent.ClassName);
 		}
 
-		bool ScriptInstanceHasMethod(Entity entity, ManagedMethod method)
+		bool ScriptInstanceHasMethod(Actor entity, ManagedMethod method)
 		{
-			SharedReference<ScriptInstance> instance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+			SharedReference<ScriptInstance> instance = ScriptEngine::GetActorScriptInstance(entity.GetUUID());
 			if (instance == nullptr)
 			{
 				return false;
@@ -51,21 +51,21 @@ namespace Vortex {
 
 			nativeJoint->setConstraintFlag(physx::PxConstraintFlag::eBROKEN, true);
 
-			Entity entity = contextScene->TryGetEntityWithUUID(jointData->EntityUUID);
+			Actor entity = contextScene->TryGetActorWithUUID(jointData->ActorUUID);
 
 			if (!entity)
 			{
 				continue;
 			}
 
-			Entity connectedEntity;
+			Actor connectedEntity;
 
 			if (entity.HasComponent<FixedJointComponent>())
 			{
 				const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-				UUID connectedEntityUUID = fixedJointComponent.ConnectedEntity;
+				UUID connectedEntityUUID = fixedJointComponent.ConnectedActor;
 
-				if (Entity attachedEntity = contextScene->TryGetEntityWithUUID(connectedEntityUUID))
+				if (Actor attachedEntity = contextScene->TryGetActorWithUUID(connectedEntityUUID))
 				{
 					connectedEntity = attachedEntity;
 				}
@@ -133,8 +133,8 @@ namespace Vortex {
 			return;
 		}
 
-		Entity entityA = contextScene->TryGetEntityWithUUID(entityA_UserData->EntityUUID);
-		Entity entityB = contextScene->TryGetEntityWithUUID(entityB_UserData->EntityUUID);
+		Actor entityA = contextScene->TryGetActorWithUUID(entityA_UserData->ActorUUID);
+		Actor entityB = contextScene->TryGetActorWithUUID(entityB_UserData->ActorUUID);
 
 		if (!entityA || !entityB)
 		{
@@ -207,8 +207,8 @@ namespace Vortex {
 				continue;
 			}
 
-			Entity triggerEntity = contextScene->TryGetEntityWithUUID(triggerActorUserData->EntityUUID);
-			Entity otherEntity = contextScene->TryGetEntityWithUUID(otherActorUserData->EntityUUID);
+			Actor triggerEntity = contextScene->TryGetActorWithUUID(triggerActorUserData->ActorUUID);
+			Actor otherEntity = contextScene->TryGetActorWithUUID(otherActorUserData->ActorUUID);
 
 			if (!triggerEntity || !otherEntity)
 				continue;

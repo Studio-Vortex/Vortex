@@ -87,9 +87,9 @@
 
 /// Scene
 #include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 #include "Vortex/Scene/Prefab.h"
-#include "Vortex/Scene/ScriptableEntity.h"
+#include "Vortex/Scene/ScriptableActor.h"
 #include "Vortex/Scene/Components.h"
 /// ---------------------------------------------------
 

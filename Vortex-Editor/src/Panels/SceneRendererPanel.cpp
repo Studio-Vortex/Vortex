@@ -53,7 +53,7 @@ namespace Vortex {
 
 		Gui::Begin(m_PanelName.c_str(), &IsOpen, flags);
 
-		if (Entity skyLightEntity = m_ContextScene->GetSkyLightEntity())
+		if (Actor skyLightEntity = m_ContextScene->GetSkyLightActor())
 		{
 			const LightSourceComponent& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
 			if (lsc.CastShadows)
@@ -131,11 +131,11 @@ namespace Vortex {
 
 			auto RecreateEnvironmentMapFunc = [&]()
 			{
-				auto skyboxView = m_ContextScene->GetAllEntitiesWith<SkyboxComponent>();
+				auto skyboxView = m_ContextScene->GetAllActorsWith<SkyboxComponent>();
 
 				for (const auto e : skyboxView)
 				{
-					Entity entity{ e, m_ContextScene.Raw() };
+					Actor entity{ e, m_ContextScene.Raw() };
 
 					SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
 					AssetHandle environmentHandle = skyboxComponent.Skybox;

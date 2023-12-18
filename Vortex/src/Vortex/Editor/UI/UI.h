@@ -14,7 +14,7 @@
 #include "Vortex/Asset/AssetRegistry.h"
 
 #include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 
 #include "Vortex/Editor/FontAwesome.h"
 #include "Vortex/Editor/EditorResources.h"

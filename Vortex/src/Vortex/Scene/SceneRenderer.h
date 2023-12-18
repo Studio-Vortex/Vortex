@@ -16,7 +16,7 @@
 namespace Vortex {
 
 	class Scene;
-	class Entity;
+	class Actor;
 	class Camera;
 	class Skybox;
 	class Material;
@@ -65,11 +65,11 @@ namespace Vortex {
 
 		void LightPass(const SceneRenderPacket& renderPacket);
 		void EmissiveMeshPass(const SceneRenderPacket& renderPacket);
-		void SortMeshGeometry(const SceneRenderPacket& renderPacket, std::map<float, Entity>& sortedGeometry);
-		void SortEntityByDistance(std::map<float, Entity>& sortedEntities, float distance, Entity entity, uint32_t offset = 0);
-		void GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Entity>& sortedGeometry);
-		void RenderMesh(Scene* scene, Entity entity, const SceneLightDescription& sceneLightDesc);
-		void RenderStaticMesh(Scene* scene, Entity entity, const SceneLightDescription& sceneLightDesc);
+		void SortMeshGeometry(const SceneRenderPacket& renderPacket, std::map<float, Actor>& sortedGeometry);
+		void SortEntityByDistance(std::map<float, Actor>& sortedEntities, float distance, Actor entity, uint32_t offset = 0);
+		void GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Actor>& sortedGeometry);
+		void RenderMesh(Scene* scene, Actor entity, const SceneLightDescription& sceneLightDesc);
+		void RenderStaticMesh(Scene* scene, Actor entity, const SceneLightDescription& sceneLightDesc);
 
 		// Environment
 

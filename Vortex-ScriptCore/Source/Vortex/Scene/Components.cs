@@ -4,7 +4,7 @@ namespace Vortex {
 
 	public abstract class Component
 	{
-		public Entity Entity { get; internal set; }
+		public Actor Actor { get; internal set; }
 	}
 
 	public class Transform: Component
@@ -13,11 +13,11 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetTranslation(Entity.ID, out Vector3 translation);
+				InternalCalls.TransformComponent_GetTranslation(Actor.ID, out Vector3 translation);
 				return translation;
 			}
 
-			set => InternalCalls.TransformComponent_SetTranslation(Entity.ID, ref value);
+			set => InternalCalls.TransformComponent_SetTranslation(Actor.ID, ref value);
 		}
 
 		public void Translate(Vector3 translation) => Translation += translation;
@@ -27,55 +27,55 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetRotation(Entity.ID, out Quaternion rotation);
+				InternalCalls.TransformComponent_GetRotation(Actor.ID, out Quaternion rotation);
 				return rotation;
 			}
 
-			set => InternalCalls.TransformComponent_SetRotation(Entity.ID, ref value);
+			set => InternalCalls.TransformComponent_SetRotation(Actor.ID, ref value);
 		}
 
 		public Vector3 EulerAngles
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetEulerAngles(Entity.ID, out Vector3 eulerAngles);
+				InternalCalls.TransformComponent_GetEulerAngles(Actor.ID, out Vector3 eulerAngles);
 				return eulerAngles;
 			}
 
-			set => InternalCalls.TransformComponent_SetEulerAngles(Entity.ID, ref value);
+			set => InternalCalls.TransformComponent_SetEulerAngles(Actor.ID, ref value);
 		}
 
 		public void Rotate(Vector3 eulers, Space relativeTo = Space.Local)
 		{
-			InternalCalls.TransformComponent_Rotate(Entity.ID, ref eulers, relativeTo);
+			InternalCalls.TransformComponent_Rotate(Actor.ID, ref eulers, relativeTo);
 		}
 
 		public void Rotate(float x, float y, float z, Space relativeTo = Space.Local) => Rotate(new Vector3(x, y, z), relativeTo);
 
 		public void RotateAround(Vector3 worldPoint, Vector3 axis, float angle)
 		{
-			InternalCalls.TransformComponent_RotateAround(Entity.ID, ref worldPoint, ref axis, angle);
+			InternalCalls.TransformComponent_RotateAround(Actor.ID, ref worldPoint, ref axis, angle);
 		}
 
 		public Vector3 Scale
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetScale(Entity.ID, out Vector3 scale);
+				InternalCalls.TransformComponent_GetScale(Actor.ID, out Vector3 scale);
 				return scale;
 			}
 
-			set => InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
+			set => InternalCalls.TransformComponent_SetScale(Actor.ID, ref value);
 		}
 
 		/// <summary>
-		/// Sets the scale of the entity
+		/// Sets the scale of the actor
 		/// </summary>
 		/// <param name="scale">the new scale</param>
 		public void LocalScale(Vector3 scale) => Scale = scale;
 
 		/// <summary>
-		/// Sets the scale of the entity
+		/// Sets the scale of the actor
 		/// </summary>
 		/// <param name="x">the new x scale</param>
 		/// <param name="y">the new y scale</param>
@@ -83,13 +83,13 @@ namespace Vortex {
 		public void LocalScale(float x, float y, float z) => Scale = new Vector3(x, y, z);
 
 		/// <summary>
-		/// Applys the given scale to the current entity's scale
+		/// Applys the given scale to the current actor's scale
 		/// </summary>
 		/// <param name="scale">the scale to be applied</param>
 		public void ApplyScale(Vector3 scale) => Scale += scale;
 
 		/// <summary>
-		/// Applys the given scale to the current entity's scale
+		/// Applys the given scale to the current actor's scale
 		/// </summary>
 		/// <param name="x">the x scale to be applied</param>
 		/// <param name="y">the y scale to be applied</param>
@@ -108,7 +108,7 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetWorldSpaceTransform(Entity.ID, out Vector3 translation, out Quaternion rotation, out Vector3 eulers, out Vector3 scale);
+				InternalCalls.TransformComponent_GetWorldSpaceTransform(Actor.ID, out Vector3 translation, out Quaternion rotation, out Vector3 eulers, out Vector3 scale);
 
 				return new WorldTransform
 				{
@@ -124,18 +124,18 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetTransformMatrix(Entity.ID, out Matrix4 result);
+				InternalCalls.TransformComponent_GetTransformMatrix(Actor.ID, out Matrix4 result);
 				return result;
 			}
 
-			set => InternalCalls.TransformComponent_SetTransformMatrix(Entity.ID, ref value);
+			set => InternalCalls.TransformComponent_SetTransformMatrix(Actor.ID, ref value);
 		}
 
 		public Vector3 Up
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetUpDirection(Entity.ID, out Vector3 result);
+				InternalCalls.TransformComponent_GetUpDirection(Actor.ID, out Vector3 result);
 				return result;
 			}
 		}
@@ -144,7 +144,7 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetRightDirection(Entity.ID, out Vector3 result);
+				InternalCalls.TransformComponent_GetRightDirection(Actor.ID, out Vector3 result);
 				return result;
 			}
 		}
@@ -153,37 +153,37 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetForwardDirection(Entity.ID, out Vector3 result);
+				InternalCalls.TransformComponent_GetForwardDirection(Actor.ID, out Vector3 result);
 				return result;
 			}
 		}
 
-		public Entity Parent
+		public Actor Parent
 		{
 			get
 			{
-				ulong entityID = InternalCalls.TransformComponent_GetParent(Entity.ID);
+				ulong actorID = InternalCalls.TransformComponent_GetParent(Actor.ID);
 
-				if (entityID == 0)
+				if (actorID == 0)
 				{
 					return null;
 				}
 
-				return new Entity(entityID);
+				return new Actor(actorID);
 			}
 		}
 
-		public void SetParent(Entity parent) => InternalCalls.TransformComponent_SetParent(Entity.ID, parent.ID);
-		public void Unparent() => InternalCalls.TransformComponent_Unparent(Entity.ID);
+		public void SetParent(Actor parent) => InternalCalls.TransformComponent_SetParent(Actor.ID, parent.ID);
+		public void Unparent() => InternalCalls.TransformComponent_Unparent(Actor.ID);
 
 		public void SetTranslationAndRotation(Vector3 translation, Vector3 rotation)
 		{
-			InternalCalls.TransformComponent_SetTranslationAndRotation(Entity.ID, ref translation, ref rotation);
+			InternalCalls.TransformComponent_SetTranslationAndRotation(Actor.ID, ref translation, ref rotation);
 		}
 
 		public void LookAt(Vector3 worldPoint)
 		{
-			InternalCalls.TransformComponent_LookAt(Entity.ID, ref worldPoint);
+			InternalCalls.TransformComponent_LookAt(Actor.ID, ref worldPoint);
 		}
 
 		public static Transform operator *(Transform a, Transform b)
@@ -197,21 +197,21 @@ namespace Vortex {
 	{
 		public ProjectionType ProjectionType
 		{
-			get => InternalCalls.CameraComponent_GetProjectionType(Entity.ID);
-			set => InternalCalls.CameraComponent_SetProjectionType(Entity.ID, value);
+			get => InternalCalls.CameraComponent_GetProjectionType(Actor.ID);
+			set => InternalCalls.CameraComponent_SetProjectionType(Actor.ID, value);
 		}
 
 		public static Camera Primary
 		{
 			get
 			{
-				ulong entityID = InternalCalls.Scene_GetPrimaryCamera();
+				ulong actorID = InternalCalls.Scene_GetPrimaryCamera();
 
-				if (entityID == 0)
+				if (actorID == 0)
 					return null;
 
-				Entity primaryCameraEntity = new Entity(entityID);
-				return primaryCameraEntity.GetComponent<Camera>();
+				Actor primaryCameraActor = new Actor(actorID);
+				return primaryCameraActor.GetComponent<Camera>();
 			}
 		}
 
@@ -219,86 +219,86 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.CameraComponent_GetPrimary(Entity.ID, out bool primary);
+				InternalCalls.CameraComponent_GetPrimary(Actor.ID, out bool primary);
 				return primary;
 			}
 
-			set => InternalCalls.CameraComponent_SetPrimary(Entity.ID, value);
+			set => InternalCalls.CameraComponent_SetPrimary(Actor.ID, value);
 		}
 
 		public float FieldOfView
 		{
-			get => InternalCalls.CameraComponent_GetPerspectiveVerticalFOV(Entity.ID);
-			set => InternalCalls.CameraComponent_SetPerspectiveVerticalFOV(Entity.ID, value);
+			get => InternalCalls.CameraComponent_GetPerspectiveVerticalFOV(Actor.ID);
+			set => InternalCalls.CameraComponent_SetPerspectiveVerticalFOV(Actor.ID, value);
 		}
 
 		public float NearClip
 		{
-			get => InternalCalls.CameraComponent_GetNearClip(Entity.ID);
-			set => InternalCalls.CameraComponent_SetNearClip(Entity.ID, value);
+			get => InternalCalls.CameraComponent_GetNearClip(Actor.ID);
+			set => InternalCalls.CameraComponent_SetNearClip(Actor.ID, value);
 		}
 
 		public float FarClip
 		{
-			get => InternalCalls.CameraComponent_GetFarClip(Entity.ID);
-			set => InternalCalls.CameraComponent_SetFarClip(Entity.ID, value);
+			get => InternalCalls.CameraComponent_GetFarClip(Actor.ID);
+			set => InternalCalls.CameraComponent_SetFarClip(Actor.ID, value);
 		}
 
 		public float OrthographicSize
 		{
-			get => InternalCalls.CameraComponent_GetOrthographicSize(Entity.ID);
-			set => InternalCalls.CameraComponent_SetOrthographicSize(Entity.ID, value);
+			get => InternalCalls.CameraComponent_GetOrthographicSize(Actor.ID);
+			set => InternalCalls.CameraComponent_SetOrthographicSize(Actor.ID, value);
 		}
 
 		public float OrthographicNear
 		{
-			get => InternalCalls.CameraComponent_GetOrthographicNear(Entity.ID);
-			set => InternalCalls.CameraComponent_SetOrthographicNear(Entity.ID, value);
+			get => InternalCalls.CameraComponent_GetOrthographicNear(Actor.ID);
+			set => InternalCalls.CameraComponent_SetOrthographicNear(Actor.ID, value);
 		}
 
 		public float OrthographicFar
 		{
-			get => InternalCalls.CameraComponent_GetOrthographicFar(Entity.ID);
-			set => InternalCalls.CameraComponent_SetOrthographicFar(Entity.ID, value);
+			get => InternalCalls.CameraComponent_GetOrthographicFar(Actor.ID);
+			set => InternalCalls.CameraComponent_SetOrthographicFar(Actor.ID, value);
 		}
 
 		public bool IsFixedAspectRatio
 		{
 			get
 			{
-				InternalCalls.CameraComponent_GetFixedAspectRatio(Entity.ID, out bool fixedAspectRatio);
+				InternalCalls.CameraComponent_GetFixedAspectRatio(Actor.ID, out bool fixedAspectRatio);
 				return fixedAspectRatio;
 			}
 
-			set => InternalCalls.CameraComponent_SetFixedAspectRatio(Entity.ID, value);
+			set => InternalCalls.CameraComponent_SetFixedAspectRatio(Actor.ID, value);
 		}
 
 		public Color3 ClearColor
 		{
 			get
 			{
-				InternalCalls.CameraComponent_GetClearColor(Entity.ID, out Vector3 result);
+				InternalCalls.CameraComponent_GetClearColor(Actor.ID, out Vector3 result);
 				return result;
 			}
 
-			set => InternalCalls.CameraComponent_SetClearColor(Entity.ID, ref value);
+			set => InternalCalls.CameraComponent_SetClearColor(Actor.ID, ref value);
 		}
 
 		public Ray Raycast(Vector2 position, float maxDistance)
 		{
-			InternalCalls.CameraComponent_Raycast(Entity.ID, ref position, maxDistance, out Ray result);
+			InternalCalls.CameraComponent_Raycast(Actor.ID, ref position, maxDistance, out Ray result);
 			return result;
 		}
 
 		public Vector3 ScreenToWorldPoint(Vector2 position, float maxDistance)
 		{
-			InternalCalls.CameraComponent_ScreenToWorldPoint(Entity.ID, ref position, maxDistance, out Vector3 result);
+			InternalCalls.CameraComponent_ScreenToWorldPoint(Actor.ID, ref position, maxDistance, out Vector3 result);
 			return result;
 		}
 
 		public Vector2 ScreenToViewportPoint(Vector2 position)
 		{
-			InternalCalls.CameraComponent_ScreenToViewportPoint(Entity.ID, ref position, out Vector2 result);
+			InternalCalls.CameraComponent_ScreenToViewportPoint(Actor.ID, ref position, out Vector2 result);
 			return result;
 		}
 	}
@@ -307,61 +307,61 @@ namespace Vortex {
 	{
 		public LightType LightType
 		{
-			get => InternalCalls.LightSourceComponent_GetLightType(Entity.ID);
-			set => InternalCalls.LightSourceComponent_SetLightType(Entity.ID, value);
+			get => InternalCalls.LightSourceComponent_GetLightType(Actor.ID);
+			set => InternalCalls.LightSourceComponent_SetLightType(Actor.ID, value);
 		}
 
 		public Vector3 Radiance
 		{
 			get
 			{
-				InternalCalls.LightSourceComponent_GetRadiance(Entity.ID, out Vector3 result);
+				InternalCalls.LightSourceComponent_GetRadiance(Actor.ID, out Vector3 result);
 				return result;
 			}
 
-			set => InternalCalls.LightSourceComponent_SetRadiance(Entity.ID, ref value);
+			set => InternalCalls.LightSourceComponent_SetRadiance(Actor.ID, ref value);
 		}
 
 		public float Intensity
 		{
-			get => InternalCalls.LightSourceComponent_GetIntensity(Entity.ID);
-			set => InternalCalls.LightSourceComponent_SetIntensity(Entity.ID, value);
+			get => InternalCalls.LightSourceComponent_GetIntensity(Actor.ID);
+			set => InternalCalls.LightSourceComponent_SetIntensity(Actor.ID, value);
 		}
 
 		public float Cutoff
 		{
-			get => InternalCalls.LightSourceComponent_GetCutoff(Entity.ID);
-			set => InternalCalls.LightSourceComponent_SetCutoff(Entity.ID, value);
+			get => InternalCalls.LightSourceComponent_GetCutoff(Actor.ID);
+			set => InternalCalls.LightSourceComponent_SetCutoff(Actor.ID, value);
 		}
 
 		public float OuterCutoff
 		{
-			get => InternalCalls.LightSourceComponent_GetOuterCutoff(Entity.ID);
-			set => InternalCalls.LightSourceComponent_SetOuterCutoff(Entity.ID, value);
+			get => InternalCalls.LightSourceComponent_GetOuterCutoff(Actor.ID);
+			set => InternalCalls.LightSourceComponent_SetOuterCutoff(Actor.ID, value);
 		}
 
 		public float ShadowBias
 		{
-			get => InternalCalls.LightSourceComponent_GetShadowBias(Entity.ID);
-			set => InternalCalls.LightSourceComponent_SetShadowBias(Entity.ID, value);
+			get => InternalCalls.LightSourceComponent_GetShadowBias(Actor.ID);
+			set => InternalCalls.LightSourceComponent_SetShadowBias(Actor.ID, value);
 		}
 
 		public bool CastShadows
 		{
-			get => InternalCalls.LightSourceComponent_GetCastShadows(Entity.ID);
-			set => InternalCalls.LightSourceComponent_SetCastShadows(Entity.ID, value);
+			get => InternalCalls.LightSourceComponent_GetCastShadows(Actor.ID);
+			set => InternalCalls.LightSourceComponent_SetCastShadows(Actor.ID, value);
 		}
 
 		public bool UseSoftShadows
 		{
-			get => InternalCalls.LightSourceComponent_GetSoftShadows(Entity.ID);
-			set => InternalCalls.LightSourceComponent_SetSoftShadows(Entity.ID, value);
+			get => InternalCalls.LightSourceComponent_GetSoftShadows(Actor.ID);
+			set => InternalCalls.LightSourceComponent_SetSoftShadows(Actor.ID, value);
 		}
 
 		public bool Visible
 		{
-			get => InternalCalls.LightSourceComponent_IsVisible(Entity.ID);
-			set => InternalCalls.LightSourceComponent_SetVisible(Entity.ID, value);
+			get => InternalCalls.LightSourceComponent_IsVisible(Actor.ID);
+			set => InternalCalls.LightSourceComponent_SetVisible(Actor.ID, value);
 		}
 	}
 
@@ -369,54 +369,54 @@ namespace Vortex {
 	{
 		public string Text
 		{
-			get => InternalCalls.TextMeshComponent_GetTextString(Entity.ID);
-			set => InternalCalls.TextMeshComponent_SetTextString(Entity.ID, value);
+			get => InternalCalls.TextMeshComponent_GetTextString(Actor.ID);
+			set => InternalCalls.TextMeshComponent_SetTextString(Actor.ID, value);
 		}
 
 		public Vector4 Color
 		{
 			get
 			{
-				InternalCalls.TextMeshComponent_GetColor(Entity.ID, out Vector4 color);
+				InternalCalls.TextMeshComponent_GetColor(Actor.ID, out Vector4 color);
 				return color;
 			}
 
-			set => InternalCalls.TextMeshComponent_SetColor(Entity.ID, ref value);
+			set => InternalCalls.TextMeshComponent_SetColor(Actor.ID, ref value);
 		}
 
 		public Vector4 BackgroundColor
 		{
 			get
 			{
-				InternalCalls.TextMeshComponent_GetBackgroundColor(Entity.ID, out Vector4 color);
+				InternalCalls.TextMeshComponent_GetBackgroundColor(Actor.ID, out Vector4 color);
 				return color;
 			}
 			
-			set => InternalCalls.TextMeshComponent_SetBackgroundColor(Entity.ID, ref value);
+			set => InternalCalls.TextMeshComponent_SetBackgroundColor(Actor.ID, ref value);
 		}
 
 		public float LineSpacing
 		{
-			get => InternalCalls.TextMeshComponent_GetLineSpacing(Entity.ID);
-			set => InternalCalls.TextMeshComponent_SetLineSpacing(Entity.ID, value);
+			get => InternalCalls.TextMeshComponent_GetLineSpacing(Actor.ID);
+			set => InternalCalls.TextMeshComponent_SetLineSpacing(Actor.ID, value);
 		}
 
 		public float Kerning
 		{
-			get => InternalCalls.TextMeshComponent_GetKerning(Entity.ID);
-			set => InternalCalls.TextMeshComponent_SetKerning(Entity.ID, value);
+			get => InternalCalls.TextMeshComponent_GetKerning(Actor.ID);
+			set => InternalCalls.TextMeshComponent_SetKerning(Actor.ID, value);
 		}
 
 		public float MaxWidth
 		{
-			get => InternalCalls.TextMeshComponent_GetMaxWidth(Entity.ID);
-			set => InternalCalls.TextMeshComponent_SetMaxWidth(Entity.ID, value);
+			get => InternalCalls.TextMeshComponent_GetMaxWidth(Actor.ID);
+			set => InternalCalls.TextMeshComponent_SetMaxWidth(Actor.ID, value);
 		}
 
 		public bool Visible
 		{
-			get => InternalCalls.TextMeshComponent_IsVisible(Entity.ID);
-			set => InternalCalls.TextMeshComponent_SetVisible(Entity.ID, value);
+			get => InternalCalls.TextMeshComponent_IsVisible(Actor.ID);
+			set => InternalCalls.TextMeshComponent_SetVisible(Actor.ID, value);
 		}
 	}
 
@@ -427,10 +427,10 @@ namespace Vortex {
 
 	public class Animator: Component
 	{
-		public bool IsPlaying => InternalCalls.AnimatorComponent_IsPlaying(Entity.ID);
+		public bool IsPlaying => InternalCalls.AnimatorComponent_IsPlaying(Actor.ID);
 
-		public void Play() => InternalCalls.AnimatorComponent_Play(Entity.ID);
-		public void Stop() => InternalCalls.AnimatorComponent_Stop(Entity.ID);
+		public void Play() => InternalCalls.AnimatorComponent_Play(Actor.ID);
+		public void Stop() => InternalCalls.AnimatorComponent_Stop(Actor.ID);
 	}
 
 	public class MeshRenderer: Component
@@ -447,14 +447,14 @@ namespace Vortex {
 
 		AssetHandle GetMaterialHandle(uint submeshIndex)
 		{
-			return InternalCalls.MeshRendererComponent_GetMaterialHandle(submeshIndex, Entity.ID, out AssetHandle materialHandle)
+			return InternalCalls.MeshRendererComponent_GetMaterialHandle(submeshIndex, Actor.ID, out AssetHandle materialHandle)
 				? materialHandle : AssetHandle.Invalid;
 		}
 
 		public bool Visible
 		{
-			get => InternalCalls.MeshRendererComponent_IsVisible(Entity.ID);
-			set => InternalCalls.MeshRendererComponent_SetVisible(Entity.ID, value);
+			get => InternalCalls.MeshRendererComponent_IsVisible(Actor.ID);
+			set => InternalCalls.MeshRendererComponent_SetVisible(Actor.ID, value);
 		}
 	}
 
@@ -462,8 +462,8 @@ namespace Vortex {
 	{
 		public MeshType MeshType
 		{
-			get => InternalCalls.StaticMeshRendererComponent_GetMeshType(Entity.ID);
-			set => InternalCalls.StaticMeshRendererComponent_SetMeshType(Entity.ID, value);
+			get => InternalCalls.StaticMeshRendererComponent_GetMeshType(Actor.ID);
+			set => InternalCalls.StaticMeshRendererComponent_SetMeshType(Actor.ID, value);
 		}
 
 		public Submesh BaseMesh => GetSubmesh(0);
@@ -487,18 +487,18 @@ namespace Vortex {
 			if (!materialHandle)
 				return;
 
-			InternalCalls.StaticMeshRendererComponent_SetMaterialHandle(index, Entity.ID, ref materialHandle);
+			InternalCalls.StaticMeshRendererComponent_SetMaterialHandle(index, Actor.ID, ref materialHandle);
 		}
 
 		public bool Visible
 		{
-			get => InternalCalls.StaticMeshRendererComponent_IsVisible(Entity.ID);
-			set => InternalCalls.StaticMeshRendererComponent_SetVisible(Entity.ID, value);
+			get => InternalCalls.StaticMeshRendererComponent_IsVisible(Actor.ID);
+			set => InternalCalls.StaticMeshRendererComponent_SetVisible(Actor.ID, value);
 		}
 
 		AssetHandle GetMaterialHandle(uint submeshIndex)
 		{
-			return InternalCalls.StaticMeshRendererComponent_GetMaterialHandle(submeshIndex, Entity.ID, out AssetHandle materialHandle)
+			return InternalCalls.StaticMeshRendererComponent_GetMaterialHandle(submeshIndex, Actor.ID, out AssetHandle materialHandle)
 				? materialHandle : AssetHandle.Invalid;
 		}
 	}
@@ -509,39 +509,39 @@ namespace Vortex {
 		{
 			get
 			{
-				return InternalCalls.SpriteRendererComponent_GetTextureHandle(Entity.ID, out AssetHandle textureHandle)
+				return InternalCalls.SpriteRendererComponent_GetTextureHandle(Actor.ID, out AssetHandle textureHandle)
 					? new Texture2D(textureHandle) : null;
 			}
 
-			set => InternalCalls.SpriteRendererComponent_SetTextureHandle(Entity.ID, ref value.m_Handle);
+			set => InternalCalls.SpriteRendererComponent_SetTextureHandle(Actor.ID, ref value.m_Handle);
 		}
 
 		public Vector4 Color
 		{
 			get
 			{
-				InternalCalls.SpriteRendererComponent_GetColor(Entity.ID, out Vector4 color);
+				InternalCalls.SpriteRendererComponent_GetColor(Actor.ID, out Vector4 color);
 				return color;
 			}
 
-			set => InternalCalls.SpriteRendererComponent_SetColor(Entity.ID, ref value);
+			set => InternalCalls.SpriteRendererComponent_SetColor(Actor.ID, ref value);
 		}
 
 		public Vector2 Scale
 		{
 			get
 			{
-				InternalCalls.SpriteRendererComponent_GetUV(Entity.ID, out Vector2 scale);
+				InternalCalls.SpriteRendererComponent_GetUV(Actor.ID, out Vector2 scale);
 				return scale;
 			}
 
-			set => InternalCalls.SpriteRendererComponent_SetUV(Entity.ID, ref value);
+			set => InternalCalls.SpriteRendererComponent_SetUV(Actor.ID, ref value);
 		}
 
 		public bool Visible
 		{
-			get => InternalCalls.SpriteRendererComponent_IsVisible(Entity.ID);
-			set => InternalCalls.SpriteRendererComponent_SetVisible(Entity.ID, value);
+			get => InternalCalls.SpriteRendererComponent_IsVisible(Actor.ID);
+			set => InternalCalls.SpriteRendererComponent_SetVisible(Actor.ID, value);
 		}
 	}
 
@@ -551,39 +551,39 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.CircleRendererComponent_GetColor(Entity.ID, out Vector4 color);
+				InternalCalls.CircleRendererComponent_GetColor(Actor.ID, out Vector4 color);
 				return color;
 			}
 
-			set => InternalCalls.CircleRendererComponent_SetColor(Entity.ID, ref value);
+			set => InternalCalls.CircleRendererComponent_SetColor(Actor.ID, ref value);
 		}
 
 		public float Thickness
 		{
 			get
 			{
-				InternalCalls.CircleRendererComponent_GetThickness(Entity.ID, out float thickness);
+				InternalCalls.CircleRendererComponent_GetThickness(Actor.ID, out float thickness);
 				return thickness;
 			}
 
-			set => InternalCalls.CircleRendererComponent_SetThickness(Entity.ID, value);
+			set => InternalCalls.CircleRendererComponent_SetThickness(Actor.ID, value);
 		}
 
 		public float Fade
 		{
 			get
 			{
-				InternalCalls.CircleRendererComponent_GetFade(Entity.ID, out float fade);
+				InternalCalls.CircleRendererComponent_GetFade(Actor.ID, out float fade);
 				return fade;
 			}
 
-			set => InternalCalls.CircleRendererComponent_SetFade(Entity.ID, value);
+			set => InternalCalls.CircleRendererComponent_SetFade(Actor.ID, value);
 		}
 
 		public bool Visible
 		{
-			get => InternalCalls.CircleRendererComponent_IsVisible(Entity.ID);
-			set => InternalCalls.CircleRendererComponent_SetVisible(Entity.ID, value);
+			get => InternalCalls.CircleRendererComponent_IsVisible(Actor.ID);
+			set => InternalCalls.CircleRendererComponent_SetVisible(Actor.ID, value);
 		}
 	}
 
@@ -595,156 +595,156 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.AudioSourceComponent_GetPosition(Entity.ID, out Vector3 position);
+				InternalCalls.AudioSourceComponent_GetPosition(Actor.ID, out Vector3 position);
 				return position;
 			}
 
-			set => InternalCalls.AudioSourceComponent_SetPosition(Entity.ID, ref value);
+			set => InternalCalls.AudioSourceComponent_SetPosition(Actor.ID, ref value);
 		}
 
 		public Vector3 Direction
 		{
 			get
 			{
-				InternalCalls.AudioSourceComponent_GetDirection(Entity.ID, out Vector3 direction);
+				InternalCalls.AudioSourceComponent_GetDirection(Actor.ID, out Vector3 direction);
 				return direction;
 			}
 
-			set => InternalCalls.AudioSourceComponent_SetDirection(Entity.ID, ref value);
+			set => InternalCalls.AudioSourceComponent_SetDirection(Actor.ID, ref value);
 		}
 
 		public Vector3 Velocity
 		{
 			get
 			{
-				InternalCalls.AudioSourceComponent_GetVelocity(Entity.ID, out Vector3 veloctiy);
+				InternalCalls.AudioSourceComponent_GetVelocity(Actor.ID, out Vector3 veloctiy);
 				return veloctiy;
 			}
 
-			set => InternalCalls.AudioSourceComponent_SetVelocity(Entity.ID, ref value);
+			set => InternalCalls.AudioSourceComponent_SetVelocity(Actor.ID, ref value);
 		}
 
 		public AudioCone<AudioSource> Cone => new AudioCone<AudioSource>(this);
 
 		public float MinGain
 		{
-			get => InternalCalls.AudioSourceComponent_GetMinGain(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetMinGain(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetMinGain(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetMinGain(Actor.ID, value);
 		}
 
 		public float MaxGain
 		{
-			get => InternalCalls.AudioSourceComponent_GetMaxGain(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetMaxGain(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetMaxGain(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetMaxGain(Actor.ID, value);
 		}
 
 		public float DirectionalAttenuationFactor
 		{
-			get => InternalCalls.AudioSourceComponent_GetDirectionalAttenuationFactor(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetDirectionalAttenuationFactor(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetDirectionalAttenuationFactor(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetDirectionalAttenuationFactor(Actor.ID, value);
 		}
 
 		public AttenuationMode AttenuationModel
 		{
-			get => InternalCalls.AudioSourceComponent_GetAttenuationModel(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetAttenuationModel(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetAttenuationModel(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetAttenuationModel(Actor.ID, value);
 		}
 
 		public float Pan
 		{
-			get => InternalCalls.AudioSourceComponent_GetPan(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetPan(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetPan(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetPan(Actor.ID, value);
 		}
 
 		public PanMode PanModel
 		{
-			get => InternalCalls.AudioSourceComponent_GetPanMode(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetPanMode(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetPanMode(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetPanMode(Actor.ID, value);
 		}
 
 		public PositioningMode PositioningModel
 		{
-			get => InternalCalls.AudioSourceComponent_GetPositioningMode(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetPositioningMode(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetPositioningMode(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetPositioningMode(Actor.ID, value);
 		}
 
 		public float Falloff
 		{
-			get => InternalCalls.AudioSourceComponent_GetFalloff(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetFalloff(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetFalloff(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetFalloff(Actor.ID, value);
 		}
 
 		public float MinDistance
 		{
-			get => InternalCalls.AudioSourceComponent_GetMinDistance(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetMinDistance(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetMinDistance(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetMinDistance(Actor.ID, value);
 		}
 
 		public float MaxDistance
 		{
-			get => InternalCalls.AudioSourceComponent_GetMaxDistance(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetMaxDistance(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetMaxDistance(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetMaxDistance(Actor.ID, value);
 		}
 
 		public float Pitch
 		{
-			get => InternalCalls.AudioSourceComponent_GetPitch(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetPitch(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetPitch(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetPitch(Actor.ID, value);
 		}
 
 		public float DopplerFactor
 		{
-			get => InternalCalls.AudioSourceComponent_GetDopplerFactor(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetDopplerFactor(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetDopplerFactor(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetDopplerFactor(Actor.ID, value);
 		}
 
 		public float Volume
 		{
-			get => InternalCalls.AudioSourceComponent_GetVolume(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetVolume(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetVolume(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetVolume(Actor.ID, value);
 		}
 
 		public bool PlayOnStart
 		{
-			get => InternalCalls.AudioSourceComponent_GetPlayOnStart(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetPlayOnStart(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetPlayOnStart(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetPlayOnStart(Actor.ID, value);
 		}
 
 		public Vector3 DirectionToListener
 		{
 			get
 			{
-				InternalCalls.AudioSourceComponent_GetDirectionToListener(Entity.ID, out Vector3 result);
+				InternalCalls.AudioSourceComponent_GetDirectionToListener(Actor.ID, out Vector3 result);
 				return result;
 			}
 		}
 
 		public bool IsSpacialized
 		{
-			get => InternalCalls.AudioSourceComponent_GetIsSpacialized(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetIsSpacialized(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetIsSpacialized(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetIsSpacialized(Actor.ID, value);
 		}
 
 		public bool IsLooping
 		{
-			get => InternalCalls.AudioSourceComponent_GetIsLooping(Entity.ID);
-			set => InternalCalls.AudioSourceComponent_SetIsLooping(Entity.ID, value);
+			get => InternalCalls.AudioSourceComponent_GetIsLooping(Actor.ID);
+			set => InternalCalls.AudioSourceComponent_SetIsLooping(Actor.ID, value);
 		}
 
-		public float CurrentFadeVolume => InternalCalls.AudioSourceComponent_GetCurrentFadeVolume(Entity.ID);
+		public float CurrentFadeVolume => InternalCalls.AudioSourceComponent_GetCurrentFadeVolume(Actor.ID);
 
-		public bool IsPlaying => InternalCalls.AudioSourceComponent_GetIsPlaying(Entity.ID);
-		public bool IsPaused => InternalCalls.AudioSourceComponent_GetIsPaused(Entity.ID);
+		public bool IsPlaying => InternalCalls.AudioSourceComponent_GetIsPlaying(Actor.ID);
+		public bool IsPaused => InternalCalls.AudioSourceComponent_GetIsPaused(Actor.ID);
 
-		public void Play() => InternalCalls.AudioSourceComponent_Play(Entity.ID);
+		public void Play() => InternalCalls.AudioSourceComponent_Play(Actor.ID);
 
 		public void SetStartTime(ulong delay, TimeMeasure measure = TimeMeasure.Seconds)
 		{
 			switch (measure)
 			{
-				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetStartTimeInMilliseconds(Entity.ID, delay);        break;
-				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetStartTimeInMilliseconds(Entity.ID, delay * 1000); break;
-				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetStartTimeInPCMFrames(Entity.ID, delay);           break;
+				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetStartTimeInMilliseconds(Actor.ID, delay);        break;
+				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetStartTimeInMilliseconds(Actor.ID, delay * 1000); break;
+				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetStartTimeInPCMFrames(Actor.ID, delay);           break;
 			}
 		}
 
@@ -752,9 +752,9 @@ namespace Vortex {
 		{
 			switch (measure)
 			{
-				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetFadeInMilliseconds(Entity.ID, volumeStart, volumeEnd, length);        break;
-				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetFadeInMilliseconds(Entity.ID, volumeStart, volumeEnd, length * 1000); break;
-				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetFadeInPCMFrames(Entity.ID, volumeStart, volumeEnd, length);           break;
+				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetFadeInMilliseconds(Actor.ID, volumeStart, volumeEnd, length);        break;
+				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetFadeInMilliseconds(Actor.ID, volumeStart, volumeEnd, length * 1000); break;
+				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetFadeInPCMFrames(Actor.ID, volumeStart, volumeEnd, length);           break;
 			}
 		}
 		
@@ -762,25 +762,25 @@ namespace Vortex {
 		{
 			switch (measure)
 			{
-				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetFadeStartInMilliseconds(Entity.ID, volumeStart, volumeEnd, length, time);        break;
-				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetFadeStartInMilliseconds(Entity.ID, volumeStart, volumeEnd, length * 1000, time); break;
-				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetFadeStartInPCMFrames(Entity.ID, volumeStart, volumeEnd, length, time);           break;
+				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetFadeStartInMilliseconds(Actor.ID, volumeStart, volumeEnd, length, time);        break;
+				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetFadeStartInMilliseconds(Actor.ID, volumeStart, volumeEnd, length * 1000, time); break;
+				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetFadeStartInPCMFrames(Actor.ID, volumeStart, volumeEnd, length, time);           break;
 			}
 		}
 
-		public void PlayOneShot() => InternalCalls.AudioSourceComponent_PlayOneShot(Entity.ID);
+		public void PlayOneShot() => InternalCalls.AudioSourceComponent_PlayOneShot(Actor.ID);
 		
-		public void Pause() => InternalCalls.AudioSourceComponent_Pause(Entity.ID);
-		public void Restart() => InternalCalls.AudioSourceComponent_Restart(Entity.ID);
-		public void Stop() => InternalCalls.AudioSourceComponent_Stop(Entity.ID);
+		public void Pause() => InternalCalls.AudioSourceComponent_Pause(Actor.ID);
+		public void Restart() => InternalCalls.AudioSourceComponent_Restart(Actor.ID);
+		public void Stop() => InternalCalls.AudioSourceComponent_Stop(Actor.ID);
 
 		public void SetStopTime(ulong delay, TimeMeasure measure = TimeMeasure.Seconds)
 		{
 			switch (measure)
 			{
-				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetStopTimeInMilliseconds(Entity.ID, delay);        break;
-				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetStopTimeInMilliseconds(Entity.ID, delay * 1000); break;
-				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetStopTimeInMilliseconds(Entity.ID, delay);        break;
+				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetStopTimeInMilliseconds(Actor.ID, delay);        break;
+				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetStopTimeInMilliseconds(Actor.ID, delay * 1000); break;
+				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetStopTimeInMilliseconds(Actor.ID, delay);        break;
 			}
 		}
 
@@ -788,13 +788,13 @@ namespace Vortex {
 		{
 			switch (measure)
 			{
-				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(Entity.ID, stopTime, fadeLength); break;
-				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(Entity.ID, stopTime, fadeLength); break;
-				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetStopTimeWithFadeInPCMFrames(Entity.ID, stopTime, fadeLength);    break;
+				case TimeMeasure.Milliseconds: InternalCalls.AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(Actor.ID, stopTime, fadeLength); break;
+				case TimeMeasure.Seconds:      InternalCalls.AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(Actor.ID, stopTime, fadeLength); break;
+				case TimeMeasure.PCMFrames:    InternalCalls.AudioSourceComponent_SetStopTimeWithFadeInPCMFrames(Actor.ID, stopTime, fadeLength);    break;
 			}
 		}
 
-		public bool Seek(ulong frameIndex) => InternalCalls.AudioSourceComponent_SeekToPCMFrame(Entity.ID, frameIndex);
+		public bool Seek(ulong frameIndex) => InternalCalls.AudioSourceComponent_SeekToPCMFrame(Actor.ID, frameIndex);
 	}
 
 	public class AudioListener: Component
@@ -806,259 +806,259 @@ namespace Vortex {
 	{
 		public RigidBodyType BodyType
 		{
-			get => InternalCalls.RigidBodyComponent_GetBodyType(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetBodyType(Entity.ID, value);
+			get => InternalCalls.RigidBodyComponent_GetBodyType(Actor.ID);
+			set => InternalCalls.RigidBodyComponent_SetBodyType(Actor.ID, value);
 		}
 
 		public CollisionDetectionType CollisionDetection
 		{
-			get => InternalCalls.RigidBodyComponent_GetCollisionDetectionType(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetCollisionDetectionType(Entity.ID, value);
+			get => InternalCalls.RigidBodyComponent_GetCollisionDetectionType(Actor.ID);
+			set => InternalCalls.RigidBodyComponent_SetCollisionDetectionType(Actor.ID, value);
 		}
 
 		public float Mass
 		{
-			get => InternalCalls.RigidBodyComponent_GetMass(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetMass(Entity.ID, value);
+			get => InternalCalls.RigidBodyComponent_GetMass(Actor.ID);
+			set => InternalCalls.RigidBodyComponent_SetMass(Actor.ID, value);
 		}
 
 		public Vector3 Velocity
 		{
 			get
 			{
-				InternalCalls.RigidBodyComponent_GetLinearVelocity(Entity.ID, out Vector3 velocity);
+				InternalCalls.RigidBodyComponent_GetLinearVelocity(Actor.ID, out Vector3 velocity);
 				return velocity;
 			}
-			set => InternalCalls.RigidBodyComponent_SetLinearVelocity(Entity.ID, ref value);
+			set => InternalCalls.RigidBodyComponent_SetLinearVelocity(Actor.ID, ref value);
 		}
 
 		public float MaxVelocity
 		{
-			get => InternalCalls.RigidBodyComponent_GetMaxLinearVelocity(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetMaxLinearVelocity(Entity.ID, value);
+			get => InternalCalls.RigidBodyComponent_GetMaxLinearVelocity(Actor.ID);
+			set => InternalCalls.RigidBodyComponent_SetMaxLinearVelocity(Actor.ID, value);
 		}
 
 		public float Drag
 		{
-			get =>InternalCalls.RigidBodyComponent_GetLinearDrag(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetLinearDrag(Entity.ID, value);
+			get =>InternalCalls.RigidBodyComponent_GetLinearDrag(Actor.ID);
+			set => InternalCalls.RigidBodyComponent_SetLinearDrag(Actor.ID, value);
 		}
 
 		public Vector3 AngularVelocity
 		{
 			get
 			{
-				InternalCalls.RigidBodyComponent_GetAngularVelocity(Entity.ID, out Vector3 velocity);
+				InternalCalls.RigidBodyComponent_GetAngularVelocity(Actor.ID, out Vector3 velocity);
 				return velocity;
 			}
-			set => InternalCalls.RigidBodyComponent_SetAngularVelocity(Entity.ID, ref value);
+			set => InternalCalls.RigidBodyComponent_SetAngularVelocity(Actor.ID, ref value);
 		}
 
 		public float MaxAngularVelocity
 		{
-			get => InternalCalls.RigidBodyComponent_GetMaxAngularVelocity(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetMaxAngularVelocity(Entity.ID, value);
+			get => InternalCalls.RigidBodyComponent_GetMaxAngularVelocity(Actor.ID);
+			set => InternalCalls.RigidBodyComponent_SetMaxAngularVelocity(Actor.ID, value);
 		}
 
 		public float AngularDrag
 		{
-			get => InternalCalls.RigidBodyComponent_GetAngularDrag(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetAngularDrag(Entity.ID, value);
+			get => InternalCalls.RigidBodyComponent_GetAngularDrag(Actor.ID);
+			set => InternalCalls.RigidBodyComponent_SetAngularDrag(Actor.ID, value);
 		}
 
 		public bool DisableGravity
 		{
-			get => InternalCalls.RigidBodyComponent_GetDisableGravity(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetDisableGravity(Entity.ID, value);
+			get => InternalCalls.RigidBodyComponent_GetDisableGravity(Actor.ID);
+			set => InternalCalls.RigidBodyComponent_SetDisableGravity(Actor.ID, value);
 		}
 
 		public bool IsKinematic
 		{
-			get => InternalCalls.RigidBodyComponent_GetIsKinematic(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetIsKinematic(Entity.ID, value);
+			get => InternalCalls.RigidBodyComponent_GetIsKinematic(Actor.ID);
+			set => InternalCalls.RigidBodyComponent_SetIsKinematic(Actor.ID, value);
 		}
 
 		public Vector3 KinematicTarget
 		{
 			get
 			{
-				InternalCalls.RigidBodyComponent_GetKinematicTargetTranslation(Entity.ID, out Vector3 result);
+				InternalCalls.RigidBodyComponent_GetKinematicTargetTranslation(Actor.ID, out Vector3 result);
 				return result;
 			}
 
-			set => InternalCalls.RigidBodyComponent_SetKinematicTargetTranslation(Entity.ID, ref value);
+			set => InternalCalls.RigidBodyComponent_SetKinematicTargetTranslation(Actor.ID, ref value);
 		}
 
 		public Quaternion KinematicTargetRotation
 		{
 			get
 			{
-				InternalCalls.RigidBodyComponent_GetKinematicTargetRotation(Entity.ID, out Quaternion result);
+				InternalCalls.RigidBodyComponent_GetKinematicTargetRotation(Actor.ID, out Quaternion result);
 				return result;
 			}
 
-			set => InternalCalls.RigidBodyComponent_SetKinematicTargetRotation(Entity.ID, ref value);
+			set => InternalCalls.RigidBodyComponent_SetKinematicTargetRotation(Actor.ID, ref value);
 		}
 
-		public uint GetLockFlags() => InternalCalls.RigidBodyComponent_GetLockFlags(Entity.ID);
+		public uint GetLockFlags() => InternalCalls.RigidBodyComponent_GetLockFlags(Actor.ID);
 		
 		public void SetLockFlag(ActorLockFlag flag, bool value, bool forceWake = false)
 		{
-			InternalCalls.RigidBodyComponent_SetLockFlag(Entity.ID, flag, value, forceWake);
+			InternalCalls.RigidBodyComponent_SetLockFlag(Actor.ID, flag, value, forceWake);
 		}
 
 		public bool IsLockFlagSet(ActorLockFlag flag)
 		{
-			return InternalCalls.RigidBodyComponent_IsLockFlagSet(Entity.ID, flag);
+			return InternalCalls.RigidBodyComponent_IsLockFlagSet(Actor.ID, flag);
 		}
 
-		public bool IsSleeping => InternalCalls.RigidBodyComponent_IsSleeping(Entity.ID);
-		public void WakeUp() => InternalCalls.RigidBodyComponent_WakeUp(Entity.ID);
+		public bool IsSleeping => InternalCalls.RigidBodyComponent_IsSleeping(Actor.ID);
+		public void WakeUp() => InternalCalls.RigidBodyComponent_WakeUp(Actor.ID);
 
 		public void AddForce(Vector3 force, ForceMode forceMode = ForceMode.Force)
 		{
-			InternalCalls.RigidBodyComponent_AddForce(Entity.ID, ref force, forceMode);
+			InternalCalls.RigidBodyComponent_AddForce(Actor.ID, ref force, forceMode);
 		}
 		
 		public void AddForceAtPosition(Vector3 force, Vector3 position, ForceMode forceMode = ForceMode.Force)
 		{
-			InternalCalls.RigidBodyComponent_AddForceAtPosition(Entity.ID, ref force, ref position, forceMode);
+			InternalCalls.RigidBodyComponent_AddForceAtPosition(Actor.ID, ref force, ref position, forceMode);
 		}
 
 		public void AddTorque(Vector3 torque, ForceMode forceMode = ForceMode.Force)
 		{
-			InternalCalls.RigidBodyComponent_AddTorque(Entity.ID, ref torque, forceMode);
+			InternalCalls.RigidBodyComponent_AddTorque(Actor.ID, ref torque, forceMode);
 		}
 
 		public void ClearTorque(ForceMode mode = ForceMode.Force)
 		{
-			InternalCalls.RigidBodyComponent_ClearTorque(Entity.ID, mode);
+			InternalCalls.RigidBodyComponent_ClearTorque(Actor.ID, mode);
 		}
 
 		public void ClearForce(ForceMode mode = ForceMode.Force)
 		{
-			InternalCalls.RigidBodyComponent_ClearForce(Entity.ID, mode);
+			InternalCalls.RigidBodyComponent_ClearForce(Actor.ID, mode);
 		}
 	}
 
 	public class CharacterController: Component
 	{
-		public float SpeedDown => InternalCalls.CharacterControllerComponent_GetSpeedDown(Entity.ID);
-		public bool IsGrounded => InternalCalls.CharacterControllerComponent_IsGrounded(Entity.ID);
+		public float SpeedDown => InternalCalls.CharacterControllerComponent_GetSpeedDown(Actor.ID);
+		public bool IsGrounded => InternalCalls.CharacterControllerComponent_IsGrounded(Actor.ID);
 
 		public Vector3 FootPosition
 		{
 			get
 			{
-				InternalCalls.CharacterControllerComponent_GetFootPosition(Entity.ID, out Vector3 footPosition);
+				InternalCalls.CharacterControllerComponent_GetFootPosition(Actor.ID, out Vector3 footPosition);
 				return footPosition;
 			}
 		}
 
 		public float SlopeLimit
 		{
-			get => InternalCalls.CharacterControllerComponent_GetSlopeLimit(Entity.ID);
-			set => InternalCalls.CharacterControllerComponent_SetSlopeLimit(Entity.ID, value);
+			get => InternalCalls.CharacterControllerComponent_GetSlopeLimit(Actor.ID);
+			set => InternalCalls.CharacterControllerComponent_SetSlopeLimit(Actor.ID, value);
 		}
 
 		public float StepOffset
 		{
-			get => InternalCalls.CharacterControllerComponent_GetStepOffset(Entity.ID);
-			set => InternalCalls.CharacterControllerComponent_SetStepOffset(Entity.ID, value);
+			get => InternalCalls.CharacterControllerComponent_GetStepOffset(Actor.ID);
+			set => InternalCalls.CharacterControllerComponent_SetStepOffset(Actor.ID, value);
 		}
 
 		public float ContactOffset
 		{
-			get => InternalCalls.CharacterControllerComponent_GetContactOffset(Entity.ID);
-			set => InternalCalls.CharacterControllerComponent_SetContactOffset(Entity.ID, value);
+			get => InternalCalls.CharacterControllerComponent_GetContactOffset(Actor.ID);
+			set => InternalCalls.CharacterControllerComponent_SetContactOffset(Actor.ID, value);
 		}
 
 		public bool DisableGravity
 		{
-			get => InternalCalls.CharacterControllerComponent_GetDisableGravity(Entity.ID);
-			set => InternalCalls.CharacterControllerComponent_SetDisableGravity(Entity.ID, value);
+			get => InternalCalls.CharacterControllerComponent_GetDisableGravity(Actor.ID);
+			set => InternalCalls.CharacterControllerComponent_SetDisableGravity(Actor.ID, value);
 		}
 
 		public NonWalkableMode NonWalkMode
 		{
-			get => InternalCalls.CharacterControllerComponent_GetNonWalkableMode(Entity.ID);
-			set => InternalCalls.CharacterControllerComponent_SetNonWalkableMode(Entity.ID, value);
+			get => InternalCalls.CharacterControllerComponent_GetNonWalkableMode(Actor.ID);
+			set => InternalCalls.CharacterControllerComponent_SetNonWalkableMode(Actor.ID, value);
 		}
 
 		public CapsuleClimbMode ClimbMode
 		{
-			get => InternalCalls.CharacterControllerComponent_GetClimbMode(Entity.ID);
-			set => InternalCalls.CharacterControllerComponent_SetClimbMode(Entity.ID, value);
+			get => InternalCalls.CharacterControllerComponent_GetClimbMode(Actor.ID);
+			set => InternalCalls.CharacterControllerComponent_SetClimbMode(Actor.ID, value);
 		}
 
 		public void Move(Vector3 displacement)
 		{
-			InternalCalls.CharacterControllerComponent_Move(Entity.ID, ref displacement);
+			InternalCalls.CharacterControllerComponent_Move(Actor.ID, ref displacement);
 		}
 
 		public void Jump(float jumpForce)
 		{
-			InternalCalls.CharacterControllerComponent_Jump(Entity.ID, jumpForce);
+			InternalCalls.CharacterControllerComponent_Jump(Actor.ID, jumpForce);
 		}
 	}
 
 	public class FixedJoint: Component
 	{
-		public Entity ConnectedEntity
+		public Actor ConnectedActor
 		{
 			get
 			{
-				ulong entityID = InternalCalls.FixedJointComponent_GetConnectedEntity(Entity.ID);
+				ulong actorID = InternalCalls.FixedJointComponent_GetConnectedActor(Actor.ID);
 
-				if (entityID != 0)
+				if (actorID != 0)
 				{
-					return new Entity(entityID);
+					return new Actor(actorID);
 				}
 
 				return null;
 			}
 
-			set => InternalCalls.FixedJointComponent_SetConnectedEntity(Entity.ID, value.ID);
+			set => InternalCalls.FixedJointComponent_SetConnectedActor(Actor.ID, value.ID);
 		}
 
 		public float BreakForce
 		{
-			get => InternalCalls.FixedJointComponent_GetBreakForce(Entity.ID);
-			set => InternalCalls.FixedJointComponent_SetBreakForce(Entity.ID, value);
+			get => InternalCalls.FixedJointComponent_GetBreakForce(Actor.ID);
+			set => InternalCalls.FixedJointComponent_SetBreakForce(Actor.ID, value);
 		}
 
 		public float BreakTorque
 		{
-			get => InternalCalls.FixedJointComponent_GetBreakTorque(Entity.ID);
-			set => InternalCalls.FixedJointComponent_SetBreakTorque(Entity.ID, value);
+			get => InternalCalls.FixedJointComponent_GetBreakTorque(Actor.ID);
+			set => InternalCalls.FixedJointComponent_SetBreakTorque(Actor.ID, value);
 		}
 
 		public void SetBreakForceAndTorque(float breakForce, float breakTorque)
 		{
-			InternalCalls.FixedJointComponent_SetBreakForceAndTorque(Entity.ID, breakForce, breakTorque);
+			InternalCalls.FixedJointComponent_SetBreakForceAndTorque(Actor.ID, breakForce, breakTorque);
 		}
 
 		public bool IsCollisionEnabled
 		{
-			get => InternalCalls.FixedJointComponent_GetEnableCollision(Entity.ID);
-			set => InternalCalls.FixedJointComponent_SetCollisionEnabled(Entity.ID, value);
+			get => InternalCalls.FixedJointComponent_GetEnableCollision(Actor.ID);
+			set => InternalCalls.FixedJointComponent_SetCollisionEnabled(Actor.ID, value);
 		}
 
 		public bool IsPreProcessingEnabled
 		{
-			get => InternalCalls.FixedJointComponent_GetPreProcessingEnabled(Entity.ID);
-			set => InternalCalls.FixedJointComponent_SetPreProcessingEnabled(Entity.ID, value);
+			get => InternalCalls.FixedJointComponent_GetPreProcessingEnabled(Actor.ID);
+			set => InternalCalls.FixedJointComponent_SetPreProcessingEnabled(Actor.ID, value);
 		}
 
-		public bool IsBroken => InternalCalls.FixedJointComponent_IsBroken(Entity.ID);
+		public bool IsBroken => InternalCalls.FixedJointComponent_IsBroken(Actor.ID);
 
 		public bool IsBreakable
 		{
-			get => InternalCalls.FixedJointComponent_GetIsBreakable(Entity.ID);
-			set => InternalCalls.FixedJointComponent_SetIsBreakable(Entity.ID, value);
+			get => InternalCalls.FixedJointComponent_GetIsBreakable(Actor.ID);
+			set => InternalCalls.FixedJointComponent_SetIsBreakable(Actor.ID, value);
 		}
 
-		public void Break() => InternalCalls.FixedJointComponent_Break(Entity.ID);
+		public void Break() => InternalCalls.FixedJointComponent_Break(Actor.ID);
 	}
 
 	public class BoxCollider: Component
@@ -1067,35 +1067,35 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.BoxColliderComponent_GetHalfSize(Entity.ID, out Vector3 result);
+				InternalCalls.BoxColliderComponent_GetHalfSize(Actor.ID, out Vector3 result);
 				return result;
 			}
 
-			set => InternalCalls.BoxColliderComponent_SetHalfSize(Entity.ID, ref value);
+			set => InternalCalls.BoxColliderComponent_SetHalfSize(Actor.ID, ref value);
 		}
 
 		public Vector3 Offset
 		{
 			get
 			{
-				InternalCalls.BoxColliderComponent_GetOffset(Entity.ID, out Vector3 result);
+				InternalCalls.BoxColliderComponent_GetOffset(Actor.ID, out Vector3 result);
 				return result;
 			}
 
-			set => InternalCalls.BoxColliderComponent_SetOffset(Entity.ID, ref value);
+			set => InternalCalls.BoxColliderComponent_SetOffset(Actor.ID, ref value);
 		}
 
 		public bool IsTrigger
 		{
-			get => InternalCalls.BoxColliderComponent_GetIsTrigger(Entity.ID);
-			set => InternalCalls.BoxColliderComponent_SetIsTrigger(Entity.ID, value);
+			get => InternalCalls.BoxColliderComponent_GetIsTrigger(Actor.ID);
+			set => InternalCalls.BoxColliderComponent_SetIsTrigger(Actor.ID, value);
 		}
 
 		public PhysicsMaterial Material
 		{
 			get
 			{
-				return InternalCalls.BoxColliderComponent_GetMaterialHandle(Entity.ID, out AssetHandle materialHandle)
+				return InternalCalls.BoxColliderComponent_GetMaterialHandle(Actor.ID, out AssetHandle materialHandle)
 					? new PhysicsMaterial(materialHandle) : null;
 			}
 		}
@@ -1105,32 +1105,32 @@ namespace Vortex {
 	{
 		public float Radius
 		{
-			get => InternalCalls.SphereColliderComponent_GetRadius(Entity.ID);
-			set => InternalCalls.SphereColliderComponent_SetRadius(Entity.ID, value);
+			get => InternalCalls.SphereColliderComponent_GetRadius(Actor.ID);
+			set => InternalCalls.SphereColliderComponent_SetRadius(Actor.ID, value);
 		}
 
 		public Vector3 Offset
 		{
 			get
 			{
-				InternalCalls.SphereColliderComponent_GetOffset(Entity.ID, out Vector3 result);
+				InternalCalls.SphereColliderComponent_GetOffset(Actor.ID, out Vector3 result);
 				return result;
 			}
 
-			set => InternalCalls.SphereColliderComponent_SetOffset(Entity.ID, ref value);
+			set => InternalCalls.SphereColliderComponent_SetOffset(Actor.ID, ref value);
 		}
 
 		public bool IsTrigger
 		{
-			get => InternalCalls.SphereColliderComponent_GetIsTrigger(Entity.ID);
-			set => InternalCalls.SphereColliderComponent_SetIsTrigger(Entity.ID, value);
+			get => InternalCalls.SphereColliderComponent_GetIsTrigger(Actor.ID);
+			set => InternalCalls.SphereColliderComponent_SetIsTrigger(Actor.ID, value);
 		}
 
 		public PhysicsMaterial Material
 		{
 			get
 			{
-				return InternalCalls.SphereColliderComponent_GetMaterialHandle(Entity.ID, out AssetHandle materialHandle)
+				return InternalCalls.SphereColliderComponent_GetMaterialHandle(Actor.ID, out AssetHandle materialHandle)
 					? new PhysicsMaterial(materialHandle) : null;
 			}
 		}
@@ -1140,38 +1140,38 @@ namespace Vortex {
 	{
 		public float Radius
 		{
-			get => InternalCalls.CapsuleColliderComponent_GetRadius(Entity.ID);
-			set => InternalCalls.CapsuleColliderComponent_SetRadius(Entity.ID, value);
+			get => InternalCalls.CapsuleColliderComponent_GetRadius(Actor.ID);
+			set => InternalCalls.CapsuleColliderComponent_SetRadius(Actor.ID, value);
 		}
 		
 		public float Height
 		{
-			get => InternalCalls.CapsuleColliderComponent_GetHeight(Entity.ID);
-			set => InternalCalls.CapsuleColliderComponent_SetHeight(Entity.ID, value);
+			get => InternalCalls.CapsuleColliderComponent_GetHeight(Actor.ID);
+			set => InternalCalls.CapsuleColliderComponent_SetHeight(Actor.ID, value);
 		}
 
 		public Vector3 Offset
 		{
 			get
 			{
-				InternalCalls.CapsuleColliderComponent_GetOffset(Entity.ID, out Vector3 result);
+				InternalCalls.CapsuleColliderComponent_GetOffset(Actor.ID, out Vector3 result);
 				return result;
 			}
 
-			set => InternalCalls.CapsuleColliderComponent_SetOffset(Entity.ID, ref value);
+			set => InternalCalls.CapsuleColliderComponent_SetOffset(Actor.ID, ref value);
 		}
 
 		public bool IsTrigger
 		{
-			get => InternalCalls.CapsuleColliderComponent_GetIsTrigger(Entity.ID);
-			set => InternalCalls.CapsuleColliderComponent_SetIsTrigger(Entity.ID, value);
+			get => InternalCalls.CapsuleColliderComponent_GetIsTrigger(Actor.ID);
+			set => InternalCalls.CapsuleColliderComponent_SetIsTrigger(Actor.ID, value);
 		}
 
 		public PhysicsMaterial Material
 		{
 			get
 			{
-				return InternalCalls.CapsuleColliderComponent_GetMaterialHandle(Entity.ID, out AssetHandle materialHandle)
+				return InternalCalls.CapsuleColliderComponent_GetMaterialHandle(Actor.ID, out AssetHandle materialHandle)
 					? new PhysicsMaterial(materialHandle) : null;
 			}
 		}
@@ -1179,23 +1179,23 @@ namespace Vortex {
 
 	public class MeshCollider: Component
 	{
-		public bool IsStaticMesh => InternalCalls.MeshColliderComponent_IsStaticMesh(Entity.ID);
+		public bool IsStaticMesh => InternalCalls.MeshColliderComponent_IsStaticMesh(Actor.ID);
 
 		public AssetHandle ColliderMeshHandle
 		{
-			get => InternalCalls.MeshColliderComponent_GetColliderMesh(Entity.ID, out AssetHandle colliderHandle)
+			get => InternalCalls.MeshColliderComponent_GetColliderMesh(Actor.ID, out AssetHandle colliderHandle)
 				? colliderHandle : AssetHandle.Invalid;
 		}
 
 		public bool IsTrigger
 		{
-			get => InternalCalls.MeshColliderComponent_GetIsTrigger(Entity.ID);
-			set => InternalCalls.MeshColliderComponent_SetIsTrigger(Entity.ID, value);
+			get => InternalCalls.MeshColliderComponent_GetIsTrigger(Actor.ID);
+			set => InternalCalls.MeshColliderComponent_SetIsTrigger(Actor.ID, value);
 		}
 
 		public PhysicsMaterial Material
 		{
-			get => InternalCalls.MeshColliderComponent_GetMaterialHandle(Entity.ID, out AssetHandle materialHandle)
+			get => InternalCalls.MeshColliderComponent_GetMaterialHandle(Actor.ID, out AssetHandle materialHandle)
 				? new PhysicsMaterial(materialHandle) : null;
 		}
 	}
@@ -1204,68 +1204,68 @@ namespace Vortex {
 	{
 		public RigidBody2DType BodyType
 		{
-			get => InternalCalls.RigidBody2DComponent_GetBodyType(Entity.ID);
-			set => InternalCalls.RigidBody2DComponent_SetBodyType(Entity.ID, value);
+			get => InternalCalls.RigidBody2DComponent_GetBodyType(Actor.ID);
+			set => InternalCalls.RigidBody2DComponent_SetBodyType(Actor.ID, value);
 		}
 
 		public Vector2 Velocity
 		{
 			get
 			{
-				InternalCalls.RigidBody2DComponent_GetVelocity(Entity.ID, out Vector2 velocity);
+				InternalCalls.RigidBody2DComponent_GetVelocity(Actor.ID, out Vector2 velocity);
 				return velocity;
 			}
-			set => InternalCalls.RigidBody2DComponent_SetVelocity(Entity.ID, ref value);
+			set => InternalCalls.RigidBody2DComponent_SetVelocity(Actor.ID, ref value);
 		}
 
 		public float Drag
 		{
-			get => InternalCalls.RigidBody2DComponent_GetDrag(Entity.ID);
-			set => InternalCalls.RigidBody2DComponent_SetDrag(Entity.ID, value);
+			get => InternalCalls.RigidBody2DComponent_GetDrag(Actor.ID);
+			set => InternalCalls.RigidBody2DComponent_SetDrag(Actor.ID, value);
 		}
 
 		public float AngularVelocity
 		{
-			get => InternalCalls.RigidBody2DComponent_GetAngularVelocity(Entity.ID);
-			set => InternalCalls.RigidBody2DComponent_SetAngularVelocity(Entity.ID, value);
+			get => InternalCalls.RigidBody2DComponent_GetAngularVelocity(Actor.ID);
+			set => InternalCalls.RigidBody2DComponent_SetAngularVelocity(Actor.ID, value);
 		}
 
 		public float AngularDrag
 		{
-			get => InternalCalls.RigidBody2DComponent_GetAngularDrag(Entity.ID);
-			set => InternalCalls.RigidBody2DComponent_SetAngularDrag(Entity.ID, value);
+			get => InternalCalls.RigidBody2DComponent_GetAngularDrag(Actor.ID);
+			set => InternalCalls.RigidBody2DComponent_SetAngularDrag(Actor.ID, value);
 		}
 
 		public float GravityScale
 		{
-			get => InternalCalls.RigidBody2DComponent_GetGravityScale(Entity.ID);
-			set => InternalCalls.RigidBody2DComponent_SetGravityScale(Entity.ID, value);
+			get => InternalCalls.RigidBody2DComponent_GetGravityScale(Actor.ID);
+			set => InternalCalls.RigidBody2DComponent_SetGravityScale(Actor.ID, value);
 		}
 
 		public bool FreezeRotation
 		{
-			get => InternalCalls.RigidBody2DComponent_GetFixedRotation(Entity.ID);
-			set => InternalCalls.RigidBody2DComponent_SetFixedRotation(Entity.ID, value);
+			get => InternalCalls.RigidBody2DComponent_GetFixedRotation(Actor.ID);
+			set => InternalCalls.RigidBody2DComponent_SetFixedRotation(Actor.ID, value);
 		}
 
 		public void ApplyForce(Vector2 force, Vector2 worldPosition, bool wake)
 		{
-			InternalCalls.RigidBody2DComponent_ApplyForce(Entity.ID, ref force, ref worldPosition, wake);
+			InternalCalls.RigidBody2DComponent_ApplyForce(Actor.ID, ref force, ref worldPosition, wake);
 		}
 
 		public void ApplyForce(Vector2 force, bool wake)
 		{
-			InternalCalls.RigidBody2DComponent_ApplyForceToCenter(Entity.ID, ref force, wake);
+			InternalCalls.RigidBody2DComponent_ApplyForceToCenter(Actor.ID, ref force, wake);
 		}
 
 		public void ApplyLinearImpulse(Vector2 impulse, Vector2 worldPosition, bool wake)
 		{
-			InternalCalls.RigidBody2DComponent_ApplyLinearImpulse(Entity.ID, ref impulse, ref worldPosition, wake);
+			InternalCalls.RigidBody2DComponent_ApplyLinearImpulse(Actor.ID, ref impulse, ref worldPosition, wake);
 		}
 
 		public void ApplyLinearImpulse(Vector2 impulse, bool wake)
 		{
-			InternalCalls.RigidBody2DComponent_ApplyLinearImpulseToCenter(Entity.ID, ref impulse, wake);
+			InternalCalls.RigidBody2DComponent_ApplyLinearImpulseToCenter(Actor.ID, ref impulse, wake);
 		}
 	}
 
@@ -1275,66 +1275,66 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.BoxCollider2DComponent_GetOffset(Entity.ID, out Vector2 result);
+				InternalCalls.BoxCollider2DComponent_GetOffset(Actor.ID, out Vector2 result);
 				return result;
 			}
 
-			set => InternalCalls.BoxCollider2DComponent_SetOffset(Entity.ID, ref value);
+			set => InternalCalls.BoxCollider2DComponent_SetOffset(Actor.ID, ref value);
 		}
 
 		public Vector2 Size
 		{
 			get
 			{
-				InternalCalls.BoxCollider2DComponent_GetSize(Entity.ID, out Vector2 result);
+				InternalCalls.BoxCollider2DComponent_GetSize(Actor.ID, out Vector2 result);
 				return result;
 			}
 
-			set => InternalCalls.BoxCollider2DComponent_SetSize(Entity.ID, ref value);
+			set => InternalCalls.BoxCollider2DComponent_SetSize(Actor.ID, ref value);
 		}
 
 		public float Density
 		{
 			get
 			{
-				InternalCalls.BoxCollider2DComponent_GetDensity(Entity.ID, out float result);
+				InternalCalls.BoxCollider2DComponent_GetDensity(Actor.ID, out float result);
 				return result;
 			}
 
-			set => InternalCalls.BoxCollider2DComponent_SetDensity(Entity.ID, value);
+			set => InternalCalls.BoxCollider2DComponent_SetDensity(Actor.ID, value);
 		}
 
 		public float Friction
 		{
 			get
 			{
-				InternalCalls.BoxCollider2DComponent_GetFriction(Entity.ID, out float result);
+				InternalCalls.BoxCollider2DComponent_GetFriction(Actor.ID, out float result);
 				return result;
 			}
 
-			set => InternalCalls.BoxCollider2DComponent_SetFriction(Entity.ID, value);
+			set => InternalCalls.BoxCollider2DComponent_SetFriction(Actor.ID, value);
 		}
 
 		public float Restitution
 		{
 			get
 			{
-				InternalCalls.BoxCollider2DComponent_GetRestitution(Entity.ID, out float result);
+				InternalCalls.BoxCollider2DComponent_GetRestitution(Actor.ID, out float result);
 				return result;
 			}
 
-			set => InternalCalls.BoxCollider2DComponent_SetRestitution(Entity.ID, value);
+			set => InternalCalls.BoxCollider2DComponent_SetRestitution(Actor.ID, value);
 		}
 
 		public float RestitutionThreshold
 		{
 			get
 			{
-				InternalCalls.BoxCollider2DComponent_GetRestitutionThreshold(Entity.ID, out float result);
+				InternalCalls.BoxCollider2DComponent_GetRestitutionThreshold(Actor.ID, out float result);
 				return result;
 			}
 
-			set => InternalCalls.BoxCollider2DComponent_SetRestitutionThreshold(Entity.ID, value);
+			set => InternalCalls.BoxCollider2DComponent_SetRestitutionThreshold(Actor.ID, value);
 		}
 	}
 
@@ -1344,66 +1344,66 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.CircleCollider2DComponent_GetOffset(Entity.ID, out Vector2 result);
+				InternalCalls.CircleCollider2DComponent_GetOffset(Actor.ID, out Vector2 result);
 				return result;
 			}
 
-			set => InternalCalls.CircleCollider2DComponent_SetOffset(Entity.ID, ref value);
+			set => InternalCalls.CircleCollider2DComponent_SetOffset(Actor.ID, ref value);
 		}
 
 		public float Radius
 		{
 			get
 			{
-				InternalCalls.CircleCollider2DComponent_GetRadius(Entity.ID, out float result);
+				InternalCalls.CircleCollider2DComponent_GetRadius(Actor.ID, out float result);
 				return result;
 			}
 
-			set => InternalCalls.CircleCollider2DComponent_SetRadius(Entity.ID, value);
+			set => InternalCalls.CircleCollider2DComponent_SetRadius(Actor.ID, value);
 		}
 
 		public float Density
 		{
 			get
 			{
-				InternalCalls.CircleCollider2DComponent_GetDensity(Entity.ID, out float result);
+				InternalCalls.CircleCollider2DComponent_GetDensity(Actor.ID, out float result);
 				return result;
 			}
 
-			set => InternalCalls.CircleCollider2DComponent_SetDensity(Entity.ID, value);
+			set => InternalCalls.CircleCollider2DComponent_SetDensity(Actor.ID, value);
 		}
 
 		public float Friction
 		{
 			get
 			{
-				InternalCalls.CircleCollider2DComponent_GetFriction(Entity.ID, out float result);
+				InternalCalls.CircleCollider2DComponent_GetFriction(Actor.ID, out float result);
 				return result;
 			}
 
-			set => InternalCalls.CircleCollider2DComponent_SetFriction(Entity.ID, value);
+			set => InternalCalls.CircleCollider2DComponent_SetFriction(Actor.ID, value);
 		}
 
 		public float Restitution
 		{
 			get
 			{
-				InternalCalls.CircleCollider2DComponent_GetRestitution(Entity.ID, out float result);
+				InternalCalls.CircleCollider2DComponent_GetRestitution(Actor.ID, out float result);
 				return result;
 			}
 
-			set => InternalCalls.CircleCollider2DComponent_SetRestitution(Entity.ID, value);
+			set => InternalCalls.CircleCollider2DComponent_SetRestitution(Actor.ID, value);
 		}
 
 		public float RestitutionThreshold
 		{
 			get
 			{
-				InternalCalls.CircleCollider2DComponent_GetRestitutionThreshold(Entity.ID, out float result);
+				InternalCalls.CircleCollider2DComponent_GetRestitutionThreshold(Actor.ID, out float result);
 				return result;
 			}
 
-			set => InternalCalls.CircleCollider2DComponent_SetRestitutionThreshold(Entity.ID, value);
+			set => InternalCalls.CircleCollider2DComponent_SetRestitutionThreshold(Actor.ID, value);
 		}
 	}
 
@@ -1413,120 +1413,120 @@ namespace Vortex {
 		{
 			get
 			{
-				InternalCalls.ParticleEmitterComponent_GetVelocity(Entity.ID, out Vector3 velocity);
+				InternalCalls.ParticleEmitterComponent_GetVelocity(Actor.ID, out Vector3 velocity);
 				return velocity;
 			}
 
-			set => InternalCalls.ParticleEmitterComponent_SetVelocity(Entity.ID, ref value);
+			set => InternalCalls.ParticleEmitterComponent_SetVelocity(Actor.ID, ref value);
 		}
 
 		public Vector3 VelocityVariation
 		{
 			get
 			{
-				InternalCalls.ParticleEmitterComponent_GetVelocityVariation(Entity.ID, out Vector3 velocityVariation);
+				InternalCalls.ParticleEmitterComponent_GetVelocityVariation(Actor.ID, out Vector3 velocityVariation);
 				return velocityVariation;
 			}
 
-			set => InternalCalls.ParticleEmitterComponent_SetVelocityVariation(Entity.ID, ref value);
+			set => InternalCalls.ParticleEmitterComponent_SetVelocityVariation(Actor.ID, ref value);
 		}
 
 		public Vector3 Offset
 		{
 			get
 			{
-				InternalCalls.ParticleEmitterComponent_GetOffset(Entity.ID, out Vector3 offset);
+				InternalCalls.ParticleEmitterComponent_GetOffset(Actor.ID, out Vector3 offset);
 				return offset;
 			}
 
-			set => InternalCalls.ParticleEmitterComponent_SetOffset(Entity.ID, ref value);
+			set => InternalCalls.ParticleEmitterComponent_SetOffset(Actor.ID, ref value);
 		}
 
 		public Vector2 SizeBegin
 		{
 			get
 			{
-				InternalCalls.ParticleEmitterComponent_GetSizeBegin(Entity.ID, out Vector2 sizeBegin);
+				InternalCalls.ParticleEmitterComponent_GetSizeBegin(Actor.ID, out Vector2 sizeBegin);
 				return sizeBegin;
 			}
 
-			set => InternalCalls.ParticleEmitterComponent_SetSizeBegin(Entity.ID, ref value);
+			set => InternalCalls.ParticleEmitterComponent_SetSizeBegin(Actor.ID, ref value);
 		}
 
 		public Vector2 SizeEnd
 		{
 			get
 			{
-				InternalCalls.ParticleEmitterComponent_GetSizeEnd(Entity.ID, out Vector2 sizeEnd);
+				InternalCalls.ParticleEmitterComponent_GetSizeEnd(Actor.ID, out Vector2 sizeEnd);
 				return sizeEnd;
 			}
 
-			set => InternalCalls.ParticleEmitterComponent_SetSizeEnd(Entity.ID, ref value);
+			set => InternalCalls.ParticleEmitterComponent_SetSizeEnd(Actor.ID, ref value);
 		}
 
 		public Vector2 SizeVariation
 		{
 			get
 			{
-				InternalCalls.ParticleEmitterComponent_GetSizeVariation(Entity.ID, out Vector2 sizeVariation);
+				InternalCalls.ParticleEmitterComponent_GetSizeVariation(Actor.ID, out Vector2 sizeVariation);
 				return sizeVariation;
 			}
 
-			set => InternalCalls.ParticleEmitterComponent_SetSizeVariation(Entity.ID, ref value);
+			set => InternalCalls.ParticleEmitterComponent_SetSizeVariation(Actor.ID, ref value);
 		}
 
 		public Vector4 ColorBegin
 		{
 			get
 			{
-				InternalCalls.ParticleEmitterComponent_GetColorBegin(Entity.ID, out Vector4 colorBegin);
+				InternalCalls.ParticleEmitterComponent_GetColorBegin(Actor.ID, out Vector4 colorBegin);
 				return colorBegin;
 			}
 
-			set => InternalCalls.ParticleEmitterComponent_SetColorBegin(Entity.ID, ref value);
+			set => InternalCalls.ParticleEmitterComponent_SetColorBegin(Actor.ID, ref value);
 		}
 
 		public Vector4 ColorEnd
 		{
 			get
 			{
-				InternalCalls.ParticleEmitterComponent_GetColorEnd(Entity.ID, out Vector4 colorEnd);
+				InternalCalls.ParticleEmitterComponent_GetColorEnd(Actor.ID, out Vector4 colorEnd);
 				return colorEnd;
 			}
 
-			set => InternalCalls.ParticleEmitterComponent_SetColorEnd(Entity.ID, ref value);
+			set => InternalCalls.ParticleEmitterComponent_SetColorEnd(Actor.ID, ref value);
 		}
 
 		public float Rotation
 		{
 			get
 			{
-				InternalCalls.ParticleEmitterComponent_GetRotation(Entity.ID, out float rotation);
+				InternalCalls.ParticleEmitterComponent_GetRotation(Actor.ID, out float rotation);
 				return rotation;
 			}
 
-			set => InternalCalls.ParticleEmitterComponent_SetRotation(Entity.ID, value);
+			set => InternalCalls.ParticleEmitterComponent_SetRotation(Actor.ID, value);
 		}
 
 		public float LifeTime
 		{
 			get
 			{
-				InternalCalls.ParticleEmitterComponent_GetLifeTime(Entity.ID, out float lifetime);
+				InternalCalls.ParticleEmitterComponent_GetLifeTime(Actor.ID, out float lifetime);
 				return lifetime;
 			}
 
-			set => InternalCalls.ParticleEmitterComponent_SetLifeTime(Entity.ID, value);
+			set => InternalCalls.ParticleEmitterComponent_SetLifeTime(Actor.ID, value);
 		}
 
-		public void Start() => InternalCalls.ParticleEmitterComponent_Start(Entity.ID);
+		public void Start() => InternalCalls.ParticleEmitterComponent_Start(Actor.ID);
 
-		public void Stop() => InternalCalls.ParticleEmitterComponent_Stop(Entity.ID);
+		public void Stop() => InternalCalls.ParticleEmitterComponent_Stop(Actor.ID);
 	}
 
 	public class Script: Component
 	{
-		public object Instance => InternalCalls.Entity_GetScriptInstance(Entity.ID);
+		public object Instance => InternalCalls.Actor_GetScriptInstance(Actor.ID);
 	}
 
 }

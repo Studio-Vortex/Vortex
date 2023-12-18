@@ -12,7 +12,7 @@ namespace Vortex {
 								virtual AssetType GetAssetType() const override { return GetStaticType(); }\
 
 	class Scene;
-	class Entity;
+	class Actor;
 
 	class VORTEX_API IAssetSystem : public RefCounted
 	{
@@ -29,8 +29,8 @@ namespace Vortex {
 		virtual void OnContextSceneCreated(Scene* context) = 0;
 		virtual void OnContextSceneDestroyed(Scene* context) = 0;
 
-		virtual void CreateAsset(Entity& entity) = 0;
-		virtual void DestroyAsset(Entity& entity) = 0;
+		virtual void CreateAsset(Actor& actor) = 0;
+		virtual void DestroyAsset(Actor& actor) = 0;
 
 		virtual void OnRuntimeStart(Scene* context) = 0;
 		virtual void OnUpdateRuntime(Scene* context) = 0;

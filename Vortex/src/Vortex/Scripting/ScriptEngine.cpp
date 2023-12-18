@@ -11,7 +11,7 @@
 #include "Vortex/Audio/Audio.h"
 #include "Vortex/Audio/AudioSource.h"
 
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 #include "Vortex/Scene/Components.h"
 
 #include "Vortex/Scripting/ScriptUtils.h"
@@ -51,7 +51,7 @@ namespace Vortex {
 		std::filesystem::path CoreAssemblyFilepath;
 		std::filesystem::path AppAssemblyFilepath;
 
-		SharedReference<ScriptClass> EntityClass = nullptr;
+		SharedReference<ScriptClass> ActorClass = nullptr;
 
 		UniqueRef<filewatch::FileWatch<std::string>> AppAssemblyFilewatcher = nullptr;
 		bool AssemblyReloadPending = false;
@@ -60,9 +60,9 @@ namespace Vortex {
 
 		SharedReference<AudioSource> AppAssemblyReloadSound = nullptr;
 
-		std::unordered_map<std::string, SharedReference<ScriptClass>> EntityClasses;
-		std::unordered_map<UUID, SharedReference<ScriptInstance>> EntityInstances;
-		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
+		std::unordered_map<std::string, SharedReference<ScriptClass>> ActorClasses;
+		std::unordered_map<UUID, SharedReference<ScriptInstance>> ActorInstances;
+		std::unordered_map<UUID, ScriptFieldMap> ActorScriptFields;
 
 		// Runtime
 		Scene* ContextScene = nullptr;
@@ -128,7 +128,7 @@ namespace Vortex {
 
 		ScriptRegistry::RegisterComponents();
 
-		s_Data->EntityClass = SharedReference<ScriptClass>::Create("Vortex", "Entity", true);
+		s_Data->ActorClass = SharedReference<ScriptClass>::Create("Vortex", "Actor", true);
 		s_Data->AppAssemblyReloadSound = AudioSource::Create(APP_ASSEMBLY_RELOAD_SOUND_PATH);
 		s_Data->AppAssemblyReloadSound->GetPlaybackDevice().GetSound().SetSpacialized(false);
 
@@ -149,7 +149,7 @@ namespace Vortex {
 
 		// NOTE:
 		// We need to manually clean up this audio source because
-		// it is not attached to an entity in a scene, if it was,
+		// it is not attached to an actor in a scene, if it was,
 		// the scene would be responsible for cleaning it up
 		// as mentioned in AudioSource::~AudioSource()
 		s_Data->AppAssemblyReloadSound->GetPlaybackDevice().Shutdown(Audio::GetContext());
@@ -270,7 +270,7 @@ namespace Vortex {
 
 		ScriptRegistry::RegisterComponents();
 
-		s_Data->EntityClass = SharedReference<ScriptClass>::Create("Vortex", "Entity", true);
+		s_Data->ActorClass = SharedReference<ScriptClass>::Create("Vortex", "Actor", true);
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* contextScene)
@@ -281,50 +281,50 @@ namespace Vortex {
 	void ScriptEngine::OnRuntimeStop()
 	{
 		s_Data->ContextScene = nullptr;
-		s_Data->EntityInstances.clear();
+		s_Data->ActorInstances.clear();
 	}
 
-	bool ScriptEngine::EntityClassExists(const std::string& fullyQualifiedClassName)
+	bool ScriptEngine::ActorClassExists(const std::string& fullyQualifiedClassName)
 	{
-		return s_Data->EntityClasses.contains(fullyQualifiedClassName);
+		return s_Data->ActorClasses.contains(fullyQualifiedClassName);
 	}
 
-	bool ScriptEngine::EntityInstanceExists(UUID entityUUID)
+	bool ScriptEngine::ActorInstanceExists(UUID actorUUID)
 	{
-		return s_Data->EntityInstances.contains(entityUUID);
+		return s_Data->ActorInstances.contains(actorUUID);
 	}
 
-	void ScriptEngine::EntityConstructorRuntime(UUID entityUUID, MonoObject* instance)
+	void ScriptEngine::ActorConstructorRuntime(UUID actorUUID, MonoObject* instance)
 	{
-		MonoMethod* entityConstructor = s_Data->EntityClass->GetMethod(".ctor", 1);
+		MonoMethod* actorConstructor = s_Data->ActorClass->GetMethod(".ctor", 1);
 
-		void* param = (void*)&entityUUID;
-		ScriptUtils::InvokeMethod(instance, entityConstructor, &param);
+		void* param = (void*)&actorUUID;
+		ScriptUtils::InvokeMethod(instance, actorConstructor, &param);
 	}
 
-	void ScriptEngine::RT_CreateEntityScriptInstance(Entity entity)
+	void ScriptEngine::RT_CreateActorScriptInstance(Actor actor)
 	{
 		VX_PROFILE_FUNCTION();
 
-		const UUID entityUUID = entity.GetUUID();
+		const UUID actorUUID = actor.GetUUID();
 
-		const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+		const ScriptComponent& scriptComponent = actor.GetComponent<ScriptComponent>();
 
-		VX_CORE_ASSERT(!EntityInstanceExists(entityUUID), "Instance was already found with UUID!");
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Entity Class was not found in Entity Classes Map!");
+		VX_CORE_ASSERT(!ActorInstanceExists(actorUUID), "Instance was already found with UUID!");
+		VX_CORE_ASSERT(ActorClassExists(scriptComponent.ClassName), "Actor Class was not found in Actor Classes Map!");
 
-		SharedReference<ScriptClass> scriptClass = GetEntityClass(scriptComponent.ClassName);
-		SharedReference<ScriptInstance> instance = SharedReference<ScriptInstance>::Create(scriptClass, entity);
+		SharedReference<ScriptClass> scriptClass = GetActorClass(scriptComponent.ClassName);
+		SharedReference<ScriptInstance> instance = SharedReference<ScriptInstance>::Create(scriptClass);
 		
-		// Invoke C# Entity class constructor
-		instance->InvokeConstructor(entity);
+		// Invoke C# Actor class constructor
+		instance->InvokeConstructor(actorUUID);
 
-		s_Data->EntityInstances[entityUUID] = instance;
+		s_Data->ActorInstances[actorUUID] = instance;
 
 		// Copy field values
-		auto it = s_Data->EntityScriptFields.find(entityUUID);
+		auto it = s_Data->ActorScriptFields.find(actorUUID);
 
-		if (it == s_Data->EntityScriptFields.end())
+		if (it == s_Data->ActorScriptFields.end())
 		{
 			return;
 		}
@@ -337,7 +337,7 @@ namespace Vortex {
 		}
 	}
 
-	bool ScriptEngine::Invoke(const std::string& methodName, Entity entity, const std::vector<RuntimeMethodArgument>& argumentList)
+	bool ScriptEngine::Invoke(const std::string& methodName, Actor actor, const std::vector<RuntimeMethodArgument>& argumentList)
 	{
 		if (methodName.empty())
 		{
@@ -347,37 +347,37 @@ namespace Vortex {
 
 		ManagedMethod method = Utils::ManagedMethodFromString(methodName);
 
-		return Invoke(method, entity, argumentList);
+		return Invoke(method, actor, argumentList);
 	}
 
-	bool ScriptEngine::Invoke(ManagedMethod method, Entity entity, const std::vector<RuntimeMethodArgument>& argumentList)
+	bool ScriptEngine::Invoke(ManagedMethod method, Actor actor, const std::vector<RuntimeMethodArgument>& argumentList)
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (!entity)
+		if (!actor)
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Entity.{} on invalid entity!");
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.{} on invalid actor!", Utils::StringFromManagedMethod(method));
 			return false;
 		}
 
-		const UUID entityUUID = entity.GetUUID();
-		const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+		const UUID actorUUID = actor.GetUUID();
+		const ScriptComponent& scriptComponent = actor.GetComponent<ScriptComponent>();
 
-		VX_CORE_ASSERT(EntityClassExists(scriptComponent.ClassName), "Class was not found in Entity Class Map!");
-		VX_CORE_ASSERT(EntityInstanceExists(entityUUID), "Entity was not instantiated properly!");
+		VX_CORE_ASSERT(ActorClassExists(scriptComponent.ClassName), "Class was not found in Actor Class Map!");
+		VX_CORE_ASSERT(ActorInstanceExists(actorUUID), "Actor was not instantiated properly!");
 
-		if (!EntityInstanceExists(entityUUID))
+		if (!ActorInstanceExists(actorUUID))
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Failed to find ScriptInstance for Entity with Tag: {}", entity.GetName());
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Failed to find ScriptInstance for Actor with Tag: {}", actor.GetName());
 			return false;
 		}
 
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(entityUUID);
+		SharedReference<ScriptInstance> instance = GetActorScriptInstance(actorUUID);
 		VX_CORE_ASSERT(instance, "Invalid script instance!");
 
 		if (instance == nullptr)
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Entity.{} on entity '{}' with invalid script instance!", Utils::StringFromManagedMethod(method), entity.GetName());
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.{} on actor '{}' with invalid script instance!", Utils::StringFromManagedMethod(method), actor.GetName());
 			return false;
 		}
 
@@ -411,7 +411,7 @@ namespace Vortex {
 				instance->InvokeOnDestroy();
 				
 				// Remove the instance from the script instance map
-				s_Data->EntityInstances.erase(entityUUID);
+				s_Data->ActorInstances.erase(actorUUID);
 
 				break;
 			}
@@ -495,26 +495,26 @@ namespace Vortex {
 		return true;
 	}
 
-	SharedReference<ScriptClass> ScriptEngine::GetCoreEntityClass()
+	SharedReference<ScriptClass> ScriptEngine::GetCoreActorClass()
 	{
-		return s_Data->EntityClass;
+		return s_Data->ActorClass;
 	}
 
-	SharedReference<ScriptInstance> ScriptEngine::GetEntityScriptInstance(UUID uuid)
+	SharedReference<ScriptInstance> ScriptEngine::GetActorScriptInstance(UUID uuid)
 	{
-		if (EntityInstanceExists(uuid))
+		if (ActorInstanceExists(uuid))
 		{
-			return s_Data->EntityInstances[uuid];
+			return s_Data->ActorInstances[uuid];
 		}
 
 		return nullptr;
 	}
 
-	SharedReference<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
+	SharedReference<ScriptClass> ScriptEngine::GetActorClass(const std::string& name)
 	{
-		if (EntityClassExists(name))
+		if (ActorClassExists(name))
 		{
-			return s_Data->EntityClasses[name];
+			return s_Data->ActorClasses[name];
 		}
 
 		return nullptr;
@@ -522,27 +522,27 @@ namespace Vortex {
 
 	std::unordered_map<std::string, SharedReference<ScriptClass>> ScriptEngine::GetClasses()
 	{
-		return s_Data->EntityClasses;
+		return s_Data->ActorClasses;
 	}
 
-	const ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
+	const ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Actor actor)
 	{
-		VX_CORE_ASSERT(entity, "Entity was invalid!");
-		VX_CORE_ASSERT(s_Data->EntityScriptFields.contains(entity.GetUUID()), "Entity was not found in script field map!");
+		VX_CORE_ASSERT(actor, "Actor was invalid!");
+		VX_CORE_ASSERT(s_Data->ActorScriptFields.contains(actor.GetUUID()), "Actor was not found in script field map!");
 
-		return s_Data->EntityScriptFields[entity.GetUUID()];
+		return s_Data->ActorScriptFields[actor.GetUUID()];
 	}
 
-	ScriptFieldMap& ScriptEngine::GetMutableScriptFieldMap(Entity entity)
+	ScriptFieldMap& ScriptEngine::GetMutableScriptFieldMap(Actor actor)
 	{
-		VX_CORE_ASSERT(entity, "Entity was invalid!");
+		VX_CORE_ASSERT(actor, "Actor was invalid!");
 
-		return s_Data->EntityScriptFields[entity.GetUUID()];
+		return s_Data->ActorScriptFields[actor.GetUUID()];
 	}
 
 	MonoObject* ScriptEngine::GetManagedInstance(UUID uuid)
 	{
-		SharedReference<ScriptInstance> instance = GetEntityScriptInstance(uuid);
+		SharedReference<ScriptInstance> instance = GetActorScriptInstance(uuid);
 		return instance->GetManagedObject();
 	}
 
@@ -553,7 +553,7 @@ namespace Vortex {
 
 	size_t ScriptEngine::GetScriptInstanceCount()
 	{
-		return s_Data->EntityInstances.size();
+		return s_Data->ActorInstances.size();
 	}
 
 	Scene* ScriptEngine::GetContextScene()
@@ -576,17 +576,17 @@ namespace Vortex {
 		return s_Data->AppAssemblyImage;
 	}
 
-	void ScriptEngine::RuntimeInstantiateEntity(Entity entity)
+	void ScriptEngine::RuntimeInstantiateActor(Actor actor)
 	{
-		if (!entity)
+		if (!actor)
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate invalid Entity!");
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate invalid Actor!");
 			return;
 		}
 
-		if (!entity.HasComponent<ScriptComponent>())
+		if (!actor.HasComponent<ScriptComponent>())
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate Entity '{}' without script component!", entity.GetName());
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate Actor '{}' without script component!", actor.GetName());
 			return;
 		}
 
@@ -599,22 +599,22 @@ namespace Vortex {
 		}
 
 		// Create the instance
-		ScriptEngine::RT_CreateEntityScriptInstance(entity);
-		VX_CORE_ASSERT(EntityInstanceExists(entity), "Entity script instance not instantiated properly!");
+		ScriptEngine::RT_CreateActorScriptInstance(actor);
+		VX_CORE_ASSERT(ActorInstanceExists(actor), "Actor script instance not instantiated properly!");
 
-		// Invoke Entity.OnAwake
-		ScriptEngine::Invoke(ManagedMethod::OnAwake, entity);
-		// Invoke Entity.OnCreate
-		ScriptEngine::Invoke(ManagedMethod::OnCreate, entity);
+		// Invoke Actor.OnAwake
+		ScriptEngine::Invoke(ManagedMethod::OnAwake, actor);
+		// Invoke Actor.OnCreate
+		ScriptEngine::Invoke(ManagedMethod::OnCreate, actor);
 	}
 
 	void ScriptEngine::LoadAssemblyClasses(bool displayClasses)
 	{
-		s_Data->EntityClasses.clear();
+		s_Data->ActorClasses.clear();
 
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_Data->AppAssemblyImage, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
-		MonoClass* entityClass = mono_class_from_name(s_Data->CoreAssemblyImage, "Vortex", "Entity");
+		MonoClass* actorClass = mono_class_from_name(s_Data->CoreAssemblyImage, "Vortex", "Actor");
 
 		for (int32_t i = 0; i < numTypes; i++)
 		{
@@ -632,16 +632,16 @@ namespace Vortex {
 
 			MonoClass* monoClass = mono_class_from_name(s_Data->AppAssemblyImage, nameSpace, className);
 
-			if (!monoClass || monoClass == entityClass)
+			if (!monoClass || monoClass == actorClass)
 				continue;
 
-			const bool isEntityClass = mono_class_is_subclass_of(monoClass, entityClass, false);
+			const bool isActorClass = mono_class_is_subclass_of(monoClass, actorClass, false);
 
-			if (!isEntityClass)
+			if (!isActorClass)
 				continue;
 
 			SharedReference<ScriptClass> scriptClass = SharedReference<ScriptClass>::Create(nameSpace, className);
-			s_Data->EntityClasses[fullName] = scriptClass;
+			s_Data->ActorClasses[fullName] = scriptClass;
 
 			const int fieldCount = mono_class_num_fields(monoClass);
 

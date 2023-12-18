@@ -17,11 +17,11 @@ namespace Vortex {
 		EDITOR_PANEL_TYPE(ECSDebug)
 
 	private:
-		void RenderSelectedEntityView(Entity selectedEntity);
-		void RenderSceneEntityView();
+		void RenderSelectedActorView(Actor selectedActor);
+		void RenderSceneActorView();
 
 		template <typename... TComponent>
-		inline void RenderEntityComponentSignature(Entity entity)
+		inline void RenderActorComponentSignature(Actor actor)
 		{
 			static const char* columns[] = { "Component", "Value" };
 
@@ -33,7 +33,7 @@ namespace Vortex {
 				{
 					uint32_t offset = strlen("struct Vortex::");
 					const char* componentName = typeid(TComponent).name() + offset;
-					const char* hasComponent = entity.HasComponent<TComponent>() ? "true" : "false";
+					const char* hasComponent = actor.HasComponent<TComponent>() ? "true" : "false";
 					
 					Gui::TableNextColumn();
 					Gui::Text(componentName);
@@ -41,13 +41,13 @@ namespace Vortex {
 
 					if (Gui::IsItemClicked())
 					{
-						if (entity.HasComponent<TComponent>())
+						if (actor.HasComponent<TComponent>())
 						{
-							entity.RemoveComponent<TComponent>();
+							actor.RemoveComponent<TComponent>();
 						}
 						else
 						{
-							entity.AddComponent<TComponent>();
+							actor.AddComponent<TComponent>();
 						}
 					}
 
@@ -58,15 +58,15 @@ namespace Vortex {
 		}
 
 		template <typename... TComponent>
-		inline void RenderEntityComponentSignature(ComponentGroup<TComponent...>, Entity selectedEntity)
+		inline void RenderActorComponentSignature(ComponentGroup<TComponent...>, Actor selectedActor)
 		{
-			RenderEntityComponentSignature<TComponent...>(selectedEntity);
+			RenderActorComponentSignature<TComponent...>(selectedActor);
 		}
 
 	private:
-		std::stack<UUID> m_ClickedEntities;
+		std::stack<UUID> m_ClickedActors;
 
-		bool m_ShowEntityComponentSignature = false;
+		bool m_ShowActorComponentSignature = false;
 	};
 
 }

@@ -1,14 +1,14 @@
 #include "vxpch.h"
 #include "ScriptInstance.h"
 
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Scripting/ScriptUtils.h"
 
 namespace Vortex {
 
-	ScriptInstance::ScriptInstance(SharedReference<ScriptClass>& scriptClass, Entity entity)
+	ScriptInstance::ScriptInstance(SharedReference<ScriptClass>& scriptClass)
 		: m_ScriptClass(scriptClass)
 	{
 		m_Instance = m_ScriptClass->Instantiate();
@@ -27,14 +27,14 @@ namespace Vortex {
 		m_ManagedMethods[ManagedMethod::OnDisable] = m_ScriptClass->GetMethod("OnDisabled", 0);
 		m_ManagedMethods[ManagedMethod::OnGui] = m_ScriptClass->GetMethod("OnGui", 0);
 
-		SharedReference<ScriptClass> entityClass = ScriptEngine::GetCoreEntityClass();
-		m_EntityConstructor = entityClass->GetMethod(".ctor", 1);
+		SharedReference<ScriptClass> entityClass = ScriptEngine::GetCoreActorClass();
+		m_ActorConstructor = entityClass->GetMethod(".ctor", 1);
 	}
 
 	void ScriptInstance::InvokeConstructor(UUID entityUUID)
 	{
 		void* param = (void*)&entityUUID;
-		ScriptUtils::InvokeMethod(m_Instance, m_EntityConstructor, &param);
+		ScriptUtils::InvokeMethod(m_Instance, m_ActorConstructor, &param);
 	}
 
 	void ScriptInstance::InvokeOnAwake()

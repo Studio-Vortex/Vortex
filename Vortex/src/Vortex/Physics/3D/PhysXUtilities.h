@@ -55,7 +55,7 @@ namespace Vortex {
 			PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)actor->userData;
 			Scene* contextScene = physicsBodyData->ContextScene;
 			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-			Entity entity = contextScene->TryGetEntityWithUUID(physicsBodyData->EntityUUID);
+			Actor entity = contextScene->TryGetActorWithUUID(physicsBodyData->ActorUUID);
 			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
 
 			const TransformComponent& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
@@ -92,7 +92,7 @@ namespace Vortex {
 				for (uint32_t i = 0; i < count; i++)
 				{
 					PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)s_OverlapBuffer[i].actor->userData;
-					buffer[i].EntityID = physicsBodyData->EntityUUID;
+					buffer[i].EntityID = physicsBodyData->ActorUUID;
 				}
 			}
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 
 #include <filesystem>
 
@@ -11,21 +11,21 @@ namespace Vortex {
 	{
 	public:
 		Prefab(const std::filesystem::path& filepath);
-		Prefab(Entity entity);
+		Prefab(Actor actor);
 		~Prefab() = default;
 
-		// Create a prefab with an empty entity
+		// Create a prefab with an empty actor
 		static SharedRef<Prefab> Create(const std::filesystem::path& filepath);
-		// Replaces existing entity if present
-		static SharedRef<Prefab> Create(Entity entity);
+		// Replaces existing actor if present
+		static SharedRef<Prefab> Create(Actor actor);
 
 	private:
-		Entity CreatePrefabFromEntity(Entity entity);
+		Actor CreatePrefabFromActor(Actor actor);
 
 	private:
 		std::filesystem::path m_Filepath;
 		SharedReference<Scene> m_Scene = nullptr;
-		Entity m_Entity;
+		Actor m_Actor;
 
 		friend class Scene;
 		friend class ScriptEngine;

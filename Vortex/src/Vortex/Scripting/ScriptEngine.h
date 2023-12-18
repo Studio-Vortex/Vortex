@@ -51,29 +51,29 @@ namespace Vortex {
 		static void OnRuntimeStart(Scene* contextScene);
 		static void OnRuntimeStop();
 
-		static bool EntityClassExists(const std::string& fullyQualifiedClassName);
-		static bool EntityInstanceExists(UUID entityUUID);
-		static void EntityConstructorRuntime(UUID entityUUID, MonoObject* instance);
-		static void RT_CreateEntityScriptInstance(Entity entity);
+		static bool ActorClassExists(const std::string& fullyQualifiedClassName);
+		static bool ActorInstanceExists(UUID actorUUID);
+		static void ActorConstructorRuntime(UUID actorUUID, MonoObject* instance);
+		static void RT_CreateActorScriptInstance(Actor actor);
 
-		static bool Invoke(const std::string& methodName, Entity entity, const std::vector<RuntimeMethodArgument>& argumentList);
-		static bool Invoke(ManagedMethod method, Entity entity, const std::vector<RuntimeMethodArgument>& argumentList = {});
+		static bool Invoke(const std::string& methodName, Actor actor, const std::vector<RuntimeMethodArgument>& argumentList);
+		static bool Invoke(ManagedMethod method, Actor actor, const std::vector<RuntimeMethodArgument>& argumentList = {});
 
-		static SharedReference<ScriptClass> GetCoreEntityClass();
+		static SharedReference<ScriptClass> GetCoreActorClass();
 
 		static Scene* GetContextScene();
 		static MonoImage* GetCoreAssemblyImage();
 		static MonoDomain* GetAppDomain();
 		static MonoImage* GetAppAssemblyImage();
 
-		static void RuntimeInstantiateEntity(Entity entity);
+		static void RuntimeInstantiateActor(Actor actor);
 
-		static SharedReference<ScriptInstance> GetEntityScriptInstance(UUID uuid);
+		static SharedReference<ScriptInstance> GetActorScriptInstance(UUID uuid);
 
-		static SharedReference<ScriptClass> GetEntityClass(const std::string& name);
+		static SharedReference<ScriptClass> GetActorClass(const std::string& name);
 		static std::unordered_map<std::string, SharedReference<ScriptClass>> GetClasses();
-		static const ScriptFieldMap& GetScriptFieldMap(Entity entity);
-		static ScriptFieldMap& GetMutableScriptFieldMap(Entity entity);
+		static const ScriptFieldMap& GetScriptFieldMap(Actor actor);
+		static ScriptFieldMap& GetMutableScriptFieldMap(Actor actor);
 
 		static MonoObject* GetManagedInstance(UUID uuid);
 

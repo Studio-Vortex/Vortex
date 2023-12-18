@@ -12,7 +12,7 @@ namespace Vortex {
 		Byte, UShort, UInt, ULong,
 		Vector2, Vector3, Vector4,
 		Color3, Color4,
-		Entity, AssetHandle
+		Actor, AssetHandle
 	};
 
 }

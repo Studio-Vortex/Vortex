@@ -16,7 +16,7 @@ namespace Vortex {
 		EDITOR_PANEL_TYPE(MaterialEditor)
 
 	private:
-		void RenderMeshMaterial(Entity selectedEntity);
+		void RenderMeshMaterial(Actor selectedActor);
 		void ParameterCallback(SharedReference<Material> material, uint32_t materialIndex);
 		SharedReference<Texture2D> GetMaterialTexture(SharedReference<Material> material, uint32_t index);
 		void SetMaterialTexture(SharedReference<Material> material, AssetHandle textureHandle, uint32_t index);

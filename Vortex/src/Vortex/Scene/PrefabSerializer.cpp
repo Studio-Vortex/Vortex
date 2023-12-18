@@ -25,14 +25,14 @@ namespace Vortex {
 
 		scene->m_Registry.each([&](auto& entityID)
 		{
-			Entity entity{ entityID, scene.Raw() };
+			Actor entity{ entityID, scene.Raw() };
 
 			if (!entity || !entity.HasComponent<IDComponent>())
 			{
 				return false;
 			}
 
-			SceneSerializer::SerializeEntity(out, entity);
+			SceneSerializer::SerializeActor(out, entity);
 		});
 
 		out << YAML::EndSeq;
@@ -60,7 +60,7 @@ namespace Vortex {
 
 		YAML::Node prefabNode = data["Prefab"];
 		SharedRef<Prefab> prefab = Prefab::Create(FileSystem::Relative(filepath, Project::GetProjectDirectory()));
-		SceneSerializer::DeserializeEntities(prefabNode, prefab->m_Scene);
+		SceneSerializer::DeserializeActors(prefabNode, prefab->m_Scene);
 
 		return true;
 	}

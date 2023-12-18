@@ -14,7 +14,7 @@ namespace Vortex {
 
 		Gui::Begin(m_PanelName.c_str(), &IsOpen, flags);
 
-		if (Entity selected = SelectionManager::GetSelectedEntity())
+		if (Actor selected = SelectionManager::GetSelectedActor())
 		{
 			RenderMeshMaterial(selected);
 		}
@@ -22,9 +22,9 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void MaterialEditorPanel::RenderMeshMaterial(Entity selectedEntity)
+	void MaterialEditorPanel::RenderMeshMaterial(Actor selectedActor)
 	{
-		if (!selectedEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
+		if (!selectedActor.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
 			return;
 
 		const ShaderLibrary& shaderLibrary = Renderer::GetShaderLibrary();
@@ -38,9 +38,9 @@ namespace Vortex {
 			}
 		}
 
-		if (selectedEntity.HasComponent<MeshRendererComponent>())
+		if (selectedActor.HasComponent<MeshRendererComponent>())
 		{
-			AssetHandle meshHandle = selectedEntity.GetComponent<MeshRendererComponent>().Mesh;
+			AssetHandle meshHandle = selectedActor.GetComponent<MeshRendererComponent>().Mesh;
 			if (!AssetManager::IsHandleValid(meshHandle))
 			{
 				Gui::End();
@@ -89,9 +89,9 @@ namespace Vortex {
 				UI::EndTreeNode();
 			}
 		}
-		else if (selectedEntity.HasComponent<StaticMeshRendererComponent>())
+		else if (selectedActor.HasComponent<StaticMeshRendererComponent>())
 		{
-			auto& staticMeshRendererComponent = selectedEntity.GetComponent<StaticMeshRendererComponent>();
+			auto& staticMeshRendererComponent = selectedActor.GetComponent<StaticMeshRendererComponent>();
 			AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
 			if (!AssetManager::IsHandleValid(staticMeshHandle))
 			{

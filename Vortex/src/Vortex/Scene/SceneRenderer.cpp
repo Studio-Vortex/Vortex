@@ -8,7 +8,7 @@
 #include "Vortex/Project/Project.h"
 
 #include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 #include "Vortex/Scene/Components.h"
 
 #include "Vortex/Animation/Animation.h"
@@ -72,7 +72,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		std::map<float, Entity> sortedGeometry;
+		std::map<float, Actor> sortedGeometry;
 
 		Thread sortThread([&]() {
 			SortMeshGeometry(renderPacket, sortedGeometry);
@@ -142,11 +142,11 @@ namespace Vortex {
 
 		Scene* scene = renderPacket.Scene;
 
-		auto view = scene->GetAllEntitiesWith<TransformComponent, LightSource2DComponent>();
+		auto view = scene->GetAllActorsWith<TransformComponent, LightSource2DComponent>();
 
 		for (const auto e : view)
 		{
-			Entity entity{ e, scene };
+			Actor entity{ e, scene };
 			const auto [transformComponent, lightSource2DComponent] = view.get<TransformComponent, LightSource2DComponent>(e);
 
 			if (!entity.IsActive())
@@ -164,11 +164,11 @@ namespace Vortex {
 
 		// Sprite Pass 2D
 		{
-			auto view = scene->GetAllEntitiesWith<TransformComponent, SpriteRendererComponent>();
+			auto view = scene->GetAllActorsWith<TransformComponent, SpriteRendererComponent>();
 
 			for (const auto e : view)
 			{
-				Entity entity{ e, scene };
+				Actor entity{ e, scene };
 				const auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteRendererComponent>(e);
 
 				if (!entity.IsActive())
@@ -194,11 +194,11 @@ namespace Vortex {
 
 		// Circle Pass 2D
 		{
-			auto view = scene->GetAllEntitiesWith<TransformComponent, CircleRendererComponent>();
+			auto view = scene->GetAllActorsWith<TransformComponent, CircleRendererComponent>();
 
 			for (const auto e : view)
 			{
-				Entity entity{ e, scene };
+				Actor entity{ e, scene };
 				const auto [transformComponent, circleRendererComponent] = view.get<TransformComponent, CircleRendererComponent>(e);
 
 				if (!entity.IsActive())
@@ -225,11 +225,11 @@ namespace Vortex {
 		Scene* scene = renderPacket.Scene;
 		Math::mat4 cameraView = renderPacket.PrimaryCameraViewMatrix;
 
-		auto view = scene->GetAllEntitiesWith<TransformComponent, ParticleEmitterComponent>();
+		auto view = scene->GetAllActorsWith<TransformComponent, ParticleEmitterComponent>();
 
 		for (const auto e : view)
 		{
-			Entity entity{ e, scene };
+			Actor entity{ e, scene };
 			if (!entity.IsActive())
 				continue;
 
@@ -272,14 +272,14 @@ namespace Vortex {
 
 		Scene* scene = renderPacket.Scene;
 
-		auto view = scene->GetAllEntitiesWith<TransformComponent, TextMeshComponent>();
+		auto view = scene->GetAllActorsWith<TransformComponent, TextMeshComponent>();
 
 		RendererAPI::TriangleCullMode originalCullMode = Renderer2D::GetCullMode();
 		Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::None);
 
 		for (const auto e : view)
 		{
-			Entity entity{ e, scene };
+			Actor entity{ e, scene };
 			const auto [transformComponent, textMeshComponent] = view.get<TransformComponent, TextMeshComponent>(e);
 
 			if (!entity.IsActive())
@@ -331,11 +331,11 @@ namespace Vortex {
 
 		// Camera Gizmos
 		{
-			auto view = scene->GetAllEntitiesWith<TransformComponent, CameraComponent>();
+			auto view = scene->GetAllActorsWith<TransformComponent, CameraComponent>();
 
 			for (const auto e : view)
 			{
-				Entity entity{ e, scene };
+				Actor entity{ e, scene };
 				const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(e);
 
 				if (!entity.IsActive())
@@ -356,11 +356,11 @@ namespace Vortex {
 
 		// Light Gizmos
 		{
-			auto view = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
+			auto view = scene->GetAllActorsWith<TransformComponent, LightSourceComponent>();
 
 			for (const auto e : view)
 			{
-				Entity entity{ e, scene };
+				Actor entity{ e, scene };
 				const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(e);
 
 				if (!entity.IsActive())
@@ -388,11 +388,11 @@ namespace Vortex {
 
 		// Audio Gizmos
 		{
-			auto view = scene->GetAllEntitiesWith<TransformComponent, AudioSourceComponent>();
+			auto view = scene->GetAllActorsWith<TransformComponent, AudioSourceComponent>();
 
 			for (const auto e : view)
 			{
-				Entity entity{ e, scene };
+				Actor entity{ e, scene };
 				const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(e);
 
 				if (!entity.IsActive())
@@ -443,11 +443,11 @@ namespace Vortex {
 
 		Scene* scene = renderPacket.Scene;
 
-		auto lightSourceView = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
+		auto lightSourceView = scene->GetAllActorsWith<TransformComponent, LightSourceComponent>();
 
 		for (const auto e : lightSourceView)
 		{
-			Entity entity{ e, scene };
+			Actor entity{ e, scene };
 			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
 
 			if (!entity.IsActive())
@@ -466,11 +466,11 @@ namespace Vortex {
 
 		Scene* scene = renderPacket.Scene;
 
-		auto meshView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+		auto meshView = scene->GetAllActorsWith<TransformComponent, MeshRendererComponent>();
 
 		for (const auto e : meshView)
 		{
-			Entity entity{ e, scene };
+			Actor entity{ e, scene };
 			const MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
 			if (!entity.IsActive())
@@ -508,11 +508,11 @@ namespace Vortex {
 			}
 		}
 
-		auto staticMeshView = scene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
+		auto staticMeshView = scene->GetAllActorsWith<TransformComponent, StaticMeshRendererComponent>();
 
 		for (const auto e : staticMeshView)
 		{
-			Entity entity{ e, scene };
+			Actor entity{ e, scene };
 			const StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
 
 			if (!entity.IsActive())
@@ -551,7 +551,7 @@ namespace Vortex {
 		}
 	}
 
-	void SceneRenderer::SortMeshGeometry(const SceneRenderPacket& renderPacket, std::map<float, Entity>& sortedGeometry)
+	void SceneRenderer::SortMeshGeometry(const SceneRenderPacket& renderPacket, std::map<float, Actor>& sortedGeometry)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -560,12 +560,12 @@ namespace Vortex {
 
 		// Sort All Meshes by distance from camera
 		{
-			auto meshRendererView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+			auto meshRendererView = scene->GetAllActorsWith<TransformComponent, MeshRendererComponent>();
 			uint32_t i = 0;
 
 			for (const auto e : meshRendererView)
 			{
-				Entity entity{ e, scene };
+				Actor entity{ e, scene };
 				const MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
 
 				if (!entity.IsActive())
@@ -598,12 +598,12 @@ namespace Vortex {
 
 		// Sort Static Meshes
 		{
-			auto staticMeshRendererView = scene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
+			auto staticMeshRendererView = scene->GetAllActorsWith<TransformComponent, StaticMeshRendererComponent>();
 			uint32_t i = 0;
 
 			for (const auto e : staticMeshRendererView)
 			{
-				Entity entity{ e, scene };
+				Actor entity{ e, scene };
 				const StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
 
 				if (!entity.IsActive())
@@ -638,7 +638,7 @@ namespace Vortex {
 		renderTime.PreGeometryPassSortTime += timer.ElapsedMS();
 	}
 
-	void SceneRenderer::SortEntityByDistance(std::map<float, Entity>& sortedEntities, float distance, Entity entity, uint32_t offset)
+	void SceneRenderer::SortEntityByDistance(std::map<float, Actor>& sortedEntities, float distance, Actor entity, uint32_t offset)
 	{
 		std::scoped_lock<std::mutex> lock(m_GeometrySortMutex);
 		if (sortedEntities.find(distance) == sortedEntities.end())
@@ -651,7 +651,7 @@ namespace Vortex {
 		sortedEntities[distance + (0.01f * offset)] = entity;
 	}
 
-	void SceneRenderer::GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Entity>& sortedGeometry)
+	void SceneRenderer::GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Actor>& sortedGeometry)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -663,7 +663,7 @@ namespace Vortex {
 		// Render in reverse to blend correctly
 		for (auto it = sortedGeometry.crbegin(); it != sortedGeometry.crend(); it++)
 		{
-			Entity entity = it->second;
+			Actor entity = it->second;
 
 			if (!entity)
 				continue;
@@ -685,7 +685,7 @@ namespace Vortex {
 		renderTime.GeometryPassRenderTime += timer.ElapsedMS();
 	}
 
-	void SceneRenderer::RenderMesh(Scene* scene, Entity entity, const SceneLightDescription& sceneLightDesc)
+	void SceneRenderer::RenderMesh(Scene* scene, Actor entity, const SceneLightDescription& sceneLightDesc)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -743,7 +743,7 @@ namespace Vortex {
 		ResetMaterialFlags();
 	}
 
-	void SceneRenderer::RenderStaticMesh(Scene* scene, Entity entity, const SceneLightDescription& sceneLightDesc)
+	void SceneRenderer::RenderStaticMesh(Scene* scene, Actor entity, const SceneLightDescription& sceneLightDesc)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -800,12 +800,12 @@ namespace Vortex {
 	{
 		Scene* scene = renderPacket.Scene;
 
-		auto skyboxView = scene->GetAllEntitiesWith<SkyboxComponent>();
+		auto skyboxView = scene->GetAllActorsWith<SkyboxComponent>();
 
 		// Only render one environment per scene
 		for (const auto e : skyboxView)
 		{
-			Entity entity{ e, scene };
+			Actor entity{ e, scene };
 
 			if (!entity.IsActive())
 				continue;

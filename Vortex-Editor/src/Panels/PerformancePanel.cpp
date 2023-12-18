@@ -18,10 +18,10 @@ namespace Vortex {
 		Gui::Text("Active Panel ID: %u", activeID);
 
 		DrawHeading("Scene");
-		const size_t entityCount = m_ContextScene->GetEntityCount();
-		Gui::Text("Entity Count: %u", entityCount);
+		const size_t actorCount = m_ContextScene->GetActorCount();
+		Gui::Text("Actor Count: %u", actorCount);
 		const size_t scriptInstanceCount = ScriptEngine::GetScriptInstanceCount();
-		Gui::Text("Active Script Entities: %u", scriptInstanceCount);
+		Gui::Text("Active Script Actors: %u", scriptInstanceCount);
 
 		DrawHeading("Renderer Frame Time");
 		const ImGuiIO& io = Gui::GetIO();

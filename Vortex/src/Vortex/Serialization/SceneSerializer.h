@@ -14,7 +14,7 @@ namespace YAML {
 
 namespace Vortex {
 
-	class Entity;
+	class Actor;
 
 	class SceneSerializer
 	{
@@ -22,8 +22,8 @@ namespace Vortex {
 		SceneSerializer() = default;
 		SceneSerializer(const SharedReference<Scene>& scene);
 		
-		static void SerializeEntity(YAML::Emitter& out, Entity entity);
-		static void DeserializeEntities(YAML::Node& entitiesNode, SharedReference<Scene>& scene);
+		static void SerializeActor(YAML::Emitter& out, Actor actor);
+		static void DeserializeActors(YAML::Node& actorsNode, SharedReference<Scene>& scene);
 
 		void Serialize(const std::string& filepath);
 		void SerializeRuntime(const std::string& filepath);

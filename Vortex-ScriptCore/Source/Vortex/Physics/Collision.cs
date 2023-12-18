@@ -2,12 +2,12 @@
 
 	public struct Collision
 	{
-		public ulong EntityID { get; private set; }
+		public ulong ActorID { get; private set; }
 
-		public Entity Entity => Scene.FindEntityByID(EntityID);
+		public Actor Actor => Scene.FindActorByID(ActorID);
 
-		public string Tag => Entity.Tag;
-		public string Marker => Entity.Marker;
+		public string Tag => Actor.Tag;
+		public string Marker => Actor.Marker;
 	}
 
 }

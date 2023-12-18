@@ -6,7 +6,7 @@
 
 #include "Vortex/Math/Math.h"
 
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 
 #include "Vortex/Scripting/ScriptClass.h"
 #include "Vortex/Scripting/ManagedMethods.h"
@@ -25,10 +25,10 @@ namespace Vortex {
 	{
 	public:
 		ScriptInstance() = default;
-		ScriptInstance(SharedReference<ScriptClass>& scriptClass, Entity entity);
+		ScriptInstance(SharedReference<ScriptClass>& scriptClass);
 		~ScriptInstance() = default;
 
-		void InvokeConstructor(UUID entityUUID);
+		void InvokeConstructor(UUID actorUUID);
 
 		void InvokeOnAwake();
 		void InvokeOnCreate();
@@ -78,7 +78,7 @@ namespace Vortex {
 
 		MonoObject* m_Instance = nullptr;
 
-		MonoMethod* m_EntityConstructor = nullptr;
+		MonoMethod* m_ActorConstructor = nullptr;
 		std::unordered_map<ManagedMethod, MonoMethod*> m_ManagedMethods;
 
 		inline static char s_FieldValueBuffer[VX_SCRIPT_FIELD_MAX_BYTES];

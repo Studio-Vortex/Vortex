@@ -116,9 +116,9 @@ namespace Vortex {
 					std::ofstream fout(m_ItemPathToRename);
 					fout << R"(using Vortex;
 
-public class Untitled : Entity
+public class Untitled : Actor
 {
-	// Called once before the first frame or when the Entity is Instantiated into the Scene
+	// Called once before the first frame or when the Actor is Instantiated into the Scene
 	void OnCreate()
 	{
 		
@@ -250,11 +250,11 @@ public class Untitled : Entity
 		{
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 			{
-				const Entity& droppedEntity = *(Entity*)payload->Data;
-				VX_CONSOLE_LOG_INFO("Dropped Entity Name: {}", droppedEntity.GetName());
-				// Todo Create a new prefab here from the entity's uuid
-				//SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedEntity.GetName() / ".vprefab"));
-				SharedRef<Prefab> prefab = Prefab::Create(droppedEntity);
+				const Actor& droppedActor = *(Actor*)payload->Data;
+				VX_CONSOLE_LOG_INFO("Dropped Actor Name: {}", droppedActor.GetName());
+				// Todo Create a new prefab here from the Actor's uuid
+				//SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedActor.GetName() / ".vprefab"));
+				SharedRef<Prefab> prefab = Prefab::Create(droppedActor);
 			}
 			Gui::EndDragDropTarget();
 		}

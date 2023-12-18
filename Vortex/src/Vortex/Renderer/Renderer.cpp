@@ -623,7 +623,7 @@ namespace Vortex {
 	{
 		auto& sceneMeshes = contextScene->GetSceneMeshes();
 
-		auto lightSourceView = contextScene->GetAllEntitiesWith<LightSourceComponent>();
+		auto lightSourceView = contextScene->GetAllActorsWith<LightSourceComponent>();
 
 		if (!s_Data.SkylightDepthMapFramebuffer)
 		{
@@ -632,7 +632,7 @@ namespace Vortex {
 
 		for (const auto& lightSource : lightSourceView)
 		{
-			Entity lightSourceEntity{ lightSource, contextScene.Raw() };
+			Actor lightSourceEntity{ lightSource, contextScene.Raw() };
 			LightSourceComponent& lightSourceComponent = lightSourceEntity.GetComponent<LightSourceComponent>();
 
 			switch (lightSourceComponent.Type)
@@ -792,7 +792,7 @@ namespace Vortex {
 		s_Data.SceneLightDesc.EmissiveMeshIndex = 0;
 	}
 
-	void Renderer::RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes)
+	void Renderer::RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Actor lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes)
 	{
 		SharedReference<Shader> shadowMapShader = s_Data.ShaderLibrary.Get("SkyLightShadowMap");
 
@@ -877,7 +877,7 @@ namespace Vortex {
 		RenderCommand::SetCullMode(s_Data.CullMode);
 	}
 
-	void Renderer::RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes)
+	void Renderer::RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Actor lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes)
 	{
 		// Configure shader
 		/*float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
@@ -965,7 +965,7 @@ namespace Vortex {
 		RenderCommand::SetCullMode(s_Data.CullMode);*/
 	}
 
-	void Renderer::RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes)
+	void Renderer::RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Actor lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes)
 	{
 		/*float aspectRatio = (float)s_Data.ShadowMapResolution / (float)s_Data.ShadowMapResolution;
 		float nearPlane = 0.01f;

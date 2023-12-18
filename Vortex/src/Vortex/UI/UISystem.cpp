@@ -6,7 +6,7 @@
 #include "Vortex/Module/Module.h"
 
 #include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 
 #include "Vortex/Renderer/Renderer2D.h"
 
@@ -60,9 +60,9 @@ namespace Vortex {
 
 	void UISystem::OnUpdateRuntime(Scene* context)
 	{
-		auto buttonView = context->GetAllEntitiesWith<ButtonComponent>();
+		auto buttonView = context->GetAllActorsWith<ButtonComponent>();
 
-		Entity primaryCamera = context->GetPrimaryCameraEntity();
+		Actor primaryCamera = context->GetPrimaryCameraActor();
 		if (!primaryCamera)
 			return;
 
@@ -76,7 +76,7 @@ namespace Vortex {
 
 		for (const auto e : buttonView)
 		{
-			Entity entity{ e, context };
+			Actor entity{ e, context };
 			
 			const Math::mat4 transform = context->GetWorldSpaceTransformMatrix(entity);
 

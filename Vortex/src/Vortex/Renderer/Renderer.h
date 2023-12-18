@@ -2,7 +2,7 @@
 
 #include "Vortex/Project/Project.h"
 
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Components.h"
 
@@ -166,9 +166,9 @@ namespace Vortex {
 		static void BindRenderTarget(SharedReference<Framebuffer> renderTarget);
 		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraTranslation);
 
-		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);
-		static void RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);
-		static void RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);
+		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Actor lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);
+		static void RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Actor lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);
+		static void RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Actor lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);
 
 		// Post Processing
 

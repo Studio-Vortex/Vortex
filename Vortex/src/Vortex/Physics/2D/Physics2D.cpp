@@ -42,7 +42,7 @@ namespace Vortex {
 
 			PhysicsBody2DData* physicsBodyData = reinterpret_cast<PhysicsBody2DData*>(raycastInfo->fixture->GetUserData().pointer);
 			UUID entityUUID = physicsBodyData->EntityUUID;
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
+			Actor entity = contextScene->TryGetActorWithUUID(entityUUID);
 			Tag = mono_string_new(mono_domain_get(), entity.GetName().c_str());
 		}
 		else
@@ -57,11 +57,11 @@ namespace Vortex {
 	{
 		s_PhysicsScene = new b2World({ s_PhysicsWorld2DGravity.x, s_PhysicsWorld2DGravity.y });
 
-		auto view = contextScene->GetAllEntitiesWith<RigidBody2DComponent>();
+		auto view = contextScene->GetAllActorsWith<RigidBody2DComponent>();
 
 		for (const auto e : view)
 		{
-			Entity entity{ e, contextScene };
+			Actor entity{ e, contextScene };
 			auto transform = contextScene->GetWorldSpaceTransform(entity);
 			auto& rb2d = entity.GetComponent<RigidBody2DComponent>();
 
@@ -78,11 +78,11 @@ namespace Vortex {
 		// Physics
 		{
 			// Copy transform from Vortex to Box2D
-			auto view = contextScene->GetAllEntitiesWith<TransformComponent, RigidBody2DComponent>();
+			auto view = contextScene->GetAllActorsWith<TransformComponent, RigidBody2DComponent>();
 
 			for (const auto e : view)
 			{
-				Entity entity = { e, contextScene };
+				Actor entity = { e, contextScene };
 				auto& transform = entity.GetComponent<TransformComponent>();
 				RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 
@@ -142,7 +142,7 @@ namespace Vortex {
 			// Get transform from Box2D
 			for (const auto e : view)
 			{
-				Entity entity{ e, contextScene };
+				Actor entity{ e, contextScene };
 				auto& transform = entity.GetComponent<TransformComponent>();
 				const auto& rigidbody = entity.GetComponent<RigidBody2DComponent>();
 
@@ -180,7 +180,7 @@ namespace Vortex {
 		return 0; // Invalid entity UUID
 	}
 
-	void Physics2D::CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)
+	void Physics2D::CreatePhysicsBody(Actor entity, const TransformComponent& transform, RigidBody2DComponent& rb2d)
 	{
 		b2BodyDef bodyDef;
 		bodyDef.type = Utils::RigidBody2DTypeToBox2DBody(rb2d.Type);
@@ -256,7 +256,7 @@ namespace Vortex {
 		}
 	}
 
-	void Physics2D::DestroyPhysicsBody(Entity entity)
+	void Physics2D::DestroyPhysicsBody(Actor entity)
 	{
 		if (!entity.HasComponent<RigidBody2DComponent>())
 			return;

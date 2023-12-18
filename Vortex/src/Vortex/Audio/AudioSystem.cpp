@@ -11,7 +11,7 @@
 #include "Vortex/Audio/AudioSource.h"
 
 #include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 
 namespace Vortex {
 
@@ -59,13 +59,13 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
-		auto view = context->GetAllEntitiesWith<AudioSourceComponent>();
+		auto view = context->GetAllActorsWith<AudioSourceComponent>();
 
 		for (const auto e : view)
 		{
-			Entity entity{ e, context };
+			Actor actor{ e, context };
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 				continue;
 
@@ -80,12 +80,12 @@ namespace Vortex {
 		}
 	}
 
-	void AudioSystem::CreateAsset(Entity& entity)
+	void AudioSystem::CreateAsset(Actor& actor)
 	{
 
 	}
 
-	void AudioSystem::DestroyAsset(Entity& entity)
+	void AudioSystem::DestroyAsset(Actor& actor)
 	{
 	}
 
@@ -94,15 +94,15 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
-		auto view = context->GetAllEntitiesWith<AudioSourceComponent>();
+		auto view = context->GetAllActorsWith<AudioSourceComponent>();
 
 		for (const auto e : view)
 		{
-			Entity entity{ e, context };
-			if (!entity.IsActive())
+			Actor actor{ e, context };
+			if (!actor.IsActive())
 				continue;
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 				continue;
 
@@ -131,15 +131,15 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
-		auto view = context->GetAllEntitiesWith<AudioSourceComponent>();
+		auto view = context->GetAllActorsWith<AudioSourceComponent>();
 
 		for (const auto e : view)
 		{
-			Entity entity{ e, context };
-			if (!entity.IsActive())
+			Actor actor{ e, context };
+			if (!actor.IsActive())
 				continue;
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 				continue;
 
@@ -197,15 +197,15 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
-		auto view = context->GetAllEntitiesWith<AudioSourceComponent>();
+		auto view = context->GetAllActorsWith<AudioSourceComponent>();
 
 		for (const auto e : view)
 		{
-			Entity entity{ e, context };
-			if (!entity.IsActive())
+			Actor actor{ e, context };
+			if (!actor.IsActive())
 				continue;
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 				continue;
 

@@ -37,9 +37,9 @@
 			InternalCalls.DebugRenderer_DrawBoundingBox(ref translation, ref size, ref color);
 		}
 
-		public static void DrawBoundingBox(Entity entity, Vector4 color)
+		public static void DrawBoundingBox(Actor actor, Vector4 color)
 		{
-			InternalCalls.DebugRenderer_DrawBoundingBoxFromTransform(entity.ID, ref color);
+			InternalCalls.DebugRenderer_DrawBoundingBoxFromTransform(actor.ID, ref color);
 		}
 
 		public static void Flush()

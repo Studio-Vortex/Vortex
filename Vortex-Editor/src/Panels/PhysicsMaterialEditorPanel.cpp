@@ -15,7 +15,7 @@ namespace Vortex {
 
 		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
-		if (Entity selected = SelectionManager::GetSelectedEntity())
+		if (Actor selected = SelectionManager::GetSelectedActor())
 		{
 			RenderPhysicsMaterial(selected);
 		}
@@ -23,7 +23,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void PhysicsMaterialEditorPanel::RenderPhysicsMaterial(Entity selectedEntity)
+	void PhysicsMaterialEditorPanel::RenderPhysicsMaterial(Actor selectedEntity)
 	{
 		if (!selectedEntity.HasComponent<RigidBodyComponent>())
 			return;

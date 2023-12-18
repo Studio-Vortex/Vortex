@@ -11,7 +11,7 @@
 #include "Vortex/Asset/AssetManager.h"
 
 #include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Scripting/ScriptClass.h"
@@ -65,11 +65,11 @@ namespace Vortex {
 
 	struct ScriptingData
 	{
-		std::unordered_map<MonoType*, std::function<void(Entity)>> EntityAddComponentFuncs;
-		std::unordered_map<MonoType*, std::function<bool(Entity)>> EntityHasComponentFuncs;
-		std::unordered_map<MonoType*, std::function<void(Entity)>> EntityRemoveComponentFuncs;
+		std::unordered_map<MonoType*, std::function<void(Actor)>> ActorAddComponentFuncs;
+		std::unordered_map<MonoType*, std::function<bool(Actor)>> ActorHasComponentFuncs;
+		std::unordered_map<MonoType*, std::function<void(Actor)>> ActorRemoveComponentFuncs;
 
-		Entity HoveredEntity = Entity{};
+		Actor HoveredActor = Actor{};
 
 		float SceneStartTime = 0.0f;
 
@@ -88,13 +88,13 @@ namespace Vortex {
 			return contextScene;
 		}
 
-		static Entity GetEntity(UUID entityUUID)
+		static Actor GetActor(UUID actorUUID)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = contextScene->TryGetEntityWithUUID(entityUUID);
-			VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
+			Actor actor = contextScene->TryGetActorWithUUID(actorUUID);
+			VX_CORE_ASSERT(actor, "Invalid Actor UUID!");
 
-			return entity;
+			return actor;
 		}
 
 #pragma region Application
@@ -209,16 +209,16 @@ namespace Vortex {
 		{
 			Scene* contextScene = GetContextScene();
 
-			Entity primaryCameraEntity = contextScene->GetPrimaryCameraEntity();
+			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
 
-			if (!primaryCameraEntity)
+			if (!primaryCameraActor)
 			{
 				VX_CORE_WARN_TAG("Scripting", "Scene must include a primary camera to call debug render functions!");
 				return;
 			}
 
-			SceneCamera& camera = primaryCameraEntity.GetComponent<CameraComponent>().Camera;
-			Renderer2D::BeginScene(camera, primaryCameraEntity.GetTransform().GetTransform());
+			SceneCamera& camera = primaryCameraActor.GetComponent<CameraComponent>().Camera;
+			Renderer2D::BeginScene(camera, primaryCameraActor.GetTransform().GetTransform());
 		}
 
 		void DebugRenderer_SetClearColor(Math::vec3* color)
@@ -238,15 +238,15 @@ namespace Vortex {
 		void DebugRenderer_DrawQuadBillboard(Math::vec3* translation, Math::vec2* size, Math::vec4* color)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity primaryCameraEntity = contextScene->GetPrimaryCameraEntity();
+			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
 
-			if (!primaryCameraEntity)
+			if (!primaryCameraActor)
 			{
 				VX_CORE_WARN_TAG("Scripting", "Scene must include a primary camera to call debug render functions!");
 				return;
 			}
 
-			Math::mat4 cameraView = Math::Inverse(primaryCameraEntity.GetTransform().GetTransform());
+			Math::mat4 cameraView = Math::Inverse(primaryCameraActor.GetTransform().GetTransform());
 
 			Renderer2D::DrawQuadBillboard(cameraView, *translation, *size, *color);
 		}
@@ -278,17 +278,17 @@ namespace Vortex {
 			Renderer2D::DrawAABB(aabb, transform, *color);
 		}
 
-		void DebugRenderer_DrawBoundingBoxFromTransform(UUID entityUUID, Math::vec4* color)
+		void DebugRenderer_DrawBoundingBoxFromTransform(UUID actorUUID, Math::vec4* color)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			Math::AABB aabb{
 				-Math::vec3(0.5f),
 				+Math::vec3(0.5f),
 			};
 
-			Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(entity);
+			Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(actor);
 
 			Renderer2D::DrawAABB(aabb, worldSpaceTransform, *color);
 		}
@@ -308,7 +308,7 @@ namespace Vortex {
 		{
 			Scene* contextScene = GetContextScene();
 
-			Entity primaryCamera = contextScene->GetPrimaryCameraEntity();
+			Actor primaryCamera = contextScene->GetPrimaryCameraActor();
 
 			if (!primaryCamera)
 				return 0;
@@ -316,93 +316,93 @@ namespace Vortex {
 			return primaryCamera.GetUUID();
 		}
 
-		bool Scene_FindEntityByID(UUID entityUUID)
+		bool Scene_FindActorByID(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			return (bool)entity;
+			return (bool)actor;
 		}
 
-		uint64_t Scene_FindEntityByName(MonoString* name)
+		uint64_t Scene_FindActorByName(MonoString* name)
 		{
 			char* managedString = mono_string_to_utf8(name);
 
 			Scene* contextScene = GetContextScene();
-			Entity entity = contextScene->FindEntityByName(managedString);
+			Actor actor = contextScene->FindActorByName(managedString);
 			mono_free(managedString);
 
-			if (!entity)
+			if (!actor)
 				return 0;
 
-			return entity.GetUUID();
+			return actor.GetUUID();
 		}
 
-		uint64_t Scene_FindChildByName(UUID entityUUID, MonoString* childName)
+		uint64_t Scene_FindChildByName(UUID actorUUID, MonoString* childName)
 		{
 			char* managedString = mono_string_to_utf8(childName);
 
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			const auto& children = entity.Children();
+			const auto& children = actor.Children();
 
 			for (const auto& child : children)
 			{
-				Entity childEntity = contextScene->TryGetEntityWithUUID(child);
+				Actor childActor = contextScene->TryGetActorWithUUID(child);
 
-				if (childEntity && childEntity.GetName() == managedString)
+				if (childActor && childActor.GetName() == managedString)
 				{
-					return childEntity.GetUUID();
+					return childActor.GetUUID();
 				}
 			}
 
 			return 0;
 		}
 
-		uint64_t Scene_CreateEntity(MonoString* name)
+		uint64_t Scene_CreateActor(MonoString* name)
 		{
 			char* managedString = mono_string_to_utf8(name);
 
 			Scene* contextScene = GetContextScene();
-			Entity entity = contextScene->CreateEntity(managedString);
+			Actor actor = contextScene->CreateActor(managedString);
 			mono_free(managedString);
 
-			return entity.GetUUID();
+			return actor.GetUUID();
 		}
 
-		uint64_t Scene_Instantiate(UUID entityUUID)
+		uint64_t Scene_Instantiate(UUID actorUUID)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity)
+			if (!actor)
 			{
-				VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Entity UUID!");
+				VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Actor UUID!");
 				return 0;
 			}
 
-			Entity duplicate = contextScene->DuplicateEntity(entity);
+			Actor duplicate = contextScene->DuplicateActor(actor);
 
 			return duplicate.GetUUID();
 		}
 
-		uint64_t Scene_InstantiateAsChild(UUID entityUUID, UUID parentUUID)
+		uint64_t Scene_InstantiateAsChild(UUID actorUUID, UUID parentUUID)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
-			Entity parent = GetEntity(parentUUID);
+			Actor actor = GetActor(actorUUID);
+			Actor parent = GetActor(parentUUID);
 
-			if (!entity || !parent)
+			if (!actor || !parent)
 			{
-				VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Entity UUID!");
+				VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Actor UUID!");
 				return 0;
 			}
 
-			Entity clonedEntity = contextScene->DuplicateEntity(entity);
+			Actor duplicate = contextScene->DuplicateActor(actor);
 
-			contextScene->ParentEntity(clonedEntity, parent);
+			contextScene->ParentActor(duplicate, parent);
 
-			return clonedEntity.GetUUID();
+			return duplicate.GetUUID();
 		}
 
 		bool Scene_IsPaused()
@@ -426,14 +426,14 @@ namespace Vortex {
 			contextScene->SetPaused(false);
 		}
 
-		uint64_t Scene_GetHoveredEntity()
+		uint64_t Scene_GetHoveredActor()
 		{
 			Scene* contextScene = GetContextScene();
 
-			if (!s_Data.HoveredEntity)
+			if (!s_Data.HoveredActor)
 				return 0;
 
-			return s_Data.HoveredEntity.GetUUID();
+			return s_Data.HoveredActor.GetUUID();
 		}
 
 #pragma endregion
@@ -453,58 +453,58 @@ namespace Vortex {
 
 #pragma endregion
 
-#pragma region Entity
+#pragma region Actor
 
-		void Entity_AddComponent(UUID entityUUID, MonoReflectionType* componentType)
+		void Actor_AddComponent(UUID actorUUID, MonoReflectionType* componentType)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			MonoType* managedType = mono_reflection_type_get_type(componentType);
-			VX_CORE_ASSERT(s_Data.EntityAddComponentFuncs.find(managedType) != s_Data.EntityAddComponentFuncs.end(), "Managed type was not found in Map!");
+			VX_CORE_ASSERT(s_Data.ActorAddComponentFuncs.find(managedType) != s_Data.ActorAddComponentFuncs.end(), "Managed type was not found in Map!");
 
-			s_Data.EntityAddComponentFuncs.at(managedType)(entity);
+			s_Data.ActorAddComponentFuncs.at(managedType)(actor);
 		}
 
-		bool Entity_HasComponent(UUID entityUUID, MonoReflectionType* componentType)
+		bool Actor_HasComponent(UUID actorUUID, MonoReflectionType* componentType)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			MonoType* managedType = mono_reflection_type_get_type(componentType);
-			VX_CORE_ASSERT(s_Data.EntityHasComponentFuncs.find(managedType) != s_Data.EntityHasComponentFuncs.end(), "Managed type was not found in Map!");
+			VX_CORE_ASSERT(s_Data.ActorHasComponentFuncs.find(managedType) != s_Data.ActorHasComponentFuncs.end(), "Managed type was not found in Map!");
 
-			return s_Data.EntityHasComponentFuncs.at(managedType)(entity);
+			return s_Data.ActorHasComponentFuncs.at(managedType)(actor);
 		}
 
-		void Entity_RemoveComponent(UUID entityUUID, MonoReflectionType* componentType)
+		void Actor_RemoveComponent(UUID actorUUID, MonoReflectionType* componentType)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			MonoType* managedType = mono_reflection_type_get_type(componentType);
-			VX_CORE_ASSERT(s_Data.EntityRemoveComponentFuncs.find(managedType) != s_Data.EntityRemoveComponentFuncs.end(), "Managed type was not found in Map!");
+			VX_CORE_ASSERT(s_Data.ActorRemoveComponentFuncs.find(managedType) != s_Data.ActorRemoveComponentFuncs.end(), "Managed type was not found in Map!");
 
-			s_Data.EntityRemoveComponentFuncs.at(managedType)(entity);
+			s_Data.ActorRemoveComponentFuncs.at(managedType)(actor);
 		}
 
-		MonoArray* Entity_GetChildren(UUID entityUUID)
+		MonoArray* Actor_GetChildren(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			const std::vector<UUID>& children = entity.Children();
+			const std::vector<UUID>& children = actor.Children();
 
-			MonoClass* coreEntityClass = ScriptEngine::GetCoreEntityClass()->GetMonoClass();
-			VX_CORE_ASSERT(coreEntityClass, "Core Entity Class was Invalid!");
+			MonoClass* coreActorClass = ScriptEngine::GetCoreActorClass()->GetMonoClass();
+			VX_CORE_ASSERT(coreActorClass, "Core Actor Class was Invalid!");
 
-			ManagedArray managedArray(coreEntityClass, children.size());
+			ManagedArray managedArray(coreActorClass, children.size());
 			managedArray.FillFromVector(children);
 			return managedArray.GetHandle();
 		}
 
-		uint64_t Entity_GetChild(UUID entityUUID, uint32_t index)
+		uint64_t Actor_GetChild(UUID actorUUID, uint32_t index)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			const std::vector<UUID>& children = entity.Children();
+			const std::vector<UUID>& children = actor.Children();
 			if (index > (children.size() - 1))
 			{
 				VX_CORE_ASSERT(false, "Index out of bounds!");
@@ -512,130 +512,130 @@ namespace Vortex {
 			}
 
 			uint64_t childUUID = children[index];
-			Entity child = contextScene->TryGetEntityWithUUID(childUUID);
+			Actor child = contextScene->TryGetActorWithUUID(childUUID);
 			VX_CORE_ASSERT(child, "Child UUID was Invalid!");
 
 			return child.GetUUID();
 		}
 
-		MonoString* Entity_GetTag(UUID entityUUID)
+		MonoString* Actor_GetTag(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			return mono_string_new(mono_domain_get(), entity.GetName().c_str());
+			return mono_string_new(mono_domain_get(), actor.GetName().c_str());
 		}
 
-		void Entity_SetTag(UUID entityUUID, MonoString* tag)
+		void Actor_SetTag(UUID actorUUID, MonoString* tag)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			char* managedString = mono_string_to_utf8(tag);
-			entity.GetComponent<TagComponent>().Tag = std::string(managedString);
+			actor.GetComponent<TagComponent>().Tag = std::string(managedString);
 			mono_free(managedString);
 		}
 
-		MonoString* Entity_GetMarker(UUID entityUUID)
+		MonoString* Actor_GetMarker(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			return mono_string_new(mono_domain_get(), entity.GetMarker().c_str());
+			return mono_string_new(mono_domain_get(), actor.GetMarker().c_str());
 		}
 
-		void Entity_SetMarker(UUID entityUUID, MonoString* marker)
+		void Actor_SetMarker(UUID actorUUID, MonoString* marker)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			char* managedString = mono_string_to_utf8(marker);
-			entity.GetComponent<TagComponent>().Marker = std::string(managedString);
+			actor.GetComponent<TagComponent>().Marker = std::string(managedString);
 			mono_free(managedString);
 		}
 
-		bool Entity_AddChild(UUID parentUUID, UUID childUUID)
+		bool Actor_AddChild(UUID parentUUID, UUID childUUID)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity parent = GetEntity(parentUUID);
-			Entity child = GetEntity(childUUID);
+			Actor parent = GetActor(parentUUID);
+			Actor child = GetActor(childUUID);
 
 			if (parent && child)
 			{
-				contextScene->ParentEntity(child, parent);
+				contextScene->ParentActor(child, parent);
 				return true;
 			}
 
 			return false;
 		}
 
-		bool Entity_RemoveChild(UUID parentUUID, UUID childUUID)
+		bool Actor_RemoveChild(UUID parentUUID, UUID childUUID)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity parent = GetEntity(parentUUID);
-			Entity child = GetEntity(childUUID);
+			Actor parent = GetActor(parentUUID);
+			Actor child = GetActor(childUUID);
 
 			if (parent && child)
 			{
-				contextScene->UnparentEntity(child);
+				contextScene->UnparentActor(child);
 				return true;
 			}
 
 			return false;
 		}
 
-		MonoObject* Entity_GetScriptInstance(UUID entityUUID)
+		MonoObject* Actor_GetScriptInstance(UUID actorUUID)
 		{
 			Scene* contextScene = GetContextScene();
-			return ScriptEngine::GetManagedInstance(entityUUID);
+			return ScriptEngine::GetManagedInstance(actorUUID);
 		}
 
-		void Entity_Destroy(UUID entityUUID, bool excludeChildren)
+		void Actor_Destroy(UUID actorUUID, bool excludeChildren)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity)
+			if (!actor)
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Entity.Destroy with invalid entity!");
+				VX_CONSOLE_LOG_ERROR("Calling Actor.Destroy with invalid actor!");
 				return;
 			}
 
-			contextScene->SubmitToDestroyEntity(entity, excludeChildren);
+			contextScene->SubmitToDestroyActor(actor, excludeChildren);
 		}
 
-		void Entity_DestroyWithDelay(UUID entityUUID, float delay, bool excludeChildren)
+		void Actor_DestroyWithDelay(UUID actorUUID, float delay, bool excludeChildren)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			QueueFreeData queueFreeData;
-			queueFreeData.EntityUUID = entityUUID;
+			queueFreeData.ActorUUID = actorUUID;
 			queueFreeData.ExcludeChildren = excludeChildren;
 			queueFreeData.WaitTime = delay;
 
-			contextScene->SubmitToDestroyEntity(queueFreeData);
+			contextScene->SubmitToDestroyActor(queueFreeData);
 		}
 
-		void Entity_Invoke(UUID entityUUID, MonoString* methodName)
+		void Actor_Invoke(UUID actorUUID, MonoString* methodName)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			VX_CORE_VERIFY(contextScene);
 
-			if (!entity.HasComponent<ScriptComponent>())
+			if (!actor.HasComponent<ScriptComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Entity.Invoke without a script component!");
+				VX_CONSOLE_LOG_ERROR("Calling Actor.Invoke without a script component!");
 				return;
 			}
 
-			const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+			const ScriptComponent& scriptComponent = actor.GetComponent<ScriptComponent>();
 			const std::string& className = scriptComponent.ClassName;
 
-			if (!ScriptEngine::EntityClassExists(className))
+			if (!ScriptEngine::ActorClassExists(className))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Entity.Invoke with an invalid script class!");
+				VX_CONSOLE_LOG_ERROR("Calling Actor.Invoke with an invalid script class!");
 				return;
 			}
 
-			SharedReference<ScriptClass> scriptClass = ScriptEngine::GetEntityClass(className);
+			SharedReference<ScriptClass> scriptClass = ScriptEngine::GetActorClass(className);
 
 			char* managedString = mono_string_to_utf8(methodName);
 			const std::string methodNameString = std::string(managedString);
@@ -646,14 +646,14 @@ namespace Vortex {
 
 			if (method == nullptr)
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Entity.Invoke with an invalid method name '{}'", methodNameString);
+				VX_CONSOLE_LOG_ERROR("Calling Actor.Invoke with an invalid method name '{}'", methodNameString);
 				return;
 			}
 
-			SharedReference<ScriptInstance> instance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+			SharedReference<ScriptInstance> instance = ScriptEngine::GetActorScriptInstance(actor.GetUUID());
 			if (instance == nullptr)
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Entity.Invoke with invalid script instance!");
+				VX_CONSOLE_LOG_ERROR("Calling Actor.Invoke with invalid script instance!");
 				return;
 			}
 
@@ -666,36 +666,36 @@ namespace Vortex {
 			ScriptUtils::InvokeMethod(managedScriptInstance, method, nullptr);
 		}
 
-		void Entity_InvokeWithDelay(UUID entityUUID, MonoString* methodName, float delay)
+		void Actor_InvokeWithDelay(UUID actorUUID, MonoString* methodName, float delay)
 		{
 			Scene* scene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			auto onTimerFinishedFn = [=]() { Entity_Invoke(entityUUID, methodName); };
+			auto onTimerFinishedFn = [=]() { Actor_Invoke(actorUUID, methodName); };
 			Timer timer("InvokeWithDelay", delay, onTimerFinishedFn);
 			timer.Start();
 
-			scene->AddOrReplaceTimer(entity, std::move(timer));
+			scene->AddOrReplaceTimer(actor, std::move(timer));
 		}
 
-		void Entity_SetActive(UUID entityUUID, bool isActive)
+		void Actor_SetActive(UUID actorUUID, bool isActive)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			entity.SetActive(isActive);
+			actor.SetActive(isActive);
 		}
 
-		void Entity_AddTimer(UUID entityUUID, MonoString* name, float delay)
+		void Actor_AddTimer(UUID actorUUID, MonoString* name, float delay)
 		{
 			Scene* scene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			char* managedString = mono_string_to_utf8(name);
 			std::string timerName = std::string(managedString);
 			mono_free(managedString);
 
 			Timer timer(timerName, delay, nullptr);
-			scene->AddOrReplaceTimer(entity, std::move(timer));
+			scene->AddOrReplaceTimer(actor, std::move(timer));
 		}
 
 #pragma endregion
@@ -711,84 +711,84 @@ namespace Vortex {
 
 #pragma region Timer
 		
-		float Timer_GetTimeLeft(UUID entityUUID, MonoString* name)
+		float Timer_GetTimeLeft(UUID actorUUID, MonoString* name)
 		{
 			Scene* scene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			char* managedString = mono_string_to_utf8(name);
 			std::string timerName = std::string(managedString);
 			mono_free(managedString);
 
-			Timer& timer = scene->TryGetMutableTimerByName(entity, timerName);
+			Timer& timer = scene->TryGetMutableTimerByName(actor, timerName);
 
 			if (timer.GetName().empty())
 			{
 				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", entity.GetName(), timerName);
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), timerName);
 				return 0.0f;
 			}
 
 			return timer.GetTimeLeft();
 		}
 
-		bool Timer_IsStarted(UUID entityUUID, MonoString* name)
+		bool Timer_IsStarted(UUID actorUUID, MonoString* name)
 		{
 			Scene* scene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			char* managedString = mono_string_to_utf8(name);
 			std::string timerName = std::string(managedString);
 			mono_free(managedString);
 
-			Timer& timer = scene->TryGetMutableTimerByName(entity, timerName);
+			Timer& timer = scene->TryGetMutableTimerByName(actor, timerName);
 
 			if (timer.GetName().empty())
 			{
 				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", entity.GetName(), timerName);
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), timerName);
 				return false;
 			}
 
 			return timer.IsStarted();
 		}
 
-		bool Timer_IsFinished(UUID entityUUID, MonoString* name)
+		bool Timer_IsFinished(UUID actorUUID, MonoString* name)
 		{
 			Scene* scene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			char* managedString = mono_string_to_utf8(name);
 			std::string timerName = std::string(managedString);
 			mono_free(managedString);
 
-			Timer& timer = scene->TryGetMutableTimerByName(entity, timerName);
+			Timer& timer = scene->TryGetMutableTimerByName(actor, timerName);
 
 			if (timer.GetName().empty())
 			{
 				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", entity.GetName(), timerName);
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), timerName);
 				return false;
 			}
 
 			return timer.IsFinished();
 		}
 
-		void Timer_Start(UUID entityUUID, MonoString* name)
+		void Timer_Start(UUID actorUUID, MonoString* name)
 		{
 			Scene* scene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			char* managedString = mono_string_to_utf8(name);
 			std::string timerName = std::string(managedString);
 			mono_free(managedString);
 
-			Timer& timer = scene->TryGetMutableTimerByName(entity, timerName);
+			Timer& timer = scene->TryGetMutableTimerByName(actor, timerName);
 
 			if (timer.GetName().empty())
 			{
 				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", entity.GetName(), timerName);
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), timerName);
 			}
 
 			timer.Start();
@@ -798,96 +798,96 @@ namespace Vortex {
 
 #pragma region Transform Component
 
-		void TransformComponent_GetTranslation(UUID entityUUID, Math::vec3* outTranslation)
+		void TransformComponent_GetTranslation(UUID actorUUID, Math::vec3* outTranslation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			std::string entityName = entity.GetName();
+			std::string actorName = actor.GetName();
 
-			if (entity.HasComponent<RigidBodyComponent>() && entity.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
+			if (actor.HasComponent<RigidBodyComponent>() && actor.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
 			{
-				if (entity.HasComponent<CharacterControllerComponent>())
+				if (actor.HasComponent<CharacterControllerComponent>())
 				{
-					physx::PxController* controller = Physics::GetController(entityUUID);
+					physx::PxController* controller = Physics::GetController(actorUUID);
 					*outTranslation = FromPhysXExtendedVector(controller->getPosition());
 
 					return;
 				}
 
-				physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* actor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
 				Math::vec3 translation = FromPhysXVector(actor->getGlobalPose().p);
 
 				*outTranslation = translation;
 
 				return;
 			}
-			else if (entity.HasComponent<RigidBody2DComponent>())
+			else if (actor.HasComponent<RigidBody2DComponent>())
 			{
-				const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+				const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 				if (rigidbody.Type == RigidBody2DType::Dynamic)
 				{
 					b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 					const auto& position = body->GetPosition();
-					*outTranslation = Math::vec3(position.x, position.y, entity.GetTransform().Translation.z);
+					*outTranslation = Math::vec3(position.x, position.y, actor.GetTransform().Translation.z);
 
 					return;
 				}
 			}
 
-			*outTranslation = entity.GetTransform().Translation;
+			*outTranslation = actor.GetTransform().Translation;
 		}
 
-		void TransformComponent_SetTranslation(UUID entityUUID, Math::vec3* translation)
+		void TransformComponent_SetTranslation(UUID actorUUID, Math::vec3* translation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (entity.HasComponent<RigidBodyComponent>() && entity.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
+			if (actor.HasComponent<RigidBodyComponent>() && actor.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
 			{
-				if (entity.HasComponent<CharacterControllerComponent>())
+				if (actor.HasComponent<CharacterControllerComponent>())
 				{
-					physx::PxController* controller = Physics::GetController(entityUUID);
+					physx::PxController* controller = Physics::GetController(actorUUID);
 					controller->setPosition(ToPhysXExtendedVector(*translation));
 
 					return;
 				}
 
-				physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
 
-				const auto& transformComponent = entity.GetTransform();
-				physx::PxTransform physxTransform = actor->getGlobalPose();
+				const auto& transformComponent = actor.GetTransform();
+				physx::PxTransform physxTransform = pxActor->getGlobalPose();
 				physxTransform.p = ToPhysXVector(*translation);
 
-				actor->setGlobalPose(physxTransform);
+				pxActor->setGlobalPose(physxTransform);
 
 				return;
 			}
-			else if (entity.HasComponent<RigidBody2DComponent>())
+			else if (actor.HasComponent<RigidBody2DComponent>())
 			{
-				const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+				const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 				
 				if (rigidbody.Type == RigidBody2DType::Dynamic)
 				{
 					b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 					body->SetTransform({ translation->x, translation->y }, body->GetAngle());
-					entity.GetTransform().Translation.z = translation->z;
+					actor.GetTransform().Translation.z = translation->z;
 					
 					return;
 				}
 			}
 
-			entity.GetTransform().Translation = *translation;
+			actor.GetTransform().Translation = *translation;
 		}
 
-		void TransformComponent_GetRotation(UUID entityUUID, Math::quaternion* outRotation)
+		void TransformComponent_GetRotation(UUID actorUUID, Math::quaternion* outRotation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (entity.HasComponent<RigidBodyComponent>() && entity.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
+			if (actor.HasComponent<RigidBodyComponent>() && actor.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
 			{
-				physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* actor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
 				physx::PxTransform physxTranform = actor->getGlobalPose();
 				Math::quaternion rotation = FromPhysXQuat(physxTranform.q);
 
@@ -895,16 +895,16 @@ namespace Vortex {
 
 				return;
 			}
-			else if (entity.HasComponent<RigidBody2DComponent>())
+			else if (actor.HasComponent<RigidBody2DComponent>())
 			{
-				const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+				const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 				if (rigidbody.Type == RigidBody2DType::Dynamic)
 				{
 					b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 					const float angleRad = body->GetAngle();
-					Math::vec3 currentEulers = entity.GetTransform().GetRotationEuler();
+					Math::vec3 currentEulers = actor.GetTransform().GetRotationEuler();
 					Math::vec3 eulers(currentEulers.x, angleRad, currentEulers.z);
 					*outRotation = Math::quaternion(eulers);
 
@@ -912,30 +912,30 @@ namespace Vortex {
 				}
 			}
 
-			*outRotation = entity.GetTransform().GetRotation();
+			*outRotation = actor.GetTransform().GetRotation();
 		}
 
-		void TransformComponent_SetRotation(UUID entityUUID, Math::quaternion* rotation)
+		void TransformComponent_SetRotation(UUID actorUUID, Math::quaternion* rotation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (entity.HasComponent<RigidBodyComponent>() && entity.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
+			if (actor.HasComponent<RigidBodyComponent>() && actor.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
 			{
-				physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* actor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
 				physx::PxTransform physxTransform = actor->getGlobalPose();
 				physxTransform.q = ToPhysXQuat(*rotation);
 
 				actor->setGlobalPose(physxTransform);
 			}
-			else if (entity.HasComponent<RigidBody2DComponent>())
+			else if (actor.HasComponent<RigidBody2DComponent>())
 			{
-				const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+				const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 				if (rigidbody.Type == RigidBody2DType::Dynamic)
 				{
 					b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
-					Math::vec3 translation = entity.GetTransform().Translation;
+					Math::vec3 translation = actor.GetTransform().Translation;
 					Math::vec3 eulerAngles = Math::EulerAngles(*rotation);
 					body->SetTransform({ translation.x, translation.y }, eulerAngles.z);
 
@@ -943,16 +943,16 @@ namespace Vortex {
 				}
 			}
 
-			entity.GetTransform().SetRotation(*rotation);
+			actor.GetTransform().SetRotation(*rotation);
 		}
 
-		void TransformComponent_GetEulerAngles(UUID entityUUID, Math::vec3* outEulerAngles)
+		void TransformComponent_GetEulerAngles(UUID actorUUID, Math::vec3* outEulerAngles)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (entity.HasComponent<RigidBodyComponent>() && entity.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
+			if (actor.HasComponent<RigidBodyComponent>() && actor.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
 			{
-				physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* actor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
 				Math::quaternion orientation = FromPhysXQuat(actor->getGlobalPose().q);
 
 				*outEulerAngles = Math::EulerAngles(orientation);
@@ -962,15 +962,15 @@ namespace Vortex {
 
 				return;
 			}
-			else if (entity.HasComponent<RigidBody2DComponent>())
+			else if (actor.HasComponent<RigidBody2DComponent>())
 			{
-				const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+				const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 				if (rigidbody.Type == RigidBody2DType::Dynamic)
 				{
 					b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
-					const auto& transform = entity.GetTransform();
+					const auto& transform = actor.GetTransform();
 					*outEulerAngles = { transform.GetRotationEuler().x, body->GetAngle(), transform.GetRotationEuler().z };
 
 					// Since we store rotation in radians we must convert to degrees here
@@ -980,22 +980,22 @@ namespace Vortex {
 				}
 			}
 			
-			*outEulerAngles = entity.GetTransform().GetRotationEuler();
+			*outEulerAngles = actor.GetTransform().GetRotationEuler();
 
 			// Since we store rotation in radians we must convert to degrees here
 			*outEulerAngles = Math::Rad2Deg(*outEulerAngles);
 		}
 
-		void TransformComponent_SetEulerAngles(UUID entityUUID, Math::vec3* eulerAngles)
+		void TransformComponent_SetEulerAngles(UUID actorUUID, Math::vec3* eulerAngles)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			// Since we store rotation in radians we must convert to radians here
 			*eulerAngles = Math::Deg2Rad(*eulerAngles);
 
-			if (entity.HasComponent<RigidBodyComponent>() && entity.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
+			if (actor.HasComponent<RigidBodyComponent>() && actor.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
 			{
-				physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* actor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
 				physx::PxTransform physxTransform = actor->getGlobalPose();
 				physxTransform.q = ToPhysXQuat(Math::quaternion(*eulerAngles));
 
@@ -1003,34 +1003,34 @@ namespace Vortex {
 
 				return;
 			}
-			else if (entity.HasComponent<RigidBody2DComponent>())
+			else if (actor.HasComponent<RigidBody2DComponent>())
 			{
-				const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+				const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 				if (rigidbody.Type == RigidBody2DType::Dynamic)
 				{
 					b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 					body->SetTransform(body->GetPosition(), Math::Deg2Rad(eulerAngles->z));
-					entity.GetTransform().SetRotationEuler(*eulerAngles);
+					actor.GetTransform().SetRotationEuler(*eulerAngles);
 
 					return;
 				}
 			}
 
-			entity.GetTransform().SetRotationEuler(*eulerAngles);
+			actor.GetTransform().SetRotationEuler(*eulerAngles);
 		}
 
-		void TransformComponent_Rotate(UUID entityUUID, Math::vec3* eulers, Space relativeTo)
+		void TransformComponent_Rotate(UUID actorUUID, Math::vec3* eulers, Space relativeTo)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			VX_CORE_ASSERT(relativeTo == Space::Local, "World Space Rotations have not been implemented yet!");
 
 			if (relativeTo == Space::Local)
 			{
 				Math::quaternion rotation;
-				TransformComponent_GetRotation(entityUUID, &rotation);
+				TransformComponent_GetRotation(actorUUID, &rotation);
 
 				*eulers = Math::Deg2Rad(*eulers);
 
@@ -1038,7 +1038,7 @@ namespace Vortex {
 				rotation *= Math::AngleAxis(eulers->y, Math::vec3(0.0f, 1.0f, 0.0f));
 				rotation *= Math::AngleAxis(eulers->z, Math::vec3(0.0f, 0.0f, 1.0f));
 
-				TransformComponent_SetRotation(entityUUID, &rotation);
+				TransformComponent_SetRotation(actorUUID, &rotation);
 			}
 			else if (relativeTo == Space::World)
 			{
@@ -1046,12 +1046,12 @@ namespace Vortex {
 			}
 		}
 
-		void TransformComponent_RotateAround(UUID entityUUID, Math::vec3* worldPoint, Math::vec3* axis, float angle)
+		void TransformComponent_RotateAround(UUID actorUUID, Math::vec3* worldPoint, Math::vec3* axis, float angle)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
 			const float angleRad = Math::Deg2Rad(angle);
-			TransformComponent worldSpaceTransform = GetContextScene()->GetWorldSpaceTransform(entity);
+			TransformComponent worldSpaceTransform = GetContextScene()->GetWorldSpaceTransform(actor);
 			Math::mat4 worldSpaceTransformMatrix = worldSpaceTransform.GetTransform();
 			const Math::vec3 point = *worldPoint;
 			const Math::vec3 worldSpaceTranslation = worldSpaceTransform.Translation;
@@ -1064,106 +1064,106 @@ namespace Vortex {
 				* Math::Rotate(angleRad, normalizedAxis)
 				* Math::Translate(-point);
 
-			entity.SetTransform(transform);
+			actor.SetTransform(transform);
 		}
 
-		void TransformComponent_SetTranslationAndRotation(UUID entityUUID, Math::vec3* translation, Math::vec3* eulers)
+		void TransformComponent_SetTranslationAndRotation(UUID actorUUID, Math::vec3* translation, Math::vec3* eulers)
 		{
-			TransformComponent_SetTranslation(entityUUID, translation);
+			TransformComponent_SetTranslation(actorUUID, translation);
 			Math::quaternion rotation(*eulers);
-			TransformComponent_SetRotation(entityUUID, &rotation);
+			TransformComponent_SetRotation(actorUUID, &rotation);
 		}
 
-		void TransformComponent_GetScale(UUID entityUUID, Math::vec3* outScale)
+		void TransformComponent_GetScale(UUID actorUUID, Math::vec3* outScale)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			*outScale = entity.GetTransform().Scale;
+			*outScale = actor.GetTransform().Scale;
 		}
 
-		void TransformComponent_SetScale(UUID entityUUID, Math::vec3* scale)
+		void TransformComponent_SetScale(UUID actorUUID, Math::vec3* scale)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			entity.GetTransform().Scale = *scale;
+			actor.GetTransform().Scale = *scale;
 		}
 
-		void TransformComponent_GetWorldSpaceTransform(UUID entityUUID, Math::vec3* outTranslation, Math::quaternion* outRotation, Math::vec3* outEulers, Math::vec3* outScale)
+		void TransformComponent_GetWorldSpaceTransform(UUID actorUUID, Math::vec3* outTranslation, Math::quaternion* outRotation, Math::vec3* outEulers, Math::vec3* outScale)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			TransformComponent worldSpaceTransform = GetContextScene()->GetWorldSpaceTransform(entity);
+			TransformComponent worldSpaceTransform = GetContextScene()->GetWorldSpaceTransform(actor);
 			*outTranslation = worldSpaceTransform.Translation;
 			*outRotation = worldSpaceTransform.GetRotation();
 			*outEulers = worldSpaceTransform.GetRotationEuler();
 			*outScale = worldSpaceTransform.Scale;
 		}
 
-		void TransformComponent_GetTransformMatrix(UUID entityUUID, Math::mat4* outTransform)
+		void TransformComponent_GetTransformMatrix(UUID actorUUID, Math::mat4* outTransform)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			const TransformComponent& transform = entity.GetTransform();
+			const TransformComponent& transform = actor.GetTransform();
 
 			*outTransform = transform.GetTransform();
 		}
 
-		void TransformComponent_SetTransformMatrix(UUID entityUUID, Math::mat4* transform)
+		void TransformComponent_SetTransformMatrix(UUID actorUUID, Math::mat4* transform)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			TransformComponent& entityTransform = entity.GetTransform();
+			TransformComponent& actorTransform = actor.GetTransform();
 
-			entityTransform.SetTransform(*transform);
+			actorTransform.SetTransform(*transform);
 		}
 
-		void TransformComponent_GetForwardDirection(UUID entityUUID, Math::vec3* outDirection)
+		void TransformComponent_GetForwardDirection(UUID actorUUID, Math::vec3* outDirection)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(actor);
 
 			Math::quaternion rotation = worldSpaceTransform.GetRotation();
 
 			*outDirection = Math::Rotate(rotation, Math::vec3(0.0f, 0.0f, -1.0f));
 		}
 
-		void TransformComponent_GetUpDirection(UUID entityUUID, Math::vec3* outDirection)
+		void TransformComponent_GetUpDirection(UUID actorUUID, Math::vec3* outDirection)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(actor);
 
 			Math::quaternion rotation = worldSpaceTransform.GetRotation();
 
 			*outDirection = Math::Rotate(rotation, Math::vec3(0.0f, 1.0f, 0.0f));
 		}
 
-		void TransformComponent_GetRightDirection(UUID entityUUID, Math::vec3* outDirection)
+		void TransformComponent_GetRightDirection(UUID actorUUID, Math::vec3* outDirection)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(entity);
+			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(actor);
 
 			Math::quaternion rotation = worldSpaceTransform.GetRotation();
 
 			*outDirection = Math::Rotate(rotation, Math::vec3(1.0f, 0.0f, 0.0f));
 		}
 
-		void TransformComponent_LookAt(UUID entityUUID, Math::vec3* worldPoint)
+		void TransformComponent_LookAt(UUID actorUUID, Math::vec3* worldPoint)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (entity.HasComponent<RigidBodyComponent>())
+			if (actor.HasComponent<RigidBodyComponent>())
 			{
-				const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+				const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 				if (rigidbody.Type == RigidBodyType::Dynamic)
 				{
-					physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+					physx::PxRigidDynamic* actor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
 					physx::PxTransform physxTransform = actor->getGlobalPose();
 
 					const Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
@@ -1181,7 +1181,7 @@ namespace Vortex {
 				}
 			}
 
-			TransformComponent& transform = entity.GetTransform();
+			TransformComponent& transform = actor.GetTransform();
 			Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
 			Math::mat4 result = Math::LookAt(transform.Translation, *worldPoint, upDirection);
 			Math::vec3 translation, scale;
@@ -1192,10 +1192,10 @@ namespace Vortex {
 			transform.SetRotation(rotation);
 		}
 
-		uint64_t TransformComponent_GetParent(UUID entityUUID)
+		uint64_t TransformComponent_GetParent(UUID actorUUID)
 		{
-			Entity child = GetEntity(entityUUID);
-			Entity parent = GetEntity(child.GetParentUUID());
+			Actor child = GetActor(actorUUID);
+			Actor parent = GetActor(child.GetParentUUID());
 
 			if (!parent)
 			{
@@ -1209,23 +1209,23 @@ namespace Vortex {
 		void TransformComponent_SetParent(UUID childUUID, UUID parentUUID)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity child = GetEntity(childUUID);
-			Entity parent = GetEntity(parentUUID);
+			Actor child = GetActor(childUUID);
+			Actor parent = GetActor(parentUUID);
 			
 			if (!parent || !child)
 			{
 				return;
 			}
 
-			contextScene->ParentEntity(child, parent);
+			contextScene->ParentActor(child, parent);
 		}
 
-		void TransformComponent_Unparent(UUID entityUUID)
+		void TransformComponent_Unparent(UUID actorUUID)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			contextScene->UnparentEntity(entity);
+			contextScene->UnparentActor(actor);
 		}
 
 		void TransformComponent_Multiply(TransformComponent* a, TransformComponent* b, TransformComponent* outTransform)
@@ -1245,33 +1245,34 @@ namespace Vortex {
 
 #pragma region Camera Component
 
-		SceneCamera::ProjectionType CameraComponent_GetProjectionType(UUID entityUUID)
+		SceneCamera::ProjectionType CameraComponent_GetProjectionType(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Camera.ProjectionType without a Camera!");
 				return SceneCamera::ProjectionType::Perspective;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			const SceneCamera& camera = cameraComponent.Camera;
 
 			return camera.GetProjectionType();
 		}
 
-		void CameraComponent_SetProjectionType(UUID entityUUID, SceneCamera::ProjectionType type)
+		void CameraComponent_SetProjectionType(UUID actorUUID, SceneCamera::ProjectionType type)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Scene* scene = GetContextScene();
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set Camera.ProjectionType without a Camera!");
 				return;
 			}
 
-			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			SceneCamera& camera = cameraComponent.Camera;
 
 			const bool consistentProjectionType = camera.GetProjectionType() == type;
@@ -1280,343 +1281,363 @@ namespace Vortex {
 				return;
 
 			camera.SetProjectionType(type);
+			const Math::uvec2& viewportSize = scene->GetViewportSize();
+			camera.SetViewportSize(viewportSize.x, viewportSize.y);
 		}
 
-		void CameraComponent_GetPrimary(UUID entityUUID, bool* outPrimary)
+		void CameraComponent_GetPrimary(UUID actorUUID, bool* outPrimary)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Camera.IsPrimary without a Camera!");
 				return;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 
 			*outPrimary = cameraComponent.Primary;
 		}
 
-		void CameraComponent_SetPrimary(UUID entityUUID, bool primary)
+		void CameraComponent_SetPrimary(UUID actorUUID, bool primary)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set Camera.IsPrimary without a Camera!");
 				return;
 			}
 
-			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 
 			cameraComponent.Primary = primary;
 		}
 
-		float CameraComponent_GetPerspectiveVerticalFOV(UUID entityUUID)
+		float CameraComponent_GetPerspectiveVerticalFOV(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Camera.FieldOfView without a Camera!");
 				return 0.0f;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 
 			return Math::Rad2Deg(cameraComponent.Camera.GetPerspectiveVerticalFOVRad());
 		}
 
-		void CameraComponent_SetPerspectiveVerticalFOV(UUID entityUUID, float perspectiveVerticalFOV)
+		void CameraComponent_SetPerspectiveVerticalFOV(UUID actorUUID, float perspectiveVerticalFOV)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Scene* scene = GetContextScene();
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set Camera.FieldOfView without a Camera!");
 				return;
 			}
 
-			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			SceneCamera& camera = cameraComponent.Camera;
 
 			const float FOVRad = Math::Deg2Rad(perspectiveVerticalFOV);
 
 			camera.SetPerspectiveVerticalFOVRad(FOVRad);
+			const Math::uvec2& viewportSize = scene->GetViewportSize();
+			camera.SetViewportSize(viewportSize.x, viewportSize.y);
 		}
 
-		float CameraComponent_GetNearClip(UUID entityUUID)
+		float CameraComponent_GetNearClip(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Camera.NearClip without a Camera!");
 				return 0.0f;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			const SceneCamera& camera = cameraComponent.Camera;
 
 			return camera.GetPerspectiveNearClip();
 		}
 
-		void CameraComponent_SetNearClip(UUID entityUUID, float nearClip)
+		void CameraComponent_SetNearClip(UUID actorUUID, float nearClip)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Scene* scene = GetContextScene();
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set Camera.NearClip without a Camera!");
 				return;
 			}
 
-			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			SceneCamera& camera = cameraComponent.Camera;
 
 			camera.SetPerspectiveNearClip(nearClip);
+			const Math::uvec2& viewportSize = scene->GetViewportSize();
+			camera.SetViewportSize(viewportSize.x, viewportSize.y);
 		}
 
-		float CameraComponent_GetFarClip(UUID entityUUID)
+		float CameraComponent_GetFarClip(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Camera.FarClip without a Camera!");
 				return 0.0f;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			const SceneCamera& camera = cameraComponent.Camera;
 
 			return camera.GetPerspectiveFarClip();
 		}
 
-		void CameraComponent_SetFarClip(UUID entityUUID, float farClip)
+		void CameraComponent_SetFarClip(UUID actorUUID, float farClip)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Scene* scene = GetContextScene();
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set Camera.FarClip without a Camera!");
 				return;
 			}
 
-			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			SceneCamera& camera = cameraComponent.Camera;
 
 			camera.SetPerspectiveFarClip(farClip);
+			const Math::uvec2& viewportSize = scene->GetViewportSize();
+			camera.SetViewportSize(viewportSize.x, viewportSize.y);
 		}
 
-		float CameraComponent_GetOrthographicSize(UUID entityUUID)
+		float CameraComponent_GetOrthographicSize(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Camera.OrthographicSize without a Camera!");
 				return 0.0f;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			const SceneCamera& camera = cameraComponent.Camera;
 
 			return camera.GetOrthographicSize();
 		}
 
-		void CameraComponent_SetOrthographicSize(UUID entityUUID, float orthographicSize)
+		void CameraComponent_SetOrthographicSize(UUID actorUUID, float orthographicSize)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Scene* scene = GetContextScene();
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set Camera.OrthographicSize without a Camera!");
 				return;
 			}
 
-			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			SceneCamera& camera = cameraComponent.Camera;
 
 			camera.SetOrthographicSize(orthographicSize);
+			const Math::uvec2& viewportSize = scene->GetViewportSize();
+			camera.SetViewportSize(viewportSize.x, viewportSize.y);
 		}
 
-		float CameraComponent_GetOrthographicNear(UUID entityUUID)
+		float CameraComponent_GetOrthographicNear(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Camera.OrthographicNear without a Camera!");
 				return 0.0f;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			const SceneCamera& camera = cameraComponent.Camera;
 
 			return camera.GetOrthographicNearClip();
 		}
 
-		void CameraComponent_SetOrthographicNear(UUID entityUUID, float orthographicNear)
+		void CameraComponent_SetOrthographicNear(UUID actorUUID, float orthographicNear)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Scene* scene = GetContextScene();
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set Camera.OrthographicNear without a Camera!");
 				return;
 			}
 
-			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			SceneCamera& camera = cameraComponent.Camera;
 
 			camera.SetOrthographicNearClip(orthographicNear);
+			const Math::uvec2& viewportSize = scene->GetViewportSize();
+			camera.SetViewportSize(viewportSize.x, viewportSize.y);
 		}
 
-		float CameraComponent_GetOrthographicFar(UUID entityUUID)
+		float CameraComponent_GetOrthographicFar(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Camera.OrthographicFar without a Camera!");
 				return 0.0f;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			const SceneCamera& camera = cameraComponent.Camera;
 
 			return camera.GetOrthographicFarClip();
 		}
 
-		void CameraComponent_SetOrthographicFar(UUID entityUUID, float orthographicFar)
+		void CameraComponent_SetOrthographicFar(UUID actorUUID, float orthographicFar)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Scene* scene = GetContextScene();
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set Camera.OrthographicFar without a Camera!");
 				return;
 			}
 
-			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			SceneCamera& camera = cameraComponent.Camera;
 
 			camera.SetOrthographicFarClip(orthographicFar);
+			const Math::uvec2& viewportSize = scene->GetViewportSize();
+			camera.SetViewportSize(viewportSize.x, viewportSize.y);
 		}
 
-		void CameraComponent_GetFixedAspectRatio(UUID entityUUID, bool* outFixedAspectRatio)
+		void CameraComponent_GetFixedAspectRatio(UUID actorUUID, bool* outFixedAspectRatio)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Camera.IsFixedAspectRatio without a Camera!");
 				return;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 
 			*outFixedAspectRatio = cameraComponent.FixedAspectRatio;
 		}
 
-		void CameraComponent_SetFixedAspectRatio(UUID entityUUID, bool fixedAspectRatio)
+		void CameraComponent_SetFixedAspectRatio(UUID actorUUID, bool fixedAspectRatio)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set Camera.IsFixedAspectRatio without a Camera!");
 				return;
 			}
 
-			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 
 			cameraComponent.FixedAspectRatio = fixedAspectRatio;
 		}
 
-		void CameraComponent_GetClearColor(UUID entityUUID, Math::vec3* outColor)
+		void CameraComponent_GetClearColor(UUID actorUUID, Math::vec3* outColor)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Camera.ClearColor without a Camera!");
 				return;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			
 			*outColor = cameraComponent.ClearColor;
 		}
 
-		void CameraComponent_SetClearColor(UUID entityUUID, Math::vec3* color)
+		void CameraComponent_SetClearColor(UUID actorUUID, Math::vec3* color)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set Camera.ClearColor without a Camera!");
 				return;
 			}
 
-			CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			
 			cameraComponent.ClearColor = *color;
 		}
 
-		void CameraComponent_Raycast(UUID entityUUID, Math::vec3* position, float maxDistance, Math::Ray* outRay)
+		void CameraComponent_Raycast(UUID actorUUID, Math::vec3* position, float maxDistance, Math::Ray* outRay)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling Camera.CastRay without a Camera!");
 				return;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			const SceneCamera& sceneCamera = cameraComponent.Camera;
 
-			const Math::mat4 transform = contextScene->GetWorldSpaceTransformMatrix(entity);
+			const Math::mat4 transform = contextScene->GetWorldSpaceTransformMatrix(actor);
 			const Math::mat4 view = Math::Inverse(transform);
 
-			*outRay = sceneCamera.Raycast(*position, entity.GetTransform().Translation, maxDistance, view);
+			*outRay = sceneCamera.Raycast(*position, actor.GetTransform().Translation, maxDistance, view);
 		}
 
-		void CameraComponent_ScreenToWorldPoint(UUID entityUUID, Math::vec2* position, float maxDistance, Math::vec3* outWorldPoint)
+		void CameraComponent_ScreenToWorldPoint(UUID actorUUID, Math::vec2* position, float maxDistance, Math::vec3* outWorldPoint)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling Camera.ScreenToWorldPoint without a Camera!");
 				return;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			const SceneCamera& sceneCamera = cameraComponent.Camera;
 
-			const Math::mat4 transform = contextScene->GetWorldSpaceTransformMatrix(entity);
+			const Math::mat4 transform = contextScene->GetWorldSpaceTransformMatrix(actor);
 			const Math::mat4 view = Math::Inverse(transform);
 
 			const ViewportBounds& viewportBounds = contextScene->GetViewportBounds();
-			*outWorldPoint = sceneCamera.ScreenPointToWorldPoint(*position, viewportBounds.MinBound, entity.GetTransform().Translation, maxDistance, view);
+			*outWorldPoint = sceneCamera.ScreenPointToWorldPoint(*position, viewportBounds.MinBound, actor.GetTransform().Translation, maxDistance, view);
 		}
 
-		void CameraComponent_ScreenToViewportPoint(UUID entityUUID, Math::vec2* position, Math::vec2* outViewportPoint)
+		void CameraComponent_ScreenToViewportPoint(UUID actorUUID, Math::vec2* position, Math::vec2* outViewportPoint)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CameraComponent>())
+			if (!actor.HasComponent<CameraComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling Camera.ScreenToViewportPoint without a Camera!");
 				return;
 			}
 
-			const CameraComponent& cameraComponent = entity.GetComponent<CameraComponent>();
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 			const SceneCamera& sceneCamera = cameraComponent.Camera;
 
 			*outViewportPoint = sceneCamera.ScreenPointToViewportPoint(*position);
@@ -1626,255 +1647,255 @@ namespace Vortex {
 
 #pragma region Light Source Component
 
-		LightType LightSourceComponent_GetLightType(UUID entityUUID)
+		LightType LightSourceComponent_GetLightType(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.LightType without a Light Source!");
 				return LightType::Directional;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			return lightSourceComponent.Type;
 		}
 
-		void LightSourceComponent_SetLightType(UUID entityUUID, LightType type)
+		void LightSourceComponent_SetLightType(UUID actorUUID, LightType type)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.LightType without a Light Source!");
 				return;
 			}
 
-			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			lightSourceComponent.Type = type;
 		}
 
-		void LightSourceComponent_GetRadiance(UUID entityUUID, Math::vec3* outRadiance)
+		void LightSourceComponent_GetRadiance(UUID actorUUID, Math::vec3* outRadiance)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.Radiance without a Light Source!");
 				return;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			*outRadiance = lightSourceComponent.Radiance;
 		}
 
-		void LightSourceComponent_SetRadiance(UUID entityUUID, Math::vec3* radiance)
+		void LightSourceComponent_SetRadiance(UUID actorUUID, Math::vec3* radiance)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.Radiance without a Light Source!");
 				return;
 			}
 
-			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			lightSourceComponent.Radiance = *radiance;
 		}
 
-		float LightSourceComponent_GetIntensity(UUID entityUUID)
+		float LightSourceComponent_GetIntensity(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.Intensity without a Light Source!");
 				return 0.0f;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			return lightSourceComponent.Intensity;
 		}
 
-		void LightSourceComponent_SetIntensity(UUID entityUUID, float intensity)
+		void LightSourceComponent_SetIntensity(UUID actorUUID, float intensity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.Intensity without a Light Source!");
 				return;
 			}
 
-			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			lightSourceComponent.Intensity = intensity;
 		}
 
-		float LightSourceComponent_GetCutoff(UUID entityUUID)
+		float LightSourceComponent_GetCutoff(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.Cutoff without a Light Source!");
 				return 0.0f;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			return lightSourceComponent.Cutoff;
 		}
 
-		void LightSourceComponent_SetCutoff(UUID entityUUID, float cutoff)
+		void LightSourceComponent_SetCutoff(UUID actorUUID, float cutoff)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.Cutoff without a Light Source!");
 				return;
 			}
 
-			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			lightSourceComponent.Cutoff = cutoff;
 		}
 
-		float LightSourceComponent_GetOuterCutoff(UUID entityUUID)
+		float LightSourceComponent_GetOuterCutoff(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.OuterCutoff without a Light Source!");
 				return 0.0f;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			return lightSourceComponent.OuterCutoff;
 		}
 
-		void LightSourceComponent_SetOuterCutoff(UUID entityUUID, float outerCutoff)
+		void LightSourceComponent_SetOuterCutoff(UUID actorUUID, float outerCutoff)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.OuterCutoff without a Light Source!");
 				return;
 			}
 
-			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			lightSourceComponent.OuterCutoff = outerCutoff;
 		}
 
-		float LightSourceComponent_GetShadowBias(UUID entityUUID)
+		float LightSourceComponent_GetShadowBias(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.ShadowBias without a Light Source!");
 				return 0.0f;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			return lightSourceComponent.ShadowBias;
 		}
 
-		void LightSourceComponent_SetShadowBias(UUID entityUUID, float shadowBias)
+		void LightSourceComponent_SetShadowBias(UUID actorUUID, float shadowBias)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.ShadowBias without a Light Source!");
 				return;
 			}
 
-			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			lightSourceComponent.ShadowBias = shadowBias;
 		}
 
-		bool LightSourceComponent_GetCastShadows(UUID entityUUID)
+		bool LightSourceComponent_GetCastShadows(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.CastShadows without a Light Source!");
 				return false;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			return lightSourceComponent.CastShadows;
 		}
 
-		void LightSourceComponent_SetCastShadows(UUID entityUUID, bool castShadows)
+		void LightSourceComponent_SetCastShadows(UUID actorUUID, bool castShadows)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.CastShadows without a Light Source!");
 				return;
 			}
 
-			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			lightSourceComponent.CastShadows = castShadows;
 		}
 
-		bool LightSourceComponent_GetSoftShadows(UUID entityUUID)
+		bool LightSourceComponent_GetSoftShadows(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.UseSoftShadows without a Light Source!");
 				return false;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			return lightSourceComponent.SoftShadows;
 		}
 
-		void LightSourceComponent_SetSoftShadows(UUID entityUUID, bool softShadows)
+		void LightSourceComponent_SetSoftShadows(UUID actorUUID, bool softShadows)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.UseSoftShadows without a Light Source!");
 				return;
 			}
 
-			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			lightSourceComponent.SoftShadows = softShadows;
 		}
 
-		bool LightSourceComponent_IsVisible(UUID entityUUID)
+		bool LightSourceComponent_IsVisible(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.Visible without a Light Source!");
 				return false;
 			}
 
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			return lightSourceComponent.Visible;
 		}
 
-		void LightSourceComponent_SetVisible(UUID entityUUID, bool visible)
+		void LightSourceComponent_SetVisible(UUID actorUUID, bool visible)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<LightSourceComponent>())
+			if (!actor.HasComponent<LightSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.Visible without a Light Source!");
 				return;
 			}
 
-			LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 			lightSourceComponent.Visible = visible;
 		}
 
@@ -1882,202 +1903,202 @@ namespace Vortex {
 
 #pragma region TextMesh Component
 
-		MonoString* TextMeshComponent_GetTextString(UUID entityUUID)
+		MonoString* TextMeshComponent_GetTextString(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.Text without a Text Mesh!");
 				return mono_string_new(mono_domain_get(), "");
 			}
 
-			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			return mono_string_new(mono_domain_get(), textMeshComponent.TextString.c_str());
 		}
 
-		void TextMeshComponent_SetTextString(UUID entityUUID, MonoString* textString)
+		void TextMeshComponent_SetTextString(UUID actorUUID, MonoString* textString)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.Text without a Text Mesh!");
 				return;
 			}
 
-			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			char* managedString = mono_string_to_utf8(textString);
 
 			textMeshComponent.TextString = std::string(managedString);
 			mono_free(managedString);
 		}
 
-		void TextMeshComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
+		void TextMeshComponent_GetColor(UUID actorUUID, Math::vec4* outColor)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.Color without a Text Mesh!");
 				return;
 			}
 
-			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			*outColor = textMeshComponent.Color;
 		}
 
-		void TextMeshComponent_SetColor(UUID entityUUID, Math::vec4* color)
+		void TextMeshComponent_SetColor(UUID actorUUID, Math::vec4* color)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.Color without a Text Mesh!");
 				return;
 			}
 
-			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			textMeshComponent.Color = *color;
 		}
 
-		void TextMeshComponent_GetBackgroundColor(UUID entityUUID, Math::vec4* outBackgroundColor)
+		void TextMeshComponent_GetBackgroundColor(UUID actorUUID, Math::vec4* outBackgroundColor)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.BackgroundColor without a Text Mesh!");
 				return;
 			}
 
-			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			*outBackgroundColor = textMeshComponent.BgColor;
 		}
 
-		void TextMeshComponent_SetBackgroundColor(UUID entityUUID, Math::vec4* backgroundcolor)
+		void TextMeshComponent_SetBackgroundColor(UUID actorUUID, Math::vec4* backgroundcolor)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.BackgroundColor without a Text Mesh!");
 				return;
 			}
 
-			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			textMeshComponent.BgColor = *backgroundcolor;
 		}
 
-		float TextMeshComponent_GetLineSpacing(UUID entityUUID)
+		float TextMeshComponent_GetLineSpacing(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.LineSpacing without a Text Mesh!");
 				return 0.0f;
 			}
 
-			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			return textMeshComponent.LineSpacing;
 		}
 
-		void TextMeshComponent_SetLineSpacing(UUID entityUUID, float lineSpacing)
+		void TextMeshComponent_SetLineSpacing(UUID actorUUID, float lineSpacing)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.LineSpacing without a Text Mesh!");
 				return;
 			}
 
-			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			textMeshComponent.LineSpacing = lineSpacing;
 		}
 
-		float TextMeshComponent_GetKerning(UUID entityUUID)
+		float TextMeshComponent_GetKerning(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.Kerning without a Text Mesh!");
 				return 0.0f;
 			}
 
-			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			return textMeshComponent.Kerning;
 		}
 
-		void TextMeshComponent_SetKerning(UUID entityUUID, float kerning)
+		void TextMeshComponent_SetKerning(UUID actorUUID, float kerning)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.Kerning without a Text Mesh!");
 				return;
 			}
 
-			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			textMeshComponent.Kerning = kerning;
 		}
 
-		float TextMeshComponent_GetMaxWidth(UUID entityUUID)
+		float TextMeshComponent_GetMaxWidth(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.MaxWidth without a Text Mesh!");
 				return 0.0f;
 			}
 
-			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			return textMeshComponent.MaxWidth;
 		}
 
-		void TextMeshComponent_SetMaxWidth(UUID entityUUID, float maxWidth)
+		void TextMeshComponent_SetMaxWidth(UUID actorUUID, float maxWidth)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.MaxWidth without a Text Mesh!");
 				return;
 			}
 
-			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			textMeshComponent.MaxWidth = maxWidth;
 		}
 
-		bool TextMeshComponent_IsVisible(UUID entityUUID)
+		bool TextMeshComponent_IsVisible(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.Visible without a Text Mesh!");
 				return false;
 			}
 
-			const TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			return textMeshComponent.Visible;
 		}
 
-		void TextMeshComponent_SetVisible(UUID entityUUID, bool visible)
+		void TextMeshComponent_SetVisible(UUID actorUUID, bool visible)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<TextMeshComponent>())
+			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.Visible without a Text Mesh!");
 				return;
 			}
 
-			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 			textMeshComponent.Visible = visible;
 		}
 
@@ -2085,41 +2106,41 @@ namespace Vortex {
 
 #pragma region Animator Component
 
-		bool AnimatorComponent_IsPlaying(UUID entityUUID)
+		bool AnimatorComponent_IsPlaying(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AnimatorComponent>())
+			if (!actor.HasComponent<AnimatorComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access Animator.IsPlaying without a Animator!");
 				return false;
 			}
 
-			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+			const AnimatorComponent& animatorComponent = actor.GetComponent<AnimatorComponent>();
 			SharedRef<Animator> animator = animatorComponent.Animator;
 			return animator->IsPlaying();
 		}
 
-		void AnimatorComponent_Play(UUID entityUUID)
+		void AnimatorComponent_Play(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AnimatorComponent>())
+			if (!actor.HasComponent<AnimatorComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling Animator.Play without a Animator!");
 				return;
 			}
 
-			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+			const AnimatorComponent& animatorComponent = actor.GetComponent<AnimatorComponent>();
 			SharedRef<Animator> animator = animatorComponent.Animator;
 
-			if (!entity.HasComponent<AnimationComponent>())
+			if (!actor.HasComponent<AnimationComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling Animator.Play without an Animation!");
 				return;
 			}
 
-			const AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+			const AnimationComponent& animationComponent = actor.GetComponent<AnimationComponent>();
 			SharedRef<Animation> animation = animationComponent.Animation;
 
 			if (!animation)
@@ -2131,17 +2152,17 @@ namespace Vortex {
 			animator->PlayAnimation();
 		}
 
-		void AnimatorComponent_Stop(UUID entityUUID)
+		void AnimatorComponent_Stop(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AnimatorComponent>())
+			if (!actor.HasComponent<AnimatorComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling Animator.Stop without a Animator!");
 				return;
 			}
 
-			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+			const AnimatorComponent& animatorComponent = actor.GetComponent<AnimatorComponent>();
 			SharedRef<Animator> animator = animatorComponent.Animator;
 
 			if (!animator)
@@ -2157,37 +2178,37 @@ namespace Vortex {
 
 #pragma region Mesh Renderer Component
 
-		bool MeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* outHandle)
+		bool MeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID actorUUID, AssetHandle* outHandle)
 		{
 			VX_CORE_ASSERT(false, "Not implemented yet!");
 			return false;
 		}
 
-		bool MeshRendererComponent_IsVisible(UUID entityUUID)
+		bool MeshRendererComponent_IsVisible(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<MeshRendererComponent>())
+			if (!actor.HasComponent<MeshRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access MeshRenderer.Visible without a Mesh Renderer!");
 				return false;
 			}
 
-			const MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+			const MeshRendererComponent& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
 			return meshRendererComponent.Visible;
 		}
 
-		void MeshRendererComponent_SetVisible(UUID entityUUID, bool visible)
+		void MeshRendererComponent_SetVisible(UUID actorUUID, bool visible)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<MeshRendererComponent>())
+			if (!actor.HasComponent<MeshRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set MeshRenderer.Visible without a Mesh Renderer!");
 				return;
 			}
 
-			MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+			MeshRendererComponent& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
 			meshRendererComponent.Visible = visible;
 		}
 
@@ -2195,32 +2216,32 @@ namespace Vortex {
 
 #pragma region Static Mesh Renderer Component
 
-		MeshType StaticMeshRendererComponent_GetMeshType(UUID entityUUID)
+		MeshType StaticMeshRendererComponent_GetMeshType(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<StaticMeshRendererComponent>())
+			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access StaticMeshRenderer.MeshType without a Static Mesh Renderer!");
 				return MeshType::Cube;
 			}
 
-			const StaticMeshRendererComponent& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+			const StaticMeshRendererComponent& staticMeshRenderer = actor.GetComponent<StaticMeshRendererComponent>();
 
 			return staticMeshRenderer.Type;
 		}
 
-		void StaticMeshRendererComponent_SetMeshType(UUID entityUUID, MeshType meshType)
+		void StaticMeshRendererComponent_SetMeshType(UUID actorUUID, MeshType meshType)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<StaticMeshRendererComponent>())
+			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set StaticMeshRenderer.MeshType without a Static Mesh Renderer!");
 				return;
 			}
 
-			StaticMeshRendererComponent& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+			StaticMeshRendererComponent& staticMeshRenderer = actor.GetComponent<StaticMeshRendererComponent>();
 			staticMeshRenderer.Type = meshType;
 
 			staticMeshRenderer.StaticMesh = DefaultMesh::DefaultStaticMeshes[(uint32_t)meshType];
@@ -2232,7 +2253,7 @@ namespace Vortex {
 			}
 		}
 
-		void StaticMeshRendererComponent_SetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* materialHandle)
+		void StaticMeshRendererComponent_SetMaterialHandle(uint32_t submeshIndex, UUID actorUUID, AssetHandle* materialHandle)
 		{
 			if (!AssetManager::IsHandleValid(*materialHandle))
 			{
@@ -2240,8 +2261,8 @@ namespace Vortex {
 				return;
 			}
 
-			Entity entity = GetEntity(entityUUID);
-			StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+			Actor actor = GetActor(actorUUID);
+			StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
 			if (!AssetManager::IsHandleValid(staticMeshRendererComponent.StaticMesh))
 			{
 				VX_CONSOLE_LOG_ERROR("Cannot set material of invalid mesh asset!");
@@ -2265,45 +2286,45 @@ namespace Vortex {
 			materialTable->SetMaterial(submeshIndex, *materialHandle);
 		}
 
-		bool StaticMeshRendererComponent_IsVisible(UUID entityUUID)
+		bool StaticMeshRendererComponent_IsVisible(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 			
-			if (!entity.HasComponent<StaticMeshRendererComponent>())
+			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access StaticMeshRenderer.Visible without a Static Mesh Renderer!");
 				return false;
 			}
 
-			const StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+			const StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
 			return staticMeshRendererComponent.Visible;
 		}
 
-		void StaticMeshRendererComponent_SetVisible(UUID entityUUID, bool visible)
+		void StaticMeshRendererComponent_SetVisible(UUID actorUUID, bool visible)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<StaticMeshRendererComponent>())
+			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set StaticMeshRenderer.Visible without a Static Mesh Renderer!");
 				return;
 			}
 
-			StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+			StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
 			staticMeshRendererComponent.Visible = visible;
 		}
 
-		bool StaticMeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID entityUUID, AssetHandle* outHandle)
+		bool StaticMeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID actorUUID, AssetHandle* outHandle)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<StaticMeshRendererComponent>())
+			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling StaticMeshRenderer.GetMaterialHandle without a Static Mesh Renderer!");
 				return false;
 			}
 
-			const StaticMeshRendererComponent& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+			const StaticMeshRendererComponent& staticMeshRenderer = actor.GetComponent<StaticMeshRendererComponent>();
 			SharedReference<MaterialTable> materialTable = staticMeshRenderer.Materials;
 			VX_CORE_ASSERT(!materialTable->Empty(), "Material table not synchronized with component!");
 			VX_CORE_ASSERT(materialTable->HasMaterial(submeshIndex), "Index out of bounds!");
@@ -2836,17 +2857,17 @@ namespace Vortex {
 
 #pragma region Sprite Renderer Component
 
-        bool SpriteRendererComponent_GetTextureHandle(UUID entityUUID, AssetHandle* outHandle)
+        bool SpriteRendererComponent_GetTextureHandle(UUID actorUUID, AssetHandle* outHandle)
         {
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SpriteRendererComponent>())
+			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Texture without a Sprite Renderer!");
 				return false;
 			}
 
-			const SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			const SpriteRendererComponent& spriteRenderer = actor.GetComponent<SpriteRendererComponent>();
 
 			if (AssetManager::IsHandleValid(spriteRenderer.Texture))
 			{
@@ -2856,17 +2877,17 @@ namespace Vortex {
 			return true;
         }
 
-        void SpriteRendererComponent_SetTextureHandle(UUID entityUUID, AssetHandle* textureHandle)
+        void SpriteRendererComponent_SetTextureHandle(UUID actorUUID, AssetHandle* textureHandle)
         {
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SpriteRendererComponent>())
+			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set SpriteRenderer.Texture without a Sprite Renderer!");
 				return;
 			}
 
-			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			SpriteRendererComponent& spriteRenderer = actor.GetComponent<SpriteRendererComponent>();
 
 			if (AssetManager::IsHandleValid(*textureHandle))
 			{
@@ -2874,87 +2895,87 @@ namespace Vortex {
 			}
         }
 
-        void SpriteRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
+        void SpriteRendererComponent_GetColor(UUID actorUUID, Math::vec4* outColor)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SpriteRendererComponent>())
+			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Color without a Sprite Renderer!");
 				return;
 			}
 
-			const SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			const SpriteRendererComponent& spriteRenderer = actor.GetComponent<SpriteRendererComponent>();
 			*outColor = spriteRenderer.SpriteColor;
 		}
 
-		void SpriteRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
+		void SpriteRendererComponent_SetColor(UUID actorUUID, Math::vec4* color)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SpriteRendererComponent>())
+			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set SpriteRenderer.Color without a Sprite Renderer!");
 				return;
 			}
 
-			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			SpriteRendererComponent& spriteRenderer = actor.GetComponent<SpriteRendererComponent>();
 			spriteRenderer.SpriteColor = *color;
 		}
 
-		void SpriteRendererComponent_GetUV(UUID entityUUID, Math::vec2* outScale)
+		void SpriteRendererComponent_GetUV(UUID actorUUID, Math::vec2* outScale)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SpriteRendererComponent>())
+			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Scale without a Sprite Renderer!");
 				return;
 			}
 
-			const SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			const SpriteRendererComponent& spriteRenderer = actor.GetComponent<SpriteRendererComponent>();
 			*outScale = spriteRenderer.TextureUV;
 		}
 
-		void SpriteRendererComponent_SetUV(UUID entityUUID, Math::vec2* scale)
+		void SpriteRendererComponent_SetUV(UUID actorUUID, Math::vec2* scale)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SpriteRendererComponent>())
+			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set SpriteRenderer.Scale without a Sprite Renderer!");
 				return;
 			}
 
-			SpriteRendererComponent& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			SpriteRendererComponent& spriteRenderer = actor.GetComponent<SpriteRendererComponent>();
 			spriteRenderer.TextureUV = *scale;
 		}
 
-		bool SpriteRendererComponent_IsVisible(UUID entityUUID)
+		bool SpriteRendererComponent_IsVisible(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SpriteRendererComponent>())
+			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Visible without a Sprite Renderer!");
 				return false;
 			}
 
-			const SpriteRendererComponent& spriteRendererComponent = entity.GetComponent<SpriteRendererComponent>();
+			const SpriteRendererComponent& spriteRendererComponent = actor.GetComponent<SpriteRendererComponent>();
 			return spriteRendererComponent.Visible;
 		}
 
-		void SpriteRendererComponent_SetVisible(UUID entityUUID, bool visible)
+		void SpriteRendererComponent_SetVisible(UUID actorUUID, bool visible)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SpriteRendererComponent>())
+			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set SpriteRenderer.Visible without a Sprite Renderer!");
 				return;
 			}
 
-			SpriteRendererComponent& spriteRendererComponent = entity.GetComponent<SpriteRendererComponent>();
+			SpriteRendererComponent& spriteRendererComponent = actor.GetComponent<SpriteRendererComponent>();
 			spriteRendererComponent.Visible = visible;
 		}
 
@@ -2962,115 +2983,115 @@ namespace Vortex {
 
 #pragma region Circle Renderer Component
 
-		void CircleRendererComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
+		void CircleRendererComponent_GetColor(UUID actorUUID, Math::vec4* outColor)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleRendererComponent>())
+			if (!actor.HasComponent<CircleRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CircleRenderer.Color without a Circle Renderer!");
 				return;
 			}
 
-			const CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			const CircleRendererComponent& circleRenderer = actor.GetComponent<CircleRendererComponent>();
 			*outColor = circleRenderer.Color;
 		}
 
-		void CircleRendererComponent_SetColor(UUID entityUUID, Math::vec4* color)
+		void CircleRendererComponent_SetColor(UUID actorUUID, Math::vec4* color)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleRendererComponent>())
+			if (!actor.HasComponent<CircleRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CircleRenderer.Color without a Circle Renderer!");
 				return;
 			}
 
-			CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			CircleRendererComponent& circleRenderer = actor.GetComponent<CircleRendererComponent>();
 			circleRenderer.Color = *color;
 		}
 
-		void CircleRendererComponent_GetThickness(UUID entityUUID, float* outThickness)
+		void CircleRendererComponent_GetThickness(UUID actorUUID, float* outThickness)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleRendererComponent>())
+			if (!actor.HasComponent<CircleRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CircleRenderer.Thickness without a Circle Renderer!");
 				return;
 			}
 
-			const CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			const CircleRendererComponent& circleRenderer = actor.GetComponent<CircleRendererComponent>();
 			*outThickness = circleRenderer.Thickness;
 		}
 
-		void CircleRendererComponent_SetThickness(UUID entityUUID, float thickness)
+		void CircleRendererComponent_SetThickness(UUID actorUUID, float thickness)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleRendererComponent>())
+			if (!actor.HasComponent<CircleRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CircleRenderer.Thickness without a Circle Renderer!");
 				return;
 			}
 
-			CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			CircleRendererComponent& circleRenderer = actor.GetComponent<CircleRendererComponent>();
 			circleRenderer.Thickness = thickness;
 		}
 
-		void CircleRendererComponent_GetFade(UUID entityUUID, float* outFade)
+		void CircleRendererComponent_GetFade(UUID actorUUID, float* outFade)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleRendererComponent>())
+			if (!actor.HasComponent<CircleRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CircleRenderer.Fade without a Circle Renderer!");
 				return;
 			}
 
-			const CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			const CircleRendererComponent& circleRenderer = actor.GetComponent<CircleRendererComponent>();
 			*outFade = circleRenderer.Fade;
 		}
 
-		void CircleRendererComponent_SetFade(UUID entityUUID, float fade)
+		void CircleRendererComponent_SetFade(UUID actorUUID, float fade)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleRendererComponent>())
+			if (!actor.HasComponent<CircleRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CircleRenderer.Fade without a Circle Renderer!");
 				return;
 			}
 
-			CircleRendererComponent& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			CircleRendererComponent& circleRenderer = actor.GetComponent<CircleRendererComponent>();
 			circleRenderer.Fade = fade;
 		}
 
-		bool CircleRendererComponent_IsVisible(UUID entityUUID)
+		bool CircleRendererComponent_IsVisible(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleRendererComponent>())
+			if (!actor.HasComponent<CircleRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CircleRenderer.Visible without a Circle Renderer!");
 				return false;
 			}
 
-			const CircleRendererComponent& circleRendererComponent = entity.GetComponent<CircleRendererComponent>();
+			const CircleRendererComponent& circleRendererComponent = actor.GetComponent<CircleRendererComponent>();
 			return circleRendererComponent.Visible;
 		}
 
-		void CircleRendererComponent_SetVisible(UUID entityUUID, bool visible)
+		void CircleRendererComponent_SetVisible(UUID actorUUID, bool visible)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleRendererComponent>())
+			if (!actor.HasComponent<CircleRendererComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CircleRenderer.Visible without a Circle Renderer!");
 				return;
 			}
 
-			CircleRendererComponent& circleRendererComponent = entity.GetComponent<CircleRendererComponent>();
+			CircleRendererComponent& circleRendererComponent = actor.GetComponent<CircleRendererComponent>();
 			circleRendererComponent.Visible = visible;
 		}
 
@@ -3078,17 +3099,17 @@ namespace Vortex {
 
 #pragma region Particle Emitter Component
 
-		void ParticleEmitterComponent_GetVelocity(UUID entityUUID, Math::vec3* outVelocity)
+		void ParticleEmitterComponent_GetVelocity(UUID actorUUID, Math::vec3* outVelocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Velocity without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Velocity with an invalid asset handle!");
@@ -3102,17 +3123,17 @@ namespace Vortex {
 			*outVelocity = particleEmitter->GetProperties().Velocity;
 		}
 
-		void ParticleEmitterComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
+		void ParticleEmitterComponent_SetVelocity(UUID actorUUID, Math::vec3* velocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Velocity without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Velocity with an invalid asset handle!");
@@ -3126,17 +3147,17 @@ namespace Vortex {
 			particleEmitter->GetProperties().Velocity = *velocity;
 		}
 
-		void ParticleEmitterComponent_GetVelocityVariation(UUID entityUUID, Math::vec3* outVelocityVariation)
+		void ParticleEmitterComponent_GetVelocityVariation(UUID actorUUID, Math::vec3* outVelocityVariation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.VelocityVariation without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.VelocityVariation with invalid asset handle!");
@@ -3150,17 +3171,17 @@ namespace Vortex {
 			*outVelocityVariation = particleEmitter->GetProperties().VelocityVariation;
 		}
 
-		void ParticleEmitterComponent_SetVelocityVariation(UUID entityUUID, Math::vec3* velocityVariation)
+		void ParticleEmitterComponent_SetVelocityVariation(UUID actorUUID, Math::vec3* velocityVariation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.VelocityVariation without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Velocity with an invalid asset handle!");
@@ -3174,17 +3195,17 @@ namespace Vortex {
 			particleEmitter->GetProperties().VelocityVariation = *velocityVariation;
 		}
 
-		void ParticleEmitterComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
+		void ParticleEmitterComponent_GetOffset(UUID actorUUID, Math::vec3* outOffset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Offset without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Velocity with an invalid asset handle!");
@@ -3198,17 +3219,17 @@ namespace Vortex {
 			*outOffset = particleEmitter->GetProperties().Offset;
 		}
 
-		void ParticleEmitterComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
+		void ParticleEmitterComponent_SetOffset(UUID actorUUID, Math::vec3* offset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Offset without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Velocity with an invalid asset handle!");
@@ -3222,17 +3243,17 @@ namespace Vortex {
 			particleEmitter->GetProperties().Offset = *offset;
 		}
 
-		void ParticleEmitterComponent_GetSizeBegin(UUID entityUUID, Math::vec2* outSizeBegin)
+		void ParticleEmitterComponent_GetSizeBegin(UUID actorUUID, Math::vec2* outSizeBegin)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeBegin without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeBegin with an invalid asset handle!");
@@ -3246,17 +3267,17 @@ namespace Vortex {
 			*outSizeBegin = particleEmitter->GetProperties().SizeBegin;
 		}
 
-		void ParticleEmitterComponent_SetSizeBegin(UUID entityUUID, Math::vec2* sizeBegin)
+		void ParticleEmitterComponent_SetSizeBegin(UUID actorUUID, Math::vec2* sizeBegin)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeBegin without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeBegin with an invalid asset handle!");
@@ -3270,17 +3291,17 @@ namespace Vortex {
 			particleEmitter->GetProperties().SizeBegin = *sizeBegin;
 		}
 
-		void ParticleEmitterComponent_GetSizeEnd(UUID entityUUID, Math::vec2* outSizeEnd)
+		void ParticleEmitterComponent_GetSizeEnd(UUID actorUUID, Math::vec2* outSizeEnd)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeEnd without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeEnd with an invalid asset handle!");
@@ -3294,17 +3315,17 @@ namespace Vortex {
 			*outSizeEnd = particleEmitter->GetProperties().SizeEnd;
 		}
 
-		void ParticleEmitterComponent_SetSizeEnd(UUID entityUUID, Math::vec2* sizeEnd)
+		void ParticleEmitterComponent_SetSizeEnd(UUID actorUUID, Math::vec2* sizeEnd)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeEnd without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeEnd with an invalid asset handle!");
@@ -3318,17 +3339,17 @@ namespace Vortex {
 			particleEmitter->GetProperties().SizeEnd = *sizeEnd;
 		}
 
-		void ParticleEmitterComponent_GetSizeVariation(UUID entityUUID, Math::vec2* outSizeVariation)
+		void ParticleEmitterComponent_GetSizeVariation(UUID actorUUID, Math::vec2* outSizeVariation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeVariation without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeVariation with an invalid asset handle!");
@@ -3342,17 +3363,17 @@ namespace Vortex {
 			*outSizeVariation = particleEmitter->GetProperties().SizeVariation;
 		}
 
-		void ParticleEmitterComponent_SetSizeVariation(UUID entityUUID, Math::vec2* sizeVariation)
+		void ParticleEmitterComponent_SetSizeVariation(UUID actorUUID, Math::vec2* sizeVariation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeVariation without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeVariation with an invalid asset handle!");
@@ -3366,17 +3387,17 @@ namespace Vortex {
 			particleEmitter->GetProperties().SizeVariation = *sizeVariation;
 		}
 
-		void ParticleEmitterComponent_GetColorBegin(UUID entityUUID, Math::vec4* outColorBegin)
+		void ParticleEmitterComponent_GetColorBegin(UUID actorUUID, Math::vec4* outColorBegin)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.ColorBegin without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.ColorBegin with an invalid asset handle!");
@@ -3390,17 +3411,17 @@ namespace Vortex {
 			*outColorBegin = particleEmitter->GetProperties().ColorBegin;
 		}
 
-		void ParticleEmitterComponent_SetColorBegin(UUID entityUUID, Math::vec4* colorBegin)
+		void ParticleEmitterComponent_SetColorBegin(UUID actorUUID, Math::vec4* colorBegin)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.ColorBegin without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.ColorBegin with an invalid asset handle!");
@@ -3414,17 +3435,17 @@ namespace Vortex {
 			particleEmitter->GetProperties().ColorBegin = *colorBegin;
 		}
 
-		void ParticleEmitterComponent_GetColorEnd(UUID entityUUID, Math::vec4* outColorEnd)
+		void ParticleEmitterComponent_GetColorEnd(UUID actorUUID, Math::vec4* outColorEnd)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.ColorEnd without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.ColorEnd with an invalid asset handle!");
@@ -3438,17 +3459,17 @@ namespace Vortex {
 			*outColorEnd = particleEmitter->GetProperties().ColorEnd;
 		}
 
-		void ParticleEmitterComponent_SetColorEnd(UUID entityUUID, Math::vec4* colorEnd)
+		void ParticleEmitterComponent_SetColorEnd(UUID actorUUID, Math::vec4* colorEnd)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.ColorEnd without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.ColorEnd with an invalid asset handle!");
@@ -3462,17 +3483,17 @@ namespace Vortex {
 			particleEmitter->GetProperties().ColorEnd = *colorEnd;
 		}
 
-		void ParticleEmitterComponent_GetRotation(UUID entityUUID, float* outRotation)
+		void ParticleEmitterComponent_GetRotation(UUID actorUUID, float* outRotation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Rotation without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Rotation with an invalid asset handle!");
@@ -3486,17 +3507,17 @@ namespace Vortex {
 			*outRotation = particleEmitter->GetProperties().Rotation;
 		}
 
-		void ParticleEmitterComponent_SetRotation(UUID entityUUID, float colorEnd)
+		void ParticleEmitterComponent_SetRotation(UUID actorUUID, float colorEnd)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Rotation without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Rotation with an invalid asset handle!");
@@ -3510,17 +3531,17 @@ namespace Vortex {
 			particleEmitter->GetProperties().Rotation = colorEnd;
 		}
 
-		void ParticleEmitterComponent_GetLifeTime(UUID entityUUID, float* outLifeTime)
+		void ParticleEmitterComponent_GetLifeTime(UUID actorUUID, float* outLifeTime)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.LifeTime without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.LifeTime with an invalid asset handle!");
@@ -3534,17 +3555,17 @@ namespace Vortex {
 			*outLifeTime = particleEmitter->GetProperties().LifeTime;
 		}
 
-		void ParticleEmitterComponent_SetLifeTime(UUID entityUUID, float lifetime)
+		void ParticleEmitterComponent_SetLifeTime(UUID actorUUID, float lifetime)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.LifeTime without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.LifeTime with an invalid asset handle!");
@@ -3558,17 +3579,17 @@ namespace Vortex {
 			particleEmitter->GetProperties().LifeTime = lifetime;
 		}
 
-		void ParticleEmitterComponent_Start(UUID entityUUID)
+		void ParticleEmitterComponent_Start(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling ParticleEmitter.Start without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling ParticleEmitter.Start with an invalid asset handle!");
@@ -3582,17 +3603,17 @@ namespace Vortex {
 			particleEmitter->Start();
 		}
 
-		void ParticleEmitterComponent_Stop(UUID entityUUID)
+		void ParticleEmitterComponent_Stop(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<ParticleEmitterComponent>())
+			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling ParticleEmitter.Stop without a Particle Emitter!");
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling ParticleEmitter.Stop with an invalid asset handle!");
@@ -3610,17 +3631,17 @@ namespace Vortex {
 
 #pragma region AudioSource Component
 
-		void AudioSourceComponent_GetPosition(UUID entityUUID, Math::vec3* outPosition)
+		void AudioSourceComponent_GetPosition(UUID actorUUID, Math::vec3* outPosition)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Position without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Position with an invalid asset handle!");
@@ -3634,17 +3655,17 @@ namespace Vortex {
 			*outPosition = Utils::FromWaveVector(audioSource->GetPlaybackDevice().GetSound().GetPosition());
 		}
 
-		void AudioSourceComponent_SetPosition(UUID entityUUID, Math::vec3* position)
+		void AudioSourceComponent_SetPosition(UUID actorUUID, Math::vec3* position)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Position without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Position with an invalid asset handle!");
@@ -3658,17 +3679,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetPosition(Utils::ToWaveVector(*position));
 		}
 
-		void AudioSourceComponent_GetDirection(UUID entityUUID, Math::vec3* outDirection)
+		void AudioSourceComponent_GetDirection(UUID actorUUID, Math::vec3* outDirection)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Direction without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Direction with an invalid asset handle!");
@@ -3682,17 +3703,17 @@ namespace Vortex {
 			*outDirection = Utils::FromWaveVector(audioSource->GetPlaybackDevice().GetSound().GetDirection());
 		}
 
-		void AudioSourceComponent_SetDirection(UUID entityUUID, Math::vec3* direction)
+		void AudioSourceComponent_SetDirection(UUID actorUUID, Math::vec3* direction)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Direction without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Direction with an invalid asset handle!");
@@ -3706,17 +3727,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetDirection(Utils::ToWaveVector(*direction));
 		}
 
-		void AudioSourceComponent_GetVelocity(UUID entityUUID, Math::vec3* outVelocity)
+		void AudioSourceComponent_GetVelocity(UUID actorUUID, Math::vec3* outVelocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Velocity without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Velocity with an invalid asset handle!");
@@ -3730,17 +3751,17 @@ namespace Vortex {
 			*outVelocity = Utils::FromWaveVector(audioSource->GetPlaybackDevice().GetSound().GetVelocity());
 		}
 
-		void AudioSourceComponent_SetVelocity(UUID entityUUID, Math::vec3* velocity)
+		void AudioSourceComponent_SetVelocity(UUID actorUUID, Math::vec3* velocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Velocity without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Velocity with an invalid asset handle!");
@@ -3754,17 +3775,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetVelocity(Utils::ToWaveVector(*velocity));
 		}
 
-        float AudioSourceComponent_GetMinGain(UUID entityUUID)
+        float AudioSourceComponent_GetMinGain(UUID actorUUID)
         {
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MinGain without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MinGain with an invalid asset handle!");
@@ -3778,17 +3799,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetMinGain();
         }
 
-        void AudioSourceComponent_SetMinGain(UUID entityUUID, float minGain)
+        void AudioSourceComponent_SetMinGain(UUID actorUUID, float minGain)
         {
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MinGain without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MinGain with an invalid asset handle!");
@@ -3802,17 +3823,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetMinGain(minGain);
         }
 
-        float AudioSourceComponent_GetMaxGain(UUID entityUUID)
+        float AudioSourceComponent_GetMaxGain(UUID actorUUID)
         {
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MaxGain without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MaxGain with an invalid asset handle!");
@@ -3826,17 +3847,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetMaxGain();
         }
 
-        void AudioSourceComponent_SetMaxGain(UUID entityUUID, float maxGain)
+        void AudioSourceComponent_SetMaxGain(UUID actorUUID, float maxGain)
         {
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MaxGain without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MaxGain with an invalid asset handle!");
@@ -3850,17 +3871,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetMaxGain(maxGain);
         }
 
-		float AudioSourceComponent_GetDirectionalAttenuationFactor(UUID entityUUID)
+		float AudioSourceComponent_GetDirectionalAttenuationFactor(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.DirectionalAttenuationFactor without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.DirectionalAttenuationFactor with an invalid asset handle!");
@@ -3874,17 +3895,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetDirectionalAttenuationFactor();
 		}
 
-		void AudioSourceComponent_SetDirectionalAttenuationFactor(UUID entityUUID, float factor)
+		void AudioSourceComponent_SetDirectionalAttenuationFactor(UUID actorUUID, float factor)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.DirectionalAttenuationFactor without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.DirectionalAttenuationFactor with an invalid asset handle!");
@@ -3898,17 +3919,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetDirectionalAttenuationFactor(factor);
 		}
 
-        AttenuationModel AudioSourceComponent_GetAttenuationModel(UUID entityUUID)
+        AttenuationModel AudioSourceComponent_GetAttenuationModel(UUID actorUUID)
         {
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.AttenuationModel without a Audio Source!");
 				return AttenuationModel::None;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.AttenuationModel with an invalid asset handle!");
@@ -3922,17 +3943,17 @@ namespace Vortex {
 			return Utils::FromWaveAttenuationModel(audioSource->GetPlaybackDevice().GetSound().GetAttenuationModel());
 		}
 
-		void AudioSourceComponent_SetAttenuationModel(UUID entityUUID, AttenuationModel model)
+		void AudioSourceComponent_SetAttenuationModel(UUID actorUUID, AttenuationModel model)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.AttenuationModel without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.AttenuationModel with an invalid asset handle!");
@@ -3946,17 +3967,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetAttenuationModel(Utils::ToWaveAttenuationModel(model));
         }
 
-		float AudioSourceComponent_GetPan(UUID entityUUID)
+		float AudioSourceComponent_GetPan(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Pan without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Pan with an invalid asset handle!");
@@ -3970,17 +3991,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetPan();
 		}
 
-		void AudioSourceComponent_SetPan(UUID entityUUID, float pan)
+		void AudioSourceComponent_SetPan(UUID actorUUID, float pan)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Pan without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Pan with an invalid asset handle!");
@@ -3994,17 +4015,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetPan(pan);
 		}
 
-		PanMode AudioSourceComponent_GetPanMode(UUID entityUUID)
+		PanMode AudioSourceComponent_GetPanMode(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PanModel without a Audio Source!");
 				return PanMode::Balance;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PanModel with an invalid asset handle!");
@@ -4018,17 +4039,17 @@ namespace Vortex {
 			return Utils::FromWavePanMode(audioSource->GetPlaybackDevice().GetSound().GetPanMode());
 		}
 
-		void AudioSourceComponent_SetPanMode(UUID entityUUID, PanMode mode)
+		void AudioSourceComponent_SetPanMode(UUID actorUUID, PanMode mode)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PanModel without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PanModel with an invalid asset handle!");
@@ -4042,17 +4063,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetPanMode(Utils::ToWavePanMode(mode));
 		}
 
-		PositioningMode AudioSourceComponent_GetPositioningMode(UUID entityUUID)
+		PositioningMode AudioSourceComponent_GetPositioningMode(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PositioningModel without a Audio Source!");
 				return PositioningMode::Absolute;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PositioningModel with an invalid asset handle!");
@@ -4066,17 +4087,17 @@ namespace Vortex {
 			return Utils::FromWavePositioningMode(audioSource->GetPlaybackDevice().GetSound().GetPositioning());
 		}
 
-		void AudioSourceComponent_SetPositioningMode(UUID entityUUID, PositioningMode mode)
+		void AudioSourceComponent_SetPositioningMode(UUID actorUUID, PositioningMode mode)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PositioningModel without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PositioningModel with an invalid asset handle!");
@@ -4090,17 +4111,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetPositioning(Utils::ToWavePositioningMode(mode));
 		}
 
-        float AudioSourceComponent_GetFalloff(UUID entityUUID)
+        float AudioSourceComponent_GetFalloff(UUID actorUUID)
         {
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Falloff without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Falloff with an invalid asset handle!");
@@ -4114,17 +4135,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetFalloff();
 		}
 
-		void AudioSourceComponent_SetFalloff(UUID entityUUID, float falloff)
+		void AudioSourceComponent_SetFalloff(UUID actorUUID, float falloff)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Falloff without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Falloff with an invalid asset handle!");
@@ -4138,17 +4159,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetFalloff(falloff);
         }
 
-		float AudioSourceComponent_GetMinDistance(UUID entityUUID)
+		float AudioSourceComponent_GetMinDistance(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MinDistance without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MinDistance with an invalid asset handle!");
@@ -4162,17 +4183,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetMinDistance();
 		}
 
-		void AudioSourceComponent_SetMinDistance(UUID entityUUID, float minDistance)
+		void AudioSourceComponent_SetMinDistance(UUID actorUUID, float minDistance)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MinDistance without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MinDistance with an invalid asset handle!");
@@ -4186,17 +4207,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetMinDistance(minDistance);
 		}
 
-		float AudioSourceComponent_GetMaxDistance(UUID entityUUID)
+		float AudioSourceComponent_GetMaxDistance(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MaxDistance without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MaxDistance with an invalid asset handle!");
@@ -4210,17 +4231,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetMaxDistance();
 		}
 
-		void AudioSourceComponent_SetMaxDistance(UUID entityUUID, float maxDistance)
+		void AudioSourceComponent_SetMaxDistance(UUID actorUUID, float maxDistance)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MaxDistance without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MaxDistance with an invalid asset handle!");
@@ -4234,17 +4255,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetMaxDistance(maxDistance);
 		}
 
-		float AudioSourceComponent_GetPitch(UUID entityUUID)
+		float AudioSourceComponent_GetPitch(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Pitch without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Pitch with an invalid asset handle!");
@@ -4258,17 +4279,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetPitch();
 		}
 
-		void AudioSourceComponent_SetPitch(UUID entityUUID, float pitch)
+		void AudioSourceComponent_SetPitch(UUID actorUUID, float pitch)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Pitch without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Pitch with an invalid asset handle!");
@@ -4282,17 +4303,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetPitch(pitch);
 		}
 
-		float AudioSourceComponent_GetDopplerFactor(UUID entityUUID)
+		float AudioSourceComponent_GetDopplerFactor(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.DopplerFactor without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.DopplerFactor with an invalid asset handle!");
@@ -4306,17 +4327,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetDopplerFactor();
 		}
 
-		void AudioSourceComponent_SetDopplerFactor(UUID entityUUID, float dopplerFactor)
+		void AudioSourceComponent_SetDopplerFactor(UUID actorUUID, float dopplerFactor)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.DopplerFactor without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.DopplerFactor with an invalid asset handle!");
@@ -4330,17 +4351,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetDopplerFactor(dopplerFactor);
 		}
 
-		float AudioSourceComponent_GetVolume(UUID entityUUID)
+		float AudioSourceComponent_GetVolume(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Volume without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Volume with an invalid asset handle!");
@@ -4354,17 +4375,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetVolume();
 		}
 
-		void AudioSourceComponent_SetVolume(UUID entityUUID, float volume)
+		void AudioSourceComponent_SetVolume(UUID actorUUID, float volume)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Volume without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Volume with an invalid asset handle!");
@@ -4378,17 +4399,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetVolume(volume);
 		}
 
-		void AudioSourceComponent_GetDirectionToListener(UUID entityUUID, Math::vec3* outDirection)
+		void AudioSourceComponent_GetDirectionToListener(UUID actorUUID, Math::vec3* outDirection)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.GetDirectionToListener without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.GetDirectionToListener with an invalid asset handle!");
@@ -4402,17 +4423,17 @@ namespace Vortex {
 			*outDirection = Utils::FromWaveVector(audioSource->GetPlaybackDevice().GetSound().GetDirectionToListener());
 		}
 
-		bool AudioSourceComponent_GetPlayOnStart(UUID entityUUID)
+		bool AudioSourceComponent_GetPlayOnStart(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PlayOnStart without a Audio Source!");
 				return false;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PlayOnStart with an invalid asset handle!");
@@ -4428,17 +4449,17 @@ namespace Vortex {
 			return false;
 		}
 
-		void AudioSourceComponent_SetPlayOnStart(UUID entityUUID, bool playOnStart)
+		void AudioSourceComponent_SetPlayOnStart(UUID actorUUID, bool playOnStart)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PlayOnStart without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PlayOnStart with an invalid asset handle!");
@@ -4453,17 +4474,17 @@ namespace Vortex {
 			// audioSource->SetPlayOnStart(playOnStart);
 		}
 
-		bool AudioSourceComponent_GetIsSpacialized(UUID entityUUID)
+		bool AudioSourceComponent_GetIsSpacialized(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsSpacialized without a Audio Source!");
 				return false;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsSpacialized with an invalid asset handle!");
@@ -4477,17 +4498,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().IsSpacialized();
 		}
 
-		void AudioSourceComponent_SetIsSpacialized(UUID entityUUID, bool spacialized)
+		void AudioSourceComponent_SetIsSpacialized(UUID actorUUID, bool spacialized)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.IsSpacialized without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.IsSpacialized with an invalid asset handle!");
@@ -4501,17 +4522,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetSpacialized(spacialized);
 		}
 
-		bool AudioSourceComponent_GetIsLooping(UUID entityUUID)
+		bool AudioSourceComponent_GetIsLooping(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsLooping without a Audio Source!");
 				return false;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsLooping with an invalid asset handle!");
@@ -4525,17 +4546,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().IsLooping();
 		}
 
-		void AudioSourceComponent_SetIsLooping(UUID entityUUID, bool loop)
+		void AudioSourceComponent_SetIsLooping(UUID actorUUID, bool loop)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.IsLooping without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.IsLooping with an invalid asset handle!");
@@ -4549,17 +4570,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetLooping(loop);
 		}
 
-		bool AudioSourceComponent_GetIsPlaying(UUID entityUUID)
+		bool AudioSourceComponent_GetIsPlaying(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPlaying without a Audio Source!");
 				return false;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPlaying with an invalid asset handle!");
@@ -4573,17 +4594,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().IsPlaying();
 		}
 
-		bool AudioSourceComponent_GetIsPaused(UUID entityUUID)
+		bool AudioSourceComponent_GetIsPaused(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPaused without a Audio Source!");
 				return false;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPaused with an invalid asset handle!");
@@ -4597,17 +4618,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().IsPaused();
 		}
 
-		uint64_t AudioSourceComponent_GetCursorInMilliseconds(UUID entityUUID)
+		uint64_t AudioSourceComponent_GetCursorInMilliseconds(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Cursor without a Audio Source!");
 				return 0;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Cursor with an invalid asset handle!");
@@ -4622,17 +4643,17 @@ namespace Vortex {
 			return (uint64_t)(seconds * 1000);
 		}
 
-		uint32_t AudioSourceComponent_GetPinnedListenerIndex(UUID entityUUID)
+		uint32_t AudioSourceComponent_GetPinnedListenerIndex(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PinnedListenerIndex without a Audio Source!");
 				return 0;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PinnedListenerIndex with an invalid asset handle!");
@@ -4646,17 +4667,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetPinnedListenerIndex();
 		}
 
-		void AudioSourceComponent_SetPinnedListenerIndex(UUID entityUUID, uint32_t listenerIndex)
+		void AudioSourceComponent_SetPinnedListenerIndex(UUID actorUUID, uint32_t listenerIndex)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PinnedListenerIndex without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PinnedListenerIndex with an invalid asset handle!");
@@ -4670,17 +4691,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetPinnedListenerIndex(listenerIndex);
 		}
 
-		void AudioSourceComponent_Play(UUID entityUUID)
+		void AudioSourceComponent_Play(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Play without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Play with an invalid asset handle!");
@@ -4694,17 +4715,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().Play();
 		}
 
-		void AudioSourceComponent_SetStartTimeInMilliseconds(UUID entityUUID, uint64_t millis)
+		void AudioSourceComponent_SetStartTimeInMilliseconds(UUID actorUUID, uint64_t millis)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStartTimeInMilliseconds without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStartTimeInMilliseconds with an invalid asset handle!");
@@ -4718,17 +4739,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetStartTimeInMilliseconds(millis);
 		}
 
-		void AudioSourceComponent_SetStartTimeInPCMFrames(UUID entityUUID, uint64_t frames)
+		void AudioSourceComponent_SetStartTimeInPCMFrames(UUID actorUUID, uint64_t frames)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStartTimeInPCMFrames without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStartTimeInPCMFrames with an invalid asset handle!");
@@ -4742,17 +4763,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetStartTimeInPCMFrames(frames);
 		}
 
-		void AudioSourceComponent_SetFadeInMilliseconds(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInMillis)
+		void AudioSourceComponent_SetFadeInMilliseconds(UUID actorUUID, float volumeStart, float volumeEnd, uint64_t lengthInMillis)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInMilliseconds without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInMilliseconds with an invalid asset handle!");
@@ -4766,17 +4787,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetFadeInMilliseconds(volumeStart, volumeEnd, lengthInMillis);
 		}
 
-		void AudioSourceComponent_SetFadeStartInMilliseconds(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInMillis, uint64_t absoluteGlobalTime)
+		void AudioSourceComponent_SetFadeStartInMilliseconds(UUID actorUUID, float volumeStart, float volumeEnd, uint64_t lengthInMillis, uint64_t absoluteGlobalTime)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeStartInMilliseconds without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeStartInMilliseconds with an invalid asset handle!");
@@ -4790,17 +4811,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetFadeStartInMilliseconds(volumeStart, volumeEnd, lengthInMillis, absoluteGlobalTime);
 		}
 
-		void AudioSourceComponent_SetFadeInPCMFrames(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInFrames)
+		void AudioSourceComponent_SetFadeInPCMFrames(UUID actorUUID, float volumeStart, float volumeEnd, uint64_t lengthInFrames)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInPCMFrames without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInPCMFrames with an invalid asset handle!");
@@ -4814,17 +4835,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetFadeInPCMFrames(volumeStart, volumeEnd, lengthInFrames);
 		}
 
-		void AudioSourceComponent_SetFadeStartInPCMFrames(UUID entityUUID, float volumeStart, float volumeEnd, uint64_t lengthInFrames, uint64_t absoluteGlobalTime)
+		void AudioSourceComponent_SetFadeStartInPCMFrames(UUID actorUUID, float volumeStart, float volumeEnd, uint64_t lengthInFrames, uint64_t absoluteGlobalTime)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInPCMFrames without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInPCMFrames with an invalid asset handle!");
@@ -4838,17 +4859,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetFadeStartInPCMFrames(volumeStart, volumeEnd, lengthInFrames, absoluteGlobalTime);
 		}
 
-		float AudioSourceComponent_GetCurrentFadeVolume(UUID entityUUID)
+		float AudioSourceComponent_GetCurrentFadeVolume(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.GetCurrentFadeVolume without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.GetCurrentFadeVolume with an invalid asset handle!");
@@ -4862,17 +4883,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().GetCurrentFadeVolume();
 		}
 
-		void AudioSourceComponent_PlayOneShot(UUID entityUUID)
+		void AudioSourceComponent_PlayOneShot(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.PlayOneShot without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.PlayOneShot with an invalid asset handle!");
@@ -4887,17 +4908,17 @@ namespace Vortex {
 			//audioSource->PlayOneShot();
 		}
 
-		void AudioSourceComponent_Pause(UUID entityUUID)
+		void AudioSourceComponent_Pause(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Pause without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Pause with an invalid asset handle!");
@@ -4911,17 +4932,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().Pause();
 		}
 
-		void AudioSourceComponent_Restart(UUID entityUUID)
+		void AudioSourceComponent_Restart(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Restart without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Restart with an invalid asset handle!");
@@ -4935,17 +4956,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().Restart();
 		}
 
-		void AudioSourceComponent_Stop(UUID entityUUID)
+		void AudioSourceComponent_Stop(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Stop without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Stop with an invalid asset handle!");
@@ -4959,17 +4980,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().Stop();
 		}
 
-		void AudioSourceComponent_SetStopTimeInMilliseconds(UUID entityUUID, uint64_t millis)
+		void AudioSourceComponent_SetStopTimeInMilliseconds(UUID actorUUID, uint64_t millis)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeInMilliseconds without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeInMilliseconds with an invalid asset handle!");
@@ -4983,17 +5004,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetStopTimeInMilliseconds(millis);
 		}
 
-		void AudioSourceComponent_SetStopTimeInPCMFrames(UUID entityUUID, uint64_t frames)
+		void AudioSourceComponent_SetStopTimeInPCMFrames(UUID actorUUID, uint64_t frames)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeInPCMFrames without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeInPCMFrames with an invalid asset handle!");
@@ -5007,17 +5028,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetStopTimeInPCMFrames(frames);
 		}
 
-		void AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(UUID entityUUID, uint64_t stopTimeInMillis, uint64_t fadeLengthInMillis)
+		void AudioSourceComponent_SetStopTimeWithFadeInMilliseconds(UUID actorUUID, uint64_t stopTimeInMillis, uint64_t fadeLengthInMillis)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeWithFadeInMilliseconds without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeWithFadeInMilliseconds with an invalid asset handle!");
@@ -5031,17 +5052,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetStopTimeWithFadeInMilliseconds(stopTimeInMillis, fadeLengthInMillis);
 		}
 
-		void AudioSourceComponent_SetStopTimeWithFadeInPCMFrames(UUID entityUUID, uint64_t stopTimeInFrames, uint64_t fadeLengthInFrames)
+		void AudioSourceComponent_SetStopTimeWithFadeInPCMFrames(UUID actorUUID, uint64_t stopTimeInFrames, uint64_t fadeLengthInFrames)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeWithFadeInPCMFrames without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeWithFadeInPCMFrames with an invalid asset handle!");
@@ -5055,17 +5076,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetStopTimeWithFadeInPCMFrames(stopTimeInFrames, fadeLengthInFrames);
 		}
 
-		bool AudioSourceComponent_SeekToPCMFrame(UUID entityUUID, uint64_t frameIndex)
+		bool AudioSourceComponent_SeekToPCMFrame(UUID actorUUID, uint64_t frameIndex)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Seek without a Audio Source!");
 				return false;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Seek with an invalid asset handle!");
@@ -5083,17 +5104,17 @@ namespace Vortex {
 
 #pragma region Audio Clip
 
-		MonoString* AudioClip_GetName(UUID entityUUID)
+		MonoString* AudioClip_GetName(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioClip.Name without a Audio Source!");
 				return mono_string_new(mono_domain_get(), "");
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioClip.Name with an invalid asset handle!");
@@ -5110,17 +5131,17 @@ namespace Vortex {
 			return mono_string_new(mono_domain_get(), clipName.c_str());*/
 		}
 
-		float AudioClip_GetLength(UUID entityUUID)
+		float AudioClip_GetLength(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioClip.Length without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioClip.Length with an invalid asset handle!");
@@ -5138,17 +5159,17 @@ namespace Vortex {
 
 #pragma region Audio Cone
 
-		float AudioCone_GetInnerAngle(UUID entityUUID)
+		float AudioCone_GetInnerAngle(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.InnerAngle without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.InnerAngle with an invalid asset handle!");
@@ -5162,17 +5183,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetAudioCone().InnerAngle;
 		}
 
-		void AudioCone_SetInnerAngle(UUID entityUUID, float innerAngle)
+		void AudioCone_SetInnerAngle(UUID actorUUID, float innerAngle)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.InnerAngle without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.InnerAngle with an invalid asset handle!");
@@ -5188,17 +5209,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetAudioCone(cone);
 		}
 
-		float AudioCone_GetOuterAngle(UUID entityUUID)
+		float AudioCone_GetOuterAngle(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterAngle without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterAngle with an invalid asset handle!");
@@ -5212,17 +5233,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetAudioCone().OuterAngle;
 		}
 
-		void AudioCone_SetOuterAngle(UUID entityUUID, float outerAngle)
+		void AudioCone_SetOuterAngle(UUID actorUUID, float outerAngle)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterAngle without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterAngle with an invalid asset handle!");
@@ -5238,17 +5259,17 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetAudioCone(cone);
 		}
 
-		float AudioCone_GetOuterGain(UUID entityUUID)
+		float AudioCone_GetOuterGain(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterGain without a Audio Source!");
 				return 0.0f;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterGain with an invalid asset handle!");
@@ -5262,17 +5283,17 @@ namespace Vortex {
 			return audioSource->GetPlaybackDevice().GetSound().GetAudioCone().OuterGain;
 		}
 
-		void AudioCone_SetOuterGain(UUID entityUUID, float outerGain)
+		void AudioCone_SetOuterGain(UUID actorUUID, float outerGain)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<AudioSourceComponent>())
+			if (!actor.HasComponent<AudioSourceComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterGain without a Audio Source!");
 				return;
 			}
 
-			const AudioSourceComponent& asc = entity.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterGain with an invalid asset handle!");
@@ -5292,32 +5313,32 @@ namespace Vortex {
 
 #pragma region RigidBody Component
 
-		RigidBodyType RigidBodyComponent_GetBodyType(UUID entityUUID)
+		RigidBodyType RigidBodyComponent_GetBodyType(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody.BodyType without a RigidBody!");
 				return RigidBodyType::Static;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			return rigidbody.Type;
 		}
 
-		void RigidBodyComponent_SetBodyType(UUID entityUUID, RigidBodyType bodyType)
+		void RigidBodyComponent_SetBodyType(UUID actorUUID, RigidBodyType bodyType)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.BodyType without a RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			const bool consistentBodyType = bodyType == rigidbody.Type;
 
@@ -5325,20 +5346,20 @@ namespace Vortex {
 				return;
 
 			rigidbody.Type = bodyType;
-			Physics::ReCreateActor(entity);
+			Physics::ReCreateActor(actor);
 		}
 
-		CollisionDetectionType RigidBodyComponent_GetCollisionDetectionType(UUID entityUUID)
+		CollisionDetectionType RigidBodyComponent_GetCollisionDetectionType(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody.CollisionDetection without a RigidBody!");
 				return CollisionDetectionType::Discrete;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5349,17 +5370,17 @@ namespace Vortex {
 			return rigidbody.CollisionDetection;
 		}
 
-		void RigidBodyComponent_SetCollisionDetectionType(UUID entityUUID, CollisionDetectionType collisionDetectionType)
+		void RigidBodyComponent_SetCollisionDetectionType(UUID actorUUID, CollisionDetectionType collisionDetectionType)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.CollisionDetection without a RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5370,17 +5391,17 @@ namespace Vortex {
 			rigidbody.CollisionDetection = collisionDetectionType;
 		}
 
-		float RigidBodyComponent_GetMass(UUID entityUUID)
+		float RigidBodyComponent_GetMass(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return 0.0f;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5391,17 +5412,17 @@ namespace Vortex {
 			return rigidbody.Mass;
 		}
 
-		void RigidBodyComponent_SetMass(UUID entityUUID, float mass)
+		void RigidBodyComponent_SetMass(UUID actorUUID, float mass)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5412,17 +5433,17 @@ namespace Vortex {
 			rigidbody.Mass = mass;
 		}
 
-		void RigidBodyComponent_GetLinearVelocity(UUID entityUUID, Math::vec3* outVelocity)
+		void RigidBodyComponent_GetLinearVelocity(UUID actorUUID, Math::vec3* outVelocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5433,17 +5454,17 @@ namespace Vortex {
 			*outVelocity = rigidbody.LinearVelocity;
 		}
 
-		void RigidBodyComponent_SetLinearVelocity(UUID entityUUID, Math::vec3* velocity)
+		void RigidBodyComponent_SetLinearVelocity(UUID actorUUID, Math::vec3* velocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5454,17 +5475,17 @@ namespace Vortex {
 			rigidbody.LinearVelocity = *velocity;
 		}
 
-		float RigidBodyComponent_GetMaxLinearVelocity(UUID entityUUID)
+		float RigidBodyComponent_GetMaxLinearVelocity(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return 0.0f;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5475,17 +5496,17 @@ namespace Vortex {
 			return rigidbody.MaxLinearVelocity;
 		}
 
-		void RigidBodyComponent_SetMaxLinearVelocity(UUID entityUUID, float maxLinearVelocity)
+		void RigidBodyComponent_SetMaxLinearVelocity(UUID actorUUID, float maxLinearVelocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5496,17 +5517,17 @@ namespace Vortex {
 			rigidbody.MaxLinearVelocity = maxLinearVelocity;
 		}
 
-		float RigidBodyComponent_GetLinearDrag(UUID entityUUID)
+		float RigidBodyComponent_GetLinearDrag(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return 0.0f;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5517,17 +5538,17 @@ namespace Vortex {
 			return rigidbody.LinearDrag;
 		}
 
-		void RigidBodyComponent_SetLinearDrag(UUID entityUUID, float drag)
+		void RigidBodyComponent_SetLinearDrag(UUID actorUUID, float drag)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5538,17 +5559,17 @@ namespace Vortex {
 			rigidbody.LinearDrag = drag;
 		}
 
-		void RigidBodyComponent_GetAngularVelocity(UUID entityUUID, Math::vec3* outVelocity)
+		void RigidBodyComponent_GetAngularVelocity(UUID actorUUID, Math::vec3* outVelocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5559,17 +5580,17 @@ namespace Vortex {
 			*outVelocity = rigidbody.AngularVelocity;
 		}
 
-		void RigidBodyComponent_SetAngularVelocity(UUID entityUUID, Math::vec3* velocity)
+		void RigidBodyComponent_SetAngularVelocity(UUID actorUUID, Math::vec3* velocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5580,17 +5601,17 @@ namespace Vortex {
 			rigidbody.AngularVelocity = *velocity;
 		}
 
-		float RigidBodyComponent_GetMaxAngularVelocity(UUID entityUUID)
+		float RigidBodyComponent_GetMaxAngularVelocity(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return 0.0f;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5601,17 +5622,17 @@ namespace Vortex {
 			return rigidbody.MaxAngularVelocity;
 		}
 
-		void RigidBodyComponent_SetMaxAngularVelocity(UUID entityUUID, float maxAngularVelocity)
+		void RigidBodyComponent_SetMaxAngularVelocity(UUID actorUUID, float maxAngularVelocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5622,17 +5643,17 @@ namespace Vortex {
 			rigidbody.MaxAngularVelocity = maxAngularVelocity;
 		}
 
-		float RigidBodyComponent_GetAngularDrag(UUID entityUUID)
+		float RigidBodyComponent_GetAngularDrag(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return 0.0f;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5643,17 +5664,17 @@ namespace Vortex {
 			return rigidbody.AngularDrag;
 		}
 
-		void RigidBodyComponent_SetAngularDrag(UUID entityUUID, float drag)
+		void RigidBodyComponent_SetAngularDrag(UUID actorUUID, float drag)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5664,17 +5685,17 @@ namespace Vortex {
 			rigidbody.AngularDrag = drag;
 		}
 
-		bool RigidBodyComponent_GetDisableGravity(UUID entityUUID)
+		bool RigidBodyComponent_GetDisableGravity(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return false;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5685,17 +5706,17 @@ namespace Vortex {
 			return rigidbody.DisableGravity;
 		}
 
-		void RigidBodyComponent_SetDisableGravity(UUID entityUUID, bool disabled)
+		void RigidBodyComponent_SetDisableGravity(UUID actorUUID, bool disabled)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5706,17 +5727,17 @@ namespace Vortex {
 			rigidbody.DisableGravity = disabled;
 		}
 
-		bool RigidBodyComponent_GetIsKinematic(UUID entityUUID)
+		bool RigidBodyComponent_GetIsKinematic(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return false;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic)
 			{
@@ -5724,20 +5745,20 @@ namespace Vortex {
 				return false;
 			}
 
-			return entity.GetComponent<RigidBodyComponent>().IsKinematic;
+			return actor.GetComponent<RigidBodyComponent>().IsKinematic;
 		}
 
-		void RigidBodyComponent_SetIsKinematic(UUID entityUUID, bool isKinematic)
+		void RigidBodyComponent_SetIsKinematic(UUID actorUUID, bool isKinematic)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic)
 			{
@@ -5748,17 +5769,17 @@ namespace Vortex {
 			rigidbody.IsKinematic = isKinematic;
 		}
 
-		void RigidBodyComponent_GetKinematicTargetTranslation(UUID entityUUID, Math::vec3* outTranslation)
+		void RigidBodyComponent_GetKinematicTargetTranslation(UUID actorUUID, Math::vec3* outTranslation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody.KinematicTarget without a Kinematic RigidBody!");
 				return;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (!rigidbody.IsKinematic)
 			{
@@ -5766,10 +5787,10 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
 			physx::PxTransform target;
 
-			if (actor->getKinematicTarget(target))
+			if (pxActor->getKinematicTarget(target))
 			{
 				*outTranslation = FromPhysXVector(target.p);
 			}
@@ -5777,17 +5798,17 @@ namespace Vortex {
 			*outTranslation = Math::vec3(0.0f);
 		}
 
-		void RigidBodyComponent_SetKinematicTargetTranslation(UUID entityUUID, Math::vec3* translation)
+		void RigidBodyComponent_SetKinematicTargetTranslation(UUID actorUUID, Math::vec3* translation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget without a Kinematic RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (!rigidbody.IsKinematic)
 			{
@@ -5795,31 +5816,31 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
 			physx::PxTransform targetTransform;
 			targetTransform.p = ToPhysXVector(*translation);
 
 			physx::PxTransform t;
 
-			if (actor->getKinematicTarget(t))
+			if (pxActor->getKinematicTarget(t))
 			{
 				targetTransform.q = t.q;
 			}
 
-			actor->setKinematicTarget(targetTransform);
+			pxActor->setKinematicTarget(targetTransform);
 		}
 
-		void RigidBodyComponent_GetKinematicTargetRotation(UUID entityUUID, Math::quaternion* outRotation)
+		void RigidBodyComponent_GetKinematicTargetRotation(UUID actorUUID, Math::quaternion* outRotation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody.KinematicTarget without a Kinematic RigidBody!");
 				return;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (!rigidbody.IsKinematic)
 			{
@@ -5827,10 +5848,10 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
 			physx::PxTransform target;
 
-			if (actor->getKinematicTarget(target))
+			if (pxActor->getKinematicTarget(target))
 			{
 				*outRotation = FromPhysXQuat(target.q);
 			}
@@ -5838,17 +5859,17 @@ namespace Vortex {
 			*outRotation = Math::quaternion(1, 0, 0, 0);
 		}
 
-		void RigidBodyComponent_SetKinematicTargetRotation(UUID entityUUID, Math::quaternion* rotation)
+		void RigidBodyComponent_SetKinematicTargetRotation(UUID actorUUID, Math::quaternion* rotation)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget without a Kinematic RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (!rigidbody.IsKinematic)
 			{
@@ -5856,31 +5877,31 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
 			physx::PxTransform targetTransform;
 			targetTransform.q = ToPhysXQuat(*rotation);
 
 			physx::PxTransform t;
 
-			if (actor->getKinematicTarget(t))
+			if (pxActor->getKinematicTarget(t))
 			{
 				targetTransform.p = t.p;
 			}
 
-			actor->setKinematicTarget(targetTransform);
+			pxActor->setKinematicTarget(targetTransform);
 		}
 
-		uint32_t RigidBodyComponent_GetLockFlags(UUID entityUUID)
+		uint32_t RigidBodyComponent_GetLockFlags(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return 0;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5891,17 +5912,17 @@ namespace Vortex {
 			return (uint32_t)rigidbody.LockFlags;
 		}
 
-		void RigidBodyComponent_SetLockFlag(UUID entityUUID, ActorLockFlag flag, bool value, bool forceWake)
+		void RigidBodyComponent_SetLockFlag(UUID actorUUID, ActorLockFlag flag, bool value, bool forceWake)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5918,27 +5939,27 @@ namespace Vortex {
 				rigidbody.LockFlags &= ~(uint8_t)flag;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
 
-			actor->setRigidDynamicLockFlag((physx::PxRigidDynamicLockFlag::Enum)flag, value);
+			pxActor->setRigidDynamicLockFlag((physx::PxRigidDynamicLockFlag::Enum)flag, value);
 
 			if (forceWake)
 			{
-				actor->wakeUp();
+				pxActor->wakeUp();
 			}
 		}
 
-		bool RigidBodyComponent_IsLockFlagSet(UUID entityUUID, ActorLockFlag flag)
+		bool RigidBodyComponent_IsLockFlagSet(UUID actorUUID, ActorLockFlag flag)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return false;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5949,17 +5970,17 @@ namespace Vortex {
 			return rigidbody.LockFlags & (uint8_t)flag;
 		}
 
-		bool RigidBodyComponent_IsSleeping(UUID entityUUID)
+		bool RigidBodyComponent_IsSleeping(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return false;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5967,21 +5988,21 @@ namespace Vortex {
 				return false;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-			return actor->isSleeping();
+			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			return pxActor->isSleeping();
 		}
 
-		void RigidBodyComponent_WakeUp(UUID entityUUID)
+		void RigidBodyComponent_WakeUp(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -5989,21 +6010,21 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-			actor->wakeUp();
+			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			pxActor->wakeUp();
 		}
 
-		void RigidBodyComponent_AddForce(UUID entityUUID, Math::vec3* force, ForceMode mode)
+		void RigidBodyComponent_AddForce(UUID actorUUID, Math::vec3* force, ForceMode mode)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -6011,26 +6032,26 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-			actor->addForce(ToPhysXVector(*force), (physx::PxForceMode::Enum)mode);
+			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			pxActor->addForce(ToPhysXVector(*force), (physx::PxForceMode::Enum)mode);
 		}
 
-		void RigidBodyComponent_AddForceAtPosition(UUID entityUUID, Math::vec3* force, Math::vec3* position, ForceMode mode)
+		void RigidBodyComponent_AddForceAtPosition(UUID actorUUID, Math::vec3* force, Math::vec3* position, ForceMode mode)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity)
+			if (!actor)
 			{
 				return;
 			}
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -6038,21 +6059,21 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-			physx::PxRigidBodyExt::addForceAtPos(*actor, ToPhysXVector(*force), ToPhysXVector(*position), (physx::PxForceMode::Enum)mode);
+			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidBodyExt::addForceAtPos(*pxActor, ToPhysXVector(*force), ToPhysXVector(*position), (physx::PxForceMode::Enum)mode);
 		}
 
-		void RigidBodyComponent_AddTorque(UUID entityUUID, Math::vec3* torque, ForceMode mode)
+		void RigidBodyComponent_AddTorque(UUID actorUUID, Math::vec3* torque, ForceMode mode)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -6060,21 +6081,21 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-			actor->addTorque(ToPhysXVector(*torque), (physx::PxForceMode::Enum)mode);
+			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			pxActor->addTorque(ToPhysXVector(*torque), (physx::PxForceMode::Enum)mode);
 		}
 
-		void RigidBodyComponent_ClearTorque(UUID entityUUID, ForceMode mode)
+		void RigidBodyComponent_ClearTorque(UUID actorUUID, ForceMode mode)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -6082,21 +6103,21 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-			actor->clearTorque((physx::PxForceMode::Enum)mode);
+			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			pxActor->clearTorque((physx::PxForceMode::Enum)mode);
 		}
 
-		void RigidBodyComponent_ClearForce(UUID entityUUID, ForceMode mode)
+		void RigidBodyComponent_ClearForce(UUID actorUUID, ForceMode mode)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBodyComponent>())
+			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Entity doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
 				return;
 			}
 
-			const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
@@ -6104,8 +6125,8 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* actor = Physics::GetActor(entityUUID)->is<physx::PxRigidDynamic>();
-			actor->clearForce((physx::PxForceMode::Enum)mode);
+			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			pxActor->clearForce((physx::PxForceMode::Enum)mode);
 		}
 
 #pragma endregion
@@ -6360,252 +6381,252 @@ namespace Vortex {
 
 #pragma region Character Controller Component
 
-		void CharacterControllerComponent_Move(UUID entityUUID, Math::vec3* displacement)
+		void CharacterControllerComponent_Move(UUID actorUUID, Math::vec3* displacement)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Calling CharacterController.Move without a Character Controller!");
 				return;
 			}
 
-			Physics::OnCharacterControllerUpdateRuntime(entityUUID, *displacement);
+			Physics::OnCharacterControllerUpdateRuntime(actorUUID, *displacement);
 		}
 
-		void CharacterControllerComponent_Jump(UUID entityUUID, float jumpForce)
+		void CharacterControllerComponent_Jump(UUID actorUUID, float jumpForce)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Calling CharacterController.Jump without a Character Controller!");
 				return;
 			}
 
-			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			characterController.SpeedDown = -1.0f * jumpForce;
 		}
 
-		bool CharacterControllerComponent_IsGrounded(UUID entityUUID)
+		bool CharacterControllerComponent_IsGrounded(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.IsGrounded without a Character Controller!");
 				return false;
 			}
 
-			physx::PxController* controller = Physics::GetController(entityUUID);
+			physx::PxController* controller = Physics::GetController(actorUUID);
 			physx::PxControllerState state;
 			controller->getState(state);
 
 			return state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN;
 		}
 
-		void CharacterControllerComponent_GetFootPosition(UUID entityUUID, Math::vec3* outFootPos)
+		void CharacterControllerComponent_GetFootPosition(UUID actorUUID, Math::vec3* outFootPos)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.FootPosition without a Character Controller!");
 				return;
 			}
 
-			physx::PxExtendedVec3 footPosition = Physics::GetController(entityUUID)->getFootPosition();
+			physx::PxExtendedVec3 footPosition = Physics::GetController(actorUUID)->getFootPosition();
 			*outFootPos = FromPhysXExtendedVector(footPosition);
 		}
 
-		float CharacterControllerComponent_GetSpeedDown(UUID entityUUID)
+		float CharacterControllerComponent_GetSpeedDown(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.SpeedDown without a Character Controller!");
 				return 0.0f;
 			}
 
-			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			const CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			return characterController.SpeedDown;
 		}
 
-		float CharacterControllerComponent_GetSlopeLimit(UUID entityUUID)
+		float CharacterControllerComponent_GetSlopeLimit(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.SlopeLimit without a Character Controller!");
 				return 0.0f;
 			}
 
-			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			const CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			return characterController.SlopeLimitDegrees;
 		}
 
-		void CharacterControllerComponent_SetSlopeLimit(UUID entityUUID, float slopeLimit)
+		void CharacterControllerComponent_SetSlopeLimit(UUID actorUUID, float slopeLimit)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.SlopeLimit without a Character Controller!");
 				return;
 			}
 
-			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			characterController.SlopeLimitDegrees = slopeLimit;
 
-			Physics::GetController(entityUUID)->setSlopeLimit(Math::Max(0.0f, cosf(Math::Deg2Rad(slopeLimit))));
+			Physics::GetController(actorUUID)->setSlopeLimit(Math::Max(0.0f, cosf(Math::Deg2Rad(slopeLimit))));
 		}
 
-		float CharacterControllerComponent_GetStepOffset(UUID entityUUID)
+		float CharacterControllerComponent_GetStepOffset(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.StepOffset without a Character Controller!");
 				return 0.0f;
 			}
 
-			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			const CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			return characterController.StepOffset;
 		}
 
-		void CharacterControllerComponent_SetStepOffset(UUID entityUUID, float stepOffset)
+		void CharacterControllerComponent_SetStepOffset(UUID actorUUID, float stepOffset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.StepOffset without a Character Controller!");
 				return;
 			}
 
-			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			characterController.StepOffset = stepOffset;
 
-			Physics::GetController(entityUUID)->setStepOffset(stepOffset);
+			Physics::GetController(actorUUID)->setStepOffset(stepOffset);
 		}
 
-		float CharacterControllerComponent_GetContactOffset(UUID entityUUID)
+		float CharacterControllerComponent_GetContactOffset(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.ContactOffset without a Character Controller!");
 				return 0.0f;
 			}
 
-			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			const CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			return characterController.ContactOffset;
 		}
 
-		void CharacterControllerComponent_SetContactOffset(UUID entityUUID, float contactOffset)
+		void CharacterControllerComponent_SetContactOffset(UUID actorUUID, float contactOffset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.ContactOffset without a Character Controller!");
 				return;
 			}
 
-			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			characterController.ContactOffset = contactOffset;
 
-			Physics::GetController(entityUUID)->setContactOffset(contactOffset);
+			Physics::GetController(actorUUID)->setContactOffset(contactOffset);
 		}
 
-		NonWalkableMode CharacterControllerComponent_GetNonWalkableMode(UUID entityUUID)
+		NonWalkableMode CharacterControllerComponent_GetNonWalkableMode(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.NonWalkMode without a Character Controller!");
 				return NonWalkableMode::PreventClimbing;
 			}
 
-			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			const CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			return characterController.NonWalkMode;
 		}
 
-		void CharacterControllerComponent_SetNonWalkableMode(UUID entityUUID, NonWalkableMode mode)
+		void CharacterControllerComponent_SetNonWalkableMode(UUID actorUUID, NonWalkableMode mode)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.NonWalkMode without a Character Controller!");
 				return;
 			}
 
-			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			characterController.NonWalkMode = mode;
 
-			Physics::GetController(entityUUID)->setNonWalkableMode((physx::PxControllerNonWalkableMode::Enum)mode);
+			Physics::GetController(actorUUID)->setNonWalkableMode((physx::PxControllerNonWalkableMode::Enum)mode);
 		}
 
-		CapsuleClimbMode CharacterControllerComponent_GetClimbMode(UUID entityUUID)
+		CapsuleClimbMode CharacterControllerComponent_GetClimbMode(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.ClimbMode without a Character Controller!");
 				return CapsuleClimbMode::Easy;
 			}
 
-			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			const CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			return characterController.ClimbMode;
 		}
 
-		void CharacterControllerComponent_SetClimbMode(UUID entityUUID, CapsuleClimbMode mode)
+		void CharacterControllerComponent_SetClimbMode(UUID actorUUID, CapsuleClimbMode mode)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.ClimbMode without a Character Controller!");
 				return;
 			}
 
-			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			characterController.ClimbMode = mode;
 			// TODO any way to set capsule climbing mode during runtime?
 		}
 
-		bool CharacterControllerComponent_GetDisableGravity(UUID entityUUID)
+		bool CharacterControllerComponent_GetDisableGravity(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.DisableGravity without a Character Controller!");
 				return false;
 			}
 
-			const CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			const CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			return characterController.DisableGravity;
 		}
 
-		void CharacterControllerComponent_SetDisableGravity(UUID entityUUID, bool disableGravity)
+		void CharacterControllerComponent_SetDisableGravity(UUID actorUUID, bool disableGravity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CharacterControllerComponent>())
+			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.DisableGravity without a Character Controller!");
 				return;
 			}
 
-			CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+			CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 			characterController.DisableGravity = disableGravity;
 		}
 
@@ -6613,261 +6634,261 @@ namespace Vortex {
 
 #pragma region FixedJoint Component
 
-		uint64_t FixedJointComponent_GetConnectedEntity(UUID entityUUID)
+		uint64_t FixedJointComponent_GetConnectedActor(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.ConnectedEntity without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.ConnectedActor without a Fixed Joint!");
 				return 0;
 			}
 
-			const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-			return fixedJointComponent.ConnectedEntity;
+			const FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
+			return fixedJointComponent.ConnectedActor;
 		}
 
-		void FixedJointComponent_SetConnectedEntity(UUID entityUUID, UUID connectedEntityUUID)
+		void FixedJointComponent_SetConnectedActor(UUID actorUUID, UUID connectedActorUUID)
 		{
 			Scene* contextScene = GetContextScene();
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.ConnectedEntity without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.ConnectedActor without a Fixed Joint!");
 				return;
 			}
 
-			if (!contextScene->TryGetEntityWithUUID(connectedEntityUUID))
+			if (!contextScene->TryGetActorWithUUID(connectedActorUUID))
 				return;
 
-			physx::PxRigidActor* actor0 = Physics::GetActor(entityUUID);
-			physx::PxRigidActor* actor1 = Physics::GetActor(connectedEntityUUID);
+			physx::PxRigidActor* actor0 = Physics::GetActor(actorUUID);
+			physx::PxRigidActor* actor1 = Physics::GetActor(connectedActorUUID);
 
 			if (!actor0 || !actor1)
 			{
 				return;
 			}
 
-			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-			fixedJointComponent.ConnectedEntity = connectedEntityUUID;
+			FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
+			fixedJointComponent.ConnectedActor = connectedActorUUID;
 
-			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(actorUUID);
 
 			fixedJoint->setActors(actor0, actor1);
 		}
 
-		float FixedJointComponent_GetBreakForce(UUID entityUUID)
+		float FixedJointComponent_GetBreakForce(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.BreakForce without a Fixed Joint!");
 				return 0.0f;
 			}
 
-			const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			const FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			return fixedJointComponent.BreakForce;
 		}
 
-		void FixedJointComponent_SetBreakForce(UUID entityUUID, float breakForce)
+		void FixedJointComponent_SetBreakForce(UUID actorUUID, float breakForce)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.BreakForce without a Fixed Joint!");
 				return;
 			}
 
-			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			fixedJointComponent.BreakForce = breakForce;
 
-			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(actorUUID);
 			fixedJoint->setBreakForce(breakForce, fixedJointComponent.BreakTorque);
 		}
 
-		float FixedJointComponent_GetBreakTorque(UUID entityUUID)
+		float FixedJointComponent_GetBreakTorque(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.BreakTorque without a Fixed Joint!");
 				return 0.0f;
 			}
 
-			const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			const FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			return fixedJointComponent.BreakTorque;
 		}
 
-		void FixedJointComponent_SetBreakTorque(UUID entityUUID, float breakTorque)
+		void FixedJointComponent_SetBreakTorque(UUID actorUUID, float breakTorque)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.BreakTorque without a Fixed Joint!");
 				return;
 			}
 
-			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			fixedJointComponent.BreakTorque = breakTorque;
 
-			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(actorUUID);
 			fixedJoint->setBreakForce(fixedJointComponent.BreakForce, breakTorque);
 		}
 
-		void FixedJointComponent_SetBreakForceAndTorque(UUID entityUUID, float breakForce, float breakTorque)
+		void FixedJointComponent_SetBreakForceAndTorque(UUID actorUUID, float breakForce, float breakTorque)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Calling FixedJoint.SetBreakForceAndTorque without a Fixed Joint!");
 				return;
 			}
 
-			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			fixedJointComponent.BreakForce = breakForce;
 			fixedJointComponent.BreakTorque = breakTorque;
 
-			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(actorUUID);
 			fixedJoint->setBreakForce(breakForce, breakTorque);
 		}
 
-		bool FixedJointComponent_GetEnableCollision(UUID entityUUID)
+		bool FixedJointComponent_GetEnableCollision(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.CollisionEnabled without a Fixed Joint!");
 				return false;
 			}
 
-			const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			const FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			return fixedJointComponent.EnableCollision;
 		}
 
-		void FixedJointComponent_SetCollisionEnabled(UUID entityUUID, bool enableCollision)
+		void FixedJointComponent_SetCollisionEnabled(UUID actorUUID, bool enableCollision)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.CollisionEnabled without a Fixed Joint!");
 				return;
 			}
 
-			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			fixedJointComponent.EnableCollision = enableCollision;
 
-			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(actorUUID);
 			fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eCOLLISION_ENABLED, enableCollision);
 		}
 
-		bool FixedJointComponent_GetPreProcessingEnabled(UUID entityUUID)
+		bool FixedJointComponent_GetPreProcessingEnabled(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.PreProcessingEnabled without a Fixed Joint!");
 				return false;
 			}
 
-			const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			const FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			return fixedJointComponent.EnablePreProcessing;
 		}
 
-		void FixedJointComponent_SetPreProcessingEnabled(UUID entityUUID, bool enablePreProcessing)
+		void FixedJointComponent_SetPreProcessingEnabled(UUID actorUUID, bool enablePreProcessing)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.PreProcessingEnabled without a Fixed Joint!");
 				return;
 			}
 
-			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			fixedJointComponent.EnableCollision = enablePreProcessing;
 
-			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(entityUUID);
+			physx::PxFixedJoint* fixedJoint = Physics::GetFixedJoint(actorUUID);
 			fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_PREPROCESSING, !enablePreProcessing);
 		}
 
-		bool FixedJointComponent_IsBroken(UUID entityUUID)
+		bool FixedJointComponent_IsBroken(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.IsBroken without a Fixed Joint!");
 				return false;
 			}
 
-			return Physics::IsConstraintBroken(entityUUID);
+			return Physics::IsConstraintBroken(actorUUID);
 		}
 
-		bool FixedJointComponent_GetIsBreakable(UUID entityUUID)
+		bool FixedJointComponent_GetIsBreakable(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.IsBreakable without a Fixed Joint!");
 				return false;
 			}
 
-			const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			const FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			return fixedJointComponent.IsBreakable;
 		}
 
-		void FixedJointComponent_SetIsBreakable(UUID entityUUID, bool isBreakable)
+		void FixedJointComponent_SetIsBreakable(UUID actorUUID, bool isBreakable)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.IsBreakable without a Fixed Joint!");
 				return;
 			}
 
-			FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			fixedJointComponent.IsBreakable = isBreakable;
 		}
 
-		void FixedJointComponent_Break(UUID entityUUID)
+		void FixedJointComponent_Break(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<FixedJointComponent>())
+			if (!actor.HasComponent<FixedJointComponent>())
 			{
 				VX_CONSOLE_LOG_WARN("Calling FixedJoint.Break without a Fixed Joint!");
 				return;
 			}
 
-			Physics::BreakJoint(entityUUID);
+			Physics::BreakJoint(actorUUID);
 		}
 
 #pragma endregion
 
 #pragma region BoxCollider Component
 
-		void BoxColliderComponent_GetHalfSize(UUID entityUUID, Math::vec3* outHalfSize)
+		void BoxColliderComponent_GetHalfSize(UUID actorUUID, Math::vec3* outHalfSize)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxColliderComponent>())
+			if (!actor.HasComponent<BoxColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider.HalfSize without a Box Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			const auto& collider = colliders.back();
 
 			if (SharedReference<BoxColliderShape> boxCollider = collider.Is<BoxColliderShape>())
@@ -6876,17 +6897,17 @@ namespace Vortex {
 			}
 		}
 
-		void BoxColliderComponent_SetHalfSize(UUID entityUUID, Math::vec3* halfSize)
+		void BoxColliderComponent_SetHalfSize(UUID actorUUID, Math::vec3* halfSize)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxColliderComponent>())
+			if (!actor.HasComponent<BoxColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider.HalfSize without a Box Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			auto& collider = colliders.back();
 
 			if (SharedReference<BoxColliderShape> boxCollider = collider.Is<BoxColliderShape>())
@@ -6895,17 +6916,17 @@ namespace Vortex {
 			}
 		}
 
-		void BoxColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
+		void BoxColliderComponent_GetOffset(UUID actorUUID, Math::vec3* outOffset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxColliderComponent>())
+			if (!actor.HasComponent<BoxColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider.Offset without a Box Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			const auto& collider = colliders.back();
 
 			if (SharedReference<BoxColliderShape> boxCollider = collider.Is<BoxColliderShape>())
@@ -6914,17 +6935,17 @@ namespace Vortex {
 			}
 		}
 
-		void BoxColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
+		void BoxColliderComponent_SetOffset(UUID actorUUID, Math::vec3* offset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxColliderComponent>())
+			if (!actor.HasComponent<BoxColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider.Offset without a Box Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			auto& collider = colliders.back();
 
 			if (SharedReference<BoxColliderShape> boxCollider = collider.Is<BoxColliderShape>())
@@ -6933,17 +6954,17 @@ namespace Vortex {
 			}
 		}
 
-		bool BoxColliderComponent_GetIsTrigger(UUID entityUUID)
+		bool BoxColliderComponent_GetIsTrigger(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxColliderComponent>())
+			if (!actor.HasComponent<BoxColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider.IsTrigger without a Box Collider!");
 				return false;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			const auto& collider = colliders.back();
 
 			if (SharedReference<BoxColliderShape> boxCollider = collider.Is<BoxColliderShape>())
@@ -6954,17 +6975,17 @@ namespace Vortex {
 			return false;
 		}
 
-		void BoxColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
+		void BoxColliderComponent_SetIsTrigger(UUID actorUUID, bool isTrigger)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxColliderComponent>())
+			if (!actor.HasComponent<BoxColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider.IsTrigger without a Box Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			auto& collider = colliders.back();
 
 			if (SharedReference<BoxColliderShape> boxCollider = collider.Is<BoxColliderShape>())
@@ -6973,17 +6994,17 @@ namespace Vortex {
 			}
 		}
 
-		bool BoxColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle)
+		bool BoxColliderComponent_GetMaterialHandle(UUID actorUUID, AssetHandle* outHandle)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxColliderComponent>())
+			if (!actor.HasComponent<BoxColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider.Material without a Box Collider!");
 				return false;
 			}
 
-			const BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			const BoxColliderComponent& boxCollider = actor.GetComponent<BoxColliderComponent>();
 			*outHandle = boxCollider.Material;
 			return AssetManager::IsHandleValid(boxCollider.Material);
 		}
@@ -6992,17 +7013,17 @@ namespace Vortex {
 
 #pragma region SphereCollider Component
 
-		float SphereColliderComponent_GetRadius(UUID entityUUID)
+		float SphereColliderComponent_GetRadius(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SphereColliderComponent>())
+			if (!actor.HasComponent<SphereColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access SphereCollider.Radius without a Sphere Collider!");
 				return 0.0f;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			const auto& collider = colliders.back();
 
 			if (SharedReference<SphereColliderShape> sphereCollider = collider.Is<SphereColliderShape>())
@@ -7013,17 +7034,17 @@ namespace Vortex {
 			return 0.0f;
 		}
 
-		void SphereColliderComponent_SetRadius(UUID entityUUID, float radius)
+		void SphereColliderComponent_SetRadius(UUID actorUUID, float radius)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SphereColliderComponent>())
+			if (!actor.HasComponent<SphereColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set SphereCollider.Radius without a Sphere Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			auto& collider = colliders.back();
 
 			if (SharedReference<SphereColliderShape> sphereCollider = collider.Is<SphereColliderShape>())
@@ -7032,17 +7053,17 @@ namespace Vortex {
 			}
 		}
 
-		void SphereColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
+		void SphereColliderComponent_GetOffset(UUID actorUUID, Math::vec3* outOffset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SphereColliderComponent>())
+			if (!actor.HasComponent<SphereColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access SphereCollider.Offset without a Sphere Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			const auto& collider = colliders.back();
 
 			if (SharedReference<SphereColliderShape> sphereCollider = collider.Is<SphereColliderShape>())
@@ -7051,17 +7072,17 @@ namespace Vortex {
 			}
 		}
 
-		void SphereColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
+		void SphereColliderComponent_SetOffset(UUID actorUUID, Math::vec3* offset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SphereColliderComponent>())
+			if (!actor.HasComponent<SphereColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set SphereCollider.Offset without a Sphere Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			auto& collider = colliders.back();
 
 			if (SharedReference<SphereColliderShape> sphereCollider = collider.Is<SphereColliderShape>())
@@ -7070,17 +7091,17 @@ namespace Vortex {
 			}
 		}
 
-		bool SphereColliderComponent_GetIsTrigger(UUID entityUUID)
+		bool SphereColliderComponent_GetIsTrigger(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SphereColliderComponent>())
+			if (!actor.HasComponent<SphereColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access SphereCollider.IsTrigger without a Sphere Collider!");
 				return false;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			const auto& collider = colliders.back();
 
 			if (SharedReference<SphereColliderShape> sphereCollider = collider.Is<SphereColliderShape>())
@@ -7091,17 +7112,17 @@ namespace Vortex {
 			return false;
 		}
 
-		void SphereColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
+		void SphereColliderComponent_SetIsTrigger(UUID actorUUID, bool isTrigger)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SphereColliderComponent>())
+			if (!actor.HasComponent<SphereColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set SphereCollider.Offset without a Sphere Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			auto& collider = colliders.back();
 
 			if (SharedReference<SphereColliderShape> sphereCollider = collider.Is<SphereColliderShape>())
@@ -7110,17 +7131,17 @@ namespace Vortex {
 			}
 		}
 
-		bool SphereColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle)
+		bool SphereColliderComponent_GetMaterialHandle(UUID actorUUID, AssetHandle* outHandle)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SphereColliderComponent>())
+			if (!actor.HasComponent<SphereColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access SphereCollider.Material without a Sphere Collider!");
 				return false;
 			}
 
-			const SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+			const SphereColliderComponent& sphereCollider = actor.GetComponent<SphereColliderComponent>();
 			*outHandle = sphereCollider.Material;
 			return AssetManager::IsHandleValid(sphereCollider.Material);
 		}
@@ -7129,17 +7150,17 @@ namespace Vortex {
 
 #pragma region CapsuleCollider Component
 
-		float CapsuleColliderComponent_GetRadius(UUID entityUUID)
+		float CapsuleColliderComponent_GetRadius(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CapsuleColliderComponent>())
+			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.Radius without a Capsule Collider!");
 				return 0.0f;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			const auto& collider = colliders.back();
 
 			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
@@ -7150,17 +7171,17 @@ namespace Vortex {
 			return 0.0f;
 		}
 
-		void CapsuleColliderComponent_SetRadius(UUID entityUUID, float radius)
+		void CapsuleColliderComponent_SetRadius(UUID actorUUID, float radius)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CapsuleColliderComponent>())
+			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CapsuleCollider.Radius without a Capsule Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			auto& collider = colliders.back();
 
 			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
@@ -7169,17 +7190,17 @@ namespace Vortex {
 			}
 		}
 
-		float CapsuleColliderComponent_GetHeight(UUID entityUUID)
+		float CapsuleColliderComponent_GetHeight(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CapsuleColliderComponent>())
+			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.Height without a Capsule Collider!");
 				return 0.0f;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			const auto& collider = colliders.back();
 
 			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
@@ -7190,17 +7211,17 @@ namespace Vortex {
 			return 0.0f;
 		}
 
-		void CapsuleColliderComponent_SetHeight(UUID entityUUID, float height)
+		void CapsuleColliderComponent_SetHeight(UUID actorUUID, float height)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CapsuleColliderComponent>())
+			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CapsuleCollider.Height without a Capsule Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			auto& collider = colliders.back();
 
 			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
@@ -7209,17 +7230,17 @@ namespace Vortex {
 			}
 		}
 
-		void CapsuleColliderComponent_GetOffset(UUID entityUUID, Math::vec3* outOffset)
+		void CapsuleColliderComponent_GetOffset(UUID actorUUID, Math::vec3* outOffset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CapsuleColliderComponent>())
+			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.Offset without a Capsule Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			const auto& collider = colliders.back();
 
 			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
@@ -7228,17 +7249,17 @@ namespace Vortex {
 			}
 		}
 
-		void CapsuleColliderComponent_SetOffset(UUID entityUUID, Math::vec3* offset)
+		void CapsuleColliderComponent_SetOffset(UUID actorUUID, Math::vec3* offset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<SphereColliderComponent>())
+			if (!actor.HasComponent<SphereColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CapsuleCollider.Offset without a Capsule Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			auto& collider = colliders.back();
 
 			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
@@ -7247,17 +7268,17 @@ namespace Vortex {
 			}
 		}
 
-		bool CapsuleColliderComponent_GetIsTrigger(UUID entityUUID)
+		bool CapsuleColliderComponent_GetIsTrigger(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CapsuleColliderComponent>())
+			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.IsTrigger without a Capsule Collider!");
 				return false;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			const auto& collider = colliders.back();
 
 			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
@@ -7268,17 +7289,17 @@ namespace Vortex {
 			return false;
 		}
 
-		void CapsuleColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
+		void CapsuleColliderComponent_SetIsTrigger(UUID actorUUID, bool isTrigger)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CapsuleColliderComponent>())
+			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CapsuleCollider.IsTrigger without a Capsule Collider!");
 				return;
 			}
 
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			auto& collider = colliders.back();
 
 			if (SharedReference<CapsuleColliderShape> capsuleCollider = collider.Is<CapsuleColliderShape>())
@@ -7287,17 +7308,17 @@ namespace Vortex {
 			}
 		}
 
-		bool CapsuleColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle)
+		bool CapsuleColliderComponent_GetMaterialHandle(UUID actorUUID, AssetHandle* outHandle)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CapsuleColliderComponent>())
+			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.Material without a Capsule Collider!");
 				return false;
 			}
 
-			const CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			const CapsuleColliderComponent& capsuleCollider = actor.GetComponent<CapsuleColliderComponent>();
 			*outHandle = capsuleCollider.Material;
 			return AssetManager::IsHandleValid(capsuleCollider.Material);
 		}
@@ -7308,18 +7329,18 @@ namespace Vortex {
 
 		// Finish these once we have collider assets
 
-		bool MeshColliderComponent_IsStaticMesh(UUID entityUUID)
+		bool MeshColliderComponent_IsStaticMesh(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 			
-			if (!entity.HasComponent<MeshColliderComponent>())
+			if (!actor.HasComponent<MeshColliderComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access MeshCollider.IsStaticMesh without a Mesh Collider!");
 				return false;
 			}
 
-			const MeshColliderComponent& meshCollider = entity.GetComponent<MeshColliderComponent>();
-			const auto& colliders = Physics::GetEntityColliders(entityUUID);
+			const MeshColliderComponent& meshCollider = actor.GetComponent<MeshColliderComponent>();
+			const auto& colliders = Physics::GetActorColliders(actorUUID);
 			SharedReference<ColliderShape> colliderShape = colliders.back();
 
 			if (SharedReference<ConvexMeshShape> convexMeshShape = colliderShape.Is<ConvexMeshShape>())
@@ -7336,30 +7357,30 @@ namespace Vortex {
 			return false;
 		}
 
-		bool MeshColliderComponent_IsColliderMeshValid(UUID entityUUID, AssetHandle* assetHandle)
+		bool MeshColliderComponent_IsColliderMeshValid(UUID actorUUID, AssetHandle* assetHandle)
 		{
 			return false;
 		}
 
-		bool MeshColliderComponent_GetColliderMesh(UUID entityUUID, AssetHandle* outHandle)
+		bool MeshColliderComponent_GetColliderMesh(UUID actorUUID, AssetHandle* outHandle)
 		{
 			return false;
 		}
 
-		void MeshColliderComponent_SetColliderMesh(UUID entityUUID, AssetHandle assetHandle)
+		void MeshColliderComponent_SetColliderMesh(UUID actorUUID, AssetHandle assetHandle)
 		{
 		}
 
-		bool MeshColliderComponent_GetIsTrigger(UUID entityUUID)
+		bool MeshColliderComponent_GetIsTrigger(UUID actorUUID)
 		{
 			return false;
 		}
 
-		void MeshColliderComponent_SetIsTrigger(UUID entityUUID, bool isTrigger)
+		void MeshColliderComponent_SetIsTrigger(UUID actorUUID, bool isTrigger)
 		{
 		}
 
-		bool MeshColliderComponent_GetMaterialHandle(UUID entityUUID, AssetHandle* outHandle)
+		bool MeshColliderComponent_GetMaterialHandle(UUID actorUUID, AssetHandle* outHandle)
 		{
 			return false;
 		}
@@ -7368,100 +7389,100 @@ namespace Vortex {
 
 #pragma region RigidBody2D Component
 
-		RigidBody2DType RigidBody2DComponent_GetBodyType(UUID entityUUID)
+		RigidBody2DType RigidBody2DComponent_GetBodyType(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.BodyType without a RigidBody 2D!");
 				return RigidBody2DType::Static;
 			}
 
-			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			return rigidbody.Type;
 		}
 
-		void RigidBody2DComponent_SetBodyType(UUID entityUUID, RigidBody2DType bodyType)
+		void RigidBody2DComponent_SetBodyType(UUID actorUUID, RigidBody2DType bodyType)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.BodyType without a RigidBody 2D!");
 				return;
 			}
 
-			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			const bool consistentBodyType = bodyType == rigidbody.Type;
 
 			if (consistentBodyType)
 				return;
 
-			Physics2D::DestroyPhysicsBody(entity);
+			Physics2D::DestroyPhysicsBody(actor);
 			rigidbody.Type = bodyType;
 			rigidbody.RuntimeBody = nullptr;
-			Physics2D::CreatePhysicsBody(entity, entity.GetTransform(), rigidbody);
+			Physics2D::CreatePhysicsBody(actor, actor.GetTransform(), rigidbody);
 		}
 
-		void RigidBody2DComponent_GetVelocity(UUID entityUUID, Math::vec2* outVelocity)
+		void RigidBody2DComponent_GetVelocity(UUID actorUUID, Math::vec2* outVelocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.Velocity without a RigidBody 2D!");
 				return;
 			}
 
-			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			*outVelocity = rigidbody.Velocity;
 		}
 
-		void RigidBody2DComponent_SetVelocity(UUID entityUUID, Math::vec2* velocity)
+		void RigidBody2DComponent_SetVelocity(UUID actorUUID, Math::vec2* velocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.Velocity without a RigidBody 2D!");
 				return;
 			}
 
-			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			rigidbody.Velocity = *velocity;
 		}
 
-		float RigidBody2DComponent_GetDrag(UUID entityUUID)
+		float RigidBody2DComponent_GetDrag(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.Drag without a RigidBody 2D!");
 				return 0.0f;
 			}
 
-			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			return rigidbody.Drag;
 		}
 
-		void RigidBody2DComponent_SetDrag(UUID entityUUID, float drag)
+		void RigidBody2DComponent_SetDrag(UUID actorUUID, float drag)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.Drag without a RigidBody 2D!");
 				return;
 			}
 
-			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			rigidbody.Drag = drag;
 
@@ -7470,32 +7491,32 @@ namespace Vortex {
 			body->SetLinearDamping(drag);
 		}
 
-		float RigidBody2DComponent_GetAngularVelocity(UUID entityUUID)
+		float RigidBody2DComponent_GetAngularVelocity(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.AngularVelocity without a RigidBody 2D!");
 				return 0.0f;
 			}
 
-			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			return rigidbody.AngularVelocity;
 		}
 		
-		void RigidBody2DComponent_SetAngularVelocity(UUID entityUUID, float angularVelocity)
+		void RigidBody2DComponent_SetAngularVelocity(UUID actorUUID, float angularVelocity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.AngularVelocity without a RigidBody 2D!");
 				return;
 			}
 
-			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			rigidbody.AngularVelocity = angularVelocity;
 
@@ -7504,32 +7525,32 @@ namespace Vortex {
 			body->SetAngularVelocity(angularVelocity);
 		}
 		
-		float RigidBody2DComponent_GetAngularDrag(UUID entityUUID)
+		float RigidBody2DComponent_GetAngularDrag(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.AngularDrag without a RigidBody 2D!");
 				return 0.0f;
 			}
 
-			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			return rigidbody.AngularDrag;
 		}
 
-		void RigidBody2DComponent_SetAngularDrag(UUID entityUUID, float angularDrag)
+		void RigidBody2DComponent_SetAngularDrag(UUID actorUUID, float angularDrag)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.AngularDrag without a RigidBody 2D!");
 				return;
 			}
 
-			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			rigidbody.AngularDrag = angularDrag;
 
@@ -7538,32 +7559,32 @@ namespace Vortex {
 			body->SetAngularDamping(angularDrag);
 		}
 
-		bool RigidBody2DComponent_GetFixedRotation(UUID entityUUID)
+		bool RigidBody2DComponent_GetFixedRotation(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.FxiedRotation without a RigidBody 2D!");
 				return false;
 			}
 
-			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			return rigidbody.FixedRotation;
 		}
 
-		void RigidBody2DComponent_SetFixedRotation(UUID entityUUID, bool freeze)
+		void RigidBody2DComponent_SetFixedRotation(UUID actorUUID, bool freeze)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.FxiedRotation without a RigidBody 2D!");
 				return;
 			}
 
-			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			rigidbody.FixedRotation = freeze;
 
@@ -7572,32 +7593,32 @@ namespace Vortex {
 			body->SetFixedRotation(freeze);
 		}
 
-		float RigidBody2DComponent_GetGravityScale(UUID entityUUID)
+		float RigidBody2DComponent_GetGravityScale(UUID actorUUID)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.GravityScale without a RigidBody 2D!");
 				return 0.0f;
 			}
 
-			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			return rigidbody.GravityScale;
 		}
 
-		void RigidBody2DComponent_SetGravityScale(UUID entityUUID, float gravityScale)
+		void RigidBody2DComponent_SetGravityScale(UUID actorUUID, float gravityScale)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.GravityScale without a RigidBody 2D!");
 				return;
 			}
 
-			RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			rigidbody.GravityScale = gravityScale;
 
@@ -7606,68 +7627,68 @@ namespace Vortex {
 			body->SetGravityScale(gravityScale);
 		}
 
-		void RigidBody2DComponent_ApplyForce(UUID entityUUID, Math::vec2* force, Math::vec2* point, bool wake)
+		void RigidBody2DComponent_ApplyForce(UUID actorUUID, Math::vec2* force, Math::vec2* point, bool wake)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling RigidBody2D.ApplyForce without a RigidBody 2D!");
 				return;
 			}
 
-			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 			body->ApplyForce(b2Vec2(force->x, force->y), b2Vec2(point->x, point->y), wake);
 		}
 
-		void RigidBody2DComponent_ApplyForceToCenter(UUID entityUUID, Math::vec2* force, bool wake)
+		void RigidBody2DComponent_ApplyForceToCenter(UUID actorUUID, Math::vec2* force, bool wake)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling RigidBody2D.ApplyForceToCenter without a RigidBody 2D!");
 				return;
 			}
 
-			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 			body->ApplyForceToCenter(b2Vec2(force->x, force->y), wake);
 		}
 
-		void RigidBody2DComponent_ApplyLinearImpulse(UUID entityUUID, Math::vec2* impulse, Math::vec2* point, bool wake)
+		void RigidBody2DComponent_ApplyLinearImpulse(UUID actorUUID, Math::vec2* impulse, Math::vec2* point, bool wake)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling RigidBody2D.ApplyLinearImpulse without a RigidBody 2D!");
 				return;
 			}
 
-			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
 			body->ApplyLinearImpulse(b2Vec2(impulse->x, impulse->y), b2Vec2(point->x, point->y), wake);
 		}
 
-		void RigidBody2DComponent_ApplyLinearImpulseToCenter(UUID entityUUID, Math::vec2* impulse, bool wake)
+		void RigidBody2DComponent_ApplyLinearImpulseToCenter(UUID actorUUID, Math::vec2* impulse, bool wake)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<RigidBody2DComponent>())
+			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Calling RigidBody2D.ApplyLinearImpulseToCenter without a RigidBody 2D!");
 				return;
 			}
 
-			const RigidBody2DComponent& rigidbody = entity.GetComponent<RigidBody2DComponent>();
+			const RigidBody2DComponent& rigidbody = actor.GetComponent<RigidBody2DComponent>();
 
 			b2Body* body = (b2Body*)rigidbody.RuntimeBody;
 
@@ -7731,98 +7752,98 @@ namespace Vortex {
 
 #pragma region Box Collider2D Component
 
-		void BoxCollider2DComponent_GetOffset(UUID entityUUID, Math::vec2* outOffset)
+		void BoxCollider2DComponent_GetOffset(UUID actorUUID, Math::vec2* outOffset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>())
+			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Offset without a Box Collider 2D!");
 				return;
 			}
 
-			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+			const BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 
 			*outOffset = boxCollider.Offset;
 		}
 
-		void BoxCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
+		void BoxCollider2DComponent_SetOffset(UUID actorUUID, Math::vec2* offset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>())
+			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Offset without a Box Collider 2D!");
 				return;
 			}
 
-			BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+			BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 
 			boxCollider.Offset = *offset;
 
-			Physics2D::DestroyPhysicsBody(entity);
-			Physics2D::CreatePhysicsBody(entity, GetContextScene()->GetWorldSpaceTransform(entity), entity.GetComponent<RigidBody2DComponent>());
+			Physics2D::DestroyPhysicsBody(actor);
+			Physics2D::CreatePhysicsBody(actor, GetContextScene()->GetWorldSpaceTransform(actor), actor.GetComponent<RigidBody2DComponent>());
 		}
 
-		void BoxCollider2DComponent_GetSize(UUID entityUUID, Math::vec2* outSize)
+		void BoxCollider2DComponent_GetSize(UUID actorUUID, Math::vec2* outSize)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>())
+			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Size without a Box Collider 2D!");
 				return;
 			}
 
-			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+			const BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 
 			*outSize = boxCollider.Size;
 		}
 
-		void BoxCollider2DComponent_SetSize(UUID entityUUID, Math::vec2* size)
+		void BoxCollider2DComponent_SetSize(UUID actorUUID, Math::vec2* size)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>())
+			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Size without a Box Collider 2D!");
 				return;
 			}
 
-			BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+			BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 
 			boxCollider.Size = *size;
 
-			Physics2D::DestroyPhysicsBody(entity);
-			Physics2D::CreatePhysicsBody(entity, GetContextScene()->GetWorldSpaceTransform(entity), entity.GetComponent<RigidBody2DComponent>());
+			Physics2D::DestroyPhysicsBody(actor);
+			Physics2D::CreatePhysicsBody(actor, GetContextScene()->GetWorldSpaceTransform(actor), actor.GetComponent<RigidBody2DComponent>());
 		}
 
-		void BoxCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
+		void BoxCollider2DComponent_GetDensity(UUID actorUUID, float* outDensity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>())
+			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Density without a Box Collider 2D!");
 				return;
 			}
 
-			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+			const BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 
 			*outDensity = boxCollider.Density;
 		}
 
-		void BoxCollider2DComponent_SetDensity(UUID entityUUID, float density)
+		void BoxCollider2DComponent_SetDensity(UUID actorUUID, float density)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>())
+			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Density without a Box Collider 2D!");
 				return;
 			}
 
-			BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+			BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 
 			boxCollider.Density = density;
 
@@ -7834,32 +7855,32 @@ namespace Vortex {
 			fixture->GetBody()->ResetMassData();
 		}
 
-		void BoxCollider2DComponent_GetFriction(UUID entityUUID, float* outFriction)
+		void BoxCollider2DComponent_GetFriction(UUID actorUUID, float* outFriction)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>())
+			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Friction without a Box Collider 2D!");
 				return;
 			}
 
-			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+			const BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 
 			*outFriction = boxCollider.Friction;
 		}
 
-		void BoxCollider2DComponent_SetFriction(UUID entityUUID, float friction)
+		void BoxCollider2DComponent_SetFriction(UUID actorUUID, float friction)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>())
+			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Friction without a Box Collider 2D!");
 				return;
 			}
 
-			BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+			BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 
 			boxCollider.Friction = friction;
 
@@ -7868,32 +7889,32 @@ namespace Vortex {
 			fixture->SetFriction(friction);
 		}
 
-		void BoxCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution)
+		void BoxCollider2DComponent_GetRestitution(UUID actorUUID, float* outRestitution)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>())
+			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Restitution without a Box Collider 2D!");
 				return;
 			}
 
-			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+			const BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 
 			*outRestitution = boxCollider.Restitution;
 		}
 
-		void BoxCollider2DComponent_SetRestitution(UUID entityUUID, float restitution)
+		void BoxCollider2DComponent_SetRestitution(UUID actorUUID, float restitution)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>())
+			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Restitution without a Box Collider 2D!");
 				return;
 			}
 
-			BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+			BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 
 			boxCollider.Restitution = restitution;
 
@@ -7902,32 +7923,32 @@ namespace Vortex {
 			fixture->SetRestitution(restitution);
 		}
 
-		void BoxCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold)
+		void BoxCollider2DComponent_GetRestitutionThreshold(UUID actorUUID, float* outRestitutionThreshold)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>())
+			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.RestitutionThreshold without a Box Collider 2D!");
 				return;
 			}
 
-			const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+			const BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 
 			*outRestitutionThreshold = boxCollider.RestitutionThreshold;
 		}
 
-		void BoxCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold)
+		void BoxCollider2DComponent_SetRestitutionThreshold(UUID actorUUID, float restitutionThreshold)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<BoxCollider2DComponent>())
+			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.RestitutionThreshold without a Box Collider 2D!");
 				return;
 			}
 
-			BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+			BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 
 			boxCollider.RestitutionThreshold = restitutionThreshold;
 
@@ -7940,98 +7961,98 @@ namespace Vortex {
 
 #pragma region Circle Collider2D Component
 
-		void CircleCollider2DComponent_GetOffset(UUID entityUUID, Math::vec2* outOffset)
+		void CircleCollider2DComponent_GetOffset(UUID actorUUID, Math::vec2* outOffset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleCollider2DComponent>())
+			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Offset without a Circle Collider 2D!");
 				return;
 			}
 
-			const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+			const CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 
 			*outOffset = circleCollider.Offset;
 		}
 
-		void CircleCollider2DComponent_SetOffset(UUID entityUUID, Math::vec2* offset)
+		void CircleCollider2DComponent_SetOffset(UUID actorUUID, Math::vec2* offset)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleCollider2DComponent>())
+			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Offset without a Circle Collider 2D!");
 				return;
 			}
 
-			CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+			CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 
 			circleCollider.Offset = *offset;
 
-			Physics2D::DestroyPhysicsBody(entity);
-			Physics2D::CreatePhysicsBody(entity, GetContextScene()->GetWorldSpaceTransform(entity), entity.GetComponent<RigidBody2DComponent>());
+			Physics2D::DestroyPhysicsBody(actor);
+			Physics2D::CreatePhysicsBody(actor, GetContextScene()->GetWorldSpaceTransform(actor), actor.GetComponent<RigidBody2DComponent>());
 		}
 
-		void CircleCollider2DComponent_GetRadius(UUID entityUUID, float* outRadius)
+		void CircleCollider2DComponent_GetRadius(UUID actorUUID, float* outRadius)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleCollider2DComponent>())
+			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Radius without a Circle Collider 2D!");
 				return;
 			}
 
-			const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+			const CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 
 			*outRadius = circleCollider.Radius;
 		}
 
-		void CircleCollider2DComponent_SetRadius(UUID entityUUID, float radius)
+		void CircleCollider2DComponent_SetRadius(UUID actorUUID, float radius)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleCollider2DComponent>())
+			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Radius without a Circle Collider 2D!");
 				return;
 			}
 
-			CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+			CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 
 			circleCollider.Radius = radius;
 
-			Physics2D::DestroyPhysicsBody(entity);
-			Physics2D::CreatePhysicsBody(entity, GetContextScene()->GetWorldSpaceTransform(entity), entity.GetComponent<RigidBody2DComponent>());
+			Physics2D::DestroyPhysicsBody(actor);
+			Physics2D::CreatePhysicsBody(actor, GetContextScene()->GetWorldSpaceTransform(actor), actor.GetComponent<RigidBody2DComponent>());
 		}
 
-		void CircleCollider2DComponent_GetDensity(UUID entityUUID, float* outDensity)
+		void CircleCollider2DComponent_GetDensity(UUID actorUUID, float* outDensity)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleCollider2DComponent>())
+			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Density without a Circle Collider 2D!");
 				return;
 			}
 
-			const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+			const CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 
 			*outDensity = circleCollider.Density;
 		}
 
-		void CircleCollider2DComponent_SetDensity(UUID entityUUID, float density)
+		void CircleCollider2DComponent_SetDensity(UUID actorUUID, float density)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleCollider2DComponent>())
+			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Density without a Circle Collider 2D!");
 				return;
 			}
 
-			CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+			CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 
 			circleCollider.Density = density;
 
@@ -8043,32 +8064,32 @@ namespace Vortex {
 			fixture->GetBody()->ResetMassData();
 		}
 
-		void CircleCollider2DComponent_GetFriction(UUID entityUUID, float* outFriction)
+		void CircleCollider2DComponent_GetFriction(UUID actorUUID, float* outFriction)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleCollider2DComponent>())
+			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Friction without a Circle Collider 2D!");
 				return;
 			}
 
-			const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+			const CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 
 			*outFriction = circleCollider.Friction;
 		}
 
-		void CircleCollider2DComponent_SetFriction(UUID entityUUID, float friction)
+		void CircleCollider2DComponent_SetFriction(UUID actorUUID, float friction)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleCollider2DComponent>())
+			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Friction without a Circle Collider 2D!");
 				return;
 			}
 
-			CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+			CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 
 			circleCollider.Friction = friction;
 
@@ -8077,32 +8098,32 @@ namespace Vortex {
 			fixture->SetFriction(friction);
 		}
 
-		void CircleCollider2DComponent_GetRestitution(UUID entityUUID, float* outRestitution)
+		void CircleCollider2DComponent_GetRestitution(UUID actorUUID, float* outRestitution)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleCollider2DComponent>())
+			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Restitution without a Circle Collider 2D!");
 				return;
 			}
 
-			const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+			const CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 
 			*outRestitution = circleCollider.Restitution;
 		}
 
-		void CircleCollider2DComponent_SetRestitution(UUID entityUUID, float restitution)
+		void CircleCollider2DComponent_SetRestitution(UUID actorUUID, float restitution)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleCollider2DComponent>())
+			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Restitution without a Circle Collider 2D!");
 				return;
 			}
 
-			CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+			CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 
 			circleCollider.Restitution = restitution;
 
@@ -8111,32 +8132,32 @@ namespace Vortex {
 			fixture->SetRestitution(restitution);
 		}
 
-		void CircleCollider2DComponent_GetRestitutionThreshold(UUID entityUUID, float* outRestitutionThreshold)
+		void CircleCollider2DComponent_GetRestitutionThreshold(UUID actorUUID, float* outRestitutionThreshold)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleCollider2DComponent>())
+			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.RestitutionThreshold without a Circle Collider 2D!");
 				return;
 			}
 
-			const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+			const CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 
 			*outRestitutionThreshold = circleCollider.RestitutionThreshold;
 		}
 
-		void CircleCollider2DComponent_SetRestitutionThreshold(UUID entityUUID, float restitutionThreshold)
+		void CircleCollider2DComponent_SetRestitutionThreshold(UUID actorUUID, float restitutionThreshold)
 		{
-			Entity entity = GetEntity(entityUUID);
+			Actor actor = GetActor(actorUUID);
 
-			if (!entity.HasComponent<CircleCollider2DComponent>())
+			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.RestitutionThreshold without a Circle Collider 2D!");
 				return;
 			}
 
-			CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+			CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 
 			circleCollider.RestitutionThreshold = restitutionThreshold;
 
@@ -8795,9 +8816,9 @@ namespace Vortex {
 				return;
 			}
 
-			s_Data.EntityAddComponentFuncs[managedType] = [](Entity entity) { entity.AddComponent<TComponent>(); };
-			s_Data.EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<TComponent>(); };
-			s_Data.EntityRemoveComponentFuncs[managedType] = [](Entity entity) { entity.RemoveComponent<TComponent>(); };
+			s_Data.ActorAddComponentFuncs[managedType] = [](Actor actor) { actor.AddComponent<TComponent>(); };
+			s_Data.ActorHasComponentFuncs[managedType] = [](Actor actor) { return actor.HasComponent<TComponent>(); };
+			s_Data.ActorRemoveComponentFuncs[managedType] = [](Actor actor) { actor.RemoveComponent<TComponent>(); };
 		}(), ...);
 	}
 
@@ -8809,16 +8830,16 @@ namespace Vortex {
 
 	void ScriptRegistry::RegisterComponents()
 	{
-		s_Data.EntityHasComponentFuncs.clear();
-		s_Data.EntityAddComponentFuncs.clear();
-		s_Data.EntityRemoveComponentFuncs.clear();
+		s_Data.ActorHasComponentFuncs.clear();
+		s_Data.ActorAddComponentFuncs.clear();
+		s_Data.ActorRemoveComponentFuncs.clear();
 
 		RegisterComponent(AllComponents{});
 	}
 
-	void ScriptRegistry::SetHoveredEntity(Entity entity)
+	void ScriptRegistry::SetHoveredActor(Actor actor)
 	{
-		s_Data.HoveredEntity = entity;
+		s_Data.HoveredActor = actor;
 	}
 
 	void ScriptRegistry::SetSceneStartTime(float startTime)
@@ -8855,37 +8876,37 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(DebugRenderer_Flush);
 
 		VX_REGISTER_INTERNAL_CALL(Scene_GetPrimaryCamera);
-		VX_REGISTER_INTERNAL_CALL(Scene_FindEntityByID);
-		VX_REGISTER_INTERNAL_CALL(Scene_FindEntityByName);
+		VX_REGISTER_INTERNAL_CALL(Scene_FindActorByID);
+		VX_REGISTER_INTERNAL_CALL(Scene_FindActorByName);
 		VX_REGISTER_INTERNAL_CALL(Scene_FindChildByName);
-		VX_REGISTER_INTERNAL_CALL(Scene_CreateEntity);
+		VX_REGISTER_INTERNAL_CALL(Scene_CreateActor);
 		VX_REGISTER_INTERNAL_CALL(Scene_Instantiate);
 		VX_REGISTER_INTERNAL_CALL(Scene_InstantiateAsChild);
 		VX_REGISTER_INTERNAL_CALL(Scene_IsPaused);
 		VX_REGISTER_INTERNAL_CALL(Scene_Pause);
 		VX_REGISTER_INTERNAL_CALL(Scene_Resume);
-		VX_REGISTER_INTERNAL_CALL(Scene_GetHoveredEntity);
+		VX_REGISTER_INTERNAL_CALL(Scene_GetHoveredActor);
 
 		VX_REGISTER_INTERNAL_CALL(SceneManager_LoadScene);
 
-		VX_REGISTER_INTERNAL_CALL(Entity_AddComponent);
-		VX_REGISTER_INTERNAL_CALL(Entity_HasComponent);
-		VX_REGISTER_INTERNAL_CALL(Entity_RemoveComponent);
-		VX_REGISTER_INTERNAL_CALL(Entity_GetChildren);
-		VX_REGISTER_INTERNAL_CALL(Entity_GetChild);
-		VX_REGISTER_INTERNAL_CALL(Entity_GetTag);
-		VX_REGISTER_INTERNAL_CALL(Entity_SetTag);
-		VX_REGISTER_INTERNAL_CALL(Entity_GetMarker);
-		VX_REGISTER_INTERNAL_CALL(Entity_SetMarker);
-		VX_REGISTER_INTERNAL_CALL(Entity_AddChild);
-		VX_REGISTER_INTERNAL_CALL(Entity_RemoveChild);
-		VX_REGISTER_INTERNAL_CALL(Entity_GetScriptInstance);
-		VX_REGISTER_INTERNAL_CALL(Entity_Destroy);
-		VX_REGISTER_INTERNAL_CALL(Entity_DestroyWithDelay);
-		VX_REGISTER_INTERNAL_CALL(Entity_Invoke);
-		VX_REGISTER_INTERNAL_CALL(Entity_InvokeWithDelay);
-		VX_REGISTER_INTERNAL_CALL(Entity_SetActive);
-		VX_REGISTER_INTERNAL_CALL(Entity_AddTimer);
+		VX_REGISTER_INTERNAL_CALL(Actor_AddComponent);
+		VX_REGISTER_INTERNAL_CALL(Actor_HasComponent);
+		VX_REGISTER_INTERNAL_CALL(Actor_RemoveComponent);
+		VX_REGISTER_INTERNAL_CALL(Actor_GetChildren);
+		VX_REGISTER_INTERNAL_CALL(Actor_GetChild);
+		VX_REGISTER_INTERNAL_CALL(Actor_GetTag);
+		VX_REGISTER_INTERNAL_CALL(Actor_SetTag);
+		VX_REGISTER_INTERNAL_CALL(Actor_GetMarker);
+		VX_REGISTER_INTERNAL_CALL(Actor_SetMarker);
+		VX_REGISTER_INTERNAL_CALL(Actor_AddChild);
+		VX_REGISTER_INTERNAL_CALL(Actor_RemoveChild);
+		VX_REGISTER_INTERNAL_CALL(Actor_GetScriptInstance);
+		VX_REGISTER_INTERNAL_CALL(Actor_Destroy);
+		VX_REGISTER_INTERNAL_CALL(Actor_DestroyWithDelay);
+		VX_REGISTER_INTERNAL_CALL(Actor_Invoke);
+		VX_REGISTER_INTERNAL_CALL(Actor_InvokeWithDelay);
+		VX_REGISTER_INTERNAL_CALL(Actor_SetActive);
+		VX_REGISTER_INTERNAL_CALL(Actor_AddTimer);
 
 		VX_REGISTER_INTERNAL_CALL(AssetHandle_IsValid);
 
@@ -9181,8 +9202,8 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_GetDisableGravity);
 		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_SetDisableGravity);
 
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_GetConnectedEntity);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_SetConnectedEntity);
+		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_GetConnectedActor);
+		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_SetConnectedActor);
 		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_GetBreakForce);
 		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_SetBreakForce);
 		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_GetBreakTorque);

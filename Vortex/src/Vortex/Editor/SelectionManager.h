@@ -1,18 +1,18 @@
 #pragma once
 
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 
 namespace Vortex {
 
 	class SelectionManager
 	{
 	public:
-		static Entity& GetSelectedEntity();
-		static Entity& SetSelectedEntity(Entity entity);
-		static void DeselectEntity();
+		static Actor& GetSelectedActor();
+		static Actor& SetSelectedActor(Actor actor);
+		static void DeselectActor();
 
 	private:
-		inline static Entity s_SelectedEntity;
+		inline static Actor s_SelectedActor;
 	};
 
 }

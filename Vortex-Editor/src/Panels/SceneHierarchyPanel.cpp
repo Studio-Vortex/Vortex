@@ -16,19 +16,19 @@ namespace Vortex {
 
 #define MAX_MARKER_SIZE 64
 
-#define MAX_CHILD_ENTITY_SEARCH_DEPTH 10
+#define MAX_CHILD_ACTOR_SEARCH_DEPTH 10
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const SharedReference<Scene>& context)
 	{
 		SetSceneContext(context);
 
-		// Create copy entity here so it will live the lifetime of the scene hierarchy panel
+		// Create copy actor here so it will live the lifetime of the scene hierarchy panel
 		// This will allow us to copy components throughout different scenes
 		m_CopyScene = Scene::Create();
-		m_CopyEntity = m_CopyScene->CreateEntity("Copy Entity");
+		m_CopyActor = m_CopyScene->CreateActor("Copy Actor");
 	}
 
-	void SceneHierarchyPanel::OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera)
+	void SceneHierarchyPanel::OnGuiRender(Actor hoveredActor, const EditorCamera* editorCamera)
 	{
 		if (IsOpen)
 		{
@@ -38,19 +38,19 @@ namespace Vortex {
 
 			// Search Bar + Filtering
 			Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize((const char*)VX_ICON_PLUS).x * 2.0f - 4.0f);
-			const bool isSearching = Gui::InputTextWithHint("##EntitySearch", "Search...", m_EntitySearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
+			const bool isSearching = Gui::InputTextWithHint("##ActorSearch", "Search...", m_ActorSearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_ActorSearchInputTextFilter.InputBuf));
 			if (isSearching)
-				m_EntitySearchInputTextFilter.Build();
+				m_ActorSearchInputTextFilter.Build();
 
 			Gui::SameLine();
 
 			UI::ShiftCursorX(-4.0f);
 			if (Gui::Button((const char*)VX_ICON_PLUS, { 30.0f, 0.0f }))
-				Gui::OpenPopup("CreateEntity");
+				Gui::OpenPopup("CreateActor");
 
-			if (Gui::BeginPopup("CreateEntity"))
+			if (Gui::BeginPopup("CreateActor"))
 			{
-				DisplayCreateEntityMenu(editorCamera);
+				DisplayCreateActorMenu(editorCamera);
 
 				Gui::EndPopup();
 			}
@@ -61,36 +61,36 @@ namespace Vortex {
 			if (m_ContextScene)
 			{
 				uint32_t searchDepth = 0;
-				const bool isSearching = strlen(m_EntitySearchInputTextFilter.InputBuf) != 0;
-				std::vector<UUID> rootEntitiesInHierarchy;
+				const bool isSearching = strlen(m_ActorSearchInputTextFilter.InputBuf) != 0;
+				std::vector<UUID> rootActorsInHierarchy;
 
-				m_ContextScene->m_Registry.each([&](auto entityID)
+				m_ContextScene->m_Registry.each([&](auto actorID)
 				{
-					const Entity entity{ entityID, m_ContextScene.Raw() };
+					Actor actor{ actorID, m_ContextScene.Raw() };
 					
-					if (!entity)
+					if (!actor)
 						return;
 
-					const bool isChildEntity = entity.GetParentUUID() != 0;
+					const bool isChild = actor.HasParent();
 
-					if (isChildEntity)
+					if (isChild)
 						return;
 
-					rootEntitiesInHierarchy.push_back(entity.GetUUID());
+					rootActorsInHierarchy.push_back(actor.GetUUID());
 
-					const bool matchingSearch = m_EntitySearchInputTextFilter.PassFilter(entity.GetName().c_str());
+					const bool matchingSearch = m_ActorSearchInputTextFilter.PassFilter(actor.GetName().c_str());
 					
 					if (!matchingSearch)
 						return;
 
-					DrawEntityNode(entity, editorCamera);
+					DrawActorNode(actor, editorCamera);
 				});
 
 				if (isSearching)
 				{
-					for (const auto& rootEntity : rootEntitiesInHierarchy)
+					for (const auto& rootActor : rootActorsInHierarchy)
 					{
-						RecursiveEntitySearch(rootEntity, editorCamera, searchDepth);
+						RecursiveActorSearch(rootActor, editorCamera, searchDepth);
 					}
 				}
 
@@ -101,41 +101,41 @@ namespace Vortex {
 
 					if (payload)
 					{
-						Entity& entity = *(Entity*)payload->Data;
-						m_ContextScene->UnparentEntity(entity);
+						Actor& actor = *(Actor*)payload->Data;
+						m_ContextScene->UnparentActor(actor);
 					}
 
 					ImGui::EndDragDropTarget();
 				}
 
-				// Left click anywhere on the panel to deselect entity
+				// Left click anywhere on the panel to deselect actor
 				if (Gui::IsMouseDown(0) && Gui::IsWindowHovered())
 				{
-					SelectionManager::DeselectEntity();
-					m_EntityShouldBeRenamed = false;
-					m_EntityShouldBeDestroyed = false;
+					SelectionManager::DeselectActor();
+					m_ActorShouldBeRenamed = false;
+					m_ActorShouldBeDestroyed = false;
 				}
 
 				// Right-click on blank space in scene hierarchy panel
 				if (Gui::BeginPopupContextWindow(0, 1, false))
 				{
-					DisplayCreateEntityMenu(editorCamera);
+					DisplayCreateActorMenu(editorCamera);
 
 					Gui::EndPopup();
 				}
 
-				Entity selected = SelectionManager::GetSelectedEntity();
+				Actor selected = SelectionManager::GetSelectedActor();
 
 				// destroy if requested
-				if (m_EntityShouldBeDestroyed && selected)
+				if (m_ActorShouldBeDestroyed && selected)
 				{
-					Entity entity = selected;
+					Actor actor = selected;
 
-					SelectionManager::DeselectEntity();
-					m_EntityShouldBeRenamed = false;
-					m_EntityShouldBeDestroyed = false;
+					SelectionManager::DeselectActor();
+					m_ActorShouldBeRenamed = false;
+					m_ActorShouldBeDestroyed = false;
 
-					m_ContextScene->SubmitToDestroyEntity(entity);
+					m_ContextScene->SubmitToDestroyActor(actor);
 				}
 			}
 
@@ -144,95 +144,95 @@ namespace Vortex {
 
 		if (s_ShowInspectorPanel)
 		{
-			DisplayInsectorPanel(hoveredEntity);
+			DisplayInsectorPanel(hoveredActor);
 		}
 	}
 
-	void SceneHierarchyPanel::RecursiveEntitySearch(UUID rootEntity, const EditorCamera* editorCamera, uint32_t& searchDepth)
+	void SceneHierarchyPanel::RecursiveActorSearch(UUID rootActor, const EditorCamera* editorCamera, uint32_t& searchDepth)
 	{
-		if (searchDepth > MAX_CHILD_ENTITY_SEARCH_DEPTH)
+		if (searchDepth > MAX_CHILD_ACTOR_SEARCH_DEPTH)
 			return;
 
-		const Entity entity = m_ContextScene->TryGetEntityWithUUID(rootEntity);
+		const Actor actor = m_ContextScene->TryGetActorWithUUID(rootActor);
 
-		if (!entity || entity.Children().empty())
+		if (!actor || actor.Children().empty())
 			return;
 
-		const auto& children = entity.Children();
+		const std::vector<UUID>& children = actor.Children();
 
 		for (const auto& childUUID : children)
 		{
-			const Entity child = m_ContextScene->TryGetEntityWithUUID(childUUID);
+			const Actor child = m_ContextScene->TryGetActorWithUUID(childUUID);
 
 			if (!child)
 				continue;
 
 			const std::string& name = child.GetName();
 
-			if (m_EntitySearchInputTextFilter.PassFilter(name.c_str()))
+			if (m_ActorSearchInputTextFilter.PassFilter(name.c_str()))
 			{
-				DrawEntityNode(child, editorCamera);
+				DrawActorNode(child, editorCamera);
 			}
 
 			searchDepth++;
 
-			RecursiveEntitySearch(child.GetUUID(), editorCamera, searchDepth);
+			RecursiveActorSearch(child.GetUUID(), editorCamera, searchDepth);
 		}
 	}
 
 	void SceneHierarchyPanel::SetSceneContext(SharedReference<Scene> scene)
 	{
 		m_ContextScene = scene;
-		SelectionManager::DeselectEntity();
-		m_EntityShouldBeRenamed = false;
-		m_EntityShouldBeDestroyed = false;
+		SelectionManager::DeselectActor();
+		m_ActorShouldBeRenamed = false;
+		m_ActorShouldBeDestroyed = false;
 
 		// Clear all search bars
-		memset(m_EntitySearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_EntitySearchInputTextFilter.InputBuf));
-		m_EntitySearchInputTextFilter.Build();
+		memset(m_ActorSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ActorSearchInputTextFilter.InputBuf));
+		m_ActorSearchInputTextFilter.Build();
 
-		memset(m_EntityClassNameInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_EntityClassNameInputTextFilter.InputBuf));
-		m_EntityClassNameInputTextFilter.Build();
+		memset(m_ActorClassNameInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ActorClassNameInputTextFilter.InputBuf));
+		m_ActorClassNameInputTextFilter.Build();
 
 		memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
 		m_ComponentSearchInputTextFilter.Build();
 	}
 
-	inline static Entity CreateDefaultMesh(const std::string& entityName, DefaultMesh::StaticMeshType defaultMesh, SharedReference<Scene>& contextScene, const EditorCamera* editorCamera)
+	inline static Actor CreateDefaultMesh(const std::string& actorName, DefaultMesh::StaticMeshType defaultMesh, SharedReference<Scene>& contextScene, const EditorCamera* editorCamera)
 	{
-		Entity entity = contextScene->CreateEntity(entityName);
-		StaticMeshRendererComponent& staticMeshRendererComponent = entity.AddComponent<StaticMeshRendererComponent>();
+		Actor actor = contextScene->CreateActor(actorName);
+		StaticMeshRendererComponent& staticMeshRendererComponent = actor.AddComponent<StaticMeshRendererComponent>();
 		staticMeshRendererComponent.Type = static_cast<MeshType>(defaultMesh);
 		staticMeshRendererComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(defaultMesh);
-		entity.GetTransform().Translation = editorCamera->GetFocalPoint();
+		actor.GetTransform().Translation = editorCamera->GetFocalPoint();
 
-		entity.AddComponent<RigidBodyComponent>();
+		actor.AddComponent<RigidBodyComponent>();
 
 		switch (defaultMesh)
 		{
-			case DefaultMesh::StaticMeshType::Cube:     entity.AddComponent<BoxColliderComponent>();     break;
-			case DefaultMesh::StaticMeshType::Sphere:   entity.AddComponent<SphereColliderComponent>();  break;
-			case DefaultMesh::StaticMeshType::Capsule:  entity.AddComponent<CapsuleColliderComponent>(); break;
-			case DefaultMesh::StaticMeshType::Cone:     entity.AddComponent<MeshColliderComponent>();    break;
-			case DefaultMesh::StaticMeshType::Cylinder: entity.AddComponent<MeshColliderComponent>();    break;
-			case DefaultMesh::StaticMeshType::Plane:    entity.AddComponent<MeshColliderComponent>();    break;
-			case DefaultMesh::StaticMeshType::Torus:    entity.AddComponent<MeshColliderComponent>();    break;
+			case DefaultMesh::StaticMeshType::Cube:     actor.AddComponent<BoxColliderComponent>();     break;
+			case DefaultMesh::StaticMeshType::Sphere:   actor.AddComponent<SphereColliderComponent>();  break;
+			case DefaultMesh::StaticMeshType::Capsule:  actor.AddComponent<CapsuleColliderComponent>(); break;
+			case DefaultMesh::StaticMeshType::Cone:     actor.AddComponent<MeshColliderComponent>();    break;
+			case DefaultMesh::StaticMeshType::Cylinder: actor.AddComponent<MeshColliderComponent>();    break;
+			case DefaultMesh::StaticMeshType::Plane:    actor.AddComponent<MeshColliderComponent>();    break;
+			case DefaultMesh::StaticMeshType::Torus:    actor.AddComponent<MeshColliderComponent>();    break;
 		}
 
-		SelectionManager::SetSelectedEntity(entity);
+		SelectionManager::SetSelectedActor(actor);
 
-		return entity;
+		return actor;
 	}
 
-	void SceneHierarchyPanel::DisplayCreateEntityMenu(const EditorCamera* editorCamera)
+	void SceneHierarchyPanel::DisplayCreateActorMenu(const EditorCamera* editorCamera)
 	{
-		bool entityAdded = false;
+		bool actorCreated = false;
 
 		if (Gui::MenuItem("Create Empty"))
 		{
-			Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Empty Entity"));
+			Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Empty Actor"));
 			selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-			entityAdded = true;
+			actorCreated = true;
 		}
 		UI::Draw::Underline();
 		Gui::Spacing();
@@ -244,7 +244,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Cube"))
 			{
 				CreateDefaultMesh("Cube", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -252,7 +252,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Sphere"))
 			{
 				CreateDefaultMesh("Sphere", DefaultMesh::StaticMeshType::Sphere, m_ContextScene, editorCamera);
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -260,7 +260,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Capsule"))
 			{
 				CreateDefaultMesh("Capsule", DefaultMesh::StaticMeshType::Capsule, m_ContextScene, editorCamera);
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -268,7 +268,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Cone"))
 			{
 				CreateDefaultMesh("Cone", DefaultMesh::StaticMeshType::Cone, m_ContextScene, editorCamera);
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -276,7 +276,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Cylinder"))
 			{
 				CreateDefaultMesh("Cylinder", DefaultMesh::StaticMeshType::Cylinder, m_ContextScene, editorCamera);
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -284,7 +284,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Plane"))
 			{
 				CreateDefaultMesh("Plane", DefaultMesh::StaticMeshType::Plane, m_ContextScene, editorCamera);
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -292,7 +292,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Torus"))
 			{
 				CreateDefaultMesh("Torus", DefaultMesh::StaticMeshType::Torus, m_ContextScene, editorCamera);
-				entityAdded = true;
+				actorCreated = true;
 			}
 
 			Gui::EndMenu();
@@ -306,26 +306,26 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Quad"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Quad"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Quad"));
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				selected.GetTransform().Translation.z = 0.0f;
 				selected.AddComponent<SpriteRendererComponent>();
 				selected.AddComponent<RigidBody2DComponent>();
 				selected.AddComponent<BoxCollider2DComponent>();
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Circle"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Circle"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Circle"));
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				selected.GetTransform().Translation.z = 0.0f;
 				selected.AddComponent<CircleRendererComponent>();
 				selected.AddComponent<RigidBody2DComponent>();
 				selected.AddComponent<CircleCollider2DComponent>();
-				entityAdded = true;
+				actorCreated = true;
 			}
 
 			Gui::EndMenu();
@@ -339,22 +339,22 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Perspective"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Camera"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Camera"));
 				CameraComponent& cameraComponent = selected.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Orthographic"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Camera"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Camera"));
 				CameraComponent& cameraComponent = selected.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-				entityAdded = true;
+				actorCreated = true;
 			}
 
 			Gui::EndMenu();
@@ -368,33 +368,33 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Directional"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Directional Light"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Directional Light"));
 				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Directional;
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Point"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Point Light"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Point Light"));
 				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Point;
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Spot"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Spot Light"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Spot Light"));
 				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Spot;
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-				entityAdded = true;
+				actorCreated = true;
 			}
 
 			Gui::EndMenu();
@@ -409,7 +409,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Box Collider"))
 			{
 				CreateDefaultMesh("Box Collider", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -417,7 +417,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Sphere Collider"))
 			{
 				CreateDefaultMesh("Sphere Collider", DefaultMesh::StaticMeshType::Sphere, m_ContextScene, editorCamera);
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -425,7 +425,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Capsule Collider"))
 			{
 				CreateDefaultMesh("Capsule Collider", DefaultMesh::StaticMeshType::Capsule, m_ContextScene, editorCamera);
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -433,7 +433,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Mesh Collider"))
 			{
 				CreateDefaultMesh("Mesh Collider", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
@@ -441,31 +441,31 @@ namespace Vortex {
 			if (Gui::MenuItem("Fixed Joint"))
 			{
 				CreateDefaultMesh("Fixed Joint", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Box Collider 2D"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Box Collider2D"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Box Collider2D"));
 				selected.AddComponent<SpriteRendererComponent>();
 				selected.AddComponent<RigidBody2DComponent>();
 				selected.AddComponent<BoxCollider2DComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
 			if (Gui::MenuItem("Circle Collider 2D"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Circle Collider2D"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Circle Collider2D"));
 				selected.AddComponent<CircleRendererComponent>();
 				selected.AddComponent<RigidBody2DComponent>();
 				selected.AddComponent<CircleCollider2DComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-				entityAdded = true;
+				actorCreated = true;
 			}
 
 			Gui::EndMenu();
@@ -477,22 +477,22 @@ namespace Vortex {
 		Gui::SameLine();
 		if (Gui::BeginMenu("Audio"))
 		{
-			if (Gui::MenuItem("Source Entity"))
+			if (Gui::MenuItem("Source Actor"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Audio Source"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Audio Source"));
 				selected.AddComponent<AudioSourceComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-				entityAdded = true;
+				actorCreated = true;
 			}
 			UI::Draw::Underline();
 			Gui::Spacing();
 
-			if (Gui::MenuItem("Listener Entity"))
+			if (Gui::MenuItem("Listener Actor"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Audio Listener"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Audio Listener"));
 				selected.AddComponent<AudioListenerComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-				entityAdded = true;
+				actorCreated = true;
 			}
 
 			Gui::EndMenu();
@@ -506,18 +506,18 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Text"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("UI Text"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("UI Text"));
 				selected.AddComponent<TextMeshComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-				entityAdded = true;
+				actorCreated = true;
 			}
 
 			if (Gui::MenuItem("Button"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("UI Button"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("UI Button"));
 				selected.AddComponent<ButtonComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-				entityAdded = true;
+				actorCreated = true;
 			}
 
 			Gui::EndMenu();
@@ -531,28 +531,28 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Particles"))
 			{
-				Entity selected = SelectionManager::SetSelectedEntity(m_ContextScene->CreateEntity("Particle Emitter"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Particle Emitter"));
 				selected.AddComponent<ParticleEmitterComponent>();
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
-				entityAdded = true;
+				actorCreated = true;
 			}
 
 			Gui::EndMenu();
 		}
 
-		if (entityAdded)
+		if (actorCreated)
 		{
-			FocusOnEntityName(true);
+			FocusOnActorName(true);
 		}
 	}
 
-	void SceneHierarchyPanel::DisplayInsectorPanel(Entity hoveredEntity)
+	void SceneHierarchyPanel::DisplayInsectorPanel(Actor hoveredActor)
 	{
 		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
 
 		if (Gui::Begin("Inspector", &s_ShowInspectorPanel, flags))
 		{
-			if (Entity selected = SelectionManager::GetSelectedEntity())
+			if (Actor selected = SelectionManager::GetSelectedActor())
 			{
 				DrawComponents(selected);
 			}
@@ -560,9 +560,9 @@ namespace Vortex {
 			{
 				std::string name = "(null)";
 
-				if (m_ContextScene && hoveredEntity && hoveredEntity.HasComponent<TagComponent>())
+				if (m_ContextScene && hoveredActor && hoveredActor.HasComponent<TagComponent>())
 				{
-					const std::string& tag = hoveredEntity.GetComponent<TagComponent>().Tag;
+					const std::string& tag = hoveredActor.GetComponent<TagComponent>().Tag;
 
 					if (!tag.empty())
 					{
@@ -571,7 +571,7 @@ namespace Vortex {
 				}
 
 				Gui::SetCursorPosX(10.0f);
-				Gui::Text("Hovered Entity: %s", name.c_str());
+				Gui::Text("Hovered Actor: %s", name.c_str());
 			}
 
 			Gui::End();
@@ -734,17 +734,17 @@ namespace Vortex {
 		Gui::Spacing();
 
 		std::string tempBuffer;
-		std::string& entityMarker = tagComponent.Marker;
-		size_t markerSize = entityMarker.size();
+		std::string& actorMarker = tagComponent.Marker;
+		size_t markerSize = actorMarker.size();
 
-		if (entityMarker.empty())
+		if (actorMarker.empty())
 		{
 			tempBuffer.reserve(MAX_MARKER_SIZE);
 		}
 		else
 		{
 			tempBuffer.resize(markerSize);
-			memcpy(tempBuffer.data(), entityMarker.data(), markerSize);
+			memcpy(tempBuffer.data(), actorMarker.data(), markerSize);
 		}
 
 		auto OnMarkerAddedFn = [&]() {
@@ -768,90 +768,90 @@ namespace Vortex {
 		UI::DrawItemActivityOutline();
 	}
 
-	void SceneHierarchyPanel::DrawEntityNode(Entity entity, const EditorCamera* editorCamera)
+	void SceneHierarchyPanel::DrawActorNode(Actor actor, const EditorCamera* editorCamera)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		auto largeFont = io.Fonts->Fonts[1];
 
-		const auto& tag = entity.GetComponent<TagComponent>().Tag;
+		const auto& tag = actor.GetComponent<TagComponent>().Tag;
 
-		ImGuiTreeNodeFlags flags = ((SelectionManager::GetSelectedEntity() == entity) ? ImGuiTreeNodeFlags_Selected : 0)
+		ImGuiTreeNodeFlags flags = ((SelectionManager::GetSelectedActor() == actor) ? ImGuiTreeNodeFlags_Selected : 0)
 			| ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-		if (entity.Children().empty())
+		if (actor.Children().empty())
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
-		const bool isPrefab = entity.HasComponent<PrefabComponent>();
-		const bool entityActive = entity.IsActive();
+		const bool isPrefab = actor.HasComponent<PrefabComponent>();
+		const bool actorActive = actor.IsActive();
 
 		if (isPrefab)
 			Gui::PushStyleColor(ImGuiCol_Text, ImVec4(0.32f, 0.7f, 0.87f, 1.0f));
-		if (!entityActive)
+		if (!actorActive)
 			Gui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
 
-		const bool opened = Gui::TreeNodeEx((void*)(uint32_t)entity, flags, tag.c_str());
+		const bool opened = Gui::TreeNodeEx((void*)(uint32_t)actor, flags, tag.c_str());
 		
 		if (isPrefab)
 			Gui::PopStyleColor();
-		if (!entityActive)
+		if (!actorActive)
 			Gui::PopStyleColor();
 
-		// Allow dragging entities
+		// Allow dragging actors
 		if (Gui::IsItemHovered() && Gui::IsMouseReleased(ImGuiMouseButton_Left))
 		{
-			SelectionManager::SetSelectedEntity(entity);
-			m_EntityShouldBeRenamed = false;
+			SelectionManager::SetSelectedActor(actor);
+			m_ActorShouldBeRenamed = false;
 		}
 
-		m_EntityShouldBeDestroyed = false;
+		m_ActorShouldBeDestroyed = false;
 		
-		// Right-click on entity for utilities popup
+		// Right-click on actor for utilities popup
 		if (Gui::BeginPopupContextItem())
 		{
 			if (Gui::MenuItem("Rename", "F2"))
 			{
-				SelectionManager::SetSelectedEntity(entity);
-				m_EntityShouldBeRenamed = true;
+				SelectionManager::SetSelectedActor(actor);
+				m_ActorShouldBeRenamed = true;
 				Gui::CloseCurrentPopup();
 			}
 			UI::Draw::Underline();
 
 			if (Gui::MenuItem("Add Empty Child"))
 			{
-				Entity childEntity = m_ContextScene->CreateEntity("Empty Entity");
-				m_ContextScene->ParentEntity(childEntity, entity);
+				Actor childActor = m_ContextScene->CreateActor("Empty Actor");
+				m_ContextScene->ParentActor(childActor, actor);
 				// Set child to origin of parent
-				childEntity.GetTransform().Translation = Math::vec3(0.0f);
-				SelectionManager::SetSelectedEntity(childEntity);
+				childActor.GetTransform().Translation = Math::vec3(0.0f);
+				SelectionManager::SetSelectedActor(childActor);
 				Gui::CloseCurrentPopup();
 			}
 			UI::Draw::Underline();
 
-			if (Gui::MenuItem("Unparent Entity"))
+			if (Gui::MenuItem("Unparent Actor"))
 			{
-				m_ContextScene->UnparentEntity(entity);
+				m_ContextScene->UnparentActor(actor);
 				Gui::CloseCurrentPopup();
 			}
 			UI::Draw::Underline();
 
-			if (Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
+			if (Gui::MenuItem("Duplicate Actor", "Ctrl+D"))
 			{
-				m_ContextScene->DuplicateEntity(entity);
+				m_ContextScene->DuplicateActor(actor);
 				Gui::CloseCurrentPopup();
 			}
 			UI::Draw::Underline();
 
-			if (Gui::MenuItem("Delete Entity", "Del") && SelectionManager::GetSelectedEntity())
-				m_EntityShouldBeDestroyed = true;
+			if (Gui::MenuItem("Delete Actor", "Del") && SelectionManager::GetSelectedActor())
+				m_ActorShouldBeDestroyed = true;
 
 			Gui::EndPopup();
 		}
 
 		if (Gui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 		{
-			Gui::Text(entity.GetName().c_str());
-			Gui::SetDragDropPayload("SCENE_HIERARCHY_ITEM", &entity, sizeof(Entity));
+			Gui::Text(actor.GetName().c_str());
+			Gui::SetDragDropPayload("SCENE_HIERARCHY_ITEM", &actor, sizeof(Actor));
 			Gui::EndDragDropSource();
 		}
 
@@ -859,8 +859,8 @@ namespace Vortex {
 		{
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM", ImGuiDragDropFlags_AcceptNoDrawDefaultRect))
 			{
-				Entity& droppedEntity = *((Entity*)payload->Data);
-				m_ContextScene->ParentEntity(droppedEntity, entity);
+				Actor& droppedActor = *((Actor*)payload->Data);
+				m_ContextScene->ParentActor(droppedActor, actor);
 			}
 
 			Gui::EndDragDropTarget();
@@ -868,24 +868,24 @@ namespace Vortex {
 
 		if (opened)
 		{
-			const auto& children = entity.Children();
+			const auto& children = actor.Children();
 			for (const auto& child : children)
 			{
-				Entity childEntity = m_ContextScene->TryGetEntityWithUUID(child);
-				if (childEntity && std::find(children.begin(), children.end(), child) != children.end());
+				Actor childActor = m_ContextScene->TryGetActorWithUUID(child);
+				if (childActor && std::find(children.begin(), children.end(), child) != children.end());
 				{
-					DrawEntityNode(childEntity, editorCamera);
+					DrawActorNode(childActor, editorCamera);
 				}
 			}
 
 			Gui::TreePop();
 		}
 
-		// Destroy the entity if requested
-		if (m_EntityShouldBeDestroyed && SelectionManager::GetSelectedEntity() == entity)
+		// Destroy the actor if requested
+		if (m_ActorShouldBeDestroyed && SelectionManager::GetSelectedActor() == actor)
 		{
-			SelectionManager::DeselectEntity();
-			m_ContextScene->SubmitToDestroyEntity(entity);
+			SelectionManager::DeselectActor();
+			m_ContextScene->SubmitToDestroyActor(actor);
 		}
 	}
 
@@ -893,8 +893,8 @@ namespace Vortex {
 	struct ComponentUICallbacks
 	{
 		using ValueType = TComponent&;
-		using ReferenceType = std::function<void(ValueType, Entity)>;
-		using ConstType = std::function<void(const ValueType, Entity)>;
+		using ReferenceType = std::function<void(ValueType, Actor)>;
+		using ConstType = std::function<void(const ValueType, Actor)>;
 
 		ReferenceType OnGuiRenderFn = nullptr;
 		ReferenceType OnComponentResetFn = nullptr;
@@ -906,11 +906,11 @@ namespace Vortex {
 	};
 
 	template <typename TComponent>
-	static void DrawComponent(const std::string& name, Entity entity, const ComponentUICallbacks<TComponent>& callbacks)
+	static void DrawComponent(const std::string& name, Actor actor, const ComponentUICallbacks<TComponent>& callbacks)
 	{
-		if (entity.HasComponent<TComponent>())
+		if (actor.HasComponent<TComponent>())
 		{
-			auto& component = entity.GetComponent<TComponent>();
+			auto& component = actor.GetComponent<TComponent>();
 			const ImVec2 contentRegionAvailable = Gui::GetContentRegionAvail();
 
 			Gui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
@@ -931,7 +931,7 @@ namespace Vortex {
 				{
 					if (callbacks.OnComponentCopiedFn != nullptr)
 					{
-						std::invoke(callbacks.OnComponentCopiedFn, component, entity);
+						std::invoke(callbacks.OnComponentCopiedFn, component, actor);
 					}
 					Gui::CloseCurrentPopup();
 				}
@@ -944,7 +944,7 @@ namespace Vortex {
 				{
 					if (callbacks.OnComponentPastedFn != nullptr)
 					{
-						std::invoke(callbacks.OnComponentPastedFn, component, entity);
+						std::invoke(callbacks.OnComponentPastedFn, component, actor);
 					}
 					Gui::CloseCurrentPopup();
 				}
@@ -957,7 +957,7 @@ namespace Vortex {
 				{
 					if (callbacks.OnComponentResetFn != nullptr)
 					{
-						std::invoke(callbacks.OnComponentResetFn, component, entity);
+						std::invoke(callbacks.OnComponentResetFn, component, actor);
 					}
 					Gui::CloseCurrentPopup();
 				}
@@ -981,7 +981,7 @@ namespace Vortex {
 			if (propertyGridHeaderOpen)
 			{
 				VX_CORE_ASSERT(callbacks.OnGuiRenderFn != nullptr, "All components must have OnGuiRender callback!");
-				std::invoke(callbacks.OnGuiRenderFn, component, entity);
+				std::invoke(callbacks.OnGuiRenderFn, component, actor);
 				UI::EndTreeNode();
 			}
 
@@ -989,10 +989,10 @@ namespace Vortex {
 			{
 				if (callbacks.OnComponentRemovedFn != nullptr)
 				{
-					std::invoke(callbacks.OnComponentRemovedFn, component, entity);
+					std::invoke(callbacks.OnComponentRemovedFn, component, actor);
 				}
 
-				entity.RemoveComponent<TComponent>();
+				actor.RemoveComponent<TComponent>();
 			}
 		}
 	}
@@ -1012,40 +1012,40 @@ namespace Vortex {
 
 #pragma warning(default : 4996)
 
-	void SceneHierarchyPanel::DrawComponents(Entity entity)
+	void SceneHierarchyPanel::DrawComponents(Actor actor)
 	{
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
 		// Tag Component
 		{
-			TagComponent& tagComponent = entity.GetComponent<TagComponent>();
+			TagComponent& tagComponent = actor.GetComponent<TagComponent>();
 			std::string& tag = tagComponent.Tag;
 
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
 			strcpy_s(buffer, sizeof(buffer), tag.c_str());
 
-			const bool shouldRename = m_EntityShouldBeRenamed && SelectionManager::GetSelectedEntity() == entity;
+			const bool shouldRename = m_ActorShouldBeRenamed && SelectionManager::GetSelectedActor() == actor;
 			ImGuiInputTextFlags flags = shouldRename ? ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue : 0;
 
 			if (shouldRename)
 			{
 				Gui::SetKeyboardFocusHere();
-				m_IsEditingEntityName = true;
+				m_IsEditingActorName = true;
 			}
-			if (Gui::InputTextWithHint("##Tag", "Entity Name", buffer, sizeof(buffer), flags))
+			if (Gui::InputTextWithHint("##Tag", "Actor Name", buffer, sizeof(buffer), flags))
 			{
 				tag = std::string(buffer);
 
 				// Set the focus to the scene panel otherwise the keyboard focus will still be on the input text box
-				if (m_EntityShouldBeRenamed)
+				if (m_ActorShouldBeRenamed)
 					Gui::SetWindowFocus("Scene");
 
-				m_EntityShouldBeRenamed = false;
-				m_IsEditingEntityName = false;
+				m_ActorShouldBeRenamed = false;
+				m_IsEditingActorName = false;
 			}
 
-			m_IsEditingEntityName = Gui::IsItemActive();
+			m_IsEditingActorName = Gui::IsItemActive();
 
 			UI::DrawItemActivityOutline();
 
@@ -1071,7 +1071,7 @@ namespace Vortex {
 			bool active = tagComponent.IsActive;
 			if (UI::Property("Active", active))
 			{
-				entity.SetActive(active);
+				actor.SetActive(active);
 			}
 
 			UI::EndPropertyGrid();
@@ -1153,23 +1153,23 @@ namespace Vortex {
 
 		ComponentUICallbacks<TransformComponent> transformComponentCallbacks;
 		transformComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::TransformComponentOnGuiRender);
-		transformComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = TransformComponent(); };
+		transformComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = TransformComponent(); };
 		// TODO!
-		transformComponentCallbacks.OnComponentCopiedFn = [&](auto& component, auto entity) {
-			if (!m_CopyEntity.HasComponent<TransformComponent>()) {
-				m_CopyEntity.AddComponent<TransformComponent>(component);
+		transformComponentCallbacks.OnComponentCopiedFn = [&](auto& component, auto actor) {
+			if (!m_CopyActor.HasComponent<TransformComponent>()) {
+				m_CopyActor.AddComponent<TransformComponent>(component);
 			}
 		};
 		// DITTO!
-		transformComponentCallbacks.OnComponentPastedFn = [&](auto& component, auto entity) {
-			component = m_CopyEntity.GetComponent<TransformComponent>();
+		transformComponentCallbacks.OnComponentPastedFn = [&](auto& component, auto actor) {
+			component = m_CopyActor.GetComponent<TransformComponent>();
 		};
 		transformComponentCallbacks.IsRemoveable = false;
-		DrawComponent<TransformComponent>("Transform", entity, transformComponentCallbacks);
+		DrawComponent<TransformComponent>("Transform", actor, transformComponentCallbacks);
 
 		ComponentUICallbacks<CameraComponent> cameraComponentCallbacks;
 		cameraComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::CameraComponentOnGuiRender);
-		cameraComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) {
+		cameraComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) {
 			auto ResetCameraFn = [&](auto type)
 			{
 				component = CameraComponent();
@@ -1182,16 +1182,16 @@ namespace Vortex {
 				case SceneCamera::ProjectionType::Orthographic: ResetCameraFn(SceneCamera::ProjectionType::Orthographic); break;
 			}
 		};
-		DrawComponent<CameraComponent>("Camera", entity, cameraComponentCallbacks);
+		DrawComponent<CameraComponent>("Camera", actor, cameraComponentCallbacks);
 
 		ComponentUICallbacks<SkyboxComponent> skyboxComponentCallbacks;
 		skyboxComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::SkyboxComponentOnGuiRender);
-		skyboxComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = SkyboxComponent(); };
-		DrawComponent<SkyboxComponent>("Skybox", entity, skyboxComponentCallbacks);
+		skyboxComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = SkyboxComponent(); };
+		DrawComponent<SkyboxComponent>("Skybox", actor, skyboxComponentCallbacks);
 
 		ComponentUICallbacks<LightSourceComponent> lightSourceComponentCallbacks;
 		lightSourceComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::LightSourceComponentOnGuiRender);
-		lightSourceComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) {
+		lightSourceComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) {
 			switch (component.Type)
 			{
 				case LightType::Directional: component = LightSourceComponent(LightType::Directional); break;
@@ -1199,135 +1199,135 @@ namespace Vortex {
 				case LightType::Spot:        component = LightSourceComponent(LightType::Spot);        break;
 			}
 		};
-		DrawComponent<LightSourceComponent>("Light Source", entity, lightSourceComponentCallbacks);
+		DrawComponent<LightSourceComponent>("Light Source", actor, lightSourceComponentCallbacks);
 
 		ComponentUICallbacks<LightSource2DComponent> lightSource2DComponentCallbacks;
-		DrawComponent<LightSource2DComponent>("Light Source 2D", entity, lightSource2DComponentCallbacks);
+		DrawComponent<LightSource2DComponent>("Light Source 2D", actor, lightSource2DComponentCallbacks);
 
 		ComponentUICallbacks<MeshRendererComponent> meshRendererComponentCallbacks;
 		meshRendererComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::MeshRendererComponentOnGuiRender);
-		meshRendererComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = MeshRendererComponent(); };
-		DrawComponent<MeshRendererComponent>("Mesh Renderer", entity, meshRendererComponentCallbacks);
+		meshRendererComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = MeshRendererComponent(); };
+		DrawComponent<MeshRendererComponent>("Mesh Renderer", actor, meshRendererComponentCallbacks);
 
 		ComponentUICallbacks<StaticMeshRendererComponent> staticMeshRendererComponentCallbacks;
 		staticMeshRendererComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::StaticMeshRendererComponentOnGuiRender);
-		staticMeshRendererComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) {
+		staticMeshRendererComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) {
 			component = StaticMeshRendererComponent();
 			component.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(DefaultMesh::StaticMeshType::Cube);
 			SharedReference<MaterialTable> materialTable = component.Materials;
 			materialTable->SetMaterial(0, Material::GetDefaultMaterialHandle());
 		};
-		DrawComponent<StaticMeshRendererComponent>("Static Mesh Renderer", entity, staticMeshRendererComponentCallbacks);
+		DrawComponent<StaticMeshRendererComponent>("Static Mesh Renderer", actor, staticMeshRendererComponentCallbacks);
 
 		ComponentUICallbacks<SpriteRendererComponent> spriteRendererComponentCallbacks;
 		spriteRendererComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::SpriteRendererComponentOnGuiRender);
-		spriteRendererComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = SpriteRendererComponent(); };
-		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, spriteRendererComponentCallbacks);
+		spriteRendererComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = SpriteRendererComponent(); };
+		DrawComponent<SpriteRendererComponent>("Sprite Renderer", actor, spriteRendererComponentCallbacks);
 
 		ComponentUICallbacks<CircleRendererComponent> circleRendererComponentCallbacks;
 		circleRendererComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::CircleRendererComponentOnGuiRender);
-		DrawComponent<CircleRendererComponent>("Circle Renderer", entity, circleRendererComponentCallbacks);
+		DrawComponent<CircleRendererComponent>("Circle Renderer", actor, circleRendererComponentCallbacks);
 
 		ComponentUICallbacks<ParticleEmitterComponent> particleEmitterComponentCallbacks;
 		particleEmitterComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::ParticleEmitterComponentOnGuiRender);
-		particleEmitterComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = ParticleEmitterComponent(); };
-		DrawComponent<ParticleEmitterComponent>("Particle Emitter", entity, particleEmitterComponentCallbacks);
+		particleEmitterComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = ParticleEmitterComponent(); };
+		DrawComponent<ParticleEmitterComponent>("Particle Emitter", actor, particleEmitterComponentCallbacks);
 
 		ComponentUICallbacks<AnimatorComponent> animatorComponentCallbacks;
 		animatorComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::AnimatorComponentOnGuiRender);
-		animatorComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = AnimatorComponent(); };
-		DrawComponent<AnimatorComponent>("Animator", entity, animatorComponentCallbacks);
+		animatorComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = AnimatorComponent(); };
+		DrawComponent<AnimatorComponent>("Animator", actor, animatorComponentCallbacks);
 
 		ComponentUICallbacks<AnimationComponent> animationComponentCallbacks;
 		animationComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::AnimationComponentOnGuiRender);
-		animationComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = AnimationComponent(); };
-		DrawComponent<AnimationComponent>("Animation", entity, animationComponentCallbacks);
+		animationComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = AnimationComponent(); };
+		DrawComponent<AnimationComponent>("Animation", actor, animationComponentCallbacks);
 
 		ComponentUICallbacks<TextMeshComponent> textMeshComponentCallbacks;
 		textMeshComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::TextMeshComponentOnGuiRender);
-		textMeshComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = TextMeshComponent(); };
-		DrawComponent<TextMeshComponent>("Text Mesh", entity, textMeshComponentCallbacks);
+		textMeshComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = TextMeshComponent(); };
+		DrawComponent<TextMeshComponent>("Text Mesh", actor, textMeshComponentCallbacks);
 
 		ComponentUICallbacks<ButtonComponent> buttonComponentCallbacks;
 		buttonComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::ButtonComponentOnGuiRender);
-		buttonComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = ButtonComponent(); };
-		DrawComponent<ButtonComponent>("Button", entity, buttonComponentCallbacks);
+		buttonComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = ButtonComponent(); };
+		DrawComponent<ButtonComponent>("Button", actor, buttonComponentCallbacks);
 
 		ComponentUICallbacks<AudioSourceComponent> audioSourceComponentCallbacks;
 		audioSourceComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::AudioSourceComponentOnGuiRender);
-		audioSourceComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = AudioSourceComponent(); };
-		DrawComponent<AudioSourceComponent>("Audio Source", entity, audioSourceComponentCallbacks);
+		audioSourceComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = AudioSourceComponent(); };
+		DrawComponent<AudioSourceComponent>("Audio Source", actor, audioSourceComponentCallbacks);
 
 		ComponentUICallbacks<AudioListenerComponent> audioListenerComponentCallbacks;
 		audioListenerComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::AudioListenerComponentOnGuiRender);
-		audioListenerComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = AudioListenerComponent(); };
-		DrawComponent<AudioListenerComponent>("Audio Listener", entity, audioListenerComponentCallbacks);
+		audioListenerComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = AudioListenerComponent(); };
+		DrawComponent<AudioListenerComponent>("Audio Listener", actor, audioListenerComponentCallbacks);
 
 		ComponentUICallbacks<RigidBodyComponent> rigidBodyComponentCallbacks;
 		rigidBodyComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::RigidBodyComponentOnGuiRender);
-		rigidBodyComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = RigidBodyComponent(); };
-		DrawComponent<RigidBodyComponent>("RigidBody", entity, rigidBodyComponentCallbacks);
+		rigidBodyComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = RigidBodyComponent(); };
+		DrawComponent<RigidBodyComponent>("RigidBody", actor, rigidBodyComponentCallbacks);
 
 		ComponentUICallbacks<CharacterControllerComponent> characterControllerComponentCallbacks;
 		characterControllerComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::CharacterControllerComponentOnGuiRender);
-		characterControllerComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = CharacterControllerComponent(); };
-		DrawComponent<CharacterControllerComponent>("Character Controller", entity, characterControllerComponentCallbacks);
+		characterControllerComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = CharacterControllerComponent(); };
+		DrawComponent<CharacterControllerComponent>("Character Controller", actor, characterControllerComponentCallbacks);
 
 		ComponentUICallbacks<FixedJointComponent> fixedJointComponentCallbacks;
 		fixedJointComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::FixedJointComponentOnGuiRender);
-		fixedJointComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = FixedJointComponent(); };
-		DrawComponent<FixedJointComponent>("Fixed Joint", entity, fixedJointComponentCallbacks);
+		fixedJointComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = FixedJointComponent(); };
+		DrawComponent<FixedJointComponent>("Fixed Joint", actor, fixedJointComponentCallbacks);
 
 		ComponentUICallbacks<BoxColliderComponent> boxColliderComponentCallbacks;
 		boxColliderComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::BoxColliderComponentOnGuiRender);
-		boxColliderComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = BoxColliderComponent(); };
-		DrawComponent<BoxColliderComponent>("Box Collider", entity, boxColliderComponentCallbacks);
+		boxColliderComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = BoxColliderComponent(); };
+		DrawComponent<BoxColliderComponent>("Box Collider", actor, boxColliderComponentCallbacks);
 
 		ComponentUICallbacks<SphereColliderComponent> sphereColliderComponentCallbacks;
 		sphereColliderComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::SphereColliderComponentOnGuiRender);
-		sphereColliderComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = SphereColliderComponent(); };
-		DrawComponent<SphereColliderComponent>("Sphere Collider", entity, sphereColliderComponentCallbacks);
+		sphereColliderComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = SphereColliderComponent(); };
+		DrawComponent<SphereColliderComponent>("Sphere Collider", actor, sphereColliderComponentCallbacks);
 
 		ComponentUICallbacks<CapsuleColliderComponent> capsuleColliderComponentCallbacks;
 		capsuleColliderComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::CapsuleColliderComponentOnGuiRender);
-		capsuleColliderComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = CapsuleColliderComponent(); };
-		DrawComponent<CapsuleColliderComponent>("Capsule Collider", entity, capsuleColliderComponentCallbacks);
+		capsuleColliderComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = CapsuleColliderComponent(); };
+		DrawComponent<CapsuleColliderComponent>("Capsule Collider", actor, capsuleColliderComponentCallbacks);
 
 		ComponentUICallbacks<MeshColliderComponent> meshColliderComponentCallbacks;
 		meshColliderComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::MeshColliderComponentOnGuiRender);
-		meshColliderComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = MeshColliderComponent(); };
-		DrawComponent<MeshColliderComponent>("Mesh Collider", entity, meshColliderComponentCallbacks);
+		meshColliderComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = MeshColliderComponent(); };
+		DrawComponent<MeshColliderComponent>("Mesh Collider", actor, meshColliderComponentCallbacks);
 
 		ComponentUICallbacks<RigidBody2DComponent> rigidBody2DComponentCallbacks;
 		rigidBody2DComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::RigidBody2DComponentOnGuiRender);
-		rigidBody2DComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = RigidBody2DComponent(); };
-		DrawComponent<RigidBody2DComponent>("RigidBody 2D", entity, rigidBody2DComponentCallbacks);
+		rigidBody2DComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = RigidBody2DComponent(); };
+		DrawComponent<RigidBody2DComponent>("RigidBody 2D", actor, rigidBody2DComponentCallbacks);
 
 		ComponentUICallbacks<BoxCollider2DComponent> boxCollider2DComponentCallbacks;
 		boxCollider2DComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::BoxCollider2DComponentOnGuiRender);
-		boxCollider2DComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = BoxCollider2DComponent(); };
-		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, boxCollider2DComponentCallbacks);
+		boxCollider2DComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = BoxCollider2DComponent(); };
+		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", actor, boxCollider2DComponentCallbacks);
 
 		ComponentUICallbacks<CircleCollider2DComponent> circleCollider2DComponentCallbacks;
 		circleCollider2DComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::CircleCollider2DComponentOnGuiRender);
-		circleCollider2DComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = CircleCollider2DComponent(); };
-		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, circleCollider2DComponentCallbacks);
+		circleCollider2DComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = CircleCollider2DComponent(); };
+		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", actor, circleCollider2DComponentCallbacks);
 
 		ComponentUICallbacks<NavMeshAgentComponent> navMeshAgentComponentCallbacks;
 		navMeshAgentComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::NavMeshAgentComponentOnGuiRender);
-		navMeshAgentComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = NavMeshAgentComponent(); };
-		DrawComponent<NavMeshAgentComponent>("Nav Mesh Agent", entity, navMeshAgentComponentCallbacks);
+		navMeshAgentComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = NavMeshAgentComponent(); };
+		DrawComponent<NavMeshAgentComponent>("Nav Mesh Agent", actor, navMeshAgentComponentCallbacks);
 
 		ComponentUICallbacks<ScriptComponent> scriptComponentCallbacks;
 		scriptComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::ScriptComponentOnGuiRender);
-		scriptComponentCallbacks.OnComponentResetFn = [](auto& component, auto entity) { component = ScriptComponent(); };
-		DrawComponent<ScriptComponent>("Script", entity, scriptComponentCallbacks);
+		scriptComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = ScriptComponent(); };
+		DrawComponent<ScriptComponent>("Script", actor, scriptComponentCallbacks);
 
 		ComponentUICallbacks<NativeScriptComponent> nativeScriptComponentCallbacks;
-		DrawComponent<NativeScriptComponent>("Native Script", entity, nativeScriptComponentCallbacks);
+		DrawComponent<NativeScriptComponent>("Native Script", actor, nativeScriptComponentCallbacks);
 	}
 
-	void SceneHierarchyPanel::TransformComponentOnGuiRender(TransformComponent& component, Entity entity)
+	void SceneHierarchyPanel::TransformComponentOnGuiRender(TransformComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 		UI::DrawVec3Controls("Translation", component.Translation);
@@ -1340,7 +1340,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::CameraComponentOnGuiRender(CameraComponent& component, Entity entity)
+	void SceneHierarchyPanel::CameraComponentOnGuiRender(CameraComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -1412,12 +1412,12 @@ namespace Vortex {
 
 		if (modified)
 		{
-			Math::uvec2 viewportSize = m_ContextScene->GetViewportSize();
+			const Math::uvec2& viewportSize = m_ContextScene->GetViewportSize();
 			camera.SetViewportSize(viewportSize.x, viewportSize.y);
 		}
 	}
 
-	void SceneHierarchyPanel::SkyboxComponentOnGuiRender(SkyboxComponent& component, Entity entity)
+	void SceneHierarchyPanel::SkyboxComponentOnGuiRender(SkyboxComponent& component, Actor actor)
 	{
 		AssetHandle environmentHandle = component.Skybox;
 		SharedReference<Skybox> skybox = nullptr;
@@ -1475,7 +1475,7 @@ namespace Vortex {
 		}
 	}
 
-	void SceneHierarchyPanel::LightSourceComponentOnGuiRender(LightSourceComponent& component, Entity entity)
+	void SceneHierarchyPanel::LightSourceComponentOnGuiRender(LightSourceComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -1533,7 +1533,7 @@ namespace Vortex {
 		}
 	}
 
-	void SceneHierarchyPanel::MeshRendererComponentOnGuiRender(MeshRendererComponent& component, Entity entity)
+	void SceneHierarchyPanel::MeshRendererComponentOnGuiRender(MeshRendererComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -1567,10 +1567,10 @@ namespace Vortex {
 					{
 						component.Mesh = meshHandle;
 
-						if (entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>() && AssetManager::GetAsset<Mesh>(component.Mesh)->HasAnimations())
+						if (actor.HasComponent<AnimatorComponent>() && actor.HasComponent<AnimationComponent>() && AssetManager::GetAsset<Mesh>(component.Mesh)->HasAnimations())
 						{
-							AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
-							AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+							AnimatorComponent& animatorComponent = actor.GetComponent<AnimatorComponent>();
+							AnimationComponent& animationComponent = actor.GetComponent<AnimationComponent>();
 
 							animationComponent.Animation = Animation::Create(meshFilepath.string(), component.Mesh);
 							animatorComponent.Animator = Animator::Create(animationComponent.Animation);
@@ -1589,7 +1589,7 @@ namespace Vortex {
 		// TODO materials ///////////////////////////////////////////////////////////////////////////////////////////////////////
 	}
 
-	void SceneHierarchyPanel::StaticMeshRendererComponentOnGuiRender(StaticMeshRendererComponent& component, Entity entity)
+	void SceneHierarchyPanel::StaticMeshRendererComponentOnGuiRender(StaticMeshRendererComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -1700,7 +1700,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::SpriteRendererComponentOnGuiRender(SpriteRendererComponent& component, Entity entity)
+	void SceneHierarchyPanel::SpriteRendererComponentOnGuiRender(SpriteRendererComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -1766,7 +1766,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::CircleRendererComponentOnGuiRender(CircleRendererComponent& component, Entity entity)
+	void SceneHierarchyPanel::CircleRendererComponentOnGuiRender(CircleRendererComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -1779,7 +1779,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::ParticleEmitterComponentOnGuiRender(ParticleEmitterComponent& component, Entity entity)
+	void SceneHierarchyPanel::ParticleEmitterComponentOnGuiRender(ParticleEmitterComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -1828,7 +1828,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::AnimatorComponentOnGuiRender(AnimatorComponent& component, Entity entity)
+	void SceneHierarchyPanel::AnimatorComponentOnGuiRender(AnimatorComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -1850,7 +1850,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::AnimationComponentOnGuiRender(AnimationComponent& component, Entity entity)
+	void SceneHierarchyPanel::AnimationComponentOnGuiRender(AnimationComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -1864,7 +1864,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::TextMeshComponentOnGuiRender(TextMeshComponent& component, Entity entity)
+	void SceneHierarchyPanel::TextMeshComponentOnGuiRender(TextMeshComponent& component, Actor actor)
 	{
 		std::string relativePath = "Default Font";
 
@@ -1925,13 +1925,13 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::ButtonComponentOnGuiRender(ButtonComponent& component, Entity entity)
+	void SceneHierarchyPanel::ButtonComponentOnGuiRender(ButtonComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::AudioSourceComponentOnGuiRender(AudioSourceComponent& component, Entity entity)
+	void SceneHierarchyPanel::AudioSourceComponentOnGuiRender(AudioSourceComponent& component, Actor actor)
 	{
 		SharedReference<AudioSource> audioSource = nullptr;
 		if (AssetManager::IsHandleValid(component.AudioHandle))
@@ -2262,14 +2262,14 @@ namespace Vortex {
 		}
 	}
 
-	void SceneHierarchyPanel::AudioListenerComponentOnGuiRender(AudioListenerComponent& component, Entity entity)
+	void SceneHierarchyPanel::AudioListenerComponentOnGuiRender(AudioListenerComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::RigidBodyComponentOnGuiRender(RigidBodyComponent& component, Entity entity)
+	void SceneHierarchyPanel::RigidBodyComponentOnGuiRender(RigidBodyComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -2284,7 +2284,7 @@ namespace Vortex {
 
 			if (simulationRunning && bodyTypeChanged)
 			{
-				Physics::ReCreateActor(entity);
+				Physics::ReCreateActor(actor);
 			}
 		}
 
@@ -2420,13 +2420,13 @@ namespace Vortex {
 				const bool simulationRunning = m_ContextScene->IsRunning() || m_ContextScene->IsSimulating();
 				if (simulationRunning)
 				{
-					Physics::WakeUpActor(entity);
+					Physics::WakeUpActor(actor);
 				}
 			}
 		}
 	}
 
-	void SceneHierarchyPanel::CharacterControllerComponentOnGuiRender(CharacterControllerComponent& component, Entity entity)
+	void SceneHierarchyPanel::CharacterControllerComponentOnGuiRender(CharacterControllerComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -2444,7 +2444,7 @@ namespace Vortex {
 		if (UI::PropertyDropdown("Non Walkable Mode", nonWalkableModes, VX_ARRAYSIZE(nonWalkableModes), currentNonWalkableMode))
 			component.NonWalkMode = (NonWalkableMode)currentNonWalkableMode;
 
-		if (entity.HasComponent<CapsuleColliderComponent>())
+		if (actor.HasComponent<CapsuleColliderComponent>())
 		{
 			const char* climbModes[] = { "Easy", "Constrained" };
 			int32_t currentClimbMode = (uint32_t)component.ClimbMode;
@@ -2455,24 +2455,24 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::FixedJointComponentOnGuiRender(FixedJointComponent& component, Entity entity)
+	void SceneHierarchyPanel::FixedJointComponentOnGuiRender(FixedJointComponent& component, Actor actor)
 	{
-		std::string connectedEntityName = "Null";
-		if (Entity connectedEntity = m_ContextScene->TryGetEntityWithUUID(component.ConnectedEntity))
+		std::string connectedActorName = "Null";
+		if (Actor connectedActor = m_ContextScene->TryGetActorWithUUID(component.ConnectedActor))
 		{
-			connectedEntityName = connectedEntity.GetName();
+			connectedActorName = connectedActor.GetName();
 		}
 
 		UI::BeginPropertyGrid();
-		UI::Property("Connected Entity", connectedEntityName, true);
+		UI::Property("Connected Actor", connectedActorName, true);
 		UI::EndPropertyGrid();
 
 		if (Gui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 			{
-				Entity& droppedEntity = *((Entity*)payload->Data);
-				component.ConnectedEntity = droppedEntity.GetUUID();
+				Actor& droppedActor = *((Actor*)payload->Data);
+				component.ConnectedActor = droppedActor.GetUUID();
 			}
 
 			Gui::EndDragDropTarget();
@@ -2494,7 +2494,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::BoxColliderComponentOnGuiRender(BoxColliderComponent& component, Entity entity)
+	void SceneHierarchyPanel::BoxColliderComponentOnGuiRender(BoxColliderComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -2506,7 +2506,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::SphereColliderComponentOnGuiRender(SphereColliderComponent& component, Entity entity)
+	void SceneHierarchyPanel::SphereColliderComponentOnGuiRender(SphereColliderComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -2518,7 +2518,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::CapsuleColliderComponentOnGuiRender(CapsuleColliderComponent& component, Entity entity)
+	void SceneHierarchyPanel::CapsuleColliderComponentOnGuiRender(CapsuleColliderComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -2531,7 +2531,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::MeshColliderComponentOnGuiRender(MeshColliderComponent& component, Entity entity)
+	void SceneHierarchyPanel::MeshColliderComponentOnGuiRender(MeshColliderComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -2550,7 +2550,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::RigidBody2DComponentOnGuiRender(RigidBody2DComponent& component, Entity entity)
+	void SceneHierarchyPanel::RigidBody2DComponentOnGuiRender(RigidBody2DComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -2574,7 +2574,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::BoxCollider2DComponentOnGuiRender(BoxCollider2DComponent& component, Entity entity)
+	void SceneHierarchyPanel::BoxCollider2DComponentOnGuiRender(BoxCollider2DComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -2590,7 +2590,7 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::CircleCollider2DComponentOnGuiRender(CircleCollider2DComponent& component, Entity entity)
+	void SceneHierarchyPanel::CircleCollider2DComponentOnGuiRender(CircleCollider2DComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
@@ -2605,24 +2605,26 @@ namespace Vortex {
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::NavMeshAgentComponentOnGuiRender(NavMeshAgentComponent& component, Entity entity)
+	void SceneHierarchyPanel::NavMeshAgentComponentOnGuiRender(NavMeshAgentComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
 		UI::EndPropertyGrid();
 	}
 
-	void SceneHierarchyPanel::ScriptComponentOnGuiRender(ScriptComponent& component, Entity entity)
+	void SceneHierarchyPanel::ScriptComponentOnGuiRender(ScriptComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
 
-		std::vector<const char*> entityClassNameStrings;
-		const bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
+		std::vector<const char*> actorClassNameStrings;
+		const bool scriptClassExists = ScriptEngine::ActorClassExists(component.ClassName);
 
-		std::unordered_map<std::string, SharedReference<ScriptClass>> entityClasses = ScriptEngine::GetClasses();
+		std::unordered_map<std::string, SharedReference<ScriptClass>> actorClasses = ScriptEngine::GetClasses();
 
-		for (auto& [className, entityScriptClass] : entityClasses)
-			entityClassNameStrings.push_back(className.c_str());
+		for (auto& [className, actorScriptClass] : actorClasses)
+		{
+			actorClassNameStrings.push_back(className.c_str());
+		}
 
 		std::string currentClassName = "(null)";
 		if (!component.ClassName.empty())
@@ -2630,8 +2632,8 @@ namespace Vortex {
 			currentClassName = component.ClassName;
 		}
 
-		// Display available entity classes to choose from
-		if (UI::PropertyDropdownSearch("Class", entityClassNameStrings.data(), entityClassNameStrings.size(), currentClassName, m_EntityClassNameInputTextFilter))
+		// Display available actor classes to choose from
+		if (UI::PropertyDropdownSearch("Class", actorClassNameStrings.data(), actorClassNameStrings.size(), currentClassName, m_ActorClassNameInputTextFilter))
 			component.ClassName = currentClassName;
 
 		const bool sceneRunning = m_ContextScene->IsRunning();
@@ -2639,7 +2641,7 @@ namespace Vortex {
 		// Fields
 		if (sceneRunning)
 		{
-			SharedReference<ScriptInstance> scriptInstance = ScriptEngine::GetEntityScriptInstance(entity.GetUUID());
+			SharedReference<ScriptInstance> scriptInstance = ScriptEngine::GetActorScriptInstance(actor.GetUUID());
 
 			if (scriptInstance)
 			{
@@ -2743,7 +2745,7 @@ namespace Vortex {
 						if (UI::Property(name.c_str(), data))
 							scriptInstance->SetFieldValue(name, data);
 					}
-					if (field.Type == ScriptFieldType::Entity)
+					if (field.Type == ScriptFieldType::Actor)
 					{
 						uint64_t data = scriptInstance->GetFieldValue<uint64_t>(name);
 						if (UI::Property(name.c_str(), data))
@@ -2757,7 +2759,7 @@ namespace Vortex {
 						{
 							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 							{
-								Entity& droppedEntity = *((Entity*)payload->Data);
+								Actor& droppedActor = *((Actor*)payload->Data);
 								scriptInstance->SetFieldValue(name, data);
 							}
 
@@ -2781,7 +2783,7 @@ namespace Vortex {
 							// TODO
 							/*if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 							{
-								Entity& droppedEntity = *((Entity*)payload->Data);
+								Actor& droppedActor = *((Actor*)payload->Data);
 								scriptInstance->SetFieldValue(name, data);
 							}*/
 
@@ -2797,17 +2799,17 @@ namespace Vortex {
 		{
 			if (scriptClassExists)
 			{
-				SharedReference<ScriptClass> entityClass = ScriptEngine::GetEntityClass(component.ClassName);
-				const auto& fields = entityClass->GetFields();
+				SharedReference<ScriptClass> actorClass = ScriptEngine::GetActorClass(component.ClassName);
+				const auto& fields = actorClass->GetFields();
 
-				ScriptFieldMap& entityScriptFields = ScriptEngine::GetMutableScriptFieldMap(entity);
+				ScriptFieldMap& actorScriptFields = ScriptEngine::GetMutableScriptFieldMap(actor);
 
 				for (const auto& [name, field] : fields)
 				{
-					auto it = entityScriptFields.find(name);
+					auto it = actorScriptFields.find(name);
 
 					// Field has been set in editor
-					if (it != entityScriptFields.end())
+					if (it != actorScriptFields.end())
 					{
 						ScriptFieldInstance& scriptField = it->second;
 
@@ -2908,7 +2910,7 @@ namespace Vortex {
 							if (UI::Property(name.c_str(), data))
 								scriptField.SetValue(data);
 						}
-						if (field.Type == ScriptFieldType::Entity)
+						if (field.Type == ScriptFieldType::Actor)
 						{
 							uint64_t data = scriptField.GetValue<uint64_t>();
 							if (UI::Property(name.c_str(), data))
@@ -2922,8 +2924,8 @@ namespace Vortex {
 							{
 								if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 								{
-									Entity& droppedEntity = *((Entity*)payload->Data);
-									scriptField.SetValue(droppedEntity.GetUUID());
+									Actor& droppedActor = *((Actor*)payload->Data);
+									scriptField.SetValue(droppedActor.GetUUID());
 								}
 
 								Gui::EndDragDropTarget();
@@ -2946,8 +2948,8 @@ namespace Vortex {
 								// TODO
 								/*if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 								{
-									Entity& droppedEntity = *((Entity*)payload->Data);
-									scriptField.SetValue(droppedEntity.GetUUID());
+									Actor& droppedActor = *((Actor*)payload->Data);
+									scriptField.SetValue(droppedActor.GetUUID());
 								}*/
 
 								Gui::EndDragDropTarget();
@@ -2964,7 +2966,7 @@ namespace Vortex {
 							float data = 0.0f;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -2974,7 +2976,7 @@ namespace Vortex {
 							double data = 0.0f;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -2984,7 +2986,7 @@ namespace Vortex {
 							Math::vec2 data = Math::vec2(0.0f);
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -2994,7 +2996,7 @@ namespace Vortex {
 							Math::vec3 data = Math::vec3(0.0f);
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3004,7 +3006,7 @@ namespace Vortex {
 							Math::vec4 data = Math::vec4(0.0f);
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3014,7 +3016,7 @@ namespace Vortex {
 							Math::vec3 data = Math::vec3(0.0f);
 							if (UI::Property(name.c_str(), &data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3024,7 +3026,7 @@ namespace Vortex {
 							Math::vec4 data = Math::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 							if (UI::Property(name.c_str(), &data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3034,7 +3036,7 @@ namespace Vortex {
 							bool data = false;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3044,7 +3046,7 @@ namespace Vortex {
 							char data = 0;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3054,7 +3056,7 @@ namespace Vortex {
 							short data = 0;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3064,7 +3066,7 @@ namespace Vortex {
 							int data = 0;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3074,7 +3076,7 @@ namespace Vortex {
 							long long data = 0;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3084,7 +3086,7 @@ namespace Vortex {
 							unsigned char data = 0;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3094,7 +3096,7 @@ namespace Vortex {
 							unsigned short data = 0;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3104,7 +3106,7 @@ namespace Vortex {
 							unsigned int data = 0;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3114,17 +3116,17 @@ namespace Vortex {
 							unsigned long long data = 0;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
 						}
-						if (field.Type == ScriptFieldType::Entity)
+						if (field.Type == ScriptFieldType::Actor)
 						{
 							uint64_t data;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3135,10 +3137,10 @@ namespace Vortex {
 							{
 								if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 								{
-									Entity& droppedEntity = *((Entity*)payload->Data);
-									ScriptFieldInstance fieldInstance = entityScriptFields[name];
+									Actor& droppedActor = *((Actor*)payload->Data);
+									ScriptFieldInstance fieldInstance = actorScriptFields[name];
 									fieldInstance.Field = field;
-									fieldInstance.SetValue(droppedEntity.GetUUID());
+									fieldInstance.SetValue(droppedActor.GetUUID());
 								}
 
 								Gui::EndDragDropTarget();
@@ -3151,7 +3153,7 @@ namespace Vortex {
 							uint64_t data;
 							if (UI::Property(name.c_str(), data))
 							{
-								ScriptFieldInstance fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance fieldInstance = actorScriptFields[name];
 								fieldInstance.Field = field;
 								fieldInstance.SetValue(data);
 							}
@@ -3163,10 +3165,10 @@ namespace Vortex {
 								// TODO
 								/*if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 								{
-									Entity& droppedEntity = *((Entity*)payload->Data);
-									ScriptFieldInstance fieldInstance = entityScriptFields[name];
+									Actor& droppedActor = *((Actor*)payload->Data);
+									ScriptFieldInstance fieldInstance = actorScriptFields[name];
 									fieldInstance.Field = field;
-									fieldInstance.SetValue(droppedEntity.GetUUID());
+									fieldInstance.SetValue(droppedActor.GetUUID());
 								}*/
 
 								Gui::EndDragDropTarget();

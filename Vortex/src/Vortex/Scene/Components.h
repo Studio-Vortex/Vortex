@@ -129,7 +129,7 @@ namespace Vortex {
 	{
 		AssetHandle PrefabAsset = 0;
 		UUID PrefabUUID = 0;
-		UUID EntityUUID = 0;
+		UUID ActorUUID = 0;
 
 		PrefabComponent() = default;
 		PrefabComponent(const PrefabComponent&) = default;
@@ -386,7 +386,7 @@ namespace Vortex {
 
 	struct VORTEX_API FixedJointComponent
 	{
-		UUID ConnectedEntity;
+		UUID ConnectedActor;
 
 		bool IsBreakable = true;
 		float BreakForce = 100.0f;
@@ -528,7 +528,7 @@ namespace Vortex {
 
 #pragma region Script Components
 
-	class ScriptableEntity;
+	class ScriptableActor;
 
 	struct VORTEX_API ScriptComponent
 	{
@@ -540,15 +540,15 @@ namespace Vortex {
 
 	struct VORTEX_API NativeScriptComponent
 	{
-		ScriptableEntity* Instance = nullptr;
+		ScriptableActor* Instance = nullptr;
 
-		ScriptableEntity* (*InstantiateScript)() = nullptr;
+		ScriptableActor* (*InstantiateScript)() = nullptr;
 		void (*DestroyInstanceScript)(NativeScriptComponent*) = nullptr;
 
 		template <typename T>
 		void Bind()
 		{
-			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
+			InstantiateScript = []() { return static_cast<ScriptableActor*>(new T()); };
 			DestroyInstanceScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 		}
 	};

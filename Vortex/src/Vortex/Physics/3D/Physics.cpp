@@ -53,8 +53,8 @@ namespace Vortex {
 		std::unordered_map<UUID, physx::PxController*> ActiveControllers;
 		std::unordered_map<UUID, physx::PxFixedJoint*> ActiveFixedJoints;
 
-		using EntityColliderMap = std::unordered_map<UUID, std::vector<SharedReference<ColliderShape>>>;
-		EntityColliderMap EntityColliders;
+		using ActorColliderMap = std::unordered_map<UUID, std::vector<SharedReference<ColliderShape>>>;
+		ActorColliderMap ActorColliders;
 
 		//                                                                               first - linear force, second - angular force
 		using LastReportedFixedJointForcesMap = std::unordered_map<physx::PxFixedJoint*, std::pair<Math::vec3, Math::vec3>>;
@@ -125,19 +125,19 @@ namespace Vortex {
 	{
 		std::vector<UUID> actorsToDestroy;
 
-		for (const auto& [entityUUID, fixedJoint] : s_Data->ActiveFixedJoints)
+		for (const auto& [actorUUID, fixedJoint] : s_Data->ActiveFixedJoints)
 		{
-			actorsToDestroy.emplace_back(entityUUID);
+			actorsToDestroy.emplace_back(actorUUID);
 		}
 
-		for (const auto& [entityUUID, characterController] : s_Data->ActiveControllers)
+		for (const auto& [actorUUID, characterController] : s_Data->ActiveControllers)
 		{
-			actorsToDestroy.emplace_back(entityUUID);
+			actorsToDestroy.emplace_back(actorUUID);
 		}
 
-		for (const auto& [entityUUID, actor] : s_Data->ActiveActors)
+		for (const auto& [actorUUID, actor] : s_Data->ActiveActors)
 		{
-			actorsToDestroy.emplace_back(entityUUID);
+			actorsToDestroy.emplace_back(actorUUID);
 		}
 
 		std::set<UUID> uniqueActors;
@@ -152,68 +152,68 @@ namespace Vortex {
 
 		for (UUID uuid : actorsToDestroy)
 		{
-			Entity entity = contextScene->TryGetEntityWithUUID(uuid);
-			VX_CORE_ASSERT(entity, "Trying to destroy physics actor with invalid entity!");
-			DestroyPhysicsActor(entity);
+			Actor actor = contextScene->TryGetActorWithUUID(uuid);
+			VX_CORE_ASSERT(actor, "Trying to destroy physics actor with invalid actor!");
+			DestroyPhysicsActor(actor);
 		}
 
 		ShutdownPhysicsSceneInternal();
 	}
 
-	void Physics::CreatePhysicsActor(Entity entity)
+	void Physics::CreatePhysicsActor(Actor actor)
 	{
-		if (entity.HasComponent<CharacterControllerComponent>())
+		if (actor.HasComponent<CharacterControllerComponent>())
 		{
-			CreateCharacterControllerInternal(entity);
+			CreateCharacterControllerInternal(actor);
 		}
 		else
 		{
-			CreatePhysicsActorInternal(entity);
+			CreatePhysicsActorInternal(actor);
 		}
 	}
 
-	void Physics::ReCreateActor(Entity entity)
+	void Physics::ReCreateActor(Actor actor)
 	{
-		DestroyPhysicsActor(entity);
-		CreatePhysicsActor(entity);
+		DestroyPhysicsActor(actor);
+		CreatePhysicsActor(actor);
 	}
 
-	void Physics::DestroyPhysicsActor(Entity entity)
+	void Physics::DestroyPhysicsActor(Actor actor)
 	{
-		if (!entity.HasComponent<RigidBodyComponent>())
+		if (!actor.HasComponent<RigidBodyComponent>())
 			return;
 
-		UUID entityUUID = entity.GetUUID();
+		UUID actorUUID = actor.GetUUID();
 
-		DestroyColliderShapesInternal(entityUUID);
+		DestroyColliderShapesInternal(actorUUID);
 
-		DestroyFixedJointInternal(entityUUID);
-		DestroyCharacterControllerInternal(entityUUID);
-		DestroyPhysicsActorInternal(entityUUID);
+		DestroyFixedJointInternal(actorUUID);
+		DestroyCharacterControllerInternal(actorUUID);
+		DestroyPhysicsActorInternal(actorUUID);
 
-		DestroyPhysicsBodyDataInternal(entityUUID);
-		DestroyConstrainedJointDataInternal(entityUUID);
+		DestroyPhysicsBodyDataInternal(actorUUID);
+		DestroyConstrainedJointDataInternal(actorUUID);
 	}
 
-	void Physics::WakeUpActor(Entity entity)
+	void Physics::WakeUpActor(Actor actor)
 	{
-		if (!entity.HasComponent<RigidBodyComponent>())
+		if (!actor.HasComponent<RigidBodyComponent>())
 		{
-			VX_CONSOLE_LOG_WARN("Cannot wake up Entity without RigidBody Component '{}', '{}'", entity.GetName(), entity.GetUUID());
+			VX_CONSOLE_LOG_WARN("Cannot wake up Actor without RigidBody Component '{}', '{}'", actor.GetName(), actor.GetUUID());
 			return;
 		}
 
-		const RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
+		const RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 		
 		if (rigidbody.Type != RigidBodyType::Dynamic)
 		{
-			VX_CONSOLE_LOG_WARN("Cannot wake up Static Actor '{}', '{}'", entity.GetName(), entity.GetUUID());
+			VX_CONSOLE_LOG_WARN("Cannot wake up Static Actor '{}', '{}'", actor.GetName(), actor.GetUUID());
 			return;
 		}
 
-		physx::PxActor* actor = (physx::PxActor*)rigidbody.RuntimeActor;
+		physx::PxActor* pxActor = (physx::PxActor*)rigidbody.RuntimeActor;
 
-		if (physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>())
+		if (physx::PxRigidDynamic* dynamicActor = pxActor->is<physx::PxRigidDynamic>())
 		{
 			dynamicActor->wakeUp();
 		}
@@ -265,9 +265,9 @@ namespace Vortex {
 		}
 
 		PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)userData;
-		UUID entityUUID = physicsBodyData->EntityUUID;
+		UUID actor = physicsBodyData->ActorUUID;
 
-		outHitInfo->EntityID = entityUUID;
+		outHitInfo->ActorID = actor;
 		outHitInfo->Position = FromPhysXVector(hitInfo.block.position);
 		outHitInfo->Normal = FromPhysXVector(hitInfo.block.normal);
 		outHitInfo->Distance = hitInfo.block.distance;
@@ -275,38 +275,38 @@ namespace Vortex {
 		return true;
 	}
 
-	bool Physics::IsConstraintBroken(UUID entityUUID)
+	bool Physics::IsConstraintBroken(UUID actorUUID)
 	{
-		if (s_Data->ActiveFixedJoints.contains(entityUUID))
+		if (s_Data->ActiveFixedJoints.contains(actorUUID))
 		{
-			physx::PxFixedJoint* fixedJoint = s_Data->ActiveFixedJoints[entityUUID];
+			physx::PxFixedJoint* fixedJoint = s_Data->ActiveFixedJoints[actorUUID];
 			return fixedJoint->getConstraintFlags() & physx::PxConstraintFlag::eBROKEN;
 		}
 
 		return false;
 	}
 
-	void Physics::BreakJoint(UUID entityUUID)
+	void Physics::BreakJoint(UUID actorUUID)
 	{
-		if (s_Data->ActiveFixedJoints.contains(entityUUID))
+		if (s_Data->ActiveFixedJoints.contains(actorUUID))
 		{
-			physx::PxFixedJoint* fixedJoint = s_Data->ActiveFixedJoints[entityUUID];
+			physx::PxFixedJoint* fixedJoint = s_Data->ActiveFixedJoints[actorUUID];
 			fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eBROKEN, true);
 		}
 	}
 
-    void Physics::OnCharacterControllerUpdateRuntime(UUID entityUUID, const Math::vec3& displacement)
+    void Physics::OnCharacterControllerUpdateRuntime(UUID actorUUID, const Math::vec3& displacement)
     {
-		Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
+		Actor actor = s_Data->ContextScene->TryGetActorWithUUID(actorUUID);
 
-		VX_CORE_ASSERT(entity, "Invalid Entity UUID!");
-		VX_CORE_ASSERT(entity.HasComponent<CharacterControllerComponent>(), "Entity doesn't have Character Controller!");
+		VX_CORE_ASSERT(actor, "Invalid Actor UUID!");
+		VX_CORE_ASSERT(actor.HasComponent<CharacterControllerComponent>(), "Actor doesn't have Character Controller!");
 
-		CharacterControllerComponent& characterControllerComponent = entity.GetComponent<CharacterControllerComponent>();
+		CharacterControllerComponent& characterControllerComponent = actor.GetComponent<CharacterControllerComponent>();
 
-		VX_CORE_ASSERT(s_Data->ActiveControllers.contains(entityUUID), "Invalid Controller!");
+		VX_CORE_ASSERT(s_Data->ActiveControllers.contains(actorUUID), "Invalid Controller!");
 		physx::PxControllerFilters filters; // TODO
-		physx::PxController* controller = s_Data->ActiveControllers[entityUUID];
+		physx::PxController* controller = s_Data->ActiveControllers[actorUUID];
 
 		float gravity = Math::Length(Physics::GetPhysicsSceneGravity());
 
@@ -319,7 +319,7 @@ namespace Vortex {
 		Math::vec3 movement = displacement - upDirection * characterControllerComponent.SpeedDown * (float)Time::GetDeltaTime();
 
 		physx::PxControllerCollisionFlags collisionFlags = controller->move(ToPhysXVector(movement), 0.0f, Time::GetDeltaTime(), filters);
-		entity.GetTransform().Translation = FromPhysXExtendedVector(controller->getPosition());
+		actor.GetTransform().Translation = FromPhysXExtendedVector(controller->getPosition());
 
 		// test if grounded
 		if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
@@ -337,62 +337,62 @@ namespace Vortex {
 
 	void Physics::UpdateActors()
 	{
-		for (const auto& [entityUUID, actor] : s_Data->ActiveActors)
+		for (const auto& [actorUUID, pxActor] : s_Data->ActiveActors)
 		{
-			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
-			const auto& transform = entity.GetTransform();
+			Actor actor = s_Data->ContextScene->TryGetActorWithUUID(actorUUID);
+			const auto& transform = actor.GetTransform();
 
-			const auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
+			const auto& rigidbody = actor.GetComponent<RigidBodyComponent>();
 
 			if (rigidbody.Type == RigidBodyType::Dynamic)
 			{
-				physx::PxRigidDynamic* dynamicActor = actor->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* dynamicActor = pxActor->is<physx::PxRigidDynamic>();
 
-				entity.SetTransform(FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(transform.Scale));
+				actor.SetTransform(FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(transform.Scale));
 
 				UpdateDynamicActorProperties(rigidbody, dynamicActor);
 			}
 			else if (rigidbody.Type == RigidBodyType::Static)
 			{
-				// Synchronize with entity Transform
-				actor->setGlobalPose(ToPhysXTransform(transform));
+				// Synchronize with actor Transform
+				pxActor->setGlobalPose(ToPhysXTransform(transform));
 			}
 		}
 	}
 
 	void Physics::UpdateControllers()
 	{
-		for (const auto& [entityUUID, characterController] : s_Data->ActiveControllers)
+		for (const auto& [actorUUID, characterController] : s_Data->ActiveControllers)
 		{
-			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
-			const CharacterControllerComponent& characterControllerComponent = entity.GetComponent<CharacterControllerComponent>();
+			Actor actor = s_Data->ContextScene->TryGetActorWithUUID(actorUUID);
+			const CharacterControllerComponent& characterControllerComponent = actor.GetComponent<CharacterControllerComponent>();
 
 			Math::vec3 position = FromPhysXExtendedVector(characterController->getPosition());
 
-			if (entity.HasComponent<CapsuleColliderComponent>())
+			if (actor.HasComponent<CapsuleColliderComponent>())
 			{
-				const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+				const auto& capsuleCollider = actor.GetComponent<CapsuleColliderComponent>();
 				position -= capsuleCollider.Offset;
 			}
-			else if (entity.HasComponent<BoxColliderComponent>())
+			else if (actor.HasComponent<BoxColliderComponent>())
 			{
-				const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
+				const auto& boxCollider = actor.GetComponent<BoxColliderComponent>();
 				position -= boxCollider.Offset;
 			}
 
 			characterController->setStepOffset(characterControllerComponent.StepOffset);
 			characterController->setSlopeLimit(Math::Deg2Rad(characterControllerComponent.SlopeLimitDegrees));
 
-			entity.GetTransform().Translation = position;
+			actor.GetTransform().Translation = position;
 		}
 	}
 
 	void Physics::UpdateFixedJoints()
 	{
-		for (const auto& [entityUUID, fixedJoint] : s_Data->ActiveFixedJoints)
+		for (const auto& [actorUUID, fixedJoint] : s_Data->ActiveFixedJoints)
 		{
 			physx::PxVec3 linear(0.0f), angular(0.0f);
-			physx::PxFixedJoint* fixedJoint = s_Data->ActiveFixedJoints[entityUUID];
+			physx::PxFixedJoint* fixedJoint = s_Data->ActiveFixedJoints[actorUUID];
 			fixedJoint->getConstraint()->getForce(linear, angular);
 
 			Math::vec3 linearForce = FromPhysXVector(linear);
@@ -401,219 +401,219 @@ namespace Vortex {
 		}
 	}
 
-	void Physics::RegisterPhysicsActor(Entity entity, physx::PxRigidActor* actor)
+	void Physics::RegisterPhysicsActor(Actor actor, physx::PxRigidActor* pxActor)
 	{
-		UUID entityUUID = entity.GetUUID();
+		UUID actorUUID = actor.GetUUID();
 		PhysicsBodyData* physicsBodyData = new PhysicsBodyData();
-		physicsBodyData->EntityUUID = entityUUID;
-		physicsBodyData->ContextScene = entity.GetContextScene();
-		actor->userData = physicsBodyData;
+		physicsBodyData->ActorUUID = actorUUID;
+		physicsBodyData->ContextScene = actor.GetContextScene();
+		pxActor->userData = physicsBodyData;
 
-		VX_CORE_ASSERT(!s_Data->PhysicsBodyData.contains(entityUUID), "Cannot register multiple rigidbodies for a single entity!");
-		VX_CORE_ASSERT(!s_Data->ActiveActors.contains(entityUUID), "Cannot create multiple actors for a single entity!");
+		VX_CORE_ASSERT(!s_Data->PhysicsBodyData.contains(actorUUID), "Cannot register multiple rigidbodies for a single actor!");
+		VX_CORE_ASSERT(!s_Data->ActiveActors.contains(actorUUID), "Cannot create multiple actors for a single actor!");
 
-		s_Data->PhysicsBodyData[entityUUID] = physicsBodyData;
-		s_Data->ActiveActors[entityUUID] = actor;
+		s_Data->PhysicsBodyData[actorUUID] = physicsBodyData;
+		s_Data->ActiveActors[actorUUID] = pxActor;
 	}
 
-	physx::PxRigidActor* Physics::CreateRuntimeActor(Entity entity, RigidBodyComponent& rigidbody)
+	physx::PxRigidActor* Physics::CreateRuntimeActor(Actor actor, RigidBodyComponent& rigidbody)
 	{
-		physx::PxRigidActor* actor = nullptr;
+		physx::PxRigidActor* pxActor = nullptr;
 
-		const TransformComponent& transform = entity.GetTransform();
+		const TransformComponent& transform = actor.GetTransform();
 
 		if (rigidbody.Type == RigidBodyType::Static)
 		{
-			actor = s_Data->PhysXSDK->createRigidStatic(ToPhysXTransform(transform));
+			pxActor = s_Data->PhysXSDK->createRigidStatic(ToPhysXTransform(transform));
 		}
 		else if (rigidbody.Type == RigidBodyType::Dynamic)
 		{
 			physx::PxRigidDynamic* dynamicActor = s_Data->PhysXSDK->createRigidDynamic(ToPhysXTransform(transform));
 			UpdateDynamicActorProperties(rigidbody, dynamicActor);
-			actor = dynamicActor;
+			pxActor = dynamicActor;
 		}
 
-		VX_CORE_ASSERT(actor != nullptr, "Failed to create Physics Actor!");
-		rigidbody.RuntimeActor = (void*)actor;
+		VX_CORE_ASSERT(pxActor != nullptr, "Failed to create Physics Actor!");
+		rigidbody.RuntimeActor = (void*)pxActor;
 
-		RegisterPhysicsActor(entity, actor);
+		RegisterPhysicsActor(actor, pxActor);
 
-		return actor;
+		return pxActor;
 	}
 
-	void Physics::CreatePhysicsActorInternal(Entity entity)
+	void Physics::CreatePhysicsActorInternal(Actor actor)
 	{
-		VX_CORE_ASSERT(entity.HasComponent<RigidBodyComponent>(), "Entity doesn't have rigidbody component!");
+		VX_CORE_ASSERT(actor.HasComponent<RigidBodyComponent>(), "Actor doesn't have rigidbody component!");
 
-		RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
-		physx::PxRigidActor* actor = CreateRuntimeActor(entity, rigidbody);
-		VX_CORE_ASSERT(actor, "Failed to create physics actor!");
+		RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
+		physx::PxRigidActor* pxActor = CreateRuntimeActor(actor, rigidbody);
+		VX_CORE_ASSERT(pxActor, "Failed to create physics actor!");
 
-		CreateCollider(entity, actor);
+		CreateCollider(actor, pxActor);
 
 		// Set Filters
 		if (rigidbody.Type == RigidBodyType::Static)
-			SetCollisionFilters(actor, (uint32_t)FilterGroup::Static, (uint32_t)FilterGroup::All);
+			SetCollisionFilters(pxActor, (uint32_t)FilterGroup::Static, (uint32_t)FilterGroup::All);
 		else if (rigidbody.Type == RigidBodyType::Dynamic)
-			SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
+			SetCollisionFilters(pxActor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 
-		s_Data->PhysicsScene->addActor(*actor);
+		s_Data->PhysicsScene->addActor(*pxActor);
 	}
 
-	void Physics::CreateCharacterControllerInternal(Entity entity)
+	void Physics::CreateCharacterControllerInternal(Actor actor)
 	{
-		VX_CORE_ASSERT(entity.HasComponent<CharacterControllerComponent>(), "Entity doesn't have character controller component!");
+		VX_CORE_ASSERT(actor.HasComponent<CharacterControllerComponent>(), "Actor doesn't have character controller component!");
 
-		RigidBodyComponent& rigidbody = entity.GetComponent<RigidBodyComponent>();
-		physx::PxRigidActor* actor = CreateRuntimeActor(entity, rigidbody);
-		VX_CORE_ASSERT(actor, "Failed to create physics actor!");
+		RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
+		physx::PxRigidActor* pxActor = CreateRuntimeActor(actor, rigidbody);
+		VX_CORE_ASSERT(pxActor, "Failed to create physics actor!");
 
-		VX_CORE_ASSERT(!s_Data->ActiveControllers.contains(entity.GetUUID()), "Entities cannot have multiple controllers!");
-		physx::PxController* controller = CreateController(entity, actor);
-		s_Data->ActiveControllers[entity.GetUUID()] = controller;
+		VX_CORE_ASSERT(!s_Data->ActiveControllers.contains(actor.GetUUID()), "Actors cannot have multiple controllers!");
+		physx::PxController* controller = CreateController(actor, pxActor);
+		s_Data->ActiveControllers[actor.GetUUID()] = controller;
 
-		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+		CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 		characterController.RuntimeController = (void*)controller;
 
-		actor->setName(entity.GetName().c_str());
+		pxActor->setName(actor.GetName().c_str());
 
-		SetCollisionFilters(actor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
+		SetCollisionFilters(pxActor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 	}
 
-	void Physics::CreateCollider(Entity entity, physx::PxRigidActor* actor)
+	void Physics::CreateCollider(Actor actor, physx::PxRigidActor* pxActor)
 	{
-		const auto& transform = entity.GetTransform();
+		const auto& transform = actor.GetTransform();
 
-		if (entity.HasComponent<BoxColliderComponent>())
+		if (actor.HasComponent<BoxColliderComponent>())
 		{
-			AddColliderShape(entity, actor, ColliderType::Box);
+			AddColliderShape(actor, pxActor, ColliderType::Box);
 		}
-		else if (entity.HasComponent<SphereColliderComponent>())
+		else if (actor.HasComponent<SphereColliderComponent>())
 		{
-			AddColliderShape(entity, actor, ColliderType::Sphere);
+			AddColliderShape(actor, pxActor, ColliderType::Sphere);
 		}
-		else if (entity.HasComponent<CapsuleColliderComponent>())
+		else if (actor.HasComponent<CapsuleColliderComponent>())
 		{
-			AddColliderShape(entity, actor, ColliderType::Capsule);
+			AddColliderShape(actor, pxActor, ColliderType::Capsule);
 		}
-		else if (entity.HasComponent<MeshColliderComponent>())
+		else if (actor.HasComponent<MeshColliderComponent>())
 		{
 			// TODO
-			//AddColliderShape(entity, actor, ColliderType::TriangleMesh);
+			//AddColliderShape(actor, pxActor, ColliderType::TriangleMesh);
 		}
 	}
 
-	void Physics::AddColliderShape(Entity entity, physx::PxRigidActor* actor, ColliderType type)
+	void Physics::AddColliderShape(Actor actor, physx::PxRigidActor* pxActor, ColliderType type)
 	{
-		UUID entityUUID = entity.GetUUID();
+		UUID actorUUID = actor.GetUUID();
 
-		if (!s_Data->EntityColliders.contains(entityUUID))
+		if (!s_Data->ActorColliders.contains(actorUUID))
 		{
-			s_Data->EntityColliders[entityUUID] = std::vector<SharedReference<ColliderShape>>();
+			s_Data->ActorColliders[actorUUID] = std::vector<SharedReference<ColliderShape>>();
 		}
 
 		switch (type)
 		{
 			case ColliderType::Box:
 			{
-				BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
-				s_Data->EntityColliders[entityUUID].push_back(SharedReference<BoxColliderShape>::Create(boxCollider, *actor, entity));
+				BoxColliderComponent& boxCollider = actor.GetComponent<BoxColliderComponent>();
+				s_Data->ActorColliders[actorUUID].push_back(SharedReference<BoxColliderShape>::Create(boxCollider, *pxActor, actor));
 				break;
 			}
 			case ColliderType::Sphere:
 			{
-				SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
-				s_Data->EntityColliders[entityUUID].push_back(SharedReference<SphereColliderShape>::Create(sphereCollider, *actor, entity));
+				SphereColliderComponent& sphereCollider = actor.GetComponent<SphereColliderComponent>();
+				s_Data->ActorColliders[actorUUID].push_back(SharedReference<SphereColliderShape>::Create(sphereCollider, *pxActor, actor));
 				break;
 			}
 			case ColliderType::Capsule:
 			{
-				CapsuleColliderComponent& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
-				s_Data->EntityColliders[entityUUID].push_back(SharedReference<CapsuleColliderShape>::Create(capsuleCollider, *actor, entity));
+				CapsuleColliderComponent& capsuleCollider = actor.GetComponent<CapsuleColliderComponent>();
+				s_Data->ActorColliders[actorUUID].push_back(SharedReference<CapsuleColliderShape>::Create(capsuleCollider, *pxActor, actor));
 				break;
 			}
 			case ColliderType::ConvexMesh:
 			{
-				MeshColliderComponent& convexMeshCollider = entity.GetComponent<MeshColliderComponent>();
-				s_Data->EntityColliders[entityUUID].push_back(SharedReference<ConvexMeshShape>::Create(convexMeshCollider, *actor, entity));
+				MeshColliderComponent& convexMeshCollider = actor.GetComponent<MeshColliderComponent>();
+				s_Data->ActorColliders[actorUUID].push_back(SharedReference<ConvexMeshShape>::Create(convexMeshCollider, *pxActor, actor));
 				break;
 			}
 			case ColliderType::TriangleMesh:
 			{
-				MeshColliderComponent& triangleMeshCollider = entity.GetComponent<MeshColliderComponent>();
-				s_Data->EntityColliders[entityUUID].push_back(SharedReference<TriangleMeshShape>::Create(triangleMeshCollider, *actor, entity));
+				MeshColliderComponent& triangleMeshCollider = actor.GetComponent<MeshColliderComponent>();
+				s_Data->ActorColliders[actorUUID].push_back(SharedReference<TriangleMeshShape>::Create(triangleMeshCollider, *pxActor, actor));
 				break;
 			}
 		}
 	}
 
-	physx::PxMaterial* Physics::AddControllerColliderShape(Entity entity, physx::PxRigidActor* actor, ColliderType type)
+	physx::PxMaterial* Physics::AddControllerColliderShape(Actor actor, physx::PxRigidActor* pxActor, ColliderType type)
 	{
-		AddColliderShape(entity, actor, type);
+		AddColliderShape(actor, pxActor, type);
 
-		return s_Data->EntityColliders[entity.GetUUID()].back()->GetMaterial();
+		return s_Data->ActorColliders[actor.GetUUID()].back()->GetMaterial();
 	}
 
-	void Physics::CreateFixedJoint(Entity entity)
+	void Physics::CreateFixedJoint(Actor actor)
 	{
-		if (!entity)
+		if (!actor)
 		{
-			VX_CORE_ASSERT(false, "Trying to create fixed joint with invalid entity!");
+			VX_CORE_ASSERT(false, "Trying to create fixed joint with invalid actor!");
 			return;
 		}
 
-		VX_CORE_ASSERT(entity.HasComponent<FixedJointComponent>(), "Entity doesn't have Fixed Joint Component");
+		VX_CORE_ASSERT(actor.HasComponent<FixedJointComponent>(), "Actor doesn't have Fixed Joint Component");
 
-		const FixedJointComponent& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
-		UUID connectedEntityUUID = fixedJointComponent.ConnectedEntity;
-		Entity connectedEntity = s_Data->ContextScene->TryGetEntityWithUUID(connectedEntityUUID);
-		VX_CORE_ASSERT(connectedEntity, "Connected Entity was Invalid!");
+		const FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
+		UUID connectedActorUUID = fixedJointComponent.ConnectedActor;
+		Actor connectedActor = s_Data->ContextScene->TryGetActorWithUUID(connectedActorUUID);
+		VX_CORE_ASSERT(connectedActor, "Connected Actor was Invalid!");
 
-		if (!connectedEntity)
+		if (!connectedActor)
 		{
 			return;
 		}
 
-		physx::PxRigidActor* actor0 = GetActor(entity);
-		physx::PxRigidActor* actor1 = GetActor(connectedEntity);
+		physx::PxRigidActor* actor0 = GetActor(actor);
+		physx::PxRigidActor* actor1 = GetActor(connectedActor);
 
 		if (!actor0 || !actor1)
 		{
-			VX_CONSOLE_LOG_ERROR("Unable to create Fixed Joint with entities '{}', '{}'", entity.GetName(), connectedEntity.GetName());
+			VX_CONSOLE_LOG_ERROR("Unable to create Fixed Joint with entities '{}', '{}'", actor.GetName(), connectedActor.GetName());
 			return;
 		}
 
 		physx::PxTransform localFrame0 = Utils::GetLocalFrame(actor0);
 		physx::PxTransform localFrame1 = Utils::GetLocalFrame(actor1);
 
-		VX_CORE_ASSERT(!s_Data->ActiveFixedJoints.contains(entity.GetUUID()), "Entities can only have one Fixed Joint!");
+		VX_CORE_ASSERT(!s_Data->ActiveFixedJoints.contains(actor.GetUUID()), "Entities can only have one Fixed Joint!");
 
 		physx::PxFixedJoint* fixedJoint = physx::PxFixedJointCreate(*s_Data->PhysXSDK, actor0, localFrame0, actor1, localFrame1);
-		s_Data->ActiveFixedJoints[entity.GetUUID()] = fixedJoint;
+		s_Data->ActiveFixedJoints[actor.GetUUID()] = fixedJoint;
 
 		ConstrainedJointData* jointData = new ConstrainedJointData();
-		jointData->EntityUUID = entity.GetUUID();
+		jointData->ActorUUID = actor.GetUUID();
 		fixedJoint->userData = jointData;
 
-		s_Data->ConstrainedJointData[entity.GetUUID()] = jointData;
+		s_Data->ConstrainedJointData[actor.GetUUID()] = jointData;
 
 		fixedJoint->setBreakForce(fixedJointComponent.BreakForce, fixedJointComponent.BreakTorque);
 		fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eCOLLISION_ENABLED, fixedJointComponent.EnableCollision);
 		fixedJoint->setConstraintFlag(physx::PxConstraintFlag::eDISABLE_PREPROCESSING, !fixedJointComponent.EnablePreProcessing);
 	}
 
-	physx::PxController* Physics::CreateController(Entity entity, physx::PxRigidActor* actor)
+	physx::PxController* Physics::CreateController(Actor actor, physx::PxRigidActor* pxActor)
 	{
-		const auto& transform = entity.GetTransform();
-		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+		const auto& transform = actor.GetTransform();
+		CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 
 		physx::PxController* controller = nullptr;
 
-		if (entity.HasComponent<CapsuleColliderComponent>())
+		if (actor.HasComponent<CapsuleColliderComponent>())
 		{
-			const auto& capsuleCollider = entity.GetComponent<CapsuleColliderComponent>();
+			const auto& capsuleCollider = actor.GetComponent<CapsuleColliderComponent>();
 
-			physx::PxMaterial* material = AddControllerColliderShape(entity, actor, ColliderType::Capsule);
+			physx::PxMaterial* material = AddControllerColliderShape(actor, pxActor, ColliderType::Capsule);
 
 			const float radiusScale = Math::Max(transform.Scale.x, transform.Scale.y);
 
@@ -631,11 +631,11 @@ namespace Vortex {
 
 			controller = s_Data->ControllerManager->createController(desc);
 		}
-		else if (entity.HasComponent<BoxColliderComponent>())
+		else if (actor.HasComponent<BoxColliderComponent>())
 		{
-			const auto& boxCollider = entity.GetComponent<BoxColliderComponent>();
+			const auto& boxCollider = actor.GetComponent<BoxColliderComponent>();
 
-			physx::PxMaterial* material = AddControllerColliderShape(entity, actor, ColliderType::Box);
+			physx::PxMaterial* material = AddControllerColliderShape(actor, pxActor, ColliderType::Box);
 
 			physx::PxBoxControllerDesc desc;
 			desc.position = ToPhysXExtendedVector(transform.Translation + boxCollider.Offset);
@@ -731,28 +731,28 @@ namespace Vortex {
 
 		std::vector<UUID> actorsToCreate;
 
-		auto rigidbodyView = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent>();
+		auto rigidbodyView = s_Data->ContextScene->GetAllActorsWith<TransformComponent, RigidBodyComponent>();
 
 		for (const auto e : rigidbodyView)
 		{
-			Entity entity{ e, s_Data->ContextScene };
+			Actor actor{ e, s_Data->ContextScene };
 
-			if (s_Data->ActiveActors.contains(entity.GetUUID()))
+			if (s_Data->ActiveActors.contains(actor.GetUUID()))
 				continue;
 
-			actorsToCreate.emplace_back(entity.GetUUID());
+			actorsToCreate.emplace_back(actor.GetUUID());
 		}
 
-		auto controllerView = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent, CharacterControllerComponent>();
+		auto controllerView = s_Data->ContextScene->GetAllActorsWith<TransformComponent, RigidBodyComponent, CharacterControllerComponent>();
 
 		for (const auto e : controllerView)
 		{
-			Entity entity{ e, s_Data->ContextScene };
+			Actor actor{ e, s_Data->ContextScene };
 
-			if (s_Data->ActiveControllers.contains(entity.GetUUID()))
+			if (s_Data->ActiveControllers.contains(actor.GetUUID()))
 				continue;
 
-			actorsToCreate.emplace_back(entity.GetUUID());
+			actorsToCreate.emplace_back(actor.GetUUID());
 		}
 
 		std::set<UUID> uniqueActors;
@@ -767,82 +767,82 @@ namespace Vortex {
 
 		for (UUID uuid : actorsToCreate)
 		{
-			Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(uuid);
-			VX_CORE_ASSERT(entity, "Trying to create physics actor with invalid entity!");
-			CreatePhysicsActor(entity);
+			Actor actor = s_Data->ContextScene->TryGetActorWithUUID(uuid);
+			VX_CORE_ASSERT(actor, "Trying to create physics actor with invalid actor!");
+			CreatePhysicsActor(actor);
 		}
 
 		// Create Joints
 
-		auto fixedJointView = s_Data->ContextScene->GetAllEntitiesWith<TransformComponent, RigidBodyComponent, FixedJointComponent>();
+		auto fixedJointView = s_Data->ContextScene->GetAllActorsWith<TransformComponent, RigidBodyComponent, FixedJointComponent>();
 
 		for (const auto e : fixedJointView)
 		{
-			Entity entity{ e, s_Data->ContextScene };
+			Actor actor{ e, s_Data->ContextScene };
 
-			if (s_Data->ActiveFixedJoints.contains(entity.GetUUID()))
+			if (s_Data->ActiveFixedJoints.contains(actor.GetUUID()))
 				continue;
 
-			CreateFixedJoint(entity);
+			CreateFixedJoint(actor);
 		}
 	}
 
-	void Physics::DestroyFixedJointInternal(UUID entityUUID)
+	void Physics::DestroyFixedJointInternal(UUID actorUUID)
 	{
-		if (!s_Data->ActiveFixedJoints.contains(entityUUID))
+		if (!s_Data->ActiveFixedJoints.contains(actorUUID))
 		{
 			return;
 		}
 
-		Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
-		FixedJointComponent& fixedJoint = entity.GetComponent<FixedJointComponent>();
-		fixedJoint.ConnectedEntity = 0;
-		s_Data->ActiveFixedJoints[entityUUID]->release();
-		s_Data->ActiveFixedJoints.erase(entityUUID);
+		Actor actor = s_Data->ContextScene->TryGetActorWithUUID(actorUUID);
+		FixedJointComponent& fixedJoint = actor.GetComponent<FixedJointComponent>();
+		fixedJoint.ConnectedActor = 0;
+		s_Data->ActiveFixedJoints[actorUUID]->release();
+		s_Data->ActiveFixedJoints.erase(actorUUID);
 	}
 
-	void Physics::DestroyCharacterControllerInternal(UUID entityUUID)
+	void Physics::DestroyCharacterControllerInternal(UUID actorUUID)
 	{
-		if (!s_Data->ActiveControllers.contains(entityUUID))
+		if (!s_Data->ActiveControllers.contains(actorUUID))
 		{
 			return;
 		}
 
-		Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
-		CharacterControllerComponent& characterController = entity.GetComponent<CharacterControllerComponent>();
+		Actor actor = s_Data->ContextScene->TryGetActorWithUUID(actorUUID);
+		CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 		characterController.RuntimeController = nullptr;
-		s_Data->ActiveControllers[entityUUID]->release();
-		s_Data->ActiveControllers.erase(entityUUID);
+		s_Data->ActiveControllers[actorUUID]->release();
+		s_Data->ActiveControllers.erase(actorUUID);
 	}
 
-	void Physics::DestroyPhysicsActorInternal(UUID entityUUID)
+	void Physics::DestroyPhysicsActorInternal(UUID actorUUID)
 	{
-		if (!s_Data->ActiveActors.contains(entityUUID))
+		if (!s_Data->ActiveActors.contains(actorUUID))
 		{
 			return;
 		}
 
-		Entity entity = s_Data->ContextScene->TryGetEntityWithUUID(entityUUID);
-		auto& rigidbody = entity.GetComponent<RigidBodyComponent>();
-		physx::PxRigidActor* actor = s_Data->ActiveActors[entityUUID];
-		s_Data->PhysicsScene->removeActor(*actor);
-		actor->release();
+		Actor actor = s_Data->ContextScene->TryGetActorWithUUID(actorUUID);
+		auto& rigidbody = actor.GetComponent<RigidBodyComponent>();
+		physx::PxRigidActor* pxActor = s_Data->ActiveActors[actorUUID];
+		s_Data->PhysicsScene->removeActor(*pxActor);
+		pxActor->release();
 		rigidbody.RuntimeActor = nullptr;
-		s_Data->ActiveActors.erase(entityUUID);
+		s_Data->ActiveActors.erase(actorUUID);
 	}
 
-	void Physics::DestroyColliderShapesInternal(UUID entityUUID)
+	void Physics::DestroyColliderShapesInternal(UUID actorUUID)
 	{
-		if (!s_Data->EntityColliders.contains(entityUUID))
+		if (!s_Data->ActorColliders.contains(actorUUID))
 		{
 			return;
 		}
 
-		auto& colliderShapes = s_Data->EntityColliders[entityUUID];
+		auto& colliderShapes = s_Data->ActorColliders[actorUUID];
 
 		for (auto& colliderShape : colliderShapes)
 		{
-			physx::PxRigidActor* actor = GetActor(entityUUID);
+			physx::PxRigidActor* actor = GetActor(actorUUID);
 			if (!actor)
 				continue;
 
@@ -850,37 +850,37 @@ namespace Vortex {
 		}
 
 		colliderShapes.clear();
-		s_Data->EntityColliders.erase(entityUUID);
+		s_Data->ActorColliders.erase(actorUUID);
 	}
 
-	void Physics::DestroyPhysicsBodyDataInternal(UUID entityUUID)
+	void Physics::DestroyPhysicsBodyDataInternal(UUID actorUUID)
 	{
-		if (!s_Data->PhysicsBodyData.contains(entityUUID))
+		if (!s_Data->PhysicsBodyData.contains(actorUUID))
 		{
 			return;
 		}
 
-		PhysicsBodyData* physicsBodyData = s_Data->PhysicsBodyData[entityUUID];
+		PhysicsBodyData* physicsBodyData = s_Data->PhysicsBodyData[actorUUID];
 		if (!physicsBodyData)
 			return;
 
 		delete physicsBodyData;
-		s_Data->PhysicsBodyData.erase(entityUUID);
+		s_Data->PhysicsBodyData.erase(actorUUID);
 	}
 
-	void Physics::DestroyConstrainedJointDataInternal(UUID entityUUID)
+	void Physics::DestroyConstrainedJointDataInternal(UUID actorUUID)
 	{
-		if (!s_Data->ConstrainedJointData.contains(entityUUID))
+		if (!s_Data->ConstrainedJointData.contains(actorUUID))
 		{
 			return;
 		}
 
-		ConstrainedJointData* jointData = s_Data->ConstrainedJointData[entityUUID];
+		ConstrainedJointData* jointData = s_Data->ConstrainedJointData[actorUUID];
 		if (!jointData)
 			return;
 
 		delete jointData;
-		s_Data->ConstrainedJointData.erase(entityUUID);
+		s_Data->ConstrainedJointData.erase(actorUUID);
 	}
 
 	void Physics::InitPhysicsSDKInternal()
@@ -947,7 +947,7 @@ namespace Vortex {
 
 		s_Data->ContextScene = nullptr;
 
-		s_Data->EntityColliders.clear();
+		s_Data->ActorColliders.clear();
 
 		s_Data->ActiveFixedJoints.clear();
 		s_Data->ActiveControllers.clear();
@@ -972,43 +972,43 @@ namespace Vortex {
 		return s_Data->ActiveFixedJoints;
 	}
 
-	physx::PxRigidActor* Physics::GetActor(UUID entityUUID)
+	physx::PxRigidActor* Physics::GetActor(UUID actorUUID)
 	{
-		VX_CORE_ASSERT(s_Data->ActiveActors.contains(entityUUID), "Entity was not found in active actors map!");
+		VX_CORE_ASSERT(s_Data->ActiveActors.contains(actorUUID), "Actor was not found in active actors map!");
 
-		if (s_Data->ActiveActors.contains(entityUUID))
+		if (s_Data->ActiveActors.contains(actorUUID))
 		{
-			return s_Data->ActiveActors[entityUUID];
+			return s_Data->ActiveActors[actorUUID];
 		}
 
 		return nullptr;
 	}
 
-	const std::vector<SharedReference<ColliderShape>>& Physics::GetEntityColliders(UUID entityUUID)
+	const std::vector<SharedReference<ColliderShape>>& Physics::GetActorColliders(UUID actorUUID)
 	{
-		VX_CORE_ASSERT(s_Data->EntityColliders.contains(entityUUID), "Entity doesn't have any colliders!");
-		return s_Data->EntityColliders.at(entityUUID);
+		VX_CORE_ASSERT(s_Data->ActorColliders.contains(actorUUID), "Actor doesn't have any colliders!");
+		return s_Data->ActorColliders.at(actorUUID);
 	}
 
-	physx::PxController* Physics::GetController(UUID entityUUID)
+	physx::PxController* Physics::GetController(UUID actorUUID)
 	{
-		VX_CORE_ASSERT(s_Data->ActiveControllers.contains(entityUUID), "Entity was not found in active controllers map!");
+		VX_CORE_ASSERT(s_Data->ActiveControllers.contains(actorUUID), "Actor was not found in active controllers map!");
 
-		if (s_Data->ActiveControllers.contains(entityUUID))
+		if (s_Data->ActiveControllers.contains(actorUUID))
 		{
-			return s_Data->ActiveControllers[entityUUID];
+			return s_Data->ActiveControllers[actorUUID];
 		}
 
 		return nullptr;
 	}
 
-	physx::PxFixedJoint* Physics::GetFixedJoint(UUID entityUUID)
+	physx::PxFixedJoint* Physics::GetFixedJoint(UUID actorUUID)
 	{
-		VX_CORE_ASSERT(s_Data->ActiveFixedJoints.contains(entityUUID), "Entity was not found in active fixed joint map!");
+		VX_CORE_ASSERT(s_Data->ActiveFixedJoints.contains(actorUUID), "Actor was not found in active fixed joint map!");
 
-		if (s_Data->ActiveFixedJoints.contains(entityUUID))
+		if (s_Data->ActiveFixedJoints.contains(actorUUID))
 		{
-			return s_Data->ActiveFixedJoints[entityUUID];
+			return s_Data->ActiveFixedJoints[actorUUID];
 		}
 
 		return nullptr;
@@ -1026,25 +1026,25 @@ namespace Vortex {
 		return {};
 	}
 
-	const PhysicsBodyData* Physics::GetPhysicsBodyData(UUID entityUUID)
+	const PhysicsBodyData* Physics::GetPhysicsBodyData(UUID actorUUID)
 	{
-		VX_CORE_ASSERT(s_Data->PhysicsBodyData.contains(entityUUID), "Entity was not found in physics body data map!");
+		VX_CORE_ASSERT(s_Data->PhysicsBodyData.contains(actorUUID), "Actor was not found in physics body data map!");
 
-		if (s_Data->PhysicsBodyData.contains(entityUUID))
+		if (s_Data->PhysicsBodyData.contains(actorUUID))
 		{
-			return s_Data->PhysicsBodyData.at(entityUUID);
+			return s_Data->PhysicsBodyData.at(actorUUID);
 		}
 
 		return nullptr;
 	}
 
-	const ConstrainedJointData* Physics::GetConstrainedJointData(UUID entityUUID)
+	const ConstrainedJointData* Physics::GetConstrainedJointData(UUID actorUUID)
 	{
-		VX_CORE_ASSERT(s_Data->ConstrainedJointData.contains(entityUUID), "Entity was not found in constrained joint data map!");
+		VX_CORE_ASSERT(s_Data->ConstrainedJointData.contains(actorUUID), "Actor was not found in constrained joint data map!");
 
-		if (s_Data->ConstrainedJointData.contains(entityUUID))
+		if (s_Data->ConstrainedJointData.contains(actorUUID))
 		{
-			return s_Data->ConstrainedJointData.at(entityUUID);
+			return s_Data->ConstrainedJointData.at(actorUUID);
 		}
 
 		return nullptr;

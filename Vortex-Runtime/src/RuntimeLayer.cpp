@@ -58,7 +58,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		// Shadow pass
-		if (Entity skyLightEntity = m_RuntimeScene->GetSkyLightEntity())
+		if (Actor skyLightEntity = m_RuntimeScene->GetSkyLightActor())
 		{
 			const LightSourceComponent& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
 			if (lsc.CastShadows)
@@ -97,15 +97,15 @@ namespace Vortex {
 			if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)m_ViewportSize.x && mouseY < (int)m_ViewportSize.y)
 			{
 				const int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-				m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_RuntimeScene.Raw() };
-				ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
+				m_HoveredActor = pixelData == -1 ? Actor() : Actor{ (entt::entity)pixelData, m_RuntimeScene.Raw() };
+				ScriptRegistry::SetHoveredActor(m_HoveredActor);
 			}
 		}
 
 		m_Framebuffer->Unbind();
 		
 		// Bloom pass
-		if (Entity primaryCamera = m_RuntimeScene->GetPrimaryCameraEntity())
+		if (Actor primaryCamera = m_RuntimeScene->GetPrimaryCameraActor())
 		{
 			PostProcessProperties postProcessProps{};
 			postProcessProps.TargetFramebuffer = m_Framebuffer;
@@ -156,7 +156,7 @@ namespace Vortex {
 		SystemManager::OnGuiRender();
 
 		// Update Application Gui
-		m_RuntimeScene->OnUpdateEntityGui();
+		m_RuntimeScene->OnUpdateActorGui();
 	}
 
 	void RuntimeLayer::OnEvent(Event& e)

@@ -153,7 +153,7 @@ namespace Vortex {
 			case ScriptFieldType::Vector4:     return "Vector4";
 			case ScriptFieldType::Color3:      return "Color3";
 			case ScriptFieldType::Color4:      return "Color4";
-			case ScriptFieldType::Entity:      return "Entity";
+			case ScriptFieldType::Actor:      return "Entity";
 			case ScriptFieldType::AssetHandle: return "AssetHandle";
 		}
 
@@ -180,7 +180,7 @@ namespace Vortex {
 		if (fieldType == "Vector4")     return ScriptFieldType::Vector4;
 		if (fieldType == "Color3")      return ScriptFieldType::Color3;
 		if (fieldType == "Color4")      return ScriptFieldType::Color4;
-		if (fieldType == "Entity")      return ScriptFieldType::Entity;
+		if (fieldType == "Entity")      return ScriptFieldType::Actor;
 		if (fieldType == "AssetHandle") return ScriptFieldType::AssetHandle;
 
 		VX_CORE_ASSERT(false, "Unknown Script Field Type!");
@@ -206,7 +206,7 @@ namespace Vortex {
 	void ManagedArray::SetValue(uintptr_t index, MonoClass* elementKlass, UUID value)
 	{
 		MonoObject* boxed = ScriptUtils::InstantiateClass(elementKlass);
-		ScriptEngine::EntityConstructorRuntime(value, boxed);
+		ScriptEngine::ActorConstructorRuntime(value, boxed);
 		SetValueInternal(index, boxed);
 	}
 

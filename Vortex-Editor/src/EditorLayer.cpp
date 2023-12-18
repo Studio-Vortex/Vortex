@@ -161,9 +161,9 @@ namespace Vortex {
 		RenderTime& renderTime = Renderer::GetRenderTime();
 
 		// Shadow pass
-		if (Entity skyLightEntity = m_ActiveScene->GetSkyLightEntity())
+		if (Actor skyLightActor = m_ActiveScene->GetSkyLightActor())
 		{
-			const LightSourceComponent& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lsc = skyLightActor.GetComponent<LightSourceComponent>();
 			if (lsc.CastShadows)
 			{
 				InstrumentationTimer timer("Shadow Pass");
@@ -230,7 +230,7 @@ namespace Vortex {
 			}
 		}
 
-		// Scene Viewport Entity Selection
+		// Scene Viewport Actor Selection
 		{
 			auto [mx, my] = Gui::GetMousePos();
 
@@ -245,8 +245,8 @@ namespace Vortex {
 			if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 			{
 				const int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-				m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.Raw() };
-				ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
+				m_HoveredActor = pixelData == -1 ? Actor() : Actor{ (entt::entity)pixelData, m_ActiveScene.Raw() };
+				ScriptRegistry::SetHoveredActor(m_HoveredActor);
 			}
 		}
 
@@ -263,7 +263,7 @@ namespace Vortex {
 			Math::vec3 cameraPos = m_EditorCamera->GetPosition();
 			if (InPlaySceneState())
 			{
-				if (Entity primaryCamera = m_ActiveScene->GetPrimaryCameraEntity())
+				if (Actor primaryCamera = m_ActiveScene->GetPrimaryCameraActor())
 				{
 					cameraPos = primaryCamera.GetTransform().Translation;
 				}
@@ -298,7 +298,7 @@ namespace Vortex {
 			renderPacket.EditorScene = true;
 			m_SecondViewportRenderer.RenderScene(renderPacket);
 
-			// Scene Viewport Entity Selection
+			// Scene Viewport Actor Selection
 			{
 				auto [mx, my] = Gui::GetMousePos();
 
@@ -313,8 +313,8 @@ namespace Vortex {
 				if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 				{
 					const int pixelData = m_SecondViewportFramebuffer->ReadPixel(1, mouseX, mouseY);
-					m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_ActiveScene.Raw() };
-					ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
+					m_HoveredActor = pixelData == -1 ? Actor() : Actor{ (entt::entity)pixelData, m_ActiveScene.Raw() };
+					ScriptRegistry::SetHoveredActor(m_HoveredActor);
 				}
 			}
 
@@ -442,7 +442,7 @@ namespace Vortex {
 			m_PanelManager->OnGuiRender<PhysicsStatisticsPanel>();
 			m_PanelManager->OnGuiRender<ProjectSettingsPanel>();
 			m_PanelManager->OnGuiRender<NetworkManagerPanel>();
-			m_PanelManager->GetPanel<SceneHierarchyPanel>()->OnGuiRender(m_HoveredEntity, m_EditorCamera);
+			m_PanelManager->GetPanel<SceneHierarchyPanel>()->OnGuiRender(m_HoveredActor, m_EditorCamera);
 			m_PanelManager->OnGuiRender<ContentBrowserPanel>();
 			m_PanelManager->OnGuiRender<ScriptRegistryPanel>();
 			m_PanelManager->OnGuiRender<MaterialEditorPanel>();
@@ -464,8 +464,8 @@ namespace Vortex {
 		// Update Engine Systems Gui
 		SystemManager::OnGuiRender();
 
-		// Update C# Entity.OnGui()
-		m_ActiveScene->OnUpdateEntityGui();
+		// Update C# Actor.OnGui()
+		m_ActiveScene->OnUpdateActorGui();
 
 		if (m_SceneViewportPanelOpen)
 		{
@@ -477,21 +477,21 @@ namespace Vortex {
 			OnSecondViewportPanelRender();
 		}
 
-		if (m_ShowViewportCreateEntityMenu)
+		if (m_ShowViewportCreateActorMenu)
 		{
-			Gui::OpenPopup("ViewportCreateEntityMenu");
-			m_ShowViewportCreateEntityMenu = false;
+			Gui::OpenPopup("ViewportCreateActorMenu");
+			m_ShowViewportCreateActorMenu = false;
 		}
 
-		if (Gui::IsPopupOpen("ViewportCreateEntityMenu"))
+		if (Gui::IsPopupOpen("ViewportCreateActorMenu"))
 		{
 			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 5.0f, 5.0f });
 		}
 
-		if (Gui::BeginPopup("ViewportCreateEntityMenu", ImGuiWindowFlags_NoMove))
+		if (Gui::BeginPopup("ViewportCreateActorMenu", ImGuiWindowFlags_NoMove))
 		{
 			EditorCamera* camera = GetCurrentEditorCamera();
-			m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateEntityMenu(camera);
+			m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateActorMenu(camera);
 
 			Gui::PopStyleVar();
 			Gui::EndPopup();
@@ -592,44 +592,44 @@ namespace Vortex {
 
 					UI::Draw::Underline();
 
-					Entity selectedEntity = SelectionManager::GetSelectedEntity();
+					Actor selectedActor = SelectionManager::GetSelectedActor();
 
-					if (!selectedEntity)
+					if (!selectedActor)
 					{
-						if (Gui::BeginMenu("Create Entity"))
+						if (Gui::BeginMenu("Create Actor"))
 						{
 							EditorCamera* camera = GetCurrentEditorCamera();
-							m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateEntityMenu(camera);
+							m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateActorMenu(camera);
 
 							Gui::EndMenu();
 						}
 					}
 					else
 					{
-						if (Gui::MenuItem("Rename Entity", "F2"))
+						if (Gui::MenuItem("Rename Actor", "F2"))
 						{
-							m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnEntityName(true);
+							m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnActorName(true);
 							Gui::CloseCurrentPopup();
 						}
 						UI::Draw::Underline();
 
-						if (Gui::MenuItem("Duplicate Entity", "Ctrl+D"))
+						if (Gui::MenuItem("Duplicate Actor", "Ctrl+D"))
 						{
-							DuplicateSelectedEntity();
+							DuplicateSelectedActor();
 							Gui::CloseCurrentPopup();
 						}
 						UI::Draw::Underline();
 
-						if (Gui::MenuItem("Delete Entity", "Del"))
+						if (Gui::MenuItem("Delete Actor", "Del"))
 						{
-							m_ActiveScene->SubmitToDestroyEntity(selectedEntity);
+							m_ActiveScene->SubmitToDestroyActor(selectedActor);
 							Gui::CloseCurrentPopup();
 						}
 						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Move To Camera Position"))
 						{
-							TransformComponent& transform = selectedEntity.GetTransform();
+							TransformComponent& transform = selectedActor.GetTransform();
 							transform.Translation = m_EditorCamera->GetPosition();
 							transform.SetRotationEuler(Math::vec3(-m_EditorCamera->GetPitch(), -m_EditorCamera->GetYaw(), transform.GetRotationEuler().z));
 							Gui::CloseCurrentPopup();
@@ -638,7 +638,7 @@ namespace Vortex {
 
 						if (Gui::MenuItem("Reset Translation", "Alt+W"))
 						{
-							TransformComponent& transformComponent = selectedEntity.GetTransform();
+							TransformComponent& transformComponent = selectedActor.GetTransform();
 							transformComponent.Translation = Math::vec3(0.0f);
 							Gui::CloseCurrentPopup();
 						}
@@ -646,7 +646,7 @@ namespace Vortex {
 
 						if (Gui::MenuItem("Reset Rotation", "Alt+E"))
 						{
-							TransformComponent& transformComponent = selectedEntity.GetTransform();
+							TransformComponent& transformComponent = selectedActor.GetTransform();
 							Math::quaternion identity(1.0f, 0.0f, 0.0f, 0.0f);
 							transformComponent.SetRotation(identity);
 							Gui::CloseCurrentPopup();
@@ -655,7 +655,7 @@ namespace Vortex {
 
 						if (Gui::MenuItem("Reset Scale", "Alt+R"))
 						{
-							TransformComponent& transformComponent = selectedEntity.GetTransform();
+							TransformComponent& transformComponent = selectedActor.GetTransform();
 							transformComponent.Scale = Math::vec3(1.0f);
 							Gui::CloseCurrentPopup();
 						}
@@ -955,12 +955,12 @@ namespace Vortex {
 					}
 					case AssetType::ScriptAsset:
 					{
-						if (!m_HoveredEntity)
-							m_HoveredEntity = GetHoveredMeshEntityFromRaycast();
-						if (!m_HoveredEntity)
+						if (!m_HoveredActor)
+							m_HoveredActor = GetHoveredMeshActorFromRaycast();
+						if (!m_HoveredActor)
 							break;
 
-						ScriptComponent& scriptComponent = m_HoveredEntity.AddOrReplaceComponent<ScriptComponent>();
+						ScriptComponent& scriptComponent = m_HoveredActor.AddOrReplaceComponent<ScriptComponent>();
 						const std::unordered_map<std::string, SharedReference<ScriptClass>> scriptClasses = ScriptEngine::GetClasses();
 
 						const std::string droppedClassName = Project::GetEditorAssetManager()->GetRelativePath(filepath).string();
@@ -982,9 +982,9 @@ namespace Vortex {
 					}
 					case AssetType::TextureAsset:
 					{
-						if (!m_HoveredEntity)
-							m_HoveredEntity = GetHoveredMeshEntityFromRaycast();
-						if (!m_HoveredEntity || !m_HoveredEntity.HasAny<SpriteRendererComponent, StaticMeshRendererComponent, MeshRendererComponent>())
+						if (!m_HoveredActor)
+							m_HoveredActor = GetHoveredMeshActorFromRaycast();
+						if (!m_HoveredActor || !m_HoveredActor.HasAny<SpriteRendererComponent, StaticMeshRendererComponent, MeshRendererComponent>())
 							break;
 
 						const Fs::Path textureFilepath = filepath;
@@ -995,13 +995,13 @@ namespace Vortex {
 						{
 							SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(textureHandle);
 
-							if (m_HoveredEntity.HasComponent<SpriteRendererComponent>())
+							if (m_HoveredActor.HasComponent<SpriteRendererComponent>())
 							{
-								m_HoveredEntity.GetComponent<SpriteRendererComponent>().Texture = textureHandle;
+								m_HoveredActor.GetComponent<SpriteRendererComponent>().Texture = textureHandle;
 							}
-							else if (m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
+							else if (m_HoveredActor.HasComponent<StaticMeshRendererComponent>())
 							{
-								auto& staticMeshRendererComponent = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>();
+								auto& staticMeshRendererComponent = m_HoveredActor.GetComponent<StaticMeshRendererComponent>();
 								AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
 
 								auto& materialTable = staticMeshRendererComponent.Materials;
@@ -1046,8 +1046,8 @@ namespace Vortex {
 					}
 					case AssetType::MaterialAsset:
 					{
-						m_HoveredEntity = GetHoveredMeshEntityFromRaycast();
-						if (!m_HoveredEntity || !m_HoveredEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
+						m_HoveredActor = GetHoveredMeshActorFromRaycast();
+						if (!m_HoveredActor || !m_HoveredActor.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
 							break;
 
 						const Fs::Path materialFilepath = filepath;
@@ -1062,16 +1062,16 @@ namespace Vortex {
 							{
 								// TODO we should be able to set an actual index here eventually instead of being hardcoded
 
-								if (m_HoveredEntity.HasComponent<MeshRendererComponent>())
+								if (m_HoveredActor.HasComponent<MeshRendererComponent>())
 								{
-									auto& meshRendererComponent = m_HoveredEntity.GetComponent<MeshRendererComponent>();
+									auto& meshRendererComponent = m_HoveredActor.GetComponent<MeshRendererComponent>();
 									auto& materialTable = meshRendererComponent.Materials;
 
 									materialTable->SetMaterial(0, materialHandle);
 								}
-								else if (m_HoveredEntity.HasComponent<StaticMeshRendererComponent>())
+								else if (m_HoveredActor.HasComponent<StaticMeshRendererComponent>())
 								{
-									auto& staticMeshRendererComponent = m_HoveredEntity.GetComponent<StaticMeshRendererComponent>();
+									auto& staticMeshRendererComponent = m_HoveredActor.GetComponent<StaticMeshRendererComponent>();
 									auto& materialTable = staticMeshRendererComponent.Materials;
 
 									materialTable->SetMaterial(0, materialHandle);
@@ -1098,15 +1098,15 @@ namespace Vortex {
 					case AssetType::MeshAsset: // Fallthrough
 					case AssetType::StaticMeshAsset:
 					{
-						m_HoveredEntity = GetHoveredMeshEntityFromRaycast();
-						if (!m_HoveredEntity || !m_HoveredEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
+						m_HoveredActor = GetHoveredMeshActorFromRaycast();
+						if (!m_HoveredActor || !m_HoveredActor.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
 							break;
 
 						const Fs::Path modelPath = filepath;
 
 						m_MeshImportPopupOpen = true;
 						m_MeshImportPopupData.MeshFilepath = modelPath.string();
-						m_MeshImportPopupData.MeshEntityToEdit = m_HoveredEntity;
+						m_MeshImportPopupData.MeshActorToEdit = m_HoveredActor;
 
 						break;
 					}
@@ -1117,9 +1117,9 @@ namespace Vortex {
 						if (!AssetManager::IsHandleValid(environmentHandle))
 							break;
 
-						if (Entity environmentEntity = m_ActiveScene->GetEnvironmentEntity())
+						if (Actor environmentActor = m_ActiveScene->GetEnvironmentActor())
 						{
-							SkyboxComponent& skyboxComponent = environmentEntity.GetComponent<SkyboxComponent>();
+							SkyboxComponent& skyboxComponent = environmentActor.GetComponent<SkyboxComponent>();
 							skyboxComponent.Skybox = environmentHandle;
 						}
 
@@ -1146,8 +1146,8 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		Entity selectedEntity = SelectionManager::GetSelectedEntity();
-		if (!selectedEntity)
+		Actor selectedActor = SelectionManager::GetSelectedActor();
+		if (!selectedActor)
 		{
 			return;
 		}
@@ -1155,7 +1155,7 @@ namespace Vortex {
 		const bool validGizmoTool = m_GizmoType != -1;
 		const bool altDown = Input::IsKeyDown(KeyCode::LeftAlt) || Input::IsKeyDown(KeyCode::RightAlt);
 		const bool rightMouseButtonDown = Input::IsMouseButtonDown(MouseButton::Right);
-		const bool showGizmos = (selectedEntity && validGizmoTool && !altDown && !rightMouseButtonDown);
+		const bool showGizmos = (selectedActor && validGizmoTool && !altDown && !rightMouseButtonDown);
 
 		if (showGizmos)
 		{
@@ -1171,8 +1171,8 @@ namespace Vortex {
 			const Math::mat4& cameraProjection = editorCamera->GetProjectionMatrix();
 			const Math::mat4& cameraView = editorCamera->GetViewMatrix();
 
-			TransformComponent& entityTransform = selectedEntity.GetTransform();
-			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
+			TransformComponent& actorTransform = selectedActor.GetTransform();
+			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedActor);
 
 			// Snapping
 			const bool controlDown = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
@@ -1199,7 +1199,7 @@ namespace Vortex {
 
 			if (ImGuizmo::IsUsing())
 			{
-				if (Entity parent = selectedEntity.GetParent())
+				if (Actor parent = selectedActor.GetParent())
 				{
 					const Math::mat4 parentTransform = m_ActiveScene->GetWorldSpaceTransformMatrix(parent);
 					transform = Math::Inverse(parentTransform) * transform;
@@ -1215,13 +1215,13 @@ namespace Vortex {
 				{
 					case ImGuizmo::OPERATION::TRANSLATE:
 					{
-						entityTransform.Translation = translation;
+						actorTransform.Translation = translation;
 						break;
 					}
 					case ImGuizmo::OPERATION::ROTATE:
 					{
 						// Do this in Euler in an attempt to preserve any full revolutions (> 360)
-						Math::vec3 originalEulerRotation = entityTransform.GetRotationEuler();
+						Math::vec3 originalEulerRotation = actorTransform.GetRotationEuler();
 
 						// Map original rotation to range [-180, 180] which is what ImGuizmo gives us
 						originalEulerRotation.x = fmodf(originalEulerRotation.x + Math::PI, Math::TWO_PI) - Math::PI;
@@ -1235,12 +1235,12 @@ namespace Vortex {
 						if (fabs(deltaRotationEuler.y) < 0.001) deltaRotationEuler.y = 0.0f;
 						if (fabs(deltaRotationEuler.z) < 0.001) deltaRotationEuler.z = 0.0f;
 
-						entityTransform.SetRotationEuler(entityTransform.GetRotationEuler() += deltaRotationEuler);
+						actorTransform.SetRotationEuler(actorTransform.GetRotationEuler() += deltaRotationEuler);
 						break;
 					}
 					case ImGuizmo::OPERATION::SCALE:
 					{
-						entityTransform.Scale = scale;
+						actorTransform.Scale = scale;
 						break;
 					}
 				}
@@ -1610,14 +1610,14 @@ namespace Vortex {
 						properties.EditorProps.ShowBoundingBoxes = !properties.EditorProps.ShowBoundingBoxes;
 					}
 
-					static const char* selectionModes[] = { "Entity", "Submesh" };
+					static const char* selectionModes[] = { "Actor", "Submesh" };
 					uint32_t currentSelectionMode = (uint32_t)m_SelectionMode;
 					if (UI::PropertyDropdown("Selection Mode", selectionModes, VX_ARRAYSIZE(selectionModes), currentSelectionMode))
 					{
 						m_SelectionMode = (SelectionMode)currentSelectionMode;
 					}
 
-					UI::Property("Selected Entity Outline", m_ShowSelectedEntityOutline);
+					UI::Property("Selected Actor Outline", m_ShowSelectedActorOutline);
 
 					if (UI::ImageButton(properties.EditorProps.MuteAudioSources ? "Unmute Audio" : "Mute Audio", EditorResources::MuteAudioSourcesIcons, textureSize, properties.EditorProps.MuteAudioSources ? bgColor : normalColor, tintColor))
 					{
@@ -1738,105 +1738,105 @@ namespace Vortex {
 
 		// Render Visible Mesh Colliders
 		{
-			std::vector<Entity> entities;
+			std::vector<Actor> entities;
 
-			auto boxColliderView = m_ActiveScene->GetAllEntitiesWith<BoxColliderComponent>();
-			auto sphereColliderView = m_ActiveScene->GetAllEntitiesWith<SphereColliderComponent>();
+			auto boxColliderView = m_ActiveScene->GetAllActorsWith<BoxColliderComponent>();
+			auto sphereColliderView = m_ActiveScene->GetAllActorsWith<SphereColliderComponent>();
 
 			for (const auto e : boxColliderView)
 			{
-				Entity entity = { e, m_ActiveScene.Raw() };
-				const BoxColliderComponent& boxCollider = entity.GetComponent<BoxColliderComponent>();
+				Actor actor = { e, m_ActiveScene.Raw() };
+				const BoxColliderComponent& boxCollider = actor.GetComponent<BoxColliderComponent>();
 				if (boxCollider.Visible)
 					entities.emplace_back(e, m_ActiveScene.Raw());
 			}
 			for (const auto e : sphereColliderView)
 			{
-				Entity entity = { e, m_ActiveScene.Raw() };
-				const SphereColliderComponent& sphereCollider = entity.GetComponent<SphereColliderComponent>();
+				Actor actor = { e, m_ActiveScene.Raw() };
+				const SphereColliderComponent& sphereCollider = actor.GetComponent<SphereColliderComponent>();
 				if (sphereCollider.Visible)
 					entities.emplace_back(e, m_ActiveScene.Raw());
 			}
 
-			for (Entity entity : entities)
+			for (Actor actor : entities)
 			{
-				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
-				OverlayRenderMeshCollider(entity, transform, colliderColor);
+				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor);
+				OverlayRenderMeshCollider(actor, transform, colliderColor);
 			}
 		}
 
 		// Render Visible 2D Colliders
 		{
-			std::vector<Entity> entities;
+			std::vector<Actor> entities;
 
-			auto boxColliderView = m_ActiveScene->GetAllEntitiesWith<BoxCollider2DComponent>();
-			auto circleColliderView = m_ActiveScene->GetAllEntitiesWith<CircleCollider2DComponent>();
+			auto boxColliderView = m_ActiveScene->GetAllActorsWith<BoxCollider2DComponent>();
+			auto circleColliderView = m_ActiveScene->GetAllActorsWith<CircleCollider2DComponent>();
 
 			for (const auto e : boxColliderView)
 			{
-				Entity entity = { e, m_ActiveScene.Raw() };
-				const BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+				Actor actor = { e, m_ActiveScene.Raw() };
+				const BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 				if (boxCollider.Visible)
 					entities.emplace_back(e, m_ActiveScene.Raw());
 			}
 			for (const auto e : circleColliderView)
 			{
-				Entity entity = { e, m_ActiveScene.Raw() };
-				const CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+				Actor actor = { e, m_ActiveScene.Raw() };
+				const CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 				if (circleCollider.Visible)
 					entities.emplace_back(e, m_ActiveScene.Raw());
 			}
 
-			for (Entity entity : entities)
+			for (Actor actor : entities)
 			{
-				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
-				OverlayRenderSpriteCollider(editorCamera, entity, transform, colliderColor);
+				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor);
+				OverlayRenderSpriteCollider(editorCamera, actor, transform, colliderColor);
 			}
 		}
 
-		// Draw selected entity outline
-		if (m_ShowSelectedEntityOutline)
+		// Draw selected actor outline
+		if (m_ShowSelectedActorOutline)
 		{
-			if (Entity selectedEntity = SelectionManager::GetSelectedEntity())
+			if (Actor selectedActor = SelectionManager::GetSelectedActor())
 			{
-				OverlayRenderSelectedEntityOutline(outlineColor);
+				OverlayRenderSelectedActorOutline(outlineColor);
 			}
 		}
 
 		Renderer2D::EndScene();
 	}
 
-	void EditorLayer::OverlayRenderSelectedEntityOutline(const Math::vec4& outlineColor)
+	void EditorLayer::OverlayRenderSelectedActorOutline(const Math::vec4& outlineColor)
 	{
-		Entity selectedEntity = SelectionManager::GetSelectedEntity();
-		if (!selectedEntity.IsActive())
+		Actor selectedActor = SelectionManager::GetSelectedActor();
+		if (!selectedActor.IsActive())
 			return;
 
-		const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedEntity);
+		const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedActor);
 
-		if (selectedEntity.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
+		if (selectedActor.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
 		{
 			const Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
-			OverlayRenderMeshOutline(selectedEntity, scaledTransform, outlineColor);
+			OverlayRenderMeshOutline(selectedActor, scaledTransform, outlineColor);
 		}
 
-		if (selectedEntity.HasAny<SpriteRendererComponent, CircleRendererComponent>())
+		if (selectedActor.HasAny<SpriteRendererComponent, CircleRendererComponent>())
 		{
 			const Math::mat4 scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
-			OverlayRenderSpriteOutline(selectedEntity, scaledTransform, outlineColor);
+			OverlayRenderSpriteOutline(selectedActor, scaledTransform, outlineColor);
 		}
 
-		if (selectedEntity.HasComponent<TextMeshComponent>())
+		if (selectedActor.HasComponent<TextMeshComponent>())
 		{
-			const TextMeshComponent& textMesh = selectedEntity.GetComponent<TextMeshComponent>();
+			const TextMeshComponent& textMesh = selectedActor.GetComponent<TextMeshComponent>();
 
 			// TODO calculate the text size and scale transform
 			Renderer2D::DrawRect(transform, outlineColor);
 		}
 
-		if (selectedEntity.HasComponent<CameraComponent>())
+		if (selectedActor.HasComponent<CameraComponent>())
 		{
-			const SceneCamera& sceneCamera = selectedEntity.GetComponent<CameraComponent>().Camera;
+			const SceneCamera& sceneCamera = selectedActor.GetComponent<CameraComponent>().Camera;
 
 			switch (sceneCamera.GetProjectionType())
 			{
@@ -1860,11 +1860,11 @@ namespace Vortex {
 			}
 		}
 
-		if (selectedEntity.HasComponent<LightSourceComponent>())
+		if (selectedActor.HasComponent<LightSourceComponent>())
 		{
-			const LightSourceComponent& lightSourceComponent = selectedEntity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lightSourceComponent = selectedActor.GetComponent<LightSourceComponent>();
 
-			const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedEntity);
+			const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedActor);
 			const Math::vec3 translation = worldSpaceTransform.Translation;
 			const Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
 
@@ -2032,14 +2032,14 @@ namespace Vortex {
 
 			if (Gui::Button("Import", buttonSize))
 			{
-				if (m_MeshImportPopupData.MeshEntityToEdit.HasComponent<MeshRendererComponent>())
+				if (m_MeshImportPopupData.MeshActorToEdit.HasComponent<MeshRendererComponent>())
 				{
-					MeshRendererComponent& meshRenderer = m_MeshImportPopupData.MeshEntityToEdit.GetComponent<MeshRendererComponent>();
+					MeshRendererComponent& meshRenderer = m_MeshImportPopupData.MeshActorToEdit.GetComponent<MeshRendererComponent>();
 					meshRenderer.Mesh = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(m_MeshImportPopupData.MeshFilepath);
 				}
-				else if (m_MeshImportPopupData.MeshEntityToEdit.HasComponent<StaticMeshRendererComponent>())
+				else if (m_MeshImportPopupData.MeshActorToEdit.HasComponent<StaticMeshRendererComponent>())
 				{
-					StaticMeshRendererComponent& staticMeshRenderer = m_MeshImportPopupData.MeshEntityToEdit.GetComponent<StaticMeshRendererComponent>();
+					StaticMeshRendererComponent& staticMeshRenderer = m_MeshImportPopupData.MeshActorToEdit.GetComponent<StaticMeshRendererComponent>();
 					staticMeshRenderer.StaticMesh = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(m_MeshImportPopupData.MeshFilepath);
 
 					if (AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh))
@@ -2076,11 +2076,11 @@ namespace Vortex {
 		}
 	}
 
-	void EditorLayer::OverlayRenderMeshBoundingBox(Entity entity, const Math::mat4& transform, const Math::vec4& boundingBoxColor)
+	void EditorLayer::OverlayRenderMeshBoundingBox(Actor actor, const Math::mat4& transform, const Math::vec4& boundingBoxColor)
 	{
-		if (entity.HasComponent<MeshRendererComponent>())
+		if (actor.HasComponent<MeshRendererComponent>())
 		{
-			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+			const auto& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
 			const auto& scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
 
 			if (!meshRendererComponent.Visible)
@@ -2099,10 +2099,10 @@ namespace Vortex {
 			Renderer2D::DrawAABB(submesh.GetBoundingBox(), scaledTransform, boundingBoxColor);
 		}
 
-		if (entity.HasComponent<StaticMeshRendererComponent>())
+		if (actor.HasComponent<StaticMeshRendererComponent>())
 		{
-			const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
-			const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity) * Math::Scale(Math::vec3(1.001f));
+			const auto& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
+			const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor) * Math::Scale(Math::vec3(1.001f));
 
 			if (!staticMeshRendererComponent.Visible)
 				return;
@@ -2126,48 +2126,48 @@ namespace Vortex {
 
 	void EditorLayer::OverlayRenderMeshBoundingBoxes(const Math::vec4& boundingBoxColor)
 	{
-		std::vector<Entity> entities;
+		std::vector<Actor> actors;
 
-		auto meshRendererView = m_ActiveScene->GetAllEntitiesWith<MeshRendererComponent>();
-		auto staticMeshRendererView = m_ActiveScene->GetAllEntitiesWith<StaticMeshRendererComponent>();
+		auto meshRendererView = m_ActiveScene->GetAllActorsWith<MeshRendererComponent>();
+		auto staticMeshRendererView = m_ActiveScene->GetAllActorsWith<StaticMeshRendererComponent>();
 
 		for (const auto e : meshRendererView)
-			entities.emplace_back(e, m_ActiveScene.Raw());
+			actors.emplace_back(e, m_ActiveScene.Raw());
 		for (const auto e : staticMeshRendererView)
-			entities.emplace_back(e, m_ActiveScene.Raw());
+			actors.emplace_back(e, m_ActiveScene.Raw());
 
-		for (auto& entity : entities)
+		for (Actor actor : actors)
 		{
-			if (!entity.IsActive())
+			if (!actor.IsActive())
 				continue;
 
-			auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
-			OverlayRenderMeshBoundingBox(entity, transform, boundingBoxColor);
+			const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor);
+			OverlayRenderMeshBoundingBox(actor, transform, boundingBoxColor);
 		}
 	}
 
-	void EditorLayer::OverlayRenderMeshCollider(Entity entity, const Math::mat4& transform, const Math::vec4& colliderColor)
+	void EditorLayer::OverlayRenderMeshCollider(Actor actor, const Math::mat4& transform, const Math::vec4& colliderColor)
 	{
-		if (entity.HasComponent<BoxColliderComponent>())
+		if (actor.HasComponent<BoxColliderComponent>())
 		{
-			const auto& bc = entity.GetComponent<BoxColliderComponent>();
+			const auto& bc = actor.GetComponent<BoxColliderComponent>();
 
 			const Math::AABB aabb = {
 				-Math::vec3(0.503f),
 				+Math::vec3(0.503f)
 			};
 
-			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
+			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor)
 				* Math::Translate(bc.Offset)
 				* Math::Scale(bc.HalfSize * 2.0f);
 
 			Renderer2D::DrawAABB(aabb, transform, colliderColor);
 		}
 
-		if (entity.HasComponent<SphereColliderComponent>())
+		if (actor.HasComponent<SphereColliderComponent>())
 		{
-			const auto& sc = entity.GetComponent<SphereColliderComponent>();
-			auto transform = m_ActiveScene->GetWorldSpaceTransform(entity);
+			const auto& sc = actor.GetComponent<SphereColliderComponent>();
+			auto transform = m_ActiveScene->GetWorldSpaceTransform(actor);
 			Math::vec3 translation = transform.Translation + sc.Offset;
 			Math::vec3 scale = transform.Scale;
 
@@ -2186,31 +2186,31 @@ namespace Vortex {
 
 	void EditorLayer::OverlayRenderMeshColliders(const Math::vec4& colliderColor)
 	{
-		std::vector<Entity> entities;
+		std::vector<Actor> entities;
 
-		auto boxColliderView = m_ActiveScene->GetAllEntitiesWith<BoxColliderComponent>();
-		auto sphereColliderView = m_ActiveScene->GetAllEntitiesWith<SphereColliderComponent>();
+		auto boxColliderView = m_ActiveScene->GetAllActorsWith<BoxColliderComponent>();
+		auto sphereColliderView = m_ActiveScene->GetAllActorsWith<SphereColliderComponent>();
 
 		for (const auto e : boxColliderView)
 			entities.emplace_back(e, m_ActiveScene.Raw());
 		for (const auto e : sphereColliderView)
 			entities.emplace_back(e, m_ActiveScene.Raw());
 
-		for (auto& entity : entities)
+		for (Actor actor : entities)
 		{
-			auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
-			OverlayRenderMeshCollider(entity, transform, colliderColor);
+			const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor);
+			OverlayRenderMeshCollider(actor, transform, colliderColor);
 		}
 	}
 
-	void EditorLayer::OverlayRenderMeshOutline(Entity entity, const Math::mat4& transform, const Math::vec4& outlineColor)
+	void EditorLayer::OverlayRenderMeshOutline(Actor actor, const Math::mat4& transform, const Math::vec4& outlineColor)
 	{
-		if (!entity.IsActive())
+		if (!actor.IsActive())
 			return;
 
-		if (entity.HasComponent<MeshRendererComponent>())
+		if (actor.HasComponent<MeshRendererComponent>())
 		{
-			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+			const auto& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
 
 			AssetHandle meshHandle = meshRendererComponent.Mesh;
 			if (AssetManager::IsHandleValid(meshHandle))
@@ -2222,7 +2222,7 @@ namespace Vortex {
 
 			switch (m_SelectionMode)
 			{
-				case SelectionMode::Entity:
+				case SelectionMode::Actor:
 				{
 					Renderer2D::DrawAABB(mesh->GetBoundingBox(), transform, outlineColor);
 					break;
@@ -2236,9 +2236,9 @@ namespace Vortex {
 			}
 		}
 
-		if (entity.HasComponent<StaticMeshRendererComponent>())
+		if (actor.HasComponent<StaticMeshRendererComponent>())
 		{
-			const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+			const auto& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
 
 			AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
 			if (!AssetManager::IsHandleValid(staticMeshHandle))
@@ -2250,7 +2250,7 @@ namespace Vortex {
 
 			switch (m_SelectionMode)
 			{
-				case SelectionMode::Entity:
+				case SelectionMode::Actor:
 				{
 					Renderer2D::DrawAABB(staticMesh->GetBoundingBox(), transform, outlineColor);
 					break;
@@ -2268,32 +2268,32 @@ namespace Vortex {
 		}
 	}
 
-	void EditorLayer::OverlayRenderSpriteCollider(EditorCamera* editorCamera, Entity entity, const Math::mat4& transform, const Math::vec4& colliderColor)
+	void EditorLayer::OverlayRenderSpriteCollider(EditorCamera* editorCamera, Actor actor, const Math::mat4& transform, const Math::vec4& colliderColor)
 	{
 		float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame
 		if (editorCamera->GetPosition().z < 0) // Show colliders on the side that the editor camera facing
 			colliderDistance = -colliderDistance;
 
-		if (entity.HasComponent<BoxCollider2DComponent>())
+		if (actor.HasComponent<BoxCollider2DComponent>())
 		{
-			const auto& bc2d = entity.GetComponent<BoxCollider2DComponent>();
+			const auto& bc2d = actor.GetComponent<BoxCollider2DComponent>();
 
 			Math::vec3 scale = Math::vec3(bc2d.Size * 2.0f, 1.0f);
 
-			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
+			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor)
 				* Math::Translate(Math::vec3(bc2d.Offset, colliderDistance))
 				* Math::Scale(scale);
 
 			Renderer2D::DrawRect(transform, colliderColor);
 		}
 
-		if (entity.HasComponent<CircleCollider2DComponent>())
+		if (actor.HasComponent<CircleCollider2DComponent>())
 		{
-			const auto& cc2d = entity.GetComponent<CircleCollider2DComponent>();
+			const auto& cc2d = actor.GetComponent<CircleCollider2DComponent>();
 
 			Math::vec3 scale = Math::vec3(cc2d.Radius * 2.0f);
 
-			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity)
+			Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor)
 				* Math::Translate(Math::vec3(cc2d.Offset, colliderDistance))
 				* Math::Scale(scale);
 
@@ -2303,62 +2303,62 @@ namespace Vortex {
 
 	void EditorLayer::OverlayRenderSpriteColliders(EditorCamera* editorCamera, const Math::vec4& colliderColor)
 	{
-		std::vector<Entity> entities;
+		std::vector<Actor> entities;
 
-		auto spriteRendererView = m_ActiveScene->GetAllEntitiesWith<SpriteRendererComponent>();
-		auto circleRendererView = m_ActiveScene->GetAllEntitiesWith<CircleRendererComponent>();
+		auto spriteRendererView = m_ActiveScene->GetAllActorsWith<SpriteRendererComponent>();
+		auto circleRendererView = m_ActiveScene->GetAllActorsWith<CircleRendererComponent>();
 
 		for (const auto e : spriteRendererView)
 			entities.emplace_back(e, m_ActiveScene.Raw());
 		for (const auto e : circleRendererView)
 			entities.emplace_back(e, m_ActiveScene.Raw());
 
-		for (auto& entity : entities)
+		for (Actor actor : entities)
 		{
-			auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
-			OverlayRenderSpriteCollider(editorCamera, entity, transform, colliderColor);
+			const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor);
+			OverlayRenderSpriteCollider(editorCamera, actor, transform, colliderColor);
 		}
 	}
 
 	void EditorLayer::OverlayRenderSpriteBoundingBoxes(const Math::vec4& boundingBoxColor)
 	{
-		std::vector<Entity> entities;
+		std::vector<Actor> entities;
 
-		auto spriteRendererView = m_ActiveScene->GetAllEntitiesWith<SpriteRendererComponent>();
-		auto circleRendererView = m_ActiveScene->GetAllEntitiesWith<CircleRendererComponent>();
+		auto spriteRendererView = m_ActiveScene->GetAllActorsWith<SpriteRendererComponent>();
+		auto circleRendererView = m_ActiveScene->GetAllActorsWith<CircleRendererComponent>();
 
 		for (const auto e : spriteRendererView)
 			entities.emplace_back(e, m_ActiveScene.Raw());
 		for (const auto e : circleRendererView)
 			entities.emplace_back(e, m_ActiveScene.Raw());
 
-		for (auto& entity : entities)
+		for (Actor actor : entities)
 		{
-			auto transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
-			OverlayRenderSpriteOutline(entity, transform, boundingBoxColor);
+			const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor);
+			OverlayRenderSpriteOutline(actor, transform, boundingBoxColor);
 		}
 	}
 
-	void EditorLayer::OverlayRenderSpriteOutline(Entity entity, const Math::mat4& transform, const Math::vec4& outlineColor)
+	void EditorLayer::OverlayRenderSpriteOutline(Actor actor, const Math::mat4& transform, const Math::vec4& outlineColor)
 	{
-		if (entity.HasComponent<SpriteRendererComponent>())
+		if (actor.HasComponent<SpriteRendererComponent>())
 		{
-			if (!entity.IsActive())
+			if (!actor.IsActive())
 				return;
 
-			const auto& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+			const auto& spriteRenderer = actor.GetComponent<SpriteRendererComponent>();
 			if (!spriteRenderer.Visible)
 				return;
 
 			Renderer2D::DrawRect(transform, outlineColor);
 		}
 
-		if (entity.HasComponent<CircleRendererComponent>())
+		if (actor.HasComponent<CircleRendererComponent>())
 		{
-			if (!entity.IsActive())
+			if (!actor.IsActive())
 				return;
 
-			const auto& circleRenderer = entity.GetComponent<CircleRendererComponent>();
+			const auto& circleRenderer = actor.GetComponent<CircleRendererComponent>();
 			if (!circleRenderer.Visible)
 				return;
 
@@ -2431,7 +2431,7 @@ namespace Vortex {
 	bool EditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
 	{
 		SharedReference<SceneHierarchyPanel> sceneHierarchyPanel = m_PanelManager->GetPanel<SceneHierarchyPanel>();
-		if (sceneHierarchyPanel->IsFocusedOnEntityName())
+		if (sceneHierarchyPanel->IsFocusedOnActorName())
 		{
 			return false;
 		}
@@ -2450,7 +2450,7 @@ namespace Vortex {
 		const bool shiftDown = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
 		const bool controlDown = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
 
-		Entity selectedEntity = SelectionManager::GetSelectedEntity();
+		Actor selectedActor = SelectionManager::GetSelectedActor();
 
 		switch (e.GetKeyCode())
 		{
@@ -2498,9 +2498,9 @@ namespace Vortex {
 			}
 			case KeyCode::W:
 			{
-				if (altDown && selectedEntity)
+				if (altDown && selectedActor)
 				{
-					TransformComponent& transformComponent = selectedEntity.GetTransform();
+					TransformComponent& transformComponent = selectedActor.GetTransform();
 					transformComponent.Translation = Math::vec3(0.0f);
 				}
 
@@ -2510,9 +2510,9 @@ namespace Vortex {
 			}
 			case KeyCode::E:
 			{
-				if (altDown && selectedEntity)
+				if (altDown && selectedActor)
 				{
-					TransformComponent& transformComponent = selectedEntity.GetTransform();
+					TransformComponent& transformComponent = selectedActor.GetTransform();
 					Math::quaternion identity(1.0f, 0.0f, 0.0f, 0.0f);
 					transformComponent.SetRotation(identity);
 				}
@@ -2523,9 +2523,9 @@ namespace Vortex {
 			}
 			case KeyCode::R:
 			{
-				if (altDown && selectedEntity)
+				if (altDown && selectedActor)
 				{
-					TransformComponent& transformComponent = selectedEntity.GetTransform();
+					TransformComponent& transformComponent = selectedActor.GetTransform();
 					transformComponent.Scale = Math::vec3(1.0f);
 				}
 
@@ -2536,9 +2536,9 @@ namespace Vortex {
 
 			case KeyCode::F:
 			{
-				if (selectedEntity)
+				if (selectedActor)
 				{
-					const Math::vec3& translation = m_ActiveScene->GetWorldSpaceTransform(selectedEntity).Translation;
+					const Math::vec3& translation = m_ActiveScene->GetWorldSpaceTransform(selectedActor).Translation;
 					const float distance = 10.0f;
 
 					EditorCamera* camera = nullptr;
@@ -2580,7 +2580,7 @@ namespace Vortex {
 			{
 				if (controlDown)
 				{
-					m_ShowViewportCreateEntityMenu = true;
+					m_ShowViewportCreateActorMenu = true;
 				}
 
 				break;
@@ -2611,7 +2611,7 @@ namespace Vortex {
 						break;
 					}
 
-					DuplicateSelectedEntity();
+					DuplicateSelectedActor();
 				}
 
 				break;
@@ -2670,9 +2670,9 @@ namespace Vortex {
 			// Tools
 			case KeyCode::F2:
 			{
-				if (selectedEntity)
+				if (selectedActor)
 				{
-					m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnEntityName(true);
+					m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnActorName(true);
 				}
 
 				break;
@@ -2687,9 +2687,9 @@ namespace Vortex {
 
 			case KeyCode::Delete:
 			{
-				if (selectedEntity)
+				if (selectedActor)
 				{
-					m_ActiveScene->SubmitToDestroyEntity(selectedEntity);
+					m_ActiveScene->SubmitToDestroyActor(selectedActor);
 				}
 
 				break;
@@ -2740,9 +2740,9 @@ namespace Vortex {
 		}
 
 		// TODO we should handle this in a better way
-		if (m_HoveredEntity)
+		if (m_HoveredActor)
 		{
-			if (m_HoveredEntity.HasAny<
+			if (m_HoveredActor.HasAny<
 				SpriteRendererComponent,
 				CircleRendererComponent,
 				TextMeshComponent,
@@ -2750,15 +2750,15 @@ namespace Vortex {
 				LightSourceComponent,
 				AudioSourceComponent>())
 			{
-				SelectionManager::SetSelectedEntity(m_HoveredEntity);
+				SelectionManager::SetSelectedActor(m_HoveredActor);
 				return false;
 			}
 		}
 
-		if (Entity hoveredMesh = GetHoveredMeshEntityFromRaycast())
+		if (Actor hoveredMesh = GetHoveredMeshActorFromRaycast())
 		{
-			SelectionManager::SetSelectedEntity(hoveredMesh);
-			m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnEntityName(false);
+			SelectionManager::SetSelectedActor(hoveredMesh);
+			m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnActorName(false);
 		}
 
 		return false;
@@ -2797,8 +2797,8 @@ namespace Vortex {
 			CloseProject();
 		}
 
-		m_HoveredEntity = Entity{};
-		SelectionManager::DeselectEntity();
+		m_HoveredActor = Actor{};
+		SelectionManager::DeselectActor();
 
 		const bool success = ProjectLoader::LoadEditorProject(filepath);
 		if (!success)
@@ -2905,7 +2905,7 @@ namespace Vortex {
 			OnSceneStop();
 		}
 
-		m_HoveredEntity = Entity{}; // Prevent an invalid entity from being used elsewhere in the editor
+		m_HoveredActor = Actor{}; // Prevent an invalid actor from being used elsewhere in the editor
 
 		const std::string sceneFilename = FileSystem::RemoveFileExtension(filepath.filename());
 
@@ -2959,7 +2959,7 @@ namespace Vortex {
 
 	void EditorLayer::SaveScene()
 	{
-		m_ActiveScene->SortEntities();
+		m_ActiveScene->SortActors();
 
 		if (!m_EditorSceneFilepath.empty())
 		{
@@ -3007,9 +3007,9 @@ namespace Vortex {
 		// Make a copy of the editors scene
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 
-		if (!m_ActiveScene->GetPrimaryCameraEntity()) // we should let the user know
+		if (!m_ActiveScene->GetPrimaryCameraActor()) // we should let the user know
 		{
-			VX_CONSOLE_LOG_ERROR("Scene cannot render without a camera! Attach a camera component to an entity and enable 'Primary'");
+			VX_CONSOLE_LOG_ERROR("Scene cannot render without a camera! Attach a camera component to an actor and enable 'Primary'");
 		}
 
 		ScriptRegistry::SetSceneStartTime(Time::GetTime());
@@ -3069,7 +3069,7 @@ namespace Vortex {
 			ToggleSceneViewportMaximized();
 		}
 
-		m_HoveredEntity = Entity{};
+		m_HoveredActor = Actor{};
 
 		m_ActiveScene = m_EditorScene;
 		SetSceneContext(m_ActiveScene);
@@ -3089,16 +3089,16 @@ namespace Vortex {
 		VX_CORE_ASSERT(InPlaySceneState(), "active scene must be in play state!");
 
 		UUID selectedUUID = 0;
-		if (Entity selected = SelectionManager::GetSelectedEntity())
+		if (Actor selected = SelectionManager::GetSelectedActor())
 		{
 			selectedUUID = selected.GetUUID();
 		}
 
 		OnScenePlay();
 
-		if (Entity selected = m_ActiveScene->TryGetEntityWithUUID(selectedUUID))
+		if (Actor selected = m_ActiveScene->TryGetActorWithUUID(selectedUUID))
 		{
-			SelectionManager::SetSelectedEntity(selected);
+			SelectionManager::SetSelectedActor(selected);
 		}
 	}
 
@@ -3172,19 +3172,19 @@ namespace Vortex {
 		window.SetTitle(newTitle);
 	}
 
-	void EditorLayer::DuplicateSelectedEntity()
+	void EditorLayer::DuplicateSelectedActor()
 	{
-		Entity selectedEntity = SelectionManager::GetSelectedEntity();
+		Actor selectedActor = SelectionManager::GetSelectedActor();
 
-		if (!selectedEntity)
+		if (!selectedActor)
 		{
 			return;
 		}
 
-		Entity duplicate = m_ActiveScene->DuplicateEntity(selectedEntity);
-		SelectionManager::SetSelectedEntity(duplicate);
+		Actor duplicate = m_ActiveScene->DuplicateActor(selectedActor);
+		SelectionManager::SetSelectedActor(duplicate);
 
-		m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnEntityName(true);
+		m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnActorName(true);
 	}
 
 	void EditorLayer::SetSceneContext(SharedReference<Scene>& scene)
@@ -3353,7 +3353,7 @@ namespace Vortex {
 		return Math::Ray(rayPos, rayDir);
 	}
 
-	Entity EditorLayer::GetHoveredMeshEntityFromRaycast()
+	Actor EditorLayer::GetHoveredMeshActorFromRaycast()
 	{
 		std::vector<SelectionData> selectionData;
 
@@ -3363,22 +3363,22 @@ namespace Vortex {
 			const auto& camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
 			auto [origin, direction] = Raycast(camera, mouseX, mouseY);
 
-			auto meshView = m_ActiveScene->GetAllEntitiesWith<MeshRendererComponent>();
+			auto meshView = m_ActiveScene->GetAllActorsWith<MeshRendererComponent>();
 			for (const auto e : meshView)
 			{
-				Entity entity{ e, m_ActiveScene.Raw() };
+				Actor actor{ e, m_ActiveScene.Raw() };
 
-				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(entity);
+				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor);
 			}
 
-			auto staticMeshView = m_ActiveScene->GetAllEntitiesWith<StaticMeshRendererComponent>();
+			auto staticMeshView = m_ActiveScene->GetAllActorsWith<StaticMeshRendererComponent>();
 			for (const auto e : staticMeshView)
 			{
-				Entity entity{ e, m_ActiveScene.Raw() };
+				Actor actor{ e, m_ActiveScene.Raw() };
 
-				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(entity);
+				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(actor);
 
-				const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+				const auto& staticMeshRenderer = actor.GetComponent<StaticMeshRendererComponent>();
 				if (!AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh))
 					continue;
 
@@ -3404,21 +3404,21 @@ namespace Vortex {
 						continue;
 
 					const float distance = Math::Distance(camera->GetPosition(), worldSpaceTransform.Translation);
-					selectionData.emplace_back(SelectionData{ entity.GetUUID(), distance });
+					selectionData.emplace_back(SelectionData{ actor.GetUUID(), distance });
 					break;
 				}
 			}
 
 			if (selectionData.empty())
 			{
-				SelectionManager::DeselectEntity();
-				return Entity{};
+				SelectionManager::DeselectActor();
+				return Actor{};
 			}
 
 			const bool anyViewportHovered = (m_SceneViewportHovered && !InPlaySceneState()) || m_SecondViewportHovered;
 			if (!anyViewportHovered)
 			{
-				return Entity{};
+				return Actor{};
 			}
 
 			// start with the first option as a default
@@ -3435,13 +3435,13 @@ namespace Vortex {
 				selectedData.Distance = current.Distance;
 			}
 
-			if (Entity hovered = m_ActiveScene->TryGetEntityWithUUID(selectedData.SelectedUUID))
+			if (Actor hovered = m_ActiveScene->TryGetActorWithUUID(selectedData.SelectedUUID))
 			{
 				return hovered;
 			}
 		}
 
-		return Entity{};
+		return Actor{};
 	}
 
 	EditorCamera* EditorLayer::CreateEditorCamera(const EditorCameraProperties& properties)

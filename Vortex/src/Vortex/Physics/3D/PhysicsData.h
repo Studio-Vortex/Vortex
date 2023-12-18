@@ -11,18 +11,18 @@ namespace Vortex {
 
 	struct VORTEX_API PhysicsBodyData
 	{
-		UUID EntityUUID = 0;
+		UUID ActorUUID = 0;
 		Scene* ContextScene = nullptr;
 	};
 
 	struct VORTEX_API ConstrainedJointData
 	{
-		UUID EntityUUID = 0;
+		UUID ActorUUID = 0;
 	};
 
 	struct VORTEX_API RaycastHit
 	{
-		uint64_t EntityID;
+		uint64_t ActorID;
 		Math::vec3 Position;
 		Math::vec3 Normal;
 		float Distance;

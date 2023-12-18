@@ -9,9 +9,9 @@
 			Source = source;
 		}
 
-		public string Name => InternalCalls.AudioClip_GetName(Source.Entity.ID);
+		public string Name => InternalCalls.AudioClip_GetName(Source.Actor.ID);
 
-		public float Length => InternalCalls.AudioClip_GetLength(Source.Entity.ID);
+		public float Length => InternalCalls.AudioClip_GetLength(Source.Actor.ID);
 	}
 
 }

@@ -25,7 +25,7 @@ namespace Vortex {
 		{ "Vortex.Vector4",     ScriptFieldType::Vector4     },
 		{ "Vortex.Color3",      ScriptFieldType::Color3      },
 		{ "Vortex.Color4",      ScriptFieldType::Color4      },
-		{ "Vortex.Entity",      ScriptFieldType::Entity      },
+		{ "Vortex.Entity",      ScriptFieldType::Actor      },
 		{ "Vortex.AssetHandle", ScriptFieldType::AssetHandle },
 	};
 

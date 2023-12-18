@@ -3,7 +3,7 @@
 #include "Vortex/Core/TimeStep.h"
 
 #include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 #include "Vortex/Scene/Components.h"
 
 #include "Vortex/Physics/2D/Physics2DData.h"
@@ -16,8 +16,8 @@ namespace Vortex {
 	class VORTEX_API Physics2D
 	{
 	public:
-		static void CreatePhysicsBody(Entity entity, const TransformComponent& transform, RigidBody2DComponent& rb2d);
-		static void DestroyPhysicsBody(Entity entity);
+		static void CreatePhysicsBody(Actor actor, const TransformComponent& transform, RigidBody2DComponent& rb2d);
+		static void DestroyPhysicsBody(Actor actor);
 
 		static void OnSimulationStart(Scene* contextScene);
 		static void OnSimulationUpdate(TimeStep delta, Scene* contextScene);

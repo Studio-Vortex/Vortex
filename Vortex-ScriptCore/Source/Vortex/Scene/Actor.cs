@@ -1,25 +1,23 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace Vortex {
 
-	public class Entity
+	public class Actor
 	{
 		public readonly ulong ID;
 		public Transform transform;
 
 		public string Tag
 		{
-			get => InternalCalls.Entity_GetTag(ID);
-			set => InternalCalls.Entity_SetTag(ID, value);
+			get => InternalCalls.Actor_GetTag(ID);
+			set => InternalCalls.Actor_SetTag(ID, value);
 		}
 
 		public string Marker
 		{
-			get => InternalCalls.Entity_GetMarker(ID);
-			set => InternalCalls.Entity_SetMarker(ID, value);
+			get => InternalCalls.Actor_GetMarker(ID);
+			set => InternalCalls.Actor_SetMarker(ID, value);
 		}
 
 		public Timer AddTimer(float delay, [CallerLineNumber] int lineNumber = 0)
@@ -30,7 +28,7 @@ namespace Vortex {
 
 		public Timer AddTimer(string name, float delay)
 		{
-			InternalCalls.Entity_AddTimer(ID, name, delay);
+			InternalCalls.Actor_AddTimer(ID, name, delay);
 			return new Timer(ID, name);
 		}
 
@@ -39,11 +37,11 @@ namespace Vortex {
 			return new Timer(ID, name);
 		}
 
-		public Entity[] Children => InternalCalls.Entity_GetChildren(ID);
+		public Actor[] Children => InternalCalls.Actor_GetChildren(ID);
 
-		protected Entity() { ID = 0; }
+		protected Actor() { ID = 0; }
 
-		internal Entity(ulong id)
+		internal Actor(ulong id)
 		{
 			ID = id;
 			transform = GetComponent<Transform>();
@@ -63,29 +61,29 @@ namespace Vortex {
 		protected virtual void OnDisable() { }
 		protected virtual void OnGui() { }
 
-		public void Destroy(Entity entity, bool excludeChildren = false) => InternalCalls.Entity_Destroy(entity.ID, excludeChildren);
-		public void Destroy(Entity entity, float delay, bool excludeChildren = false) => InternalCalls.Entity_DestroyWithDelay(entity.ID, delay, excludeChildren);
+		public void Destroy(Actor actor, bool excludeChildren = false) => InternalCalls.Actor_Destroy(actor.ID, excludeChildren);
+		public void Destroy(Actor actor, float delay, bool excludeChildren = false) => InternalCalls.Actor_DestroyWithDelay(actor.ID, delay, excludeChildren);
 
-		public void Invoke(string method) => InternalCalls.Entity_Invoke(ID, method);
-		public void Invoke(string method, float delay) => InternalCalls.Entity_InvokeWithDelay(ID, method, delay);
+		public void Invoke(string method) => InternalCalls.Actor_Invoke(ID, method);
+		public void Invoke(string method, float delay) => InternalCalls.Actor_InvokeWithDelay(ID, method, delay);
 
-		public Entity FindEntityByName(string name) => Scene.FindEntityByName(name);
+		public Actor FindActorByName(string name) => Scene.FindActorByName(name);
 
-		public Entity FindChildByName(string name)
+		public Actor FindChildByName(string name)
 		{
-			ulong entityID = InternalCalls.Entity_FindChildByName(ID, name);
+			ulong actorID = InternalCalls.Actor_FindChildByName(ID, name);
 
-			if (entityID == 0)
+			if (actorID == 0)
 				return null;
 
-			return new Entity(entityID);
+			return new Actor(actorID);
 		}
 
 		public bool HasComponent<T>()
 			where T : Component, new()
 		{
 			Type componentType = typeof(T);
-			return InternalCalls.Entity_HasComponent(ID, componentType);
+			return InternalCalls.Actor_HasComponent(ID, componentType);
 		}
 
 		public T GetComponent<T>()
@@ -94,7 +92,7 @@ namespace Vortex {
 			if (!HasComponent<T>())
 				return null;
 
-			T component = new T() { Entity = this };
+			T component = new T() { Actor = this };
 			return component;
 		}
 
@@ -104,7 +102,7 @@ namespace Vortex {
 			if (!HasComponent<T>())
 			{
 				Type componentType = typeof(T);
-				InternalCalls.Entity_AddComponent(ID, componentType);
+				InternalCalls.Actor_AddComponent(ID, componentType);
 				return GetComponent<T>();
 			}
 			else
@@ -119,7 +117,7 @@ namespace Vortex {
 			if (HasComponent<T>())
 			{
 				Type componentType = typeof(T);
-				InternalCalls.Entity_RemoveComponent(ID, componentType);
+				InternalCalls.Actor_RemoveComponent(ID, componentType);
 			}
 		}
 
@@ -132,42 +130,42 @@ namespace Vortex {
 				return false;
 			}
 
-			component = new T() { Entity = this };
+			component = new T() { Actor = this };
 			return true;
 		}
 
-		public Entity GetChild(uint index)
+		public Actor GetChild(uint index)
 		{
-			ulong entityID = InternalCalls.Entity_GetChild(ID, index);
+			ulong actorID = InternalCalls.Actor_GetChild(ID, index);
 
-			if (entityID == 0)
+			if (actorID == 0)
 				return null;
 
-			return new Entity(entityID);
+			return new Actor(actorID);
 		}
 
-		public bool AddChild(Entity child) =>  InternalCalls.Entity_AddChild(ID, child.ID);
-		public bool RemoveChild(Entity child) => InternalCalls.Entity_RemoveChild(ID, child.ID);
+		public bool AddChild(Actor child) =>  InternalCalls.Actor_AddChild(ID, child.ID);
+		public bool RemoveChild(Actor child) => InternalCalls.Actor_RemoveChild(ID, child.ID);
 
 		public bool Is<T>()
-			where T : Entity, new()
+			where T : Actor, new()
 		{
-			object instance = InternalCalls.Entity_GetScriptInstance(ID);
+			object instance = InternalCalls.Actor_GetScriptInstance(ID);
 			return instance is T;
 		}
 
 		public T As<T>()
-			where T : Entity, new()
+			where T : Actor, new()
 		{
-			object instance = InternalCalls.Entity_GetScriptInstance(ID);
+			object instance = InternalCalls.Actor_GetScriptInstance(ID);
 			return instance as T;
 		}
 
-		public void SetActive(bool active) => InternalCalls.Entity_SetActive(ID, active);
+		public void SetActive(bool active) => InternalCalls.Actor_SetActive(ID, active);
 
-		public override bool Equals(object obj) => obj is Entity other && Equals(other);
+		public override bool Equals(object obj) => obj is Actor other && Equals(other);
 
-		public bool Equals(Entity other)
+		public bool Equals(Actor other)
 		{
 			if (other is null)
 				return false;
@@ -180,8 +178,8 @@ namespace Vortex {
 
 		public override int GetHashCode() => (int)ID;
 
-		public static bool operator ==(Entity entityA, Entity entityB) => entityA is null ? entityB is null : entityA.Equals(entityB);
-		public static bool operator !=(Entity entityA, Entity entityB) => !(entityA == entityB);
+		public static bool operator ==(Actor actorA, Actor actorB) => actorA is null ? actorB is null : actorA.Equals(actorB);
+		public static bool operator !=(Actor actorA, Actor actorB) => !(actorA == actorB);
 	}
 
 }

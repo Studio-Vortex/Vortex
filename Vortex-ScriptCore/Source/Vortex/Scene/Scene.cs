@@ -2,107 +2,107 @@
 
 	public static class Scene
 	{
-		public static Entity FindEntityByID(ulong entityID)
+		public static Actor FindActorByID(ulong actorID)
 		{
-			bool found = InternalCalls.Scene_FindEntityByID(entityID);
+			bool found = InternalCalls.Scene_FindActorByID(actorID);
 
 			if (!found)
 				return null;
 
-			return new Entity(entityID);
+			return new Actor(actorID);
 		}
 
-		public static Entity FindEntityByName(string name)
+		public static Actor FindActorByName(string name)
 		{
-			ulong entityID = InternalCalls.Scene_FindEntityByName(name);
+			ulong actorID = InternalCalls.Scene_FindActorByName(name);
 
-			if (entityID == 0)
+			if (actorID == 0)
 				return null;
 
-			return new Entity(entityID);
+			return new Actor(actorID);
 		}
 
-		public static Entity CreateEntity(string name = "")
+		public static Actor CreateActor(string name = "")
 		{
-			ulong entityID = InternalCalls.Scene_CreateEntity(name);
-			return new Entity(entityID);
+			ulong actorID = InternalCalls.Scene_CreateActor(name);
+			return new Actor(actorID);
 		}
 
-		// Clones the entity and returns it
-		public static Entity Instantiate(Entity entity)
+		// Clones the actor and returns it
+		public static Actor Instantiate(Actor actor)
 		{
-			ulong entityID = InternalCalls.Scene_Instantiate(entity.ID);
+			ulong actorID = InternalCalls.Scene_Instantiate(actor.ID);
 
-			if (entityID == 0)
+			if (actorID == 0)
 				return null;
 
-			return new Entity(entityID);
+			return new Actor(actorID);
 		}
 
-		public static Entity Instantiate(Entity entity, Vector3 worldPosition)
+		public static Actor Instantiate(Actor actor, Vector3 worldPosition)
 		{
-			ulong entityID = InternalCalls.Scene_Instantiate(entity.ID);
+			ulong actorID = InternalCalls.Scene_Instantiate(actor.ID);
 
-			if (entityID == 0)
+			if (actorID == 0)
 				return null;
 
-			Entity e = new Entity(entityID);
+			Actor e = new Actor(actorID);
 
-			entity.transform.Translation = worldPosition;
+			actor.transform.Translation = worldPosition;
 
 			return e;
 		}
 
-		public static Entity Instantiate(Entity entity, Vector3 worldPosition, Quaternion orientation)
+		public static Actor Instantiate(Actor actor, Vector3 worldPosition, Quaternion orientation)
 		{
-			ulong entityID = InternalCalls.Scene_Instantiate(entity.ID);
+			ulong actorID = InternalCalls.Scene_Instantiate(actor.ID);
 
-			if (entityID == 0)
+			if (actorID == 0)
 				return null;
 
-			Entity e = new Entity(entityID);
+			Actor e = new Actor(actorID);
 
-			entity.transform.Translation = worldPosition;
-			entity.transform.Rotation = orientation;
+			actor.transform.Translation = worldPosition;
+			actor.transform.Rotation = orientation;
 
 			return e;
 		}
 
-		public static Entity Instantiate(Entity entity, Entity parent)
+		public static Actor Instantiate(Actor actor, Actor parent)
 		{
-			ulong entityID = InternalCalls.Scene_InstantiateAsChild(entity.ID, parent.ID);
+			ulong actorID = InternalCalls.Scene_InstantiateAsChild(actor.ID, parent.ID);
 
-			if (entityID == 0)
+			if (actorID == 0)
 				return null;
 			
-			return new Entity(entityID);
+			return new Actor(actorID);
 		}
 
-		public static Entity Instantiate(Entity entity, Entity parent, Vector3 worldPosition)
+		public static Actor Instantiate(Actor actor, Actor parent, Vector3 worldPosition)
 		{
-			ulong entityID = InternalCalls.Scene_InstantiateAsChild(entity.ID, parent.ID);
+			ulong actorID = InternalCalls.Scene_InstantiateAsChild(actor.ID, parent.ID);
 
-			if (entityID == 0)
+			if (actorID == 0)
 				return null;
 
-			Entity e = new Entity(entityID);
+			Actor e = new Actor(actorID);
 
-			entity.transform.Translation = worldPosition;
+			actor.transform.Translation = worldPosition;
 
 			return e;
 		}
 
-		public static Entity Instantiate(Entity entity, Entity parent, Vector3 worldPosition, Quaternion orientation)
+		public static Actor Instantiate(Actor actor, Actor parent, Vector3 worldPosition, Quaternion orientation)
 		{
-			ulong entityID = InternalCalls.Scene_InstantiateAsChild(entity.ID, parent.ID);
+			ulong actorID = InternalCalls.Scene_InstantiateAsChild(actor.ID, parent.ID);
 
-			if (entityID == 0)
+			if (actorID == 0)
 				return null;
 
-			Entity e = new Entity(entityID);
+			Actor e = new Actor(actorID);
 
-			entity.transform.Translation = worldPosition;
-			entity.transform.Rotation = orientation;
+			actor.transform.Translation = worldPosition;
+			actor.transform.Rotation = orientation;
 
 			return e;
 		}
@@ -122,14 +122,14 @@
 			InternalCalls.Scene_Resume();
 		}
 
-		public static Entity GetHoveredEntity()
+		public static Actor GetHoveredActor()
 		{
-			ulong entityID = InternalCalls.Scene_GetHoveredEntity();
+			ulong actorID = InternalCalls.Scene_GetHoveredActor();
 
-			if (entityID == 0)
+			if (actorID == 0)
 				return null;
 
-			return new Entity(entityID);
+			return new Actor(actorID);
 		}
 	}
 

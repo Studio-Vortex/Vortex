@@ -10,7 +10,7 @@ namespace Vortex {
 	class EditorCamera;
 
 	enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
-	enum class SelectionMode { Entity, Submesh };
+	enum class SelectionMode { Actor, Submesh };
 
 	class EditorLayer : public Layer
 	{
@@ -92,17 +92,17 @@ namespace Vortex {
 
 		void OnOverlayRender(EditorCamera* editorCamera);
 
-		void OverlayRenderSelectedEntityOutline(const Math::vec4& outlineColor);
+		void OverlayRenderSelectedActorOutline(const Math::vec4& outlineColor);
 
-		void OverlayRenderMeshBoundingBox(Entity entity, const Math::mat4& transform, const Math::vec4& boundingBoxColor);
+		void OverlayRenderMeshBoundingBox(Actor actor, const Math::mat4& transform, const Math::vec4& boundingBoxColor);
 		void OverlayRenderMeshBoundingBoxes(const Math::vec4& boundingBoxColor);
-		void OverlayRenderMeshOutline(Entity entity, const Math::mat4& transform, const Math::vec4& outlineColor);
-		void OverlayRenderMeshCollider(Entity entity, const Math::mat4& transform, const Math::vec4& colliderColor);
+		void OverlayRenderMeshOutline(Actor actor, const Math::mat4& transform, const Math::vec4& outlineColor);
+		void OverlayRenderMeshCollider(Actor actor, const Math::mat4& transform, const Math::vec4& colliderColor);
 		void OverlayRenderMeshColliders(const Math::vec4& colliderColor);
-		void OverlayRenderSpriteCollider(EditorCamera* editorCamera, Entity entity, const Math::mat4& transform, const Math::vec4& colliderColor);
+		void OverlayRenderSpriteCollider(EditorCamera* editorCamera, Actor actor, const Math::mat4& transform, const Math::vec4& colliderColor);
 		void OverlayRenderSpriteColliders(EditorCamera* editorCamera, const Math::vec4& colliderColor);
 		void OverlayRenderSpriteBoundingBoxes(const Math::vec4& boundingBoxColor);
-		void OverlayRenderSpriteOutline(Entity entity, const Math::mat4& transform, const Math::vec4& outlineColor);
+		void OverlayRenderSpriteOutline(Actor actor, const Math::mat4& transform, const Math::vec4& outlineColor);
 		void OverlayRenderGrid(bool drawAxes);
 
 		// Editor Callbacks
@@ -113,7 +113,7 @@ namespace Vortex {
 		// Helper
 
 		void SetWindowTitle(const std::string& sceneName);
-		void DuplicateSelectedEntity();
+		void DuplicateSelectedActor();
 		void SetSceneContext(SharedReference<Scene>& scene);
 		void ResetEditorCameras();
 		void CaptureSceneViewportFramebufferImageToDisk();
@@ -134,7 +134,7 @@ namespace Vortex {
 		std::pair<float, float> GetEditorCameraMouseViewportSpace(bool mainViewport);
 		Math::Ray Raycast(EditorCamera* editorCamera, float mx, float my);
 
-		Entity GetHoveredMeshEntityFromRaycast();
+		Actor GetHoveredMeshActorFromRaycast();
 
 		struct EditorCameraProperties
 		{
@@ -170,13 +170,13 @@ namespace Vortex {
 		Fs::Path m_StartSceneFilepath;
 		Fs::Path m_RuntimeAppFilepath;
 
-		Entity m_HoveredEntity;
+		Actor m_HoveredActor;
 
 		struct MeshImportPopupData
 		{
 			std::string MeshFilepath = "";
 			MeshImportOptions ModelImportOptions = MeshImportOptions();
-			Entity MeshEntityToEdit;
+			Actor MeshActorToEdit;
 		};
 
 		MeshImportPopupData m_MeshImportPopupData;
@@ -191,7 +191,7 @@ namespace Vortex {
 
 		bool m_SceneViewportPanelOpen = true;
 		bool m_SecondViewportPanelOpen = false;
-		bool m_ShowViewportCreateEntityMenu = false;
+		bool m_ShowViewportCreateActorMenu = false;
 		bool m_SceneViewportFocused = false;
 		bool m_SceneViewportHovered = false;
 		bool m_SecondViewportFocused = false;
@@ -201,7 +201,7 @@ namespace Vortex {
 		bool m_AllowSecondViewportCameraEvents = false;
 		bool m_StartedClickInViewport = false;
 		bool m_StartedClickInSecondViewport = false;
-		bool m_ShowSelectedEntityOutline = true;
+		bool m_ShowSelectedActorOutline = true;
 		bool m_CaptureSceneViewportFramebufferToDiskOnSave = false;
 		bool m_TransitionedFromStartScene = false;
 
@@ -213,7 +213,7 @@ namespace Vortex {
 		SharedReference<PanelManager> m_PanelManager = nullptr;
 
 		SceneState m_SceneState = SceneState::Edit;
-		SelectionMode m_SelectionMode = SelectionMode::Entity;
+		SelectionMode m_SelectionMode = SelectionMode::Actor;
 	};
 
 }

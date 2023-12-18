@@ -1,21 +1,19 @@
 #pragma once
 
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 #include "Vortex/Events/MouseEvent.h"
-
-#include <entt/entt.hpp>
 
 namespace Vortex {
 
-	class ScriptableEntity
+	class ScriptableActor
 	{
 	public:
-		virtual ~ScriptableEntity() { }
+		virtual ~ScriptableActor() { }
 
 		template <typename TComponent>
 		inline TComponent& GetComponent()
 		{
-			return m_Entity.GetComponent<TComponent>();
+			return m_Actor.GetComponent<TComponent>();
 		}
 
 	protected:
@@ -24,7 +22,7 @@ namespace Vortex {
 		virtual void OnDestroy() {}
 
 	private:
-		Entity m_Entity;
+		Actor m_Actor;
 
 		friend class Scene;
 	};

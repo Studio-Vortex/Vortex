@@ -2,20 +2,20 @@
 
 	public class Timer
 	{
-		internal ulong EntityID;
+		internal ulong ActorID;
 
-		internal Timer(ulong entityID, string name)
+		internal Timer(ulong actorID, string name)
 		{
-			EntityID = entityID;
+			ActorID = actorID;
 			Name = name;
 		}
 
 		public string Name;
-		public float TimeLeft => InternalCalls.Timer_GetTimeLeft(EntityID, Name);
-		public bool Started => InternalCalls.Timer_IsStarted(EntityID, Name);
-		public bool Finished => InternalCalls.Timer_IsFinished(EntityID, Name);
+		public float TimeLeft => InternalCalls.Timer_GetTimeLeft(ActorID, Name);
+		public bool Started => InternalCalls.Timer_IsStarted(ActorID, Name);
+		public bool Finished => InternalCalls.Timer_IsFinished(ActorID, Name);
 
-		public void Start() => InternalCalls.Timer_Start(EntityID, Name);
+		public void Start() => InternalCalls.Timer_Start(ActorID, Name);
 	}
 
 }

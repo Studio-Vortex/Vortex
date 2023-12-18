@@ -16,7 +16,7 @@ namespace Vortex {
 		EDITOR_PANEL_TYPE(PhysicsMaterialEditor)
 
 	private:
-		void RenderPhysicsMaterial(Entity selectedEntity);
+		void RenderPhysicsMaterial(Actor selectedEntity);
 	};
 
 }
