@@ -1449,7 +1449,7 @@ namespace Vortex {
 			}
 			else
 			{
-				VX_CONSOLE_LOG_WARN("Could not load skybox, not a '.hdr' - {}", filepath.filename().string());
+				VX_CONSOLE_LOG_WARN("Failed to load skybox '{}'", filepath.filename().string());
 			}
 		};
 
@@ -1581,7 +1581,7 @@ namespace Vortex {
 				}
 				else
 				{
-					VX_CONSOLE_LOG_WARN("Could not load model file - {}", meshFilepath.filename().string());
+					VX_CONSOLE_LOG_WARN("Failed to load mesh '{}'", meshFilepath.filename().string());
 				}
 			}
 
@@ -1607,6 +1607,7 @@ namespace Vortex {
 
 		auto OnStaticMeshDroppedFn = [&](const Fs::Path& filepath) {
 			// Make sure we are recieving an actual model file otherwise we will have trouble opening it
+			// TODO should we check for both mesh types or just static? (i.e. static and normal meshes)
 			if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::StaticMeshAsset || type == AssetType::MeshAsset)
 			{
 				AssetHandle staticMeshHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
@@ -1625,7 +1626,7 @@ namespace Vortex {
 			}
 			else
 			{
-				VX_CONSOLE_LOG_WARN("Could not load model file - {}", filepath.filename().string());
+				VX_CONSOLE_LOG_WARN("Failed to load static mesh '{}'", filepath.filename().string());
 			}
 		};
 
@@ -1678,12 +1679,12 @@ namespace Vortex {
 					}
 					else
 					{
-						VX_CONSOLE_LOG_WARN("Could not load material {}", filepath.filename().string());
+						VX_CONSOLE_LOG_WARN("Failed to load material '{}'", filepath.filename().string());
 					}
 				}
 				else
 				{
-					VX_CONSOLE_LOG_WARN("Could not load material", filepath.filename().string());
+					VX_CONSOLE_LOG_WARN("Failed to load material '{}'", filepath.filename().string());
 				}
 			};
 			
@@ -1765,12 +1766,12 @@ namespace Vortex {
 					}
 					else
 					{
-						VX_CONSOLE_LOG_WARN("Could not load texture {}", texturePath.filename().string());
+						VX_CONSOLE_LOG_WARN("Failed to load texture '{}'", texturePath.filename().string());
 					}
 				}
 				else
 				{
-					VX_CONSOLE_LOG_WARN("Could not load texture", texturePath.filename().string());
+					VX_CONSOLE_LOG_WARN("Failed to load texture '{}'", texturePath.filename().string());
 				}
 			}
 
@@ -1912,13 +1913,13 @@ namespace Vortex {
 					}
 					else
 					{
-						VX_CONSOLE_LOG_WARN("Could not load font {}", filepath.filename().string());
+						VX_CONSOLE_LOG_WARN("Failed to load font '{}'", filepath.filename().string());
 					}
 				}
 			}
 			else
 			{
-				VX_CONSOLE_LOG_WARN("Could not load font, not a '.tff' - {}", filepath.filename().string());
+				VX_CONSOLE_LOG_WARN("Failed to load font '{}'", filepath.filename().string());
 			}
 		};
 
@@ -2038,7 +2039,7 @@ namespace Vortex {
 				}
 				else
 				{
-					VX_CONSOLE_LOG_WARN("Could not load audio file, not a '.wav' or '.mp3' - {}", filepath.filename().string());
+					VX_CONSOLE_LOG_WARN("Failed to audio source '{}'", filepath.filename().string());
 				}
 			};
 
