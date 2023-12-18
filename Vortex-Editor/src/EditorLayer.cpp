@@ -1026,18 +1026,20 @@ namespace Vortex {
 										{
 											if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
 												material->SetAlbedoMap(textureHandle);
-											if (filename.find("normal") != std::string::npos)
+											else if (filename.find("normal") != std::string::npos)
 												material->SetNormalMap(textureHandle);
-											if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
+											else if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
 												material->SetMetallicMap(textureHandle);
-											if (filename.find("roughness") != std::string::npos)
+											else if (filename.find("roughness") != std::string::npos)
 												material->SetRoughnessMap(textureHandle);
-											if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
+											else if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
 												material->SetEmissionMap(textureHandle);
-											if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
+											else if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
 												material->SetParallaxOcclusionMap(textureHandle);
-											if (filename.find("ao") != std::string::npos)
+											else if (filename.find("ao") != std::string::npos)
 												material->SetAmbientOcclusionMap(textureHandle);
+											else
+												material->SetAlbedoMap(textureHandle);
 										}
 									}
 								}
