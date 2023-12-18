@@ -2,52 +2,38 @@
 
 namespace Vortex {
 
+	void SceneRendererPanel::OnPanelAttach()
+	{
+		const ShaderLibrary& shaderLibrary2D = Renderer2D::GetShaderLibrary();
+
+		for (const auto& [name, shader] : shaderLibrary2D)
+		{
+			m_Loaded2DShaders.push_back(shader);
+		}
+
+		const ShaderLibrary& shaderLibrary3D = Renderer::GetShaderLibrary();
+
+		for (const auto& [name, shader] : shaderLibrary3D)
+		{
+			m_Loaded3DShaders.push_back(shader);
+		}
+
+		for (const auto& shader : m_Loaded2DShaders)
+		{
+			m_ShaderNames.push_back(shader->GetName());
+			m_Shaders.push_back(shader);
+		}
+		for (const auto& shader : m_Loaded3DShaders)
+		{
+			m_ShaderNames.push_back(shader->GetName());
+			m_Shaders.push_back(shader);
+		}
+	}
+
 	void SceneRendererPanel::OnGuiRender()
 	{
 		if (!IsOpen)
 			return;
-
-		if (s_Loaded2DShaders.empty())
-		{
-			const ShaderLibrary& shaders2D = Renderer2D::GetShaderLibrary();
-
-			for (const auto& [name, shader] : shaders2D)
-			{
-				s_Loaded2DShaders.push_back(shader);
-			}
-		}
-
-		if (s_Loaded3DShaders.empty())
-		{
-			const ShaderLibrary& shaders3D = Renderer::GetShaderLibrary();
-
-			for (const auto& [name, shader] : shaders3D)
-			{
-				s_Loaded3DShaders.push_back(shader);
-			}
-		}
-
-		static std::vector<std::string> shaderNames;
-		static std::vector<SharedReference<Shader>> shaders;
-
-		const bool shadersLoaded = !s_Loaded2DShaders.empty() && !s_Loaded3DShaders.empty();
-
-		if (shadersLoaded)
-		{
-			if (shaderNames.empty() && shaders.empty())
-			{
-				for (const auto& shader : s_Loaded2DShaders)
-				{
-					shaderNames.push_back(shader->GetName());
-					shaders.push_back(shader);
-				}
-				for (const auto& shader : s_Loaded3DShaders)
-				{
-					shaderNames.push_back(shader->GetName());
-					shaders.push_back(shader);
-				}
-			}
-		}
 
 		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
 
@@ -72,7 +58,7 @@ namespace Vortex {
 		if (UI::PropertyGridHeader("Shaders", false))
 		{
 			UI::PushFont("Bold");
-			Gui::Text("%u Loaded Shaders", (uint32_t)s_Loaded2DShaders.size() + (uint32_t)s_Loaded3DShaders.size());
+			Gui::Text("%u Loaded Shaders", (uint32_t)m_Loaded2DShaders.size() + (uint32_t)m_Loaded3DShaders.size());
 			UI::PopFont();
 
 			Gui::SameLine();
@@ -80,15 +66,17 @@ namespace Vortex {
 			Gui::SetCursorPosX(Gui::GetContentRegionAvail().x + (Gui::CalcTextSize(buttonText).x * 0.5f));
 			if (Gui::Button(buttonText))
 			{
-				for (auto& shader : shaders)
+				for (auto& shader : m_Shaders)
+				{
 					shader->Reload();
+				}
 			}
 
 			static const char* columns[] = { "Name", "" };
 
 			UI::Table("Loaded Shaders", columns, VX_ARRAYSIZE(columns), Gui::GetContentRegionAvail(), [&]()
 			{
-				for (auto& shader : shaders)
+				for (auto& shader : m_Shaders)
 				{
 					Gui::TableNextColumn();
 					const std::string& shaderName = shader->GetName();

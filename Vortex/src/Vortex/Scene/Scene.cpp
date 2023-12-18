@@ -1072,14 +1072,14 @@ namespace Vortex {
 			auto prefabID = actor.GetComponent<PrefabComponent>().PrefabUUID;
 		}
 		
-		VX_CORE_ASSERT(actor.HasComponent<TagComponent>(), "all entities must have a tag component!");
+		VX_CORE_ASSERT(actor.HasComponent<TagComponent>(), "all actors must have a tag component!");
 
 		Actor duplicate = CreateActor(actor.GetName(), actor.GetMarker());
 
 		// Copy components (except IDComponent and TagComponent)
 		Utils::CopyComponentIfExists(AllComponents{}, duplicate, actor);
 
-		// Copy children entities
+		// Copy children actors
 		// We must create a copy here because the vector is modified below
 		std::vector<UUID> children = actor.Children();
 
