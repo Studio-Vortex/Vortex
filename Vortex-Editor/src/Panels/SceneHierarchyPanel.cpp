@@ -575,9 +575,9 @@ namespace Vortex {
 				Gui::SetCursorPosX(10.0f);
 				Gui::Text("Hovered Actor: %s", name.c_str());
 			}
-
-			Gui::End();
 		}
+
+		Gui::End();
 	}
 
 	void SceneHierarchyPanel::DisplayAddComponentPopup()
