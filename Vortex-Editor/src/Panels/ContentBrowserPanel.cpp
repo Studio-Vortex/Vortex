@@ -618,6 +618,10 @@ public class Untitled : Actor
 		{
 			return EditorResources::FBXIcon;
 		}
+		else if (extension == ".gltf")
+		{
+			return EditorResources::FileIcon;
+		}
 
 		VX_CORE_ASSERT(false, "Unknown extension!");
 		return nullptr;
