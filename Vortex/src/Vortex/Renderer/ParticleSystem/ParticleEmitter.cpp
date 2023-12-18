@@ -1,7 +1,7 @@
 #include "vxpch.h"
 #include "ParticleEmitter.h"
 
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 #include "Vortex/Utils/Random.h"
 
 namespace Vortex {
