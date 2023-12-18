@@ -112,9 +112,7 @@ namespace Vortex {
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 		const Timer& TryGetTimerByName(Entity entity, const std::string& name);
-	private:
 		Timer& TryGetMutableTimerByName(Entity entity, const std::string& name);
-	public:
 		void AddOrReplaceTimer(Entity entity, Timer&& timer);
 
 		void ParentEntity(Entity entity, Entity parent);

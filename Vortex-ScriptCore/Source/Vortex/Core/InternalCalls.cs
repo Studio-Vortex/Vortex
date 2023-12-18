@@ -186,12 +186,35 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Entity_SetActive(ulong entityID, bool isActive);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Entity_AddTimer(ulong entityID, string name, float delay);
+
 		#endregion
 
 		#region AssetHandle
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool AssetHandle_IsValid(ref AssetHandle assetHandle);
+
+		#endregion
+
+		#region Timer
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float Timer_GetTimeLeft(ulong entityID, string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Timer_IsStarted(ulong entityID, string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Timer_IsFinished(ulong entityID, string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Timer_Start(ulong entityID, string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Timer_Stop(ulong entityID, string name);
+
 
 		#endregion
 

@@ -444,11 +444,11 @@ namespace Vortex {
 		{
 			Scene* contextScene = GetContextScene();
 
-			char* sceneNameCStr = mono_string_to_utf8(sceneName);
+			char* managedString = mono_string_to_utf8(sceneName);
 
 			// TODO
 
-			mono_free(sceneNameCStr);
+			mono_free(managedString);
 		}
 
 #pragma endregion
@@ -685,6 +685,19 @@ namespace Vortex {
 			entity.SetActive(isActive);
 		}
 
+		void Entity_AddTimer(UUID entityUUID, MonoString* name, float delay)
+		{
+			Scene* scene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
+
+			char* managedString = mono_string_to_utf8(name);
+			std::string timerName = std::string(managedString);
+			mono_free(managedString);
+
+			Timer timer(timerName, delay, nullptr);
+			scene->AddOrReplaceTimer(entity, std::move(timer));
+		}
+
 #pragma endregion
 
 #pragma region AssetHandle
@@ -692,6 +705,113 @@ namespace Vortex {
 		bool AssetHandle_IsValid(AssetHandle* assetHandle)
 		{
 			return AssetManager::IsHandleValid(*assetHandle);
+		}
+
+#pragma endregion
+
+#pragma region Timer
+		
+		float Timer_GetTimeLeft(UUID entityUUID, MonoString* name)
+		{
+			Scene* scene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
+
+			char* managedString = mono_string_to_utf8(name);
+			std::string timerName = std::string(managedString);
+			mono_free(managedString);
+
+			Timer& timer = scene->TryGetMutableTimerByName(entity, timerName);
+
+			if (timer.GetName().empty())
+			{
+				// invalid timer
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", entity.GetName(), timerName);
+				return 0.0f;
+			}
+
+			return timer.GetTimeLeft();
+		}
+
+		bool Timer_IsStarted(UUID entityUUID, MonoString* name)
+		{
+			Scene* scene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
+
+			char* managedString = mono_string_to_utf8(name);
+			std::string timerName = std::string(managedString);
+			mono_free(managedString);
+
+			Timer& timer = scene->TryGetMutableTimerByName(entity, timerName);
+
+			if (timer.GetName().empty())
+			{
+				// invalid timer
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", entity.GetName(), timerName);
+				return false;
+			}
+
+			return timer.IsStarted();
+		}
+
+		bool Timer_IsFinished(UUID entityUUID, MonoString* name)
+		{
+			Scene* scene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
+
+			char* managedString = mono_string_to_utf8(name);
+			std::string timerName = std::string(managedString);
+			mono_free(managedString);
+
+			Timer& timer = scene->TryGetMutableTimerByName(entity, timerName);
+
+			if (timer.GetName().empty())
+			{
+				// invalid timer
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", entity.GetName(), timerName);
+				return false;
+			}
+
+			return timer.IsFinished();
+		}
+
+		void Timer_Start(UUID entityUUID, MonoString* name)
+		{
+			Scene* scene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
+
+			char* managedString = mono_string_to_utf8(name);
+			std::string timerName = std::string(managedString);
+			mono_free(managedString);
+
+			Timer& timer = scene->TryGetMutableTimerByName(entity, timerName);
+
+			if (timer.GetName().empty())
+			{
+				// invalid timer
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", entity.GetName(), timerName);
+			}
+
+			timer.Start();
+		}
+
+		void Timer_Stop(UUID entityUUID, MonoString* name)
+		{
+			Scene* scene = GetContextScene();
+			Entity entity = GetEntity(entityUUID);
+
+			char* managedString = mono_string_to_utf8(name);
+			std::string timerName = std::string(managedString);
+			mono_free(managedString);
+
+			Timer& timer = scene->TryGetMutableTimerByName(entity, timerName);
+
+			if (timer.GetName().empty())
+			{
+				// invalid timer
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", entity.GetName(), timerName);
+			}
+
+			timer.Start();
 		}
 
 #pragma endregion
@@ -1807,10 +1927,10 @@ namespace Vortex {
 			}
 
 			TextMeshComponent& textMeshComponent = entity.GetComponent<TextMeshComponent>();
-			char* textCStr = mono_string_to_utf8(textString);
+			char* managedString = mono_string_to_utf8(textString);
 
-			textMeshComponent.TextString = std::string(textCStr);
-			mono_free(textCStr);
+			textMeshComponent.TextString = std::string(managedString);
+			mono_free(managedString);
 		}
 
 		void TextMeshComponent_GetColor(UUID entityUUID, Math::vec4* outColor)
@@ -8051,13 +8171,13 @@ namespace Vortex {
 
 		bool Texture2D_LoadFromPath(MonoString* filepath, AssetHandle* outHandle)
 		{
-			char* filepathCStr = mono_string_to_utf8(filepath);
+			char* managedString = mono_string_to_utf8(filepath);
+			AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(managedString);
+			mono_free(managedString);
 
-			*outHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepathCStr);
+			*outHandle = textureHandle;
 
-			mono_free(filepathCStr);
-
-			return AssetManager::IsHandleValid(*outHandle);
+			return AssetManager::IsHandleValid(textureHandle);
 		}
 
 		void Texture2D_Constructor(uint32_t width, uint32_t height, AssetHandle* outHandle)
@@ -8524,130 +8644,130 @@ namespace Vortex {
 
 		void Gui_Text(MonoString* text)
 		{
-			char* textCStr = mono_string_to_utf8(text);
+			char* managedString = mono_string_to_utf8(text);
 
-			Gui::Text(textCStr);
+			Gui::Text(managedString);
 
-			mono_free(textCStr);
+			mono_free(managedString);
 		}
 
 		bool Gui_Button(MonoString* text)
 		{
-			char* textCStr = mono_string_to_utf8(text);
+			char* managedString = mono_string_to_utf8(text);
 
-			bool result = Gui::Button(textCStr);
+			bool result = Gui::Button(managedString);
 
-			mono_free(textCStr);
+			mono_free(managedString);
 
 			return result;
 		}
 
 		bool Gui_PropertyBool(MonoString* label, bool* value)
 		{
-			char* textCStr = mono_string_to_utf8(label);
+			char* managedString = mono_string_to_utf8(label);
 
-			bool modified = UI::Property(textCStr, *value);
+			bool modified = UI::Property(managedString, *value);
 
-			mono_free(textCStr);
+			mono_free(managedString);
 
 			return modified;
 		}
 
 		bool Gui_PropertyInt(MonoString* label, int* value)
 		{
-			char* textCStr = mono_string_to_utf8(label);
+			char* managedString = mono_string_to_utf8(label);
 
-			bool modified = UI::Property(textCStr, *value);
+			bool modified = UI::Property(managedString, *value);
 
-			mono_free(textCStr);
+			mono_free(managedString);
 
 			return modified;
 		}
 
 		bool Gui_PropertyULong(MonoString* label, unsigned int* value)
 		{
-			char* textCStr = mono_string_to_utf8(label);
+			char* managedString = mono_string_to_utf8(label);
 
-			bool modified = UI::Property(textCStr, *value);
+			bool modified = UI::Property(managedString, *value);
 
-			mono_free(textCStr);
+			mono_free(managedString);
 
 			return modified;
 		}
 
 		bool Gui_PropertyFloat(MonoString* label, float* value)
 		{
-			char* textCStr = mono_string_to_utf8(label);
+			char* managedString = mono_string_to_utf8(label);
 
-			bool modified = UI::Property(textCStr, *value);
+			bool modified = UI::Property(managedString, *value);
 
-			mono_free(textCStr);
+			mono_free(managedString);
 
 			return modified;
 		}
 
 		bool Gui_PropertyDouble(MonoString* label, double* value)
 		{
-			char* textCStr = mono_string_to_utf8(label);
+			char* managedString = mono_string_to_utf8(label);
 
-			bool modified = UI::Property(textCStr, *value);
+			bool modified = UI::Property(managedString, *value);
 
-			mono_free(textCStr);
+			mono_free(managedString);
 
 			return modified;
 		}
 
 		bool Gui_PropertyVec2(MonoString* label, Math::vec2* value)
 		{
-			char* textCStr = mono_string_to_utf8(label);
+			char* managedString = mono_string_to_utf8(label);
 
-			bool modified = UI::Property(textCStr, *value);
+			bool modified = UI::Property(managedString, *value);
 
-			mono_free(textCStr);
+			mono_free(managedString);
 
 			return modified;
 		}
 
 		bool Gui_PropertyVec3(MonoString* label, Math::vec3* value)
 		{
-			char* textCStr = mono_string_to_utf8(label);
+			char* managedString = mono_string_to_utf8(label);
 
-			bool modified = UI::Property(textCStr, *value);
+			bool modified = UI::Property(managedString, *value);
 
-			mono_free(textCStr);
+			mono_free(managedString);
 
 			return modified;
 		}
 
 		bool Gui_PropertyVec4(MonoString* label, Math::vec4* value)
 		{
-			char* textCStr = mono_string_to_utf8(label);
+			char* managedString = mono_string_to_utf8(label);
 
-			bool modified = UI::Property(textCStr, *value);
+			bool modified = UI::Property(managedString, *value);
 
-			mono_free(textCStr);
+			mono_free(managedString);
 
 			return modified;
 		}
 
 		bool Gui_PropertyColor3(MonoString* label, Math::vec3* value)
 		{
-			char* textCStr = mono_string_to_utf8(label);
+			char* managedString = mono_string_to_utf8(label);
 
-			bool modified = UI::Property(textCStr, value);
+			bool modified = UI::Property(managedString, value);
 
-			mono_free(textCStr);
+			mono_free(managedString);
 
 			return modified;
 		}
 
 		bool Gui_PropertyColor4(MonoString* label, Math::vec4* value)
 		{
-			char* textCStr = mono_string_to_utf8(label);
+			char* managedString = mono_string_to_utf8(label);
 
-			bool modified = UI::Property(textCStr, value);
+			bool modified = UI::Property(managedString, value);
 
-			mono_free(textCStr);
+			mono_free(managedString);
 
 			return modified;
 		}
@@ -8785,8 +8905,15 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Entity_Invoke);
 		VX_REGISTER_INTERNAL_CALL(Entity_InvokeWithDelay);
 		VX_REGISTER_INTERNAL_CALL(Entity_SetActive);
+		VX_REGISTER_INTERNAL_CALL(Entity_AddTimer);
 
 		VX_REGISTER_INTERNAL_CALL(AssetHandle_IsValid);
+
+		VX_REGISTER_INTERNAL_CALL(Timer_GetTimeLeft);
+		VX_REGISTER_INTERNAL_CALL(Timer_IsStarted);
+		VX_REGISTER_INTERNAL_CALL(Timer_IsFinished);
+		VX_REGISTER_INTERNAL_CALL(Timer_Start);
+		VX_REGISTER_INTERNAL_CALL(Timer_Stop);
 
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetTranslation);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetTranslation);

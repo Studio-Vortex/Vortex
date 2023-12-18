@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace Vortex {
 
@@ -17,6 +19,17 @@ namespace Vortex {
 		{
 			get => InternalCalls.Entity_GetMarker(ID);
 			set => InternalCalls.Entity_SetMarker(ID, value);
+		}
+
+		public Timer AddTimer(string name, float delay)
+		{
+			InternalCalls.Entity_AddTimer(ID, name, delay);
+			return new Timer(ID, name);
+		}
+
+		public Timer GetTimer(string name)
+		{
+			return new Timer(ID, name);
 		}
 
 		public Entity[] Children => InternalCalls.Entity_GetChildren(ID);

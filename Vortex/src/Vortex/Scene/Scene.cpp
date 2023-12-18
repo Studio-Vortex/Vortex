@@ -394,10 +394,10 @@ namespace Vortex {
 
 	void Scene::OnUpdateEntityTimers(TimeStep delta)
 	{
-		for (auto& [entityUUID, entityTimers] : m_Timers)
+		for (auto& [entityUUID, timers] : m_Timers)
 		{
 			// update all the timers for each entity
-			for (Timer& timer : entityTimers)
+			for (Timer& timer : timers)
 			{
 				if (timer.IsFinished())
 				{
@@ -412,16 +412,16 @@ namespace Vortex {
 			for (Timer& timer : m_FinishedTimers)
 			{
 				const std::string& timerName = timer.GetName();
-				const size_t timerCount = entityTimers.size();
+				const size_t timerCount = timers.size();
 
 				for (size_t pos = 0; pos < timerCount; pos++)
 				{
-					const std::string& potential = entityTimers[pos].GetName();
+					const std::string& potential = timers[pos].GetName();
 
 					if (!String::FastCompare(timerName, potential))
 						continue;
 
-					entityTimers.erase(entityTimers.begin() + pos);
+					timers.erase(timers.begin() + pos);
 					break;
 				}
 			}
@@ -850,12 +850,14 @@ namespace Vortex {
 
 	Timer& Scene::TryGetMutableTimerByName(Entity entity, const std::string& name)
 	{
-		std::vector<Timer> entityTimers = m_Timers[entity];
+		std::vector<Timer>& timers = m_Timers[entity];
+		const size_t timerCount = timers.size();
 
-		for (Timer& timer : entityTimers)
+		for (size_t i = 0; i < timerCount; i++)
 		{
+			Timer& timer = timers[i];
 			const std::string& timerName = timer.GetName();
-			if (!String::FastCompare(timerName, name))
+			if (String::FastCompare(timerName, name) == 0)
 				continue;
 
 			return timer;
@@ -866,13 +868,15 @@ namespace Vortex {
 
 	void Scene::AddOrReplaceTimer(Entity entity, Timer&& timer)
 	{
-		if (Timer& existing = TryGetMutableTimerByName(entity, timer.GetName()); timer != s_NullTimer)
+		if (Timer& existing = TryGetMutableTimerByName(entity, timer.GetName()); existing != s_NullTimer)
 		{
 			existing = std::move(timer);
-			return;
 		}
-
-		m_Timers[entity].push_back(timer);
+		else
+		{
+			std::vector<Timer>& timers = m_Timers[entity];
+			timers.push_back(timer);
+		}
 	}
 
 	void Scene::ParentEntity(Entity entity, Entity parent)

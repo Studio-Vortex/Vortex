@@ -124,12 +124,23 @@ namespace Vortex {
 		void Entity_Invoke(UUID entityUUID, MonoString* methodName);
 		void Entity_InvokeWithDelay(UUID entityUUID, MonoString* methodName, float delay);
 		void Entity_SetActive(UUID entityUUID, bool isActive);
+		void Entity_AddTimer(UUID entityUUID, MonoString* name, float delay);
 
 #pragma endregion
 
 #pragma region AssetHandle
 
 		bool AssetHandle_IsValid(AssetHandle* assetHandle);
+
+#pragma endregion
+
+#pragma region Timer
+
+		float Timer_GetTimeLeft(UUID entityUUID, MonoString* name);
+		bool Timer_IsStarted(UUID entityUUID, MonoString* name);
+		bool Timer_IsFinished(UUID entityUUID, MonoString* name);
+		void Timer_Stop(UUID entityUUID, MonoString* name);
+		void Timer_Start(UUID entityUUID, MonoString* name);
 
 #pragma endregion
 
