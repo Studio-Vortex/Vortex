@@ -81,7 +81,7 @@ namespace Vortex {
 		m_PanelManager->AddPanel<NetworkManagerPanel>();
 		m_PanelManager->AddPanel<SceneHierarchyPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<ScriptRegistryPanel>();
-		m_PanelManager->AddPanel<MaterialEditorPanel>();
+		m_PanelManager->AddPanel<MaterialEditorPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<SceneRendererPanel>()->IsOpen = true;
 		m_PanelManager->AddPanel<AssetRegistryPanel>();
 		m_PanelManager->AddPanel<BuildSettingsPanel>(
