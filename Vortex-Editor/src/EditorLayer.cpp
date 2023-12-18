@@ -627,6 +627,12 @@ namespace Vortex {
 						}
 						UI::Draw::Underline();
 
+						if (Gui::MenuItem("Deselect Actor"))
+						{
+							SelectionManager::DeselectActor();
+							Gui::CloseCurrentPopup();
+						}
+
 						if (Gui::MenuItem("Move To Camera Position"))
 						{
 							TransformComponent& transform = selectedActor.GetTransform();
@@ -2022,7 +2028,9 @@ namespace Vortex {
 
 			std::string assetDir = Project::GetAssetDirectory().string();
 			size_t assetDirPos = m_MeshImportPopupData.MeshFilepath.find(assetDir);
-			std::string filepath = m_MeshImportPopupData.MeshFilepath.substr(assetDirPos + assetDir.size() + 1);
+			std::string filepath = m_MeshImportPopupData.MeshFilepath;
+			if (assetDirPos != std::string::npos)
+				filepath = m_MeshImportPopupData.MeshFilepath.substr(assetDirPos + assetDir.size() + 1);
 			UI::Property("Filepath", filepath, true);
 
 			UI::EndPropertyGrid();
@@ -2569,6 +2577,10 @@ namespace Vortex {
 			case KeyCode::G:
 			{
 				if (InEditSceneState())
+				{
+					ToggleGrid();
+				}
+				else if (m_SecondViewportHovered)
 				{
 					ToggleGrid();
 				}
@@ -3289,11 +3301,28 @@ namespace Vortex {
 
 	EditorCamera* EditorLayer::GetCurrentEditorCamera() const
 	{
-		if (m_SceneViewportHovered || !m_SecondViewportPanelOpen)
+		if (m_SceneViewportHovered)
 			return m_EditorCamera;
 
 		if (m_SecondViewportHovered)
 			return m_SecondEditorCamera;
+
+		const bool noViewportHovered = !m_SceneViewportHovered && !m_SecondViewportHovered;
+		if (noViewportHovered)
+		{
+			const bool bothViewportsOpen = m_SceneViewportPanelOpen && m_SecondViewportPanelOpen;
+			if (bothViewportsOpen)
+			{
+				return m_SecondEditorCamera;
+			}
+			else
+			{
+				if (m_SecondViewportPanelOpen)
+					return m_SecondEditorCamera;
+				else if (m_SceneViewportPanelOpen)
+					return m_EditorCamera;
+			}
+		}
 
 		return nullptr;
 	}
