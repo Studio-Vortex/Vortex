@@ -20,6 +20,7 @@ namespace Vortex {
 		void RenderCreateItemPopup();
 		void RenderFileExplorer();
 		void RenderMenuBar();
+		void RenderCurrentWorkingDirectory();
 		void RenderRightClickItemPopup(const Fs::Path& currentPath);
 		void RenameItem(const Fs::Path& currentPath);
 		void OnCSharpFileRenamed(const Fs::Path& newFilepath, const std::string& oldFilepath);

@@ -1,11 +1,15 @@
 #include "vxpch.h"
 #include "EditorAssetManager.h"
 
-#include "Vortex/Project/Project.h"
-
 #include "Vortex/Core/String.h"
 
 #include "Vortex/Asset/AssetExtensions.h"
+
+#include "Vortex/Project/Project.h"
+
+#include "Vortex/Scene/Scene.h"
+
+#include "Vortex/Renderer/Material.h"
 
 #include "Vortex/Utils/YAML_SerializationUtils.h"
 
@@ -335,6 +339,7 @@ namespace Vortex {
 			switch (metadata.Type)
 			{
 				case AssetType::MaterialAsset: asset.As<Material>()->SetName(filename); break;
+				case AssetType::SceneAsset: asset.As<Scene>()->SetDebugName(filename); break;
 			}
 
 			AssetImporter::Serialize(asset);
