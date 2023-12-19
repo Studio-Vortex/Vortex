@@ -1298,12 +1298,15 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		// Resize
-		if (FramebufferProperties props = m_Framebuffer->GetProperties();
-			m_ViewportPanelSize.x > 0.0f && m_ViewportPanelSize.y > 0.0f && // zero sized framebuffer is invalid
-			(props.Width != m_ViewportPanelSize.x || props.Height != m_ViewportPanelSize.y))
+		if (m_SceneViewportPanelOpen)
 		{
-			m_Framebuffer->Resize((uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y);
-			m_EditorCamera->SetViewportSize((uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y);
+			if (FramebufferProperties props = m_Framebuffer->GetProperties();
+				m_ViewportPanelSize.x > 0.0f && m_ViewportPanelSize.y > 0.0f && // zero sized framebuffer is invalid
+				(props.Width != m_ViewportPanelSize.x || props.Height != m_ViewportPanelSize.y))
+			{
+				m_Framebuffer->Resize((uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y);
+				m_EditorCamera->SetViewportSize((uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y);
+			}
 		}
 
 		if (m_SecondViewportPanelOpen)
@@ -1517,10 +1520,6 @@ namespace Vortex {
 
 		UI::PushID();
 
-		ImGuiIO& io = Gui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
 		SharedReference<Project> project = Project::GetActive();
 		ProjectProperties& properties = project->GetProperties();
 
@@ -1585,17 +1584,38 @@ namespace Vortex {
 				Gui::OpenPopup("ViewportSettingsPanel");
 			}
 
-			float columnWidth = 165.0f;
+			auto drawHeading = [](auto label) {
+				UI::PushFont("Bold");
+				Gui::Text(label);
+				UI::PopFont();
+				UI::Draw::Underline();
+			};
+
+			const float columnWidth = 165.0f;
 			Gui::SetNextWindowSize({ popupWidth, 375.0f });
 			Gui::SetNextWindowPos({ (m_ViewportBounds.MaxBound.x - popupWidth) - 17, m_ViewportBounds.MinBound.y + edgeOffset + windowHeight });
 			const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar;
 			if (Gui::BeginPopup("ViewportSettingsPanel", windowFlags))
 			{
+				UI::PushFont("Huge");
+				Gui::Text("Viewport Settings");
+				UI::PopFont();
+				UI::Draw::Underline();
+
+				UI::ShiftCursorY(10.0f);
+
 				{
-					Gui::PushFont(boldFont);
-					Gui::Text("Display");
-					Gui::PopFont();
-					UI::Draw::Underline();
+					drawHeading("Tools");
+					UI::BeginPropertyGrid(columnWidth);
+
+					SharedReference<PerformancePanel> performancePanel = m_PanelManager->GetPanel<PerformancePanel>();
+					UI::Property("Show Stats", performancePanel->IsOpen);
+
+					UI::EndPropertyGrid();
+				}
+
+				{
+					drawHeading("Display");
 					UI::BeginPropertyGrid(columnWidth);
 
 					if (UI::ImageButton("Maximize On Play", EditorResources::MaximizeOnPlayIcon, textureSize, properties.EditorProps.MaximizeOnPlay ? bgColor : normalColor, tintColor))
@@ -1636,13 +1656,8 @@ namespace Vortex {
 				}
 
 				{
-					Gui::PushFont(boldFont);
-					Gui::Text("Gizmos");
-					Gui::PopFont();
-					UI::Draw::Underline();
+					drawHeading("Gizmos");
 					UI::BeginPropertyGrid(columnWidth);
-
-					UI::Property("Gimzo Size", properties.GizmoProps.GizmoSize, 0.05f, 0.05f);
 
 					if (UI::ImageButton("Local Mode", EditorResources::LocalModeIcon, textureSize, m_TranslationMode == 0 ? bgColor : normalColor, tintColor))
 					{
@@ -1654,17 +1669,22 @@ namespace Vortex {
 						m_TranslationMode = (uint32_t)ImGuizmo::MODE::WORLD;
 					}
 
+					UI::Property("Enable Snapping", properties.GizmoProps.SnapEnabled);
+					UI::Property("Snap Value", properties.GizmoProps.SnapValue, 0.05f, FLT_MIN, FLT_MAX);
+					UI::Property("Rotation Snap Value", properties.GizmoProps.RotationSnapValue, 1.0f, FLT_MIN, FLT_MAX);
+
+					UI::Property("Gimzo Size", properties.GizmoProps.GizmoSize, 0.05f, FLT_MIN, FLT_MAX);
+
 					if (UI::ImageButton(properties.RendererProps.DisplaySceneIconsInEditor ? "Hide Gizmos" : "Show Gizmos", EditorResources::DisplaySceneIconsIcon, textureSize, properties.RendererProps.DisplaySceneIconsInEditor ? normalColor : bgColor, tintColor))
+					{
 						properties.RendererProps.DisplaySceneIconsInEditor = !properties.RendererProps.DisplaySceneIconsInEditor;
+					}
 
 					UI::EndPropertyGrid();
 				}
 
 				{
-					Gui::PushFont(boldFont);
-					Gui::Text("Editor Camera");
-					Gui::PopFont();
-					UI::Draw::Underline();
+					drawHeading("Editor Camera");
 					UI::BeginPropertyGrid(columnWidth);
 
 					float degFOV = Math::Rad2Deg(m_EditorCamera->m_VerticalFOV);
