@@ -15,10 +15,6 @@ namespace Vortex {
 
 	void BuildSettingsPanel::OnGuiRender()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
 		if (!IsOpen)
 			return;
 
@@ -100,40 +96,58 @@ namespace Vortex {
 
 	void BuildSettingsPanel::FindAndSetBestSize()
 	{
-		SharedReference<Project> activeProject = Project::GetActive();
-		ProjectProperties& projectProps = activeProject->GetProperties();
+		SharedReference<Project> project = Project::GetActive();
+		ProjectProperties& properties = project->GetProperties();
 
-		float width = projectProps.BuildProps.Window.Size.x;
-		float height = projectProps.BuildProps.Window.Size.y;
+		float width = properties.BuildProps.Window.Size.x;
+		float height = properties.BuildProps.Window.Size.y;
 
 		FindBestWidth(width);
 		FindBestHeight(height);
 
-		projectProps.BuildProps.Window.Size = { width, height };
+		properties.BuildProps.Window.Size = { width, height };
 	}
 
 	void BuildSettingsPanel::FindBestWidth(float& width)
 	{
 		if (width > 1600)
+		{
 			width = 1600;
+			return;
+		}
+
+		if (width < 1200)
+		{
+			width = 800;
+			return;
+		}
 
 		if (width < 1600)
-			width = 1600 * 0.75f;
-
-		if (width < (1600 * 0.75f))
-			width = 800;
+		{
+			width = 1200;
+			return;
+		}
 	}
 
 	void BuildSettingsPanel::FindBestHeight(float& height)
 	{
 		if (height > 900)
+		{
 			height = 900;
+			return;
+		}
+
+		if (height < 675)
+		{
+			height = 450;
+			return;
+		}
 
 		if (height < 900)
-			height = 900 * 0.75f;
-
-		if (height < (900 * 0.75f))
-			height = 450;
+		{
+			height = 675;
+			return;
+		}
 	}
 
 }
