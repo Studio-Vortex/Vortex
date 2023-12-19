@@ -277,13 +277,12 @@ namespace Vortex {
 		if (m_IsRunning)
 		{
 			// Invoke Actor.OnDestroy
-			if (actor.HasComponent<ScriptComponent>() && ScriptEngine::GetContextScene() != nullptr)
+			if (ScriptEngine::HasValidScriptClass(actor))
 			{
-				const ScriptComponent& scriptComponent = actor.GetComponent<ScriptComponent>();
-
-				if (ScriptEngine::ActorClassExists(scriptComponent.ClassName))
+				ManagedMethod method = ManagedMethod::OnDestroy;
+				if (ScriptEngine::ScriptInstanceHasMethod(actor, method))
 				{
-					ScriptEngine::Invoke(ManagedMethod::OnDestroy, actor);
+					ScriptEngine::Invoke(method, actor);
 				}
 			}
 
@@ -454,6 +453,10 @@ namespace Vortex {
 			for (const auto e : view)
 			{
 				Actor actor{ e, this };
+
+				if (!ScriptEngine::HasValidScriptClass(actor))
+					continue;
+
 				ScriptEngine::RT_CreateActorScriptInstance(actor);
 			}
 
@@ -461,14 +464,30 @@ namespace Vortex {
 			for (const auto e : view)
 			{
 				Actor actor{ e, this };
-				ScriptEngine::Invoke(ManagedMethod::OnAwake, actor);
+
+				if (!ScriptEngine::HasValidScriptClass(actor))
+					continue;
+
+				ManagedMethod method = ManagedMethod::OnAwake;
+				if (!ScriptEngine::ScriptInstanceHasMethod(actor, method))
+					continue;
+
+				ScriptEngine::Invoke(method, actor);
 			}
 
 			// Invoke Actor.OnCreate
 			for (const auto e : view)
 			{
 				Actor actor{ e, this };
-				ScriptEngine::Invoke(ManagedMethod::OnCreate, actor);
+
+				if (!ScriptEngine::HasValidScriptClass(actor))
+					continue;
+
+				ManagedMethod method = ManagedMethod::OnCreate;
+				if (!ScriptEngine::ScriptInstanceHasMethod(actor, method))
+					continue;
+
+				ScriptEngine::Invoke(method, actor);
 			}
 		}
 
@@ -489,11 +508,19 @@ namespace Vortex {
 
 		m_IsRunning = false;
 
-		// Invoke Actor.OnDestroy
+		// Invoke Actor.OnDestroy on all actors in the scene
 		GetAllActorsWith<ScriptComponent>().each([=](auto actorID, auto& scriptComponent)
 		{
 			Actor actor{ actorID, this };
-			ScriptEngine::Invoke(ManagedMethod::OnDestroy, actor);
+
+			if (!ScriptEngine::HasValidScriptClass(actor))
+				return;
+
+			ManagedMethod method = ManagedMethod::OnDestroy;
+			if (!ScriptEngine::ScriptInstanceHasMethod(actor, method))
+				return;
+
+			ScriptEngine::Invoke(method, actor);
 		});
 		ScriptEngine::OnRuntimeStop();
 
@@ -573,6 +600,15 @@ namespace Vortex {
 
 				if (!actor.IsActive())
 					continue;
+
+				if (!ScriptEngine::HasValidScriptClass(actor))
+					continue;
+
+				if (!ScriptEngine::ScriptInstanceHasMethod(actor, ManagedMethod::OnUpdate))
+				{
+					if (!ScriptEngine::ScriptInstanceHasMethod(actor, ManagedMethod::OnUpdateDelta))
+						continue; // No OnUpdate method was found
+				}
 
 				RuntimeMethodArgument arg0(delta);
 				ScriptEngine::Invoke(ManagedMethod::OnUpdate, actor, { arg0 });
@@ -786,7 +822,14 @@ namespace Vortex {
 			if (!actor.IsActive())
 				continue;
 
-			ScriptEngine::Invoke(ManagedMethod::OnGui, actor);
+			if (!ScriptEngine::HasValidScriptClass(actor))
+				continue;
+
+			ManagedMethod method = ManagedMethod::OnGui;
+			if (!ScriptEngine::ScriptInstanceHasMethod(actor, method))
+				continue;
+
+			ScriptEngine::Invoke(method, actor);
 		}
 	}
 
@@ -1105,7 +1148,7 @@ namespace Vortex {
 		if (m_IsRunning && actor.HasComponent<ScriptComponent>())
 		{
 			// Create a new Script Instance for the duplicate
-			ScriptEngine::RuntimeInstantiateActor(duplicate);
+			ScriptEngine::RT_InstantiateActor(duplicate);
 		}
 
 		return duplicate;

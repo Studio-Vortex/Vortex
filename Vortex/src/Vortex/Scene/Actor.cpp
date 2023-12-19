@@ -11,30 +11,35 @@ namespace Vortex {
 
 		const Actor self = *this;
 
-		const bool sceneRunning = m_Scene->IsRunning();
-		const bool hasScript = self.HasComponent<ScriptComponent>();
-		const auto classExistsFn = [&](auto e) { return ScriptEngine::ActorClassExists(e.GetComponent<ScriptComponent>().ClassName); };
-		const bool callMethod = sceneRunning && hasScript && classExistsFn(self);
+		auto callMethod = [&](auto method) {
+			if (!ScriptEngine::HasValidScriptClass(self))
+				return;
+			
+			if (!ScriptEngine::ScriptInstanceHasMethod(self, method))
+				return;
+			
+			ScriptEngine::Invoke(method, self);
+		};
 
-		if (!active)
+		if (active)
+		{
+			m_Scene->ActiveateChildren(self);
+
+			// Invoke Actor.OnEnable
+			if (m_Scene->IsRunning())
+			{
+				callMethod(ManagedMethod::OnEnable);
+			}
+		}
+		else
 		{
 			m_Scene->DeactiveateChildren(self);
 
-			if (callMethod)
+			// Invoke Actor.OnDisable
+			if (m_Scene->IsRunning())
 			{
-				// Invoke Actor.OnDisabled
-				ScriptEngine::Invoke(ManagedMethod::OnDisable, self);
+				callMethod(ManagedMethod::OnDisable);
 			}
-
-			return;
-		}
-
-		m_Scene->ActiveateChildren(self);
-
-		if (callMethod)
-		{
-			// Invoke Actor.OnEnabled
-			ScriptEngine::Invoke(ManagedMethod::OnEnable, self);
 		}
 	}
 

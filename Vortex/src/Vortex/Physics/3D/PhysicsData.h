@@ -32,12 +32,12 @@ namespace Vortex {
 
 	struct VORTEX_API OverlapHit
 	{
-		uint64_t EntityID;
+		uint64_t ActorID;
 	};
 
 	struct VORTEX_API Collision
 	{
-		uint64_t EntityID;
+		uint64_t ActorID;
 	};
 
 }

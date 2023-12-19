@@ -92,7 +92,7 @@ namespace Vortex {
 				for (uint32_t i = 0; i < count; i++)
 				{
 					PhysicsBodyData* physicsBodyData = (PhysicsBodyData*)s_OverlapBuffer[i].actor->userData;
-					buffer[i].EntityID = physicsBodyData->ActorUUID;
+					buffer[i].ActorID = physicsBodyData->ActorUUID;
 				}
 			}
 

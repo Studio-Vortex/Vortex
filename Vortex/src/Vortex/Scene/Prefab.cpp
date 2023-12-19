@@ -74,7 +74,7 @@ namespace Vortex {
 
 		if (newActor.HasComponent<ScriptComponent>())
 		{
-			ScriptEngine::RuntimeInstantiateActor(newActor);
+			ScriptEngine::RT_InstantiateActor(newActor);
 		}
 
 		return newActor;

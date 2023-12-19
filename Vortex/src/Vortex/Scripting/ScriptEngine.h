@@ -52,9 +52,13 @@ namespace Vortex {
 		static void OnRuntimeStop();
 
 		static bool ActorClassExists(const std::string& fullyQualifiedClassName);
+		static bool HasValidScriptClass(Actor actor);
 		static bool ActorInstanceExists(UUID actorUUID);
-		static void ActorConstructorRuntime(UUID actorUUID, MonoObject* instance);
+		static bool ScriptInstanceHasMethod(Actor actor, ManagedMethod method);
+
+		static void RT_ActorConstructor(UUID actorUUID, MonoObject* instance);
 		static void RT_CreateActorScriptInstance(Actor actor);
+		static void RT_InstantiateActor(Actor actor);
 
 		static bool Invoke(const std::string& methodName, Actor actor, const std::vector<RuntimeMethodArgument>& argumentList);
 		static bool Invoke(ManagedMethod method, Actor actor, const std::vector<RuntimeMethodArgument>& argumentList = {});
@@ -65,8 +69,6 @@ namespace Vortex {
 		static MonoImage* GetCoreAssemblyImage();
 		static MonoDomain* GetAppDomain();
 		static MonoImage* GetAppAssemblyImage();
-
-		static void RuntimeInstantiateActor(Actor actor);
 
 		static SharedReference<ScriptInstance> GetActorScriptInstance(UUID uuid);
 
