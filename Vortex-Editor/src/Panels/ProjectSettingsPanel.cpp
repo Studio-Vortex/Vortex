@@ -20,10 +20,6 @@ namespace Vortex {
 
 	void ProjectSettingsPanel::OnGuiRender()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
 		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
 		if (!IsOpen)
@@ -129,16 +125,15 @@ namespace Vortex {
 	{
 		UI::BeginPropertyGrid();
 
-		// Minimums don't work here for some reason
 		UI::Property("Enabled", m_ProjectProperties.GizmoProps.Enabled);
 		UI::Property("Orthographic Gizmos", m_ProjectProperties.GizmoProps.IsOrthographic);
-		UI::Property("Snap", m_ProjectProperties.GizmoProps.SnapEnabled);
-		UI::Property("Snap Value", m_ProjectProperties.GizmoProps.SnapValue, 0.05f, 0.05f);
-		UI::Property("Rotation Snap Value", m_ProjectProperties.GizmoProps.RotationSnapValue, 1.0f, 1.0f);
-		UI::Property("Gizmo Size", m_ProjectProperties.GizmoProps.GizmoSize, 0.05f, 0.05f);
+		UI::Property("Enable Snapping", m_ProjectProperties.GizmoProps.SnapEnabled);
+		UI::Property("Snap Value", m_ProjectProperties.GizmoProps.SnapValue, 0.05f, FLT_MIN, FLT_MAX);
+		UI::Property("Rotation Snap Value", m_ProjectProperties.GizmoProps.RotationSnapValue, 1.0f, FLT_MIN, FLT_MAX);
+		UI::Property("Gizmo Size", m_ProjectProperties.GizmoProps.GizmoSize, 0.05f, FLT_MIN, FLT_MAX);
 		UI::Property("Draw Grid", m_ProjectProperties.GizmoProps.DrawGrid);
 		if (m_ProjectProperties.GizmoProps.DrawGrid)
-			UI::Property("Grid Size", m_ProjectProperties.GizmoProps.GridSize, 0.5f, 0.5f);
+			UI::Property("Grid Size", m_ProjectProperties.GizmoProps.GridSize, 0.5f, FLT_MIN, FLT_MAX);
 
 		UI::EndPropertyGrid();
 	}
@@ -169,11 +164,11 @@ namespace Vortex {
 				m_ProjectProperties.PhysicsProps.FrictionModel = (FrictionType)currentFrictionType;
 
 			int32_t positionIterations3D = Physics::GetPhysicsScenePositionIterations();
-			if (UI::Property("Position Iterations", positionIterations3D, 1.0f, 1, 100))
+			if (UI::Property("Position Iterations", positionIterations3D, 1, 1, 256))
 				Physics::SetPhysicsScenePositionIterations(positionIterations3D);
 
 			int32_t velocityIterations3D = Physics::GetPhysicsSceneVelocityIterations();
-			if (UI::Property("Velocity Iterations", velocityIterations3D, 1.0f, 1, 100))
+			if (UI::Property("Velocity Iterations", velocityIterations3D, 1, 1, 256))
 				Physics::SetPhysicsSceneVelocityIterations(velocityIterations3D);
 
 			UI::EndPropertyGrid();
