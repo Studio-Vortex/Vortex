@@ -59,7 +59,8 @@ namespace Vortex {
 		UI::ScopedStyle windowBorderSize(ImGuiStyleVar_WindowBorderSize, 1.0f);
 		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 10.0f, 10.0f });
 
-		Gui::Begin("Project Browser", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration);
+		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration;
+		Gui::Begin("Project Browser", nullptr, flags);
 
 		Gui::BeginGroup();
 
@@ -103,14 +104,15 @@ namespace Vortex {
 				continue;
 			}
 
-			size_t lastBackslashPos = directoryEntry.path().string().find_last_of('\\') + 1;
-			size_t dotPos = directoryEntry.path().string().find_last_of('.');
-			std::string projectName = directoryEntry.path().string().substr(lastBackslashPos, dotPos - lastBackslashPos);
+			const size_t lastBackslashPos = directoryEntry.path().string().find_last_of('\\') + 1;
+			const size_t dotPos = directoryEntry.path().string().find_last_of('.');
+			const std::string projectName = directoryEntry.path().string().substr(lastBackslashPos, dotPos - lastBackslashPos);
+			const std::string label = projectName + "##" + std::to_string(i);
 
-			if (Gui::Selectable(projectName.c_str(), selectedProject == i) || (Gui::IsItemFocused() && Gui::IsKeyPressed(ImGuiKey_Enter)))
+			if (Gui::Selectable(label.c_str(), selectedProject == i) || (Gui::IsItemFocused() && Gui::IsKeyPressed(ImGuiKey_Enter)))
 			{
 				m_Properties.ProjectFilepath = directoryEntry.path();
-				std::string projectIconName = projectName + ".png";
+				const std::string projectIconName = projectName + ".png";
 				const Fs::Path projectDirectory = FileSystem::GetParentDirectory(m_Properties.ProjectFilepath);
 				
 				m_SelectedProjectIcon = nullptr;
@@ -141,7 +143,7 @@ namespace Vortex {
 		Gui::EndGroup();
 		Gui::SameLine();
 		
-		ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
+		const ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
 
 		Gui::BeginChild("Right", contentRegionAvail);
 
@@ -155,9 +157,9 @@ namespace Vortex {
 
 		if (m_SelectedProjectIcon)
 		{
-			ImVec2 contentRegionAvailable = Gui::GetContentRegionAvail();
-			float imageScale = 1.1f;
-			ImVec2 textureSize = { 640 * imageScale, 360 * imageScale };
+			const ImVec2 contentRegionAvailable = Gui::GetContentRegionAvail();
+			const float imageScale = 1.1f;
+			const ImVec2 textureSize = { 640 * imageScale, 360 * imageScale };
 			Gui::SetCursorPos({ contentRegionAvailable.x * 0.5f - textureSize.x * 0.5f, contentRegionAvailable.y * 0.5f - textureSize.y * 0.5f });
 			Gui::Image((ImTextureID)m_SelectedProjectIcon->GetRendererID(), textureSize, { 0, 1 }, { 1, 0 });
 		}
@@ -167,7 +169,7 @@ namespace Vortex {
 			UI::ScopedColor buttonActiveColor(ImGuiCol_ButtonActive, ImVec4(0.2f, 0.2f, 0.8f, 1.0f));
 			UI::ScopedColor buttonHoveredColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 1.0f, 1.0f));
 
-			ImVec2 buttonSize = { contentRegionAvail.x / 4.0f, 50.0f };
+			const ImVec2 buttonSize = { contentRegionAvail.x / 4.0f, 50.0f };
 			Gui::SetCursorPos({ contentRegionAvail.x * 0.5f - buttonSize.x * 0.5f, contentRegionAvail.y - buttonSize.y * 1.5f });
 			const char* buttonText = selectedProject == 0 ? "Create Project" : "Open Project";
 			if (!m_IsCreatingNewProject && Gui::Button(buttonText, buttonSize))
@@ -202,10 +204,10 @@ namespace Vortex {
 
 	void LauncherLayer::DisplayCreateProjectPopup()
 	{
-		ImVec2 center = Gui::GetMainViewport()->GetCenter();
+		const ImVec2 center = Gui::GetMainViewport()->GetCenter();
 		Gui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 		Gui::SetNextWindowSize(ImVec2(700, 0));
-		ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize;
+		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize;
 
 		if (Gui::BeginPopupModal("Create New Project", &m_IsCreatingNewProject, flags))
 		{
@@ -220,7 +222,7 @@ namespace Vortex {
 
 			auto folderClickedFn = [&]()
 			{
-				std::string filepath = FileDialogue::OpenFolderDialog();
+				const std::string filepath = FileDialogue::OpenFolderDialog();
 				ClearProjectDirectoryBuffer();
 				memcpy(m_Properties.ProjectDirectoryBuffer, filepath.data(), filepath.size());
 			};
@@ -242,7 +244,7 @@ namespace Vortex {
 
 			UI::EndPropertyGrid();
 
-			ImVec2 buttonSize = { Gui::GetContentRegionAvail().x / 4.0f, 50.0f };
+			const ImVec2 buttonSize = { Gui::GetContentRegionAvail().x / 4.0f, 50.0f };
 
 			if (Gui::Button("Go Back", buttonSize))
 			{
