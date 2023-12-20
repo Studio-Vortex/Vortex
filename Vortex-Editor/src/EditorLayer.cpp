@@ -629,6 +629,7 @@ namespace Vortex {
 							SelectionManager::DeselectActor();
 							Gui::CloseCurrentPopup();
 						}
+						UI::Draw::Underline();
 
 						if (Gui::MenuItem("Move To Camera Position"))
 						{
