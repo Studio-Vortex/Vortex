@@ -121,14 +121,18 @@ namespace Vortex {
 	{
 		bool actorCreated = false;
 
+		auto separator = []() {
+			UI::Draw::Underline();
+			Gui::Spacing();
+		};
+
 		if (Gui::MenuItem("Create Empty"))
 		{
 			Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Empty Actor"));
 			selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 			actorCreated = true;
 		}
-		UI::Draw::Underline();
-		Gui::Spacing();
+		separator();
 		
 		Gui::Text((const char*)VX_ICON_CUBE);
 		Gui::SameLine();
@@ -139,48 +143,42 @@ namespace Vortex {
 				CreateDefaultMesh("Cube", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Sphere"))
 			{
 				CreateDefaultMesh("Sphere", DefaultMesh::StaticMeshType::Sphere, m_ContextScene, editorCamera);
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Capsule"))
 			{
 				CreateDefaultMesh("Capsule", DefaultMesh::StaticMeshType::Capsule, m_ContextScene, editorCamera);
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Cone"))
 			{
 				CreateDefaultMesh("Cone", DefaultMesh::StaticMeshType::Cone, m_ContextScene, editorCamera);
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Cylinder"))
 			{
 				CreateDefaultMesh("Cylinder", DefaultMesh::StaticMeshType::Cylinder, m_ContextScene, editorCamera);
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Plane"))
 			{
 				CreateDefaultMesh("Plane", DefaultMesh::StaticMeshType::Plane, m_ContextScene, editorCamera);
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Torus"))
 			{
@@ -190,8 +188,7 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
-		UI::Draw::Underline();
-		Gui::Spacing();
+		separator();
 
 		Gui::Text((const char*)VX_ICON_SPINNER);
 		Gui::SameLine();
@@ -207,8 +204,7 @@ namespace Vortex {
 				selected.AddComponent<BoxCollider2DComponent>();
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Circle"))
 			{
@@ -223,8 +219,7 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
-		UI::Draw::Underline();
-		Gui::Spacing();
+		separator();
 
 		Gui::Text((const char*)VX_ICON_VIDEO_CAMERA);
 		Gui::SameLine();
@@ -238,8 +233,7 @@ namespace Vortex {
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Orthographic"))
 			{
@@ -252,8 +246,7 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
-		UI::Draw::Underline();
-		Gui::Spacing();
+		separator();
 
 		Gui::Text((const char*)VX_ICON_LIGHTBULB_O);
 		Gui::SameLine();
@@ -267,8 +260,7 @@ namespace Vortex {
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Point"))
 			{
@@ -278,8 +270,7 @@ namespace Vortex {
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Spot"))
 			{
@@ -292,8 +283,7 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
-		UI::Draw::Underline();
-		Gui::Spacing();
+		separator();
 
 		Gui::Text((const char*)VX_ICON_CALCULATOR);
 		Gui::SameLine();
@@ -304,40 +294,68 @@ namespace Vortex {
 				CreateDefaultMesh("Box Collider", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Sphere Collider"))
 			{
 				CreateDefaultMesh("Sphere Collider", DefaultMesh::StaticMeshType::Sphere, m_ContextScene, editorCamera);
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Capsule Collider"))
 			{
 				CreateDefaultMesh("Capsule Collider", DefaultMesh::StaticMeshType::Capsule, m_ContextScene, editorCamera);
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Mesh Collider"))
 			{
 				CreateDefaultMesh("Mesh Collider", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
+
+			if (Gui::MenuItem("Trigger Box"))
+			{
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Trigger Box"));
+				selected.AddComponent<RigidBodyComponent>();
+				BoxColliderComponent& boxCollider = selected.AddComponent<BoxColliderComponent>();
+				boxCollider.Visible = true;
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				actorCreated = true;
+			}
+			separator();
+
+			if (Gui::MenuItem("Trigger Sphere"))
+			{
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Trigger Sphere"));
+				selected.AddComponent<RigidBodyComponent>();
+				SphereColliderComponent& sphereCollider = selected.AddComponent<SphereColliderComponent>();
+				sphereCollider.Visible = true;
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				actorCreated = true;
+			}
+			separator();
+
+			if (Gui::MenuItem("Trigger Capsule"))
+			{
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Trigger Capsule"));
+				selected.AddComponent<RigidBodyComponent>();
+				CapsuleColliderComponent& capsuleCollider = selected.AddComponent<CapsuleColliderComponent>();
+				capsuleCollider.Visible = true;
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				actorCreated = true;
+			}
+			separator();
 
 			if (Gui::MenuItem("Fixed Joint"))
 			{
 				CreateDefaultMesh("Fixed Joint", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Box Collider 2D"))
 			{
@@ -348,8 +366,7 @@ namespace Vortex {
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Circle Collider 2D"))
 			{
@@ -363,8 +380,7 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
-		UI::Draw::Underline();
-		Gui::Spacing();
+		separator();
 
 		Gui::Text((const char*)VX_ICON_VOLUME_UP);
 		Gui::SameLine();
@@ -377,8 +393,7 @@ namespace Vortex {
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Listener Actor"))
 			{
@@ -390,8 +405,7 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
-		UI::Draw::Underline();
-		Gui::Spacing();
+		separator();
 
 		Gui::Text((const char*)VX_ICON_FONT);
 		Gui::SameLine();
@@ -404,8 +418,7 @@ namespace Vortex {
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				actorCreated = true;
 			}
-			UI::Draw::Underline();
-			Gui::Spacing();
+			separator();
 
 			if (Gui::MenuItem("Button"))
 			{
@@ -417,8 +430,7 @@ namespace Vortex {
 
 			Gui::EndMenu();
 		}
-		UI::Draw::Underline();
-		Gui::Spacing();
+		separator();
 
 		Gui::Text((const char*)VX_ICON_BOMB);
 		Gui::SameLine();

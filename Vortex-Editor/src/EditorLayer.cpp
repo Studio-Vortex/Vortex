@@ -508,6 +508,11 @@ namespace Vortex {
 		SharedReference<Project> project = Project::GetActive();
 		ProjectProperties& properties = project->GetProperties();
 
+		auto separator = []() {
+			UI::Draw::Underline();
+			Gui::Spacing();
+		};
+
 		if (Gui::BeginMenuBar())
 		{
 			if (Gui::BeginMenu("File"))
@@ -517,49 +522,49 @@ namespace Vortex {
 					CreateNewProject();
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("Open Project...", "Ctrl+O"))
 				{
 					OpenExistingProject();
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("Save Project"))
 				{
 					SaveProject();
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("New Scene", "Ctrl+N"))
 				{
 					CreateNewScene();
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("Open Scene..."))
 				{
 					OpenExistingScene();
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("Save", "Ctrl+S"))
 				{
 					SaveScene();
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("Save As...", "Ctrl+Shift+S"))
 				{
 					SaveSceneAs();
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("Exit", "Alt+F4"))
 				{
@@ -579,15 +584,14 @@ namespace Vortex {
 						OnScenePlay();
 						Gui::CloseCurrentPopup();
 					}
-					UI::Draw::Underline();
+					separator();
 
 					if (Gui::MenuItem("Play Simulation", "Ctrl+X"))
 					{
 						OnSceneSimulate();
 						Gui::CloseCurrentPopup();
 					}
-
-					UI::Draw::Underline();
+					separator();
 
 					Actor selectedActor = SelectionManager::GetSelectedActor();
 
@@ -608,28 +612,28 @@ namespace Vortex {
 							m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnActorName(true);
 							Gui::CloseCurrentPopup();
 						}
-						UI::Draw::Underline();
+						separator();
 
 						if (Gui::MenuItem("Duplicate Actor", "Ctrl+D"))
 						{
 							DuplicateSelectedActor();
 							Gui::CloseCurrentPopup();
 						}
-						UI::Draw::Underline();
+						separator();
 
 						if (Gui::MenuItem("Delete Actor", "Del"))
 						{
 							m_ActiveScene->SubmitToDestroyActor(selectedActor);
 							Gui::CloseCurrentPopup();
 						}
-						UI::Draw::Underline();
+						separator();
 
 						if (Gui::MenuItem("Deselect Actor"))
 						{
 							SelectionManager::DeselectActor();
 							Gui::CloseCurrentPopup();
 						}
-						UI::Draw::Underline();
+						separator();
 
 						if (Gui::MenuItem("Move To Camera Position"))
 						{
@@ -638,7 +642,7 @@ namespace Vortex {
 							transform.SetRotationEuler(Math::vec3(-m_EditorCamera->GetPitch(), -m_EditorCamera->GetYaw(), transform.GetRotationEuler().z));
 							Gui::CloseCurrentPopup();
 						}
-						UI::Draw::Underline();
+						separator();
 
 						if (Gui::MenuItem("Reset Translation", "Alt+W"))
 						{
@@ -646,7 +650,7 @@ namespace Vortex {
 							transformComponent.Translation = Math::vec3(0.0f);
 							Gui::CloseCurrentPopup();
 						}
-						UI::Draw::Underline();
+						separator();
 
 						if (Gui::MenuItem("Reset Rotation", "Alt+E"))
 						{
@@ -655,7 +659,7 @@ namespace Vortex {
 							transformComponent.SetRotation(identity);
 							Gui::CloseCurrentPopup();
 						}
-						UI::Draw::Underline();
+						separator();
 
 						if (Gui::MenuItem("Reset Scale", "Alt+R"))
 						{
@@ -674,7 +678,7 @@ namespace Vortex {
 							OnSceneStop();
 							Gui::CloseCurrentPopup();
 						}
-						UI::Draw::Underline();
+						separator();
 
 						if (Gui::MenuItem("Restart Scene", "Ctrl+Shift+P"))
 						{
@@ -689,7 +693,7 @@ namespace Vortex {
 							OnSceneStop();
 							Gui::CloseCurrentPopup();
 						}
-						UI::Draw::Underline();
+						separator();
 
 						if (Gui::MenuItem("Restart Simulation", "Ctrl+Shift+X"))
 						{
@@ -708,7 +712,7 @@ namespace Vortex {
 				{
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				std::string itemLabel = m_SceneViewportMaximized ? "Minimize Scene" : "Maximize Scene";
 				if (Gui::MenuItem(itemLabel.c_str(), "Ctrl+Space"))
@@ -727,21 +731,21 @@ namespace Vortex {
 					OnSelectGizmoToolSelected();
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("Translation Tool", "W"))
 				{
 					OnTranslationGizmoToolSelected();
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("Rotation Tool", "E"))
 				{
 					OnRotationGizmoToolSelected();
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("Scale Tool", "R"))
 				{
@@ -764,7 +768,7 @@ namespace Vortex {
 					m_CreateScriptPopupOpen = true;
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("Open Visual Studio Solution"))
 				{
@@ -773,7 +777,7 @@ namespace Vortex {
 					FileSystem::SetWorkingDirectory(Application::Get().GetProperties().WorkingDirectory);
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("Rebuild C# Assembly"))
 				{
@@ -793,14 +797,14 @@ namespace Vortex {
 					BuildProject();
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::MenuItem("Build and Run", "Ctrl+B"))
 				{
 					BuildAndRunProject();
 					Gui::CloseCurrentPopup();
 				}
-				UI::Draw::Underline();
+				separator();
 
 				m_PanelManager->MenuBarItem<BuildSettingsPanel>("Ctrl+Shift+B");
 
@@ -810,46 +814,46 @@ namespace Vortex {
 			if (Gui::BeginMenu("Window"))
 			{
 				m_PanelManager->MenuBarItem<AudioMixerPanel>();
-				UI::Draw::Underline();
+				separator();
 				m_PanelManager->MenuBarItem<ConsolePanel>();
-				UI::Draw::Underline();
+				separator();
 				m_PanelManager->MenuBarItem<ContentBrowserPanel>();
-				UI::Draw::Underline();
+				separator();
 				Gui::MenuItem("Inspector", nullptr, &m_PanelManager->GetPanel<SceneHierarchyPanel>()->IsInspectorOpen());
-				UI::Draw::Underline();
+				separator();
 				m_PanelManager->MenuBarItem<MaterialEditorPanel>();
-				UI::Draw::Underline();
+				separator();
 				m_PanelManager->MenuBarItem<PhysicsMaterialEditorPanel>();
-				UI::Draw::Underline();
+				separator();
 				Gui::MenuItem("Scene", nullptr, &m_SceneViewportPanelOpen);
-				UI::Draw::Underline();
+				separator();
 				m_PanelManager->MenuBarItem<SceneHierarchyPanel>();
-				UI::Draw::Underline();
+				separator();
 				m_PanelManager->MenuBarItem<SceneRendererPanel>();
-				UI::Draw::Underline();
+				separator();
 				Gui::MenuItem("Second Viewport", nullptr, &m_SecondViewportPanelOpen);
-				UI::Draw::Underline();
+				separator();
 				m_PanelManager->MenuBarItem<ShaderEditorPanel>();
-				UI::Draw::Underline();
+				separator();
 				m_PanelManager->MenuBarItem<ProjectSettingsPanel>();
-				UI::Draw::Underline();
+				separator();
 
 				if (Gui::BeginMenu("Debug"))
 				{
 					m_PanelManager->MenuBarItem<AssetRegistryPanel>();
-					UI::Draw::Underline();
+					separator();
 					m_PanelManager->MenuBarItem<ECSDebugPanel>();
-					UI::Draw::Underline();
+					separator();
 					m_PanelManager->MenuBarItem<NetworkManagerPanel>();
-					UI::Draw::Underline();
+					separator();
 					m_PanelManager->MenuBarItem<PerformancePanel>();
-					UI::Draw::Underline();
+					separator();
 					m_PanelManager->MenuBarItem<PhysicsStatisticsPanel>();
-					UI::Draw::Underline();
+					separator();
 					m_PanelManager->MenuBarItem<ScriptRegistryPanel>();
-					UI::Draw::Underline();
+					separator();
 					m_PanelManager->MenuBarItem<SubModulesPanel>();
-					UI::Draw::Underline();
+					separator();
 					m_PanelManager->MenuBarItem<SystemManagerPanel>();
 
 					Gui::EndMenu();
