@@ -722,10 +722,6 @@ namespace Vortex {
 
 			dynamicActor->setLinearVelocity(ToPhysXVector(linearVelocity));
 		}
-		else
-		{
-			dynamicActor->setLinearVelocity(ToPhysXVector(Math::vec3(0.0f)));
-		}
 
 		dynamicActor->setMaxLinearVelocity(rigidbody.MaxLinearVelocity);
 		dynamicActor->setLinearDamping(rigidbody.LinearDrag);
