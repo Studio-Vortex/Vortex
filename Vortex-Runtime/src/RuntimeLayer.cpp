@@ -152,11 +152,8 @@ namespace Vortex {
 		
 		Gui::End();
 
-		// Update Engine System Gui
-		SystemManager::OnGuiRender();
-
-		// Update Application Gui
-		m_RuntimeScene->OnUpdateActorGui();
+		// Render Application Gui
+		m_RuntimeScene->OnRenderActorGui();
 	}
 
 	void RuntimeLayer::OnEvent(Event& e)

@@ -348,6 +348,7 @@ namespace Vortex {
 		void ParticleEmitterComponent_SetLifeTime(UUID actorUUID, float lifetime);
 		void ParticleEmitterComponent_Start(UUID actorUUID);
 		void ParticleEmitterComponent_Stop(UUID actorUUID);
+		bool ParticleEmitterComponent_IsActive(UUID actorUUID);
 
 #pragma endregion
 		

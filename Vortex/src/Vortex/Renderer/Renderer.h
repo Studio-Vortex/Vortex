@@ -84,7 +84,7 @@ namespace Vortex {
 		static void DrawIndexed(const SharedReference<Shader>& shader, const SharedReference<VertexArray>& vertexArray);
 
 		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent);
-		static void RenderEmissiveEntity(const Math::vec3& translation, const Math::vec3& radiance, float intensity);
+		static void RenderEmissiveMaterial(const Math::vec3& translation, const Math::vec3& radiance, float intensity);
 		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment);
 
 		static void DrawFrustum(const std::vector<Math::vec4>& corners, const Math::vec4& color);

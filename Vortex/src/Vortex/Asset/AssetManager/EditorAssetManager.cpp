@@ -10,6 +10,7 @@
 #include "Vortex/Scene/Scene.h"
 
 #include "Vortex/Renderer/Material.h"
+#include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
 
 #include "Vortex/Utils/YAML_SerializationUtils.h"
 
@@ -340,6 +341,7 @@ namespace Vortex {
 			{
 				case AssetType::MaterialAsset: asset.As<Material>()->SetName(filename); break;
 				case AssetType::SceneAsset: asset.As<Scene>()->SetDebugName(filename); break;
+				case AssetType::ParticleAsset: asset.As<ParticleEmitter>()->SetName(filename); break;
 			}
 
 			AssetImporter::Serialize(asset);

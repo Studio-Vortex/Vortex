@@ -1520,13 +1520,26 @@ namespace Vortex {
 		}
 
 		public void Start() => InternalCalls.ParticleEmitterComponent_Start(Actor.ID);
-
 		public void Stop() => InternalCalls.ParticleEmitterComponent_Stop(Actor.ID);
+
+		public bool IsActive => InternalCalls.ParticleEmitterComponent_IsActive(Actor.ID);
 	}
 
 	public class Script: Component
 	{
 		public object Instance => InternalCalls.Actor_GetScriptInstance(Actor.ID);
+
+		public bool Is<T>()
+			where T : Actor, new()
+		{
+			return Instance is T;
+		}
+
+		public T As<T>()
+			where T : Actor, new()
+		{
+			return Instance as T;
+		}
 	}
 
 }

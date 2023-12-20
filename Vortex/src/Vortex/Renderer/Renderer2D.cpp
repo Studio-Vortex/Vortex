@@ -699,7 +699,7 @@ namespace Vortex
 			DrawLine(corners[i], corners[i + 4], color);
 	}
 
-	void Renderer2D::DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const Math::vec2& size, const Math::vec4& color)
+	void Renderer2D::DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const Math::vec2& size, const Math::vec4& color, int entityID)
 	{
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
@@ -715,6 +715,7 @@ namespace Vortex
 		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[1].x * size.x + camUpWS * s_Data.QuadVertexPositions[1].y * size.y;
@@ -722,6 +723,7 @@ namespace Vortex
 		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[2].x * size.x + camUpWS * s_Data.QuadVertexPositions[2].y * size.y;
@@ -729,6 +731,7 @@ namespace Vortex
 		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[3].x * size.x + camUpWS * s_Data.QuadVertexPositions[3].y * size.y;
@@ -736,6 +739,7 @@ namespace Vortex
 		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadIndexCount += 6;

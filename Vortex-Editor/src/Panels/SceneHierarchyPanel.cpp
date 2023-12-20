@@ -1812,49 +1812,104 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::ParticleEmitterComponentOnGuiRender(ParticleEmitterComponent& component, Actor actor)
 	{
-		UI::BeginPropertyGrid();
-
 		SharedReference<ParticleEmitter> particleEmitter = nullptr;
-
-		std::string emitterName = "Default";
-
 		if (AssetManager::IsHandleValid(component.EmitterHandle))
-		{
 			particleEmitter = AssetManager::GetAsset<ParticleEmitter>(component.EmitterHandle);
-			emitterName = particleEmitter->GetName();
+
+		if (particleEmitter == nullptr)
+		{
+			return;
 		}
 
-		UI::Property("Name", emitterName);
-
-		if (particleEmitter)
+		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(particleEmitter->Handle);
+		if (metadata.IsMemoryOnly)
 		{
-			ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
+			if (Gui::Button("Create Particle System"))
+			{
+				SystemManager::GetAssetSystem<ParticleSystem>()->CreateAsset(actor);
+			}
+		}
 
-			if (Gui::Button("Start"))
-				particleEmitter->Start();
+		auto OnParticleEmitterDroppedFn = [&](const Fs::Path& filepath) {
+			// Make sure we are recieving an actual particle system otherwise we will have trouble opening it
+			if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::ParticleAsset)
+			{
+				const std::string extension = FileSystem::GetFileExtension(filepath);
+				if (extension == ".vparticle")
+				{
+					const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(filepath);
+					component.EmitterHandle = metadata.Handle;
+				}
+				else
+				{
+					VX_CONSOLE_LOG_WARN("Failed to load particle system '{}'", filepath.filename().string());
+				}
+			}
+			else
+			{
+				VX_CONSOLE_LOG_WARN("Failed to load particle system '{}'", filepath.filename().string());
+			}
+		};
+
+		{
+			Gui::BeginDisabled(metadata.IsMemoryOnly);
+			Gui::BeginDisabled(component.IsActive);
+			if (Gui::Button((const char*)VX_ICON_PLAY))
+			{
+				if (!component.IsActive)
+				{
+					component.IsActive = true;
+				}
+			}
+			UI::SetTooltip("Play");
+			Gui::EndDisabled();
+
 			Gui::SameLine();
 
-			if (Gui::Button("Stop"))
-				particleEmitter->Stop();
-
-			UI::Property("Velocity", emitterProperties.Velocity, 0.01f, FLT_MIN, FLT_MAX);
-			UI::Property("Velocity Variation", emitterProperties.VelocityVariation, 0.01f, FLT_MIN, FLT_MAX);
-			UI::Property("Offset", emitterProperties.Offset, 0.01f, FLT_MIN, FLT_MAX);
-			UI::Property("Size Start", emitterProperties.SizeBegin, 0.01f, FLT_MIN, FLT_MAX);
-			UI::Property("Size End", emitterProperties.SizeEnd, 0.01f, FLT_MIN, FLT_MAX);
-			UI::Property("Size Variation", emitterProperties.SizeVariation, 0.01f, FLT_MIN, FLT_MAX);
-
-			UI::Property("Generate Random Colors", emitterProperties.GenerateRandomColors);
-
-			if (!emitterProperties.GenerateRandomColors)
+			Gui::BeginDisabled(!component.IsActive);
+			if (Gui::Button((const char*)VX_ICON_STOP))
 			{
-				UI::Property("Color Start", &emitterProperties.ColorBegin);
-				UI::Property("Color End", &emitterProperties.ColorEnd);
+				if (component.IsActive)
+				{
+					component.IsActive = false;
+				}
 			}
-
-			UI::Property("Rotation", emitterProperties.Rotation, 0.1f, FLT_MIN, FLT_MAX);
-			UI::Property("Lifetime", emitterProperties.LifeTime, 0.1f, FLT_MIN, FLT_MAX);
+			UI::SetTooltip("Play");
+			Gui::EndDisabled();
+			Gui::EndDisabled();
 		}
+
+		UI::BeginPropertyGrid();
+		std::string emitterName = particleEmitter->GetName();
+		UI::PropertyAssetReference<ParticleEmitter>("Source", emitterName, component.EmitterHandle, OnParticleEmitterDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry());
+		UI::EndPropertyGrid();
+
+		if (metadata.IsMemoryOnly)
+		{
+			return;
+		}
+
+		UI::BeginPropertyGrid();
+
+		ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
+
+		UI::Property("Velocity", emitterProperties.Velocity, 0.01f, -FLT_MAX, FLT_MAX);
+		UI::Property("Velocity Variation", emitterProperties.VelocityVariation, 0.01f, FLT_MIN, FLT_MAX);
+		UI::Property("Offset", emitterProperties.Offset, 0.01f, -FLT_MAX, FLT_MAX);
+		UI::Property("Size Start", emitterProperties.SizeBegin, 0.01f, FLT_MIN, FLT_MAX);
+		UI::Property("Size End", emitterProperties.SizeEnd, 0.01f, FLT_MIN, FLT_MAX);
+		UI::Property("Size Variation", emitterProperties.SizeVariation, 0.01f, FLT_MIN, FLT_MAX);
+
+		UI::Property("Generate Random Colors", emitterProperties.GenerateRandomColors);
+
+		if (!emitterProperties.GenerateRandomColors)
+		{
+			UI::Property("Color Start", &emitterProperties.ColorBegin);
+			UI::Property("Color End", &emitterProperties.ColorEnd);
+		}
+
+		UI::Property("Rotation", emitterProperties.Rotation, 0.1f, FLT_MIN, FLT_MAX);
+		UI::Property("Lifetime", emitterProperties.LifeTime, 0.1f, FLT_MIN, FLT_MAX);
 
 		UI::EndPropertyGrid();
 	}
@@ -1917,15 +1972,7 @@ namespace Vortex {
 				}
 				else
 				{
-					AssetHandle fontAssetHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
-					if (AssetManager::IsHandleValid(fontAssetHandle))
-					{
-						component.FontAsset = fontAssetHandle;
-					}
-					else
-					{
-						VX_CONSOLE_LOG_WARN("Failed to load font '{}'", filepath.filename().string());
-					}
+					VX_CONSOLE_LOG_WARN("Failed to load font '{}'", filepath.filename().string());
 				}
 			}
 			else
@@ -1968,329 +2015,328 @@ namespace Vortex {
 		if (AssetManager::IsHandleValid(component.AudioHandle))
 			audioSource = AssetManager::GetAsset<AudioSource>(component.AudioHandle);
 
-		if (audioSource)
+		if (audioSource == nullptr)
 		{
-			PlaybackDevice device = audioSource->GetPlaybackDevice();
-			const bool validEngineID = device.GetEngine().GetID() != Wave::ID::Invalid;
-			if (validEngineID && (device.GetSound().IsPlaying() || device.GetSound().IsPaused()))
+			return;
+		}
+
+		PlaybackDevice device = audioSource->GetPlaybackDevice();
+		const bool validEngineID = device.GetEngine().GetID() != Wave::ID::Invalid;
+		if (validEngineID && (device.GetSound().IsPlaying() || device.GetSound().IsPaused()))
+		{
+			Gui::BeginDisabled(!device.GetSound().IsPlaying());
+			const float fraction = device.GetSound().GetCursorInSeconds() / device.GetSound().GetLengthInSeconds();
+			Gui::ProgressBar(fraction);
+			Gui::EndDisabled();
+		}
+
+		if (validEngineID)
+		{
+			Gui::BeginDisabled(device.GetSound().IsPlaying());
+			if (Gui::Button((const char*)VX_ICON_PLAY))
 			{
-				Gui::BeginDisabled(!device.GetSound().IsPlaying());
-				const float fraction = device.GetSound().GetCursorInSeconds() / device.GetSound().GetLengthInSeconds();
-				Gui::ProgressBar(fraction);
-				Gui::EndDisabled();
+				// TODO once Wave has PlayOneShot we need to handle it here
+				//if (audioSource->GetProperties().PlayOneShot)
+				//{
+					//audioSource->PlayOneShot();
+				//}
+
+				device.Play();
 			}
+			UI::SetTooltip("Play");
+			Gui::EndDisabled();
 
-			if (validEngineID)
-			{
-				Gui::BeginDisabled(device.GetSound().IsPlaying());
-				if (Gui::Button((const char*)VX_ICON_PLAY))
-				{
-					// TODO once Wave has PlayOneShot we need to handle it here
-					//if (audioSource->GetProperties().PlayOneShot)
-					//{
-						//audioSource->PlayOneShot();
-					//}
+			Gui::SameLine();
 
-					device.Play();
-				}
-				UI::SetTooltip("Play");
-				Gui::EndDisabled();
+			Gui::BeginDisabled(!device.GetSound().IsPlaying());
 
-				Gui::SameLine();
+			if (Gui::Button((const char*)VX_ICON_PAUSE))
+				device.Pause();
+			UI::SetTooltip("Pause");
 
-				Gui::BeginDisabled(!device.GetSound().IsPlaying());
+			Gui::SameLine();
 
-				if (Gui::Button((const char*)VX_ICON_PAUSE))
-					device.Pause();
-				UI::SetTooltip("Pause");
+			if (Gui::Button((const char*)VX_ICON_REPEAT))
+				device.Restart();
+			UI::SetTooltip("Restart");
 
-				Gui::SameLine();
+			Gui::SameLine();
 
-				if (Gui::Button((const char*)VX_ICON_REPEAT))
-					device.Restart();
-				UI::SetTooltip("Restart");
+			if (Gui::Button((const char*)VX_ICON_STOP))
+				device.Stop();
+			UI::SetTooltip("Stop");
 
-				Gui::SameLine();
+			Gui::EndDisabled();
+		}
 
-				if (Gui::Button((const char*)VX_ICON_STOP))
-					device.Stop();
-				UI::SetTooltip("Stop");
+		std::string ascPath = audioSource->GetPath().string();
+		std::string relativePath = "(null)";
+		if (!ascPath.empty())
+		{
+			relativePath = FileSystem::Relative(ascPath, Project::GetAssetDirectory()).stem().string();
+		}
 
-				Gui::EndDisabled();
-			}
-
-			std::string ascPath = audioSource->GetPath().string();
-			std::string relativePath = "(null)";
-			if (!ascPath.empty())
-			{
-				relativePath = FileSystem::Relative(ascPath, Project::GetAssetDirectory()).stem().string();
-			}
-
-			auto OnAudioSourceDroppedFn = [&](const Fs::Path& filepath) {
-				// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
-				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::AudioAsset)
-				{
-					if (device.GetSound().IsPlaying())
-					{
-						device.Stop();
-					}
-
-					if (FileSystem::GetFileExtension(filepath) != ".vsound")
-					{
-						std::string filename = FileSystem::RemoveFileExtension(filepath);
-						filename += ".vsound";
-						SharedReference<AudioSource> asset = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, filepath);
-						component.AudioHandle = asset->Handle;
-					}
-					else
-					{
-						AssetHandle handle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
-						component.AudioHandle = handle;
-					}
-				}
-				else
-				{
-					VX_CONSOLE_LOG_WARN("Failed to audio source '{}'", filepath.filename().string());
-				}
-			};
-
-			UI::BeginPropertyGrid();
-			if (UI::PropertyAssetReference<AudioSource>("Source", relativePath, component.AudioHandle, OnAudioSourceDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry()))
+		auto OnAudioSourceDroppedFn = [&](const Fs::Path& filepath) {
+			// Make sure we are recieving an actual audio file otherwise we will have trouble opening it
+			if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::AudioAsset)
 			{
 				if (device.GetSound().IsPlaying())
 				{
 					device.Stop();
 				}
 
-				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.AudioHandle);
-				const std::string metadataFilepath = metadata.Filepath.string();
-
-				if (component.AudioHandle != 0 && !metadataFilepath.ends_with(".vsound"))
+				if (FileSystem::GetFileExtension(filepath) != ".vsound")
 				{
-					// TODO
-					// we need to check if theres another vsound before creating one, we don't need to keep creating them if one already exists
-					std::string filename = FileSystem::RemoveFileExtension(metadata.Filepath);
+					std::string filename = FileSystem::RemoveFileExtension(filepath);
 					filename += ".vsound";
-					audioSource = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, metadata.Filepath);
-					component.AudioHandle = audioSource->Handle;
+					SharedReference<AudioSource> asset = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, filepath);
+					component.AudioHandle = asset->Handle;
 				}
-
-				// Asset cleared
-				if (component.AudioHandle == 0)
+				else
 				{
-					component.AudioHandle = AssetManager::CreateMemoryOnlyAsset<AudioSource>();
+					AssetHandle handle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
+					component.AudioHandle = handle;
 				}
 			}
+			else
+			{
+				VX_CONSOLE_LOG_WARN("Failed to audio source '{}'", filepath.filename().string());
+			}
+		};
+
+		UI::BeginPropertyGrid();
+		if (UI::PropertyAssetReference<AudioSource>("Source", relativePath, component.AudioHandle, OnAudioSourceDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry()))
+		{
+			if (device.GetSound().IsPlaying())
+			{
+				device.Stop();
+			}
+
+			const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.AudioHandle);
+			const std::string metadataFilepath = metadata.Filepath.string();
+
+			if (component.AudioHandle != 0 && !metadataFilepath.ends_with(".vsound"))
+			{
+				// TODO
+				// we need to check if theres another vsound before creating one, we don't need to keep creating them if one already exists
+				std::string filename = FileSystem::RemoveFileExtension(metadata.Filepath);
+				filename += ".vsound";
+				audioSource = Project::GetEditorAssetManager()->CreateNewAsset<AudioSource>("Audio", filename, metadata.Filepath);
+				component.AudioHandle = audioSource->Handle;
+			}
+
+			// Asset cleared
+			if (component.AudioHandle == 0)
+			{
+				component.AudioHandle = AssetManager::CreateMemoryOnlyAsset<AudioSource>();
+			}
+		}
+		UI::EndPropertyGrid();
+
+		Gui::BeginDisabled(audioSource == nullptr);
+
+		if (validEngineID && audioSource)
+		{
+			UI::BeginPropertyGrid();
+
+			float pitch = device.GetSound().GetPitch();
+			if (UI::Property("Pitch", pitch, 0.01f, FLT_MIN, FLT_MAX))
+				device.GetSound().SetPitch(pitch);
+
+			float volume = device.GetSound().GetVolume();
+			if (UI::Property("Volume", volume, 0.1f, FLT_MIN, FLT_MAX))
+				device.GetSound().SetVolume(volume);
+
+			UI::Property("Play On Start", component.PlayOnStart);
+			UI::Property("Play One Shot", component.PlayOneShot);
+
+			bool loop = device.GetSound().IsLooping();
+			if (UI::Property("Loop", loop))
+				device.GetSound().SetLooping(loop);
+
+			bool spacialized = device.GetSound().IsSpacialized();
+			if (UI::Property("Spacialized", spacialized))
+				device.GetSound().SetSpacialized(spacialized);
+
 			UI::EndPropertyGrid();
 
-			Gui::BeginDisabled(audioSource == nullptr);
+			const bool isSpacialized = device.GetSound().IsSpacialized();
 
-			if (validEngineID && audioSource)
+			if (isSpacialized && UI::PropertyGridHeader("Sound Transform", false))
 			{
 				UI::BeginPropertyGrid();
 
-				float pitch = device.GetSound().GetPitch();
-				if (UI::Property("Pitch", pitch, 0.01f, FLT_MIN, FLT_MAX))
-					device.GetSound().SetPitch(pitch);
+				Math::vec3 position = Utils::FromWaveVector(device.GetSound().GetPosition());
+				UI::DrawVec3Controls("Position", position, 0.0f, 100.0f, [&]()
+				{
+					device.GetSound().SetPosition(Utils::ToWaveVector(position));
+				});
 
-				float volume = device.GetSound().GetVolume();
-				if (UI::Property("Volume", volume, 0.1f, FLT_MIN, FLT_MAX))
-					device.GetSound().SetVolume(volume);
+				Math::vec3 direction = Utils::FromWaveVector(device.GetSound().GetDirection());
+				UI::DrawVec3Controls("Direction", direction, 0.0f, 100.0f, [&]()
+				{
+					device.GetSound().SetDirection(Utils::ToWaveVector(direction));
+				});
 
-				//if (UI::Property("Play On Start", props.PlayOnStart))
-					//audioSource->SetPlayOnStart(props.PlayOnStart);
-
-				//if (UI::Property("Play One Shot", props.PlayOneShot))
-					//audioSource->SetPlayOneShot(props.PlayOneShot);
-
-				bool loop = device.GetSound().IsLooping();
-				if (UI::Property("Loop", loop))
-					device.GetSound().SetLooping(loop);
-
-				bool spacialized = device.GetSound().IsSpacialized();
-				if (UI::Property("Spacialized", spacialized))
-					device.GetSound().SetSpacialized(spacialized);
+				Math::vec3 velocity = Utils::FromWaveVector(device.GetSound().GetVelocity());
+				UI::DrawVec3Controls("Veloctiy", velocity, 0.0f, 100.0f, [&]()
+				{
+					device.GetSound().SetVelocity(Utils::ToWaveVector(velocity));
+				});
 
 				UI::EndPropertyGrid();
-
-				const bool isSpacialized = device.GetSound().IsSpacialized();
-
-				if (isSpacialized && UI::PropertyGridHeader("Sound Transform", false))
-				{
-					UI::BeginPropertyGrid();
-
-					Math::vec3 position = Utils::FromWaveVector(device.GetSound().GetPosition());
-					UI::DrawVec3Controls("Position", position, 0.0f, 100.0f, [&]()
-					{
-						device.GetSound().SetPosition(Utils::ToWaveVector(position));
-					});
-
-					Math::vec3 direction = Utils::FromWaveVector(device.GetSound().GetDirection());
-					UI::DrawVec3Controls("Direction", direction, 0.0f, 100.0f, [&]()
-					{
-						device.GetSound().SetDirection(Utils::ToWaveVector(direction));
-					});
-
-					Math::vec3 velocity = Utils::FromWaveVector(device.GetSound().GetVelocity());
-					UI::DrawVec3Controls("Veloctiy", velocity, 0.0f, 100.0f, [&]()
-					{
-						device.GetSound().SetVelocity(Utils::ToWaveVector(velocity));
-					});
-
-					UI::EndPropertyGrid();
-					UI::EndTreeNode();
-				}
-
-				if (isSpacialized && UI::PropertyGridHeader("Spacialization", false))
-				{
-					UI::BeginPropertyGrid();
-
-					float minGain = device.GetSound().GetMinGain();
-					if (UI::Property("Min Gain", minGain, 0.1f, FLT_MIN, FLT_MAX))
-						device.GetSound().SetMinGain(minGain);
-
-					float maxGain = device.GetSound().GetMaxGain();
-					if (UI::Property("Max Gain", maxGain, 0.1f, FLT_MIN, FLT_MAX))
-						device.GetSound().SetMaxGain(maxGain);
-
-					static const char* attenuationModels[] = { "None", "Inverse", "Linear", "Exponential" };
-
-					AttenuationModel currentAttenuationModel = Utils::FromWaveAttenuationModel(device.GetSound().GetAttenuationModel());
-					if (UI::PropertyDropdown("Attenuation Model", attenuationModels, VX_ARRAYSIZE(attenuationModels), currentAttenuationModel))
-						device.GetSound().SetAttenuationModel(Utils::ToWaveAttenuationModel(currentAttenuationModel));
-
-					float pan = device.GetSound().GetPan();
-					if (UI::Property("Pan", pan, 0.1f, FLT_MIN, FLT_MAX))
-						device.GetSound().SetPan(pan);
-
-					static const char* panModes[] = { "Balance", "Pan" };
-
-					PanMode currentPanMode = Utils::FromWavePanMode(device.GetSound().GetPanMode());
-					if (UI::PropertyDropdown("Pan Mode", panModes, VX_ARRAYSIZE(panModes), currentPanMode))
-						device.GetSound().SetPanMode(Utils::ToWavePanMode(currentPanMode));
-
-					static const char* positioningModes[] = { "Absolute", "Relative" };
-
-					PositioningMode currentPositioningMode = Utils::FromWavePositioningMode(device.GetSound().GetPositioning());
-					if (UI::PropertyDropdown("Positioning Mode", positioningModes, VX_ARRAYSIZE(positioningModes), currentPositioningMode))
-						device.GetSound().SetPositioning(Utils::ToWavePositioningMode(currentPositioningMode));
-
-					float falloff = device.GetSound().GetFalloff();
-					if (UI::Property("Falloff", falloff, 0.1f, FLT_MIN, FLT_MAX))
-						device.GetSound().SetFalloff(falloff);
-
-					float minDistance = device.GetSound().GetMinDistance();
-					if (UI::Property("Min Distance", minDistance, 0.1f, FLT_MIN, FLT_MAX))
-						device.GetSound().SetMinDistance(minDistance);
-
-					float maxDistance = device.GetSound().GetMaxDistance();
-					if (UI::Property("Max Distance", maxDistance, 0.1f, FLT_MIN, FLT_MAX))
-						device.GetSound().SetMaxDistance(maxDistance);
-
-					float dopplerFactor = device.GetSound().GetDopplerFactor();
-					if (UI::Property("Doppler Factor", dopplerFactor, 0.01f, FLT_MIN, FLT_MAX))
-						device.GetSound().SetDopplerFactor(dopplerFactor);
-
-					float directionalAttenuationFactor = device.GetSound().GetDirectionalAttenuationFactor();
-					if (UI::Property("Directional Attenuation Factor", directionalAttenuationFactor))
-						device.GetSound().SetDirectionalAttenuationFactor(directionalAttenuationFactor);
-
-					UI::EndPropertyGrid();
-					UI::EndTreeNode();
-				}
-
-				if (isSpacialized && UI::PropertyGridHeader("Cone", false))
-				{
-					UI::BeginPropertyGrid();
-					Wave::AudioCone cone = device.GetSound().GetAudioCone();
-
-					bool modified = false;
-
-					float innerAngle = Math::Rad2Deg(cone.InnerAngle);
-					if (UI::Property("Inner Angle", innerAngle, 1.0f, FLT_MIN, FLT_MAX))
-					{
-						cone.InnerAngle = innerAngle;
-						modified = true;
-					}
-
-					float outerAngle = Math::Rad2Deg(cone.OuterAngle);
-					if (UI::Property("Outer Angle", outerAngle, 1.0f, FLT_MIN, FLT_MAX))
-					{
-						cone.OuterAngle = outerAngle;
-						modified = true;
-					}
-
-					float outerGain = cone.OuterGain;
-					if (UI::Property("Outer Gain", outerGain, 1.0f, FLT_MIN, FLT_MAX))
-					{
-						cone.OuterGain = outerGain;
-						modified = true;
-					}
-
-					if (modified) {
-						device.GetSound().SetAudioCone(cone);
-					}
-
-					UI::EndPropertyGrid();
-					UI::EndTreeNode();
-				}
-
-				if (!audioSource->GetPath().empty() && UI::PropertyGridHeader("Debug", false))
-				{
-					UI::BeginPropertyGrid();
-
-					Gui::BeginDisabled(true);
-
-					Math::vec3 directionToListener = Utils::FromWaveVector(device.GetSound().GetDirectionToListener());
-					UI::Property("Direction To Listener", directionToListener);
-
-					float currentFadeVolume = device.GetSound().GetCurrentFadeVolume();
-					UI::Property("Current Fade Volume", currentFadeVolume);
-
-					uint64_t one = device.GetSound().GetTimeInMilliseconds();
-					UI::Property("Time in ms", one);
-					uint64_t two = device.GetSound().GetTimeInPCMFrames();
-					UI::Property("Time in pcm frames", two);
-
-					uint32_t listenerIndex = device.GetSound().GetListenerIndex();
-					UI::Property("Listener Index", listenerIndex);
-
-					uint32_t pinnedListenerIndex = device.GetSound().GetPinnedListenerIndex();
-					UI::Property("Pinned Index", pinnedListenerIndex);
-
-					static bool showInSecondsNotPCMFrames = true;
-
-					Gui::EndDisabled();
-					std::string label = showInSecondsNotPCMFrames ? "Show PCM Frames" : "Show Seconds";
-					UI::Property(label.c_str(), showInSecondsNotPCMFrames);
-					Gui::BeginDisabled(true);
-					
-					if (showInSecondsNotPCMFrames)
-					{
-						float lengthInSeconds = device.GetSound().GetLengthInSeconds();
-						UI::Property("Length", lengthInSeconds);
-
-						float cursorInSeconds = device.GetSound().GetCursorInSeconds();
-						UI::Property("Cursor", cursorInSeconds);
-					}
-					else
-					{
-						uint64_t lengthInPCMFrames = device.GetSound().GetLengthInPCMFrames();
-						UI::Property("Length", lengthInPCMFrames);
-
-						uint64_t cursorInPCMFrames = device.GetSound().GetCursorInPCMFrames();
-						UI::Property("Cursor", cursorInPCMFrames);
-					}
-
-					Gui::EndDisabled();
-
-					UI::EndPropertyGrid();
-					UI::EndTreeNode();
-				}
+				UI::EndTreeNode();
 			}
 
-			Gui::EndDisabled();
+			if (isSpacialized && UI::PropertyGridHeader("Spacialization", false))
+			{
+				UI::BeginPropertyGrid();
+
+				float minGain = device.GetSound().GetMinGain();
+				if (UI::Property("Min Gain", minGain, 0.1f, FLT_MIN, FLT_MAX))
+					device.GetSound().SetMinGain(minGain);
+
+				float maxGain = device.GetSound().GetMaxGain();
+				if (UI::Property("Max Gain", maxGain, 0.1f, FLT_MIN, FLT_MAX))
+					device.GetSound().SetMaxGain(maxGain);
+
+				static const char* attenuationModels[] = { "None", "Inverse", "Linear", "Exponential" };
+
+				AttenuationModel currentAttenuationModel = Utils::FromWaveAttenuationModel(device.GetSound().GetAttenuationModel());
+				if (UI::PropertyDropdown("Attenuation Model", attenuationModels, VX_ARRAYSIZE(attenuationModels), currentAttenuationModel))
+					device.GetSound().SetAttenuationModel(Utils::ToWaveAttenuationModel(currentAttenuationModel));
+
+				float pan = device.GetSound().GetPan();
+				if (UI::Property("Pan", pan, 0.1f, FLT_MIN, FLT_MAX))
+					device.GetSound().SetPan(pan);
+
+				static const char* panModes[] = { "Balance", "Pan" };
+
+				PanMode currentPanMode = Utils::FromWavePanMode(device.GetSound().GetPanMode());
+				if (UI::PropertyDropdown("Pan Mode", panModes, VX_ARRAYSIZE(panModes), currentPanMode))
+					device.GetSound().SetPanMode(Utils::ToWavePanMode(currentPanMode));
+
+				static const char* positioningModes[] = { "Absolute", "Relative" };
+
+				PositioningMode currentPositioningMode = Utils::FromWavePositioningMode(device.GetSound().GetPositioning());
+				if (UI::PropertyDropdown("Positioning Mode", positioningModes, VX_ARRAYSIZE(positioningModes), currentPositioningMode))
+					device.GetSound().SetPositioning(Utils::ToWavePositioningMode(currentPositioningMode));
+
+				float falloff = device.GetSound().GetFalloff();
+				if (UI::Property("Falloff", falloff, 0.1f, FLT_MIN, FLT_MAX))
+					device.GetSound().SetFalloff(falloff);
+
+				float minDistance = device.GetSound().GetMinDistance();
+				if (UI::Property("Min Distance", minDistance, 0.1f, FLT_MIN, FLT_MAX))
+					device.GetSound().SetMinDistance(minDistance);
+
+				float maxDistance = device.GetSound().GetMaxDistance();
+				if (UI::Property("Max Distance", maxDistance, 0.1f, FLT_MIN, FLT_MAX))
+					device.GetSound().SetMaxDistance(maxDistance);
+
+				float dopplerFactor = device.GetSound().GetDopplerFactor();
+				if (UI::Property("Doppler Factor", dopplerFactor, 0.01f, FLT_MIN, FLT_MAX))
+					device.GetSound().SetDopplerFactor(dopplerFactor);
+
+				float directionalAttenuationFactor = device.GetSound().GetDirectionalAttenuationFactor();
+				if (UI::Property("Directional Attenuation Factor", directionalAttenuationFactor))
+					device.GetSound().SetDirectionalAttenuationFactor(directionalAttenuationFactor);
+
+				UI::EndPropertyGrid();
+				UI::EndTreeNode();
+			}
+
+			if (isSpacialized && UI::PropertyGridHeader("Cone", false))
+			{
+				UI::BeginPropertyGrid();
+				Wave::AudioCone cone = device.GetSound().GetAudioCone();
+
+				bool modified = false;
+
+				float innerAngle = Math::Rad2Deg(cone.InnerAngle);
+				if (UI::Property("Inner Angle", innerAngle, 1.0f, FLT_MIN, FLT_MAX))
+				{
+					cone.InnerAngle = innerAngle;
+					modified = true;
+				}
+
+				float outerAngle = Math::Rad2Deg(cone.OuterAngle);
+				if (UI::Property("Outer Angle", outerAngle, 1.0f, FLT_MIN, FLT_MAX))
+				{
+					cone.OuterAngle = outerAngle;
+					modified = true;
+				}
+
+				float outerGain = cone.OuterGain;
+				if (UI::Property("Outer Gain", outerGain, 1.0f, FLT_MIN, FLT_MAX))
+				{
+					cone.OuterGain = outerGain;
+					modified = true;
+				}
+
+				if (modified) {
+					device.GetSound().SetAudioCone(cone);
+				}
+
+				UI::EndPropertyGrid();
+				UI::EndTreeNode();
+			}
+
+			if (!audioSource->GetPath().empty() && UI::PropertyGridHeader("Debug", false))
+			{
+				UI::BeginPropertyGrid();
+
+				Gui::BeginDisabled(true);
+
+				Math::vec3 directionToListener = Utils::FromWaveVector(device.GetSound().GetDirectionToListener());
+				UI::Property("Direction To Listener", directionToListener);
+
+				float currentFadeVolume = device.GetSound().GetCurrentFadeVolume();
+				UI::Property("Current Fade Volume", currentFadeVolume);
+
+				uint64_t one = device.GetSound().GetTimeInMilliseconds();
+				UI::Property("Time in ms", one);
+				uint64_t two = device.GetSound().GetTimeInPCMFrames();
+				UI::Property("Time in pcm frames", two);
+
+				uint32_t listenerIndex = device.GetSound().GetListenerIndex();
+				UI::Property("Listener Index", listenerIndex);
+
+				uint32_t pinnedListenerIndex = device.GetSound().GetPinnedListenerIndex();
+				UI::Property("Pinned Index", pinnedListenerIndex);
+
+				static bool showInSecondsNotPCMFrames = true;
+
+				Gui::EndDisabled();
+				std::string label = showInSecondsNotPCMFrames ? "Show PCM Frames" : "Show Seconds";
+				UI::Property(label.c_str(), showInSecondsNotPCMFrames);
+				Gui::BeginDisabled(true);
+					
+				if (showInSecondsNotPCMFrames)
+				{
+					float lengthInSeconds = device.GetSound().GetLengthInSeconds();
+					UI::Property("Length", lengthInSeconds);
+
+					float cursorInSeconds = device.GetSound().GetCursorInSeconds();
+					UI::Property("Cursor", cursorInSeconds);
+				}
+				else
+				{
+					uint64_t lengthInPCMFrames = device.GetSound().GetLengthInPCMFrames();
+					UI::Property("Length", lengthInPCMFrames);
+
+					uint64_t cursorInPCMFrames = device.GetSound().GetCursorInPCMFrames();
+					UI::Property("Cursor", cursorInPCMFrames);
+				}
+
+				Gui::EndDisabled();
+
+				UI::EndPropertyGrid();
+				UI::EndTreeNode();
+			}
 		}
+
+		Gui::EndDisabled();
 	}
 
 	void SceneHierarchyPanel::AudioListenerComponentOnGuiRender(AudioListenerComponent& component, Actor actor)

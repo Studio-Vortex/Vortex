@@ -250,6 +250,7 @@ namespace Vortex {
 	struct VORTEX_API ParticleEmitterComponent
 	{
 		AssetHandle EmitterHandle = 0;
+		bool IsActive = false;
 
 		ParticleEmitterComponent() = default;
 		ParticleEmitterComponent(const ParticleEmitterComponent&) = default;
@@ -322,6 +323,8 @@ namespace Vortex {
 	struct VORTEX_API AudioSourceComponent
 	{
 		AssetHandle AudioHandle = 0;
+		bool PlayOnStart = false;
+		bool PlayOneShot = false;
 
 		AudioSourceComponent() = default;
 		AudioSourceComponent(const AudioSourceComponent&) = default;

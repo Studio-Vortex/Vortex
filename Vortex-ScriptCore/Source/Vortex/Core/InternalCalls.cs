@@ -715,6 +715,9 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void ParticleEmitterComponent_Stop(ulong actorID);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool ParticleEmitterComponent_IsActive(ulong actorID);
+
 		#endregion
 
 		#region AudioSource

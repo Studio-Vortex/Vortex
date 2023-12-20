@@ -306,7 +306,7 @@ namespace Vortex {
 		}
 	}
 
-	void Renderer::RenderEmissiveEntity(const Math::vec3& translation, const Math::vec3& radiance, float intensity)
+	void Renderer::RenderEmissiveMaterial(const Math::vec3& translation, const Math::vec3& radiance, float intensity)
 	{
 		SharedReference<Shader> shaders[] = { s_Data.ShaderLibrary.Get("PBR"), s_Data.ShaderLibrary.Get("PBR_Static") };
 		const uint32_t shaderCount = VX_ARRAYSIZE(shaders);

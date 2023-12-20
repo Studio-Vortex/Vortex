@@ -70,6 +70,7 @@
 #include "Vortex/Audio/Audio.h"
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioTypes.h"
+#include "Vortex/Audio/AudioSystem.h"
 /// ---------------------------------------------------
 
 /// Animation
@@ -116,7 +117,10 @@
 #include "Vortex/Renderer/Material.h"
 #include "Vortex/Renderer/Skybox.h"
 #include "Vortex/Renderer/Font/Font.h"
+
+#include "Vortex/Renderer/ParticleSystem/ParticleSystem.h"
 #include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
+#include "Vortex/Renderer/ParticleSystem/Particle.h"
 /// ---------------------------------------------------
 
 /// Utilities

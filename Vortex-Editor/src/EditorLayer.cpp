@@ -461,11 +461,8 @@ namespace Vortex {
 		// Always render if open
 		m_PanelManager->OnGuiRender<PerformancePanel>();
 
-		// Update Engine Systems Gui
-		SystemManager::OnGuiRender();
-
-		// Update C# Actor.OnGui()
-		m_ActiveScene->OnUpdateActorGui();
+		// Render C# Actor.OnGui()
+		m_ActiveScene->OnRenderActorGui();
 
 		if (m_SceneViewportPanelOpen)
 		{
@@ -2780,6 +2777,7 @@ namespace Vortex {
 			if (m_HoveredActor.HasAny<
 				SpriteRendererComponent,
 				CircleRendererComponent,
+				ParticleEmitterComponent,
 				TextMeshComponent,
 				CameraComponent,
 				LightSourceComponent,

@@ -66,14 +66,14 @@ namespace Vortex {
 		out << YAML::Key << "Scene" << YAML::Value << sceneName;
 		out << YAML::Key << "Actors" << YAML::Value << YAML::BeginSeq;
 
-		m_Scene->m_Registry.each([&](auto entityID)
+		m_Scene->m_Registry.each([&](auto actorID)
 		{
-			Actor entity = { entityID, m_Scene.Raw() };
+			Actor actor = { actorID, m_Scene.Raw() };
 
-			if (!entity)
+			if (!actor)
 				return;
 
-			SerializeActor(out, entity);
+			SerializeActor(out, actor);
 		});
 
 		out << YAML::EndSeq;
@@ -128,20 +128,20 @@ namespace Vortex {
 		return false;
 	}
 
-	void SceneSerializer::SerializeActor(YAML::Emitter& out, Actor entity)
+	void SceneSerializer::SerializeActor(YAML::Emitter& out, Actor actor)
 	{
-		VX_CORE_ASSERT(entity.HasComponent<IDComponent>(), "Entity does not have a universally unique identifier!");
+		VX_CORE_ASSERT(actor.HasComponent<IDComponent>(), "Actor does not have a universally unique identifier!");
 
 		const std::filesystem::path projectAssetDirectory = Project::GetAssetDirectory();
 
-		out << YAML::BeginMap; // Entity
+		out << YAML::BeginMap; // Actor
 
-		VX_SERIALIZE_PROPERTY(Actor, entity.GetUUID(), out);
-		VX_SERIALIZE_PROPERTY(Active, entity.IsActive(), out);
+		VX_SERIALIZE_PROPERTY(Actor, actor.GetUUID(), out);
+		VX_SERIALIZE_PROPERTY(Active, actor.IsActive(), out);
 
-		if (entity.HasComponent<HierarchyComponent>())
+		if (actor.HasComponent<HierarchyComponent>())
 		{
-			const auto& hierarchyComponent = entity.GetComponent<HierarchyComponent>();
+			const auto& hierarchyComponent = actor.GetComponent<HierarchyComponent>();
 			VX_SERIALIZE_PROPERTY(Parent, hierarchyComponent.ParentUUID, out);
 
 			out << YAML::Key << "Children" << YAML::Value << YAML::BeginSeq;
@@ -156,11 +156,11 @@ namespace Vortex {
 			out << YAML::EndSeq;
 		}
 
-		if (entity.HasComponent<TagComponent>())
+		if (actor.HasComponent<TagComponent>())
 		{
 			out << YAML::Key << "TagComponent" << YAML::Value << YAML::BeginMap; // TagComponent
 
-			const auto& tagComponent = entity.GetComponent<TagComponent>();
+			const auto& tagComponent = actor.GetComponent<TagComponent>();
 
 			VX_SERIALIZE_PROPERTY(Tag, tagComponent.Tag, out);
 			VX_SERIALIZE_PROPERTY(Marker, tagComponent.Marker, out);
@@ -168,11 +168,11 @@ namespace Vortex {
 			out << YAML::EndMap; // TagComponent
 		}
 
-		if (entity.HasComponent<TransformComponent>())
+		if (actor.HasComponent<TransformComponent>())
 		{
 			out << YAML::Key << "TransformComponent" << YAML::Value << YAML::BeginMap; // TransformComponent
 
-			const auto& transform = entity.GetComponent<TransformComponent>();
+			const auto& transform = actor.GetComponent<TransformComponent>();
 
 			VX_SERIALIZE_PROPERTY(Translation, transform.Translation, out);
 			VX_SERIALIZE_PROPERTY(Rotation, transform.GetRotationEuler(), out);
@@ -181,11 +181,11 @@ namespace Vortex {
 			out << YAML::EndMap; // TransformComponent
 		}
 
-		if (entity.HasComponent<CameraComponent>())
+		if (actor.HasComponent<CameraComponent>())
 		{
 			out << YAML::Key << "CameraComponent" << YAML::BeginMap; // CameraComponent
 
-			const auto& cameraComponent = entity.GetComponent<CameraComponent>();
+			const auto& cameraComponent = actor.GetComponent<CameraComponent>();
 			const auto& camera = cameraComponent.Camera;
 
 			out << YAML::Key << "Camera" << YAML::Value;
@@ -207,9 +207,9 @@ namespace Vortex {
 			out << YAML::EndMap; // CameraComponent
 		}
 
-		if (entity.HasComponent<SkyboxComponent>())
+		if (actor.HasComponent<SkyboxComponent>())
 		{
-			const auto& skyboxComponent = entity.GetComponent<SkyboxComponent>();
+			const auto& skyboxComponent = actor.GetComponent<SkyboxComponent>();
 			AssetHandle environmentHandle = skyboxComponent.Skybox;
 			
 			out << YAML::Key << "SkyboxComponent" << YAML::BeginMap; // SkyboxComponent
@@ -221,12 +221,12 @@ namespace Vortex {
 			out << YAML::EndMap; // SkyboxComponent
 		}
 
-		if (entity.HasComponent<LightSourceComponent>())
+		if (actor.HasComponent<LightSourceComponent>())
 		{
 			out << YAML::Key << "LightSourceComponent";
 			out << YAML::BeginMap; // LightSourceComponent
 
-			const auto& lightComponent = entity.GetComponent<LightSourceComponent>();
+			const auto& lightComponent = actor.GetComponent<LightSourceComponent>();
 
 			VX_SERIALIZE_PROPERTY(Visible, lightComponent.Visible, out);
 			VX_SERIALIZE_PROPERTY(LightType, Utils::LightTypeToString(lightComponent.Type), out);
@@ -260,9 +260,9 @@ namespace Vortex {
 			out << YAML::EndMap; // LightSourceComponent
 		}
 
-		if (entity.HasComponent<MeshRendererComponent>())
+		if (actor.HasComponent<MeshRendererComponent>())
 		{
-			const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+			const auto& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
 			AssetHandle meshHandle = meshRendererComponent.Mesh;
 			if (AssetManager::IsHandleValid(meshHandle))
 			{
@@ -305,9 +305,9 @@ namespace Vortex {
 			}
 		}
 
-		if (entity.HasComponent<StaticMeshRendererComponent>())
+		if (actor.HasComponent<StaticMeshRendererComponent>())
 		{
-			const auto& staticMeshRenderer = entity.GetComponent<StaticMeshRendererComponent>();
+			const auto& staticMeshRenderer = actor.GetComponent<StaticMeshRendererComponent>();
 			AssetHandle staticMeshHandle = staticMeshRenderer.StaticMesh;
 			
 			if (AssetManager::IsHandleValid(staticMeshHandle))
@@ -364,9 +364,9 @@ namespace Vortex {
 			}
 		}
 
-		if (entity.HasComponent<SpriteRendererComponent>())
+		if (actor.HasComponent<SpriteRendererComponent>())
 		{
-			const auto& spriteComponent = entity.GetComponent<SpriteRendererComponent>();
+			const auto& spriteComponent = actor.GetComponent<SpriteRendererComponent>();
 
 			out << YAML::Key << "SpriteRendererComponent" << YAML::Value << YAML::BeginMap; // SpriteRendererComponent
 
@@ -380,11 +380,11 @@ namespace Vortex {
 			out << YAML::EndMap; // SpriteRendererComponent
 		}
 
-		if (entity.HasComponent<CircleRendererComponent>())
+		if (actor.HasComponent<CircleRendererComponent>())
 		{
 			out << YAML::Key << "CircleRendererComponent" << YAML::Value << YAML::BeginMap; // CircleRendererComponent
 
-			const auto& circleComponent = entity.GetComponent<CircleRendererComponent>();
+			const auto& circleComponent = actor.GetComponent<CircleRendererComponent>();
 
 			VX_SERIALIZE_PROPERTY(Visible, circleComponent.Visible, out);
 			VX_SERIALIZE_PROPERTY(Color, circleComponent.Color, out);
@@ -394,10 +394,12 @@ namespace Vortex {
 			out << YAML::EndMap; // CircleRendererComponent
 		}
 
-		if (entity.HasComponent<ParticleEmitterComponent>())
+		if (actor.HasComponent<ParticleEmitterComponent>())
 		{
-			const auto& pmc = entity.GetComponent<ParticleEmitterComponent>();
+			const auto& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			AssetHandle emitterHandle = pmc.EmitterHandle;
+
+			out << YAML::Key << "ParticleEmitterComponent" << YAML::Value << YAML::BeginMap; // ParticleEmitterComponent
 
 			if (AssetManager::IsHandleValid(emitterHandle))
 			{
@@ -407,16 +409,18 @@ namespace Vortex {
 				{
 					AssetImporter::Serialize(particleEmitter);
 
-					out << YAML::Key << "ParticleEmitterComponent" << YAML::Value << YAML::BeginMap;
 					VX_SERIALIZE_PROPERTY(EmitterHandle, particleEmitter->Handle, out);
-					out << YAML::EndMap;
 				}
 			}
+
+			VX_SERIALIZE_PROPERTY(IsActive, pmc.IsActive, out);
+
+			out << YAML::EndMap; // ParticleEmitterComponent
 		}
 
-		if (entity.HasComponent<TextMeshComponent>())
+		if (actor.HasComponent<TextMeshComponent>())
 		{
-			const auto& textMeshComponent = entity.GetComponent<TextMeshComponent>();
+			const auto& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 
 			out << YAML::Key << "TextMeshComponent" << YAML::Value << YAML::BeginMap; // TextMeshComponent
 
@@ -435,21 +439,21 @@ namespace Vortex {
 			out << YAML::EndMap; // TextMeshComponent
 		}
 
-		if (entity.HasComponent<AnimatorComponent>())
+		if (actor.HasComponent<AnimatorComponent>())
 		{
 			out << YAML::Key << "AnimatorComponent" << YAML::Value << YAML::BeginMap; // AnimatorComponent
 
-			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+			const AnimatorComponent& animatorComponent = actor.GetComponent<AnimatorComponent>();
 			SharedRef<Animator> animator = animatorComponent.Animator;
 
 			out << YAML::EndMap; // AnimatorComponent
 		}
 
-		if (entity.HasComponent<AnimationComponent>())
+		if (actor.HasComponent<AnimationComponent>())
 		{
 			out << YAML::Key << "AnimationComponent" << YAML::Value << YAML::BeginMap; // AnimationComponent
 
-			const AnimationComponent& animationComponent = entity.GetComponent<AnimationComponent>();
+			const AnimationComponent& animationComponent = actor.GetComponent<AnimationComponent>();
 			SharedRef<Animation> animation = animationComponent.Animation;
 
 			VX_SERIALIZE_PROPERTY(AnimationSourcePath, animation->GetPath(), out);
@@ -457,10 +461,11 @@ namespace Vortex {
 			out << YAML::EndMap; // AnimationComponent
 		}
 
-		if (entity.HasComponent<AudioSourceComponent>())
+		if (actor.HasComponent<AudioSourceComponent>())
 		{
-			const auto& asc = entity.GetComponent<AudioSourceComponent>();
+			const auto& asc = actor.GetComponent<AudioSourceComponent>();
 
+			out << YAML::Key << "AudioSourceComponent" << YAML::Value << YAML::BeginMap; //AudioSourceComponent
 			if (AssetManager::IsHandleValid(asc.AudioHandle))
 			{
 				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
@@ -469,23 +474,26 @@ namespace Vortex {
 				{
 					AssetImporter::Serialize(audioSource);
 
-					out << YAML::Key << "AudioSourceComponent" << YAML::Value << YAML::BeginMap;
 					VX_SERIALIZE_PROPERTY(AudioHandle, asc.AudioHandle, out);
-					out << YAML::EndMap;
 				}
 			}
+
+			VX_SERIALIZE_PROPERTY(PlayOnStart, asc.PlayOnStart, out);
+			VX_SERIALIZE_PROPERTY(PlayOneShot, asc.PlayOneShot, out);
+
+			out << YAML::EndMap; // AudioSourceComponent
 		}
 
-		if (entity.HasComponent<AudioListenerComponent>())
+		if (actor.HasComponent<AudioListenerComponent>())
 		{
 			// TODO
 		}
 
-		if (entity.HasComponent<RigidBodyComponent>())
+		if (actor.HasComponent<RigidBodyComponent>())
 		{
 			out << YAML::Key << "RigidbodyComponent" << YAML::BeginMap; // RigidbodyComponent
 
-			const auto& rigidbodyComponent = entity.GetComponent<RigidBodyComponent>();
+			const auto& rigidbodyComponent = actor.GetComponent<RigidBodyComponent>();
 			VX_SERIALIZE_PROPERTY(Mass, rigidbodyComponent.Mass, out);
 			VX_SERIALIZE_PROPERTY(BodyType, Utils::RigidBodyTypeToString(rigidbodyComponent.Type), out);
 			VX_SERIALIZE_PROPERTY(AngularDrag, rigidbodyComponent.AngularDrag, out);
@@ -502,11 +510,11 @@ namespace Vortex {
 			out << YAML::EndMap; // RigidbodyComponent
 		}
 
-		if (entity.HasComponent<CharacterControllerComponent>())
+		if (actor.HasComponent<CharacterControllerComponent>())
 		{
 			out << YAML::Key << "CharacterControllerComponent" << YAML::BeginMap; // CharacterControllerComponent
 
-			const auto& characterController = entity.GetComponent<CharacterControllerComponent>();
+			const auto& characterController = actor.GetComponent<CharacterControllerComponent>();
 			VX_SERIALIZE_PROPERTY(NonWalkableMode, Utils::NonWalkableModeToString(characterController.NonWalkMode), out);
 			VX_SERIALIZE_PROPERTY(CapsuleClimbMode, Utils::CapsuleClimbModeToString(characterController.ClimbMode), out);
 			VX_SERIALIZE_PROPERTY(DisableGravity, characterController.DisableGravity, out);
@@ -518,11 +526,11 @@ namespace Vortex {
 			out << YAML::EndMap; // CharacterControllerComponent
 		}
 
-		if (entity.HasComponent<FixedJointComponent>())
+		if (actor.HasComponent<FixedJointComponent>())
 		{
 			out << YAML::Key << "FixedJointComponent" << YAML::BeginMap; // FixedJointComponent
 
-			const auto& fixedJointComponent = entity.GetComponent<FixedJointComponent>();
+			const auto& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			VX_SERIALIZE_PROPERTY(ConnectedActor, fixedJointComponent.ConnectedActor, out);
 			VX_SERIALIZE_PROPERTY(BreakForce, fixedJointComponent.BreakForce, out);
 			VX_SERIALIZE_PROPERTY(BreakTorque, fixedJointComponent.BreakTorque, out);
@@ -533,11 +541,11 @@ namespace Vortex {
 			out << YAML::EndMap; // FixedJointComponent
 		}
 		
-		if (entity.HasComponent<BoxColliderComponent>())
+		if (actor.HasComponent<BoxColliderComponent>())
 		{
 			out << YAML::Key << "BoxColliderComponent" << YAML::BeginMap; // BoxColliderComponent
 
-			const auto& boxColliderComponent = entity.GetComponent<BoxColliderComponent>();
+			const auto& boxColliderComponent = actor.GetComponent<BoxColliderComponent>();
 			VX_SERIALIZE_PROPERTY(HalfSize, boxColliderComponent.HalfSize, out);
 			VX_SERIALIZE_PROPERTY(Offset, boxColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, boxColliderComponent.IsTrigger, out);
@@ -559,11 +567,11 @@ namespace Vortex {
 			out << YAML::EndMap; // BoxColliderComponent
 		}
 
-		if (entity.HasComponent<SphereColliderComponent>())
+		if (actor.HasComponent<SphereColliderComponent>())
 		{
 			out << YAML::Key << "SphereColliderComponent" << YAML::BeginMap; // SphereColliderComponent
 
-			const auto& sphereColliderComponent = entity.GetComponent<SphereColliderComponent>();
+			const auto& sphereColliderComponent = actor.GetComponent<SphereColliderComponent>();
 			VX_SERIALIZE_PROPERTY(Radius, sphereColliderComponent.Radius, out);
 			VX_SERIALIZE_PROPERTY(Offset, sphereColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, sphereColliderComponent.IsTrigger, out);
@@ -585,11 +593,11 @@ namespace Vortex {
 			out << YAML::EndMap; // SphereColliderComponent
 		}
 
-		if (entity.HasComponent<CapsuleColliderComponent>())
+		if (actor.HasComponent<CapsuleColliderComponent>())
 		{
 			out << YAML::Key << "CapsuleColliderComponent" << YAML::BeginMap; // CapsuleColliderComponent
 
-			const auto& capsuleColliderComponent = entity.GetComponent<CapsuleColliderComponent>();
+			const auto& capsuleColliderComponent = actor.GetComponent<CapsuleColliderComponent>();
 			VX_SERIALIZE_PROPERTY(Radius, capsuleColliderComponent.Radius, out);
 			VX_SERIALIZE_PROPERTY(Height, capsuleColliderComponent.Height, out);
 			VX_SERIALIZE_PROPERTY(Offset, capsuleColliderComponent.Offset, out);
@@ -612,16 +620,16 @@ namespace Vortex {
 			out << YAML::EndMap; // CapsuleColliderComponent
 		}
 
-		if (entity.HasComponent<MeshColliderComponent>())
+		if (actor.HasComponent<MeshColliderComponent>())
 		{
 			// TODO
 		}
 
-		if (entity.HasComponent<RigidBody2DComponent>())
+		if (actor.HasComponent<RigidBody2DComponent>())
 		{
 			out << YAML::Key << "Rigidbody2DComponent" << YAML::BeginMap; // Rigidbody2DComponent
 
-			const auto& rb2dComponent = entity.GetComponent<RigidBody2DComponent>();
+			const auto& rb2dComponent = actor.GetComponent<RigidBody2DComponent>();
 			VX_SERIALIZE_PROPERTY(BodyType, Utils::RigidBody2DBodyTypeToString(rb2dComponent.Type), out);
 			VX_SERIALIZE_PROPERTY(Velocity, rb2dComponent.Velocity, out);
 			VX_SERIALIZE_PROPERTY(Drag, rb2dComponent.Drag, out);
@@ -633,11 +641,11 @@ namespace Vortex {
 			out << YAML::EndMap; // Rigidbody2DComponent
 		}
 
-		if (entity.HasComponent<BoxCollider2DComponent>())
+		if (actor.HasComponent<BoxCollider2DComponent>())
 		{
 			out << YAML::Key << "BoxCollider2DComponent" << YAML::BeginMap; // BoxCollider2DComponent
 
-			const auto& bc2dComponent = entity.GetComponent<BoxCollider2DComponent>();
+			const auto& bc2dComponent = actor.GetComponent<BoxCollider2DComponent>();
 			VX_SERIALIZE_PROPERTY(Offset, bc2dComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(Size, bc2dComponent.Size, out);
 			VX_SERIALIZE_PROPERTY(Density, bc2dComponent.Density, out);
@@ -649,11 +657,11 @@ namespace Vortex {
 			out << YAML::EndMap; // BoxCollider2DComponent
 		}
 
-		if (entity.HasComponent<CircleCollider2DComponent>())
+		if (actor.HasComponent<CircleCollider2DComponent>())
 		{
 			out << YAML::Key << "CircleCollider2DComponent" << YAML::BeginMap; // CircleCollider2DComponent
 
-			const auto& cc2dComponent = entity.GetComponent<CircleCollider2DComponent>();
+			const auto& cc2dComponent = actor.GetComponent<CircleCollider2DComponent>();
 			VX_SERIALIZE_PROPERTY(Offset, cc2dComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(Radius, cc2dComponent.Radius, out);
 			VX_SERIALIZE_PROPERTY(Density, cc2dComponent.Density, out);
@@ -664,18 +672,18 @@ namespace Vortex {
 			out << YAML::EndMap; // CircleCollider2DComponent
 		}
 
-		if (entity.HasComponent<NavMeshAgentComponent>())
+		if (actor.HasComponent<NavMeshAgentComponent>())
 		{
 			out << YAML::Key << "NavMeshAgentComponent" << YAML::BeginMap; // NavMeshAgentComponent
 
-			const auto& navMeshComponent = entity.GetComponent<NavMeshAgentComponent>();
+			const auto& navMeshComponent = actor.GetComponent<NavMeshAgentComponent>();
 
 			out << YAML::EndMap; // NavMeshAgentComponent
 		}
 
-		if (entity.HasComponent<ScriptComponent>() && !entity.GetComponent<ScriptComponent>().ClassName.empty())
+		if (actor.HasComponent<ScriptComponent>() && !actor.GetComponent<ScriptComponent>().ClassName.empty())
 		{
-			const auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+			const auto& scriptComponent = actor.GetComponent<ScriptComponent>();
 
 			// Script Class Fields
 			if (ScriptEngine::ActorClassExists(scriptComponent.ClassName))
@@ -683,19 +691,19 @@ namespace Vortex {
 				out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
 				VX_SERIALIZE_PROPERTY(ClassName, scriptComponent.ClassName, out);
 
-				SharedReference<ScriptClass> entityClass = ScriptEngine::GetActorClass(scriptComponent.ClassName);
-				const auto& fields = entityClass->GetFields();
+				SharedReference<ScriptClass> actorClass = ScriptEngine::GetActorClass(scriptComponent.ClassName);
+				const auto& fields = actorClass->GetFields();
 
 				if (fields.size() > 0)
 				{
-					const ScriptFieldMap& entityScriptFields = ScriptEngine::GetScriptFieldMap(entity);
+					const ScriptFieldMap& actorScriptFields = ScriptEngine::GetScriptFieldMap(actor);
 
 					out << YAML::Key << "ScriptFields" << YAML::Value;
 					out << YAML::BeginSeq;
 
 					for (const auto& [name, field] : fields)
 					{
-						if (entityScriptFields.find(name) == entityScriptFields.end())
+						if (actorScriptFields.find(name) == actorScriptFields.end())
 							continue;
 
 						out << YAML::BeginMap; // ScriptFields
@@ -704,7 +712,7 @@ namespace Vortex {
 						VX_SERIALIZE_PROPERTY(Type, ScriptUtils::ScriptFieldTypeToString(field.Type), out);
 						out << YAML::Key << "Data" << YAML::Value;
 
-						const ScriptFieldInstance& scriptField = entityScriptFields.at(name);
+						const ScriptFieldInstance& scriptField = actorScriptFields.at(name);
 						
 						switch (field.Type)
 						{
@@ -738,7 +746,7 @@ namespace Vortex {
 			out << YAML::EndMap; // ScriptComponent
 		}
 
-		out << YAML::EndMap; // Entity
+		out << YAML::EndMap; // Actor
 	}
 
 	void SceneSerializer::DeserializeActors(YAML::Node& actorsNode, SharedReference<Scene>& scene)
@@ -774,11 +782,11 @@ namespace Vortex {
 					marker = tagComponent["Marker"].as<std::string>();
 			}
 
-			Actor deserializedEntity = scene->CreateActorWithUUID(uuid, name, marker);
-			deserializedEntity.SetActive(isActive);
+			Actor deserializedActor = scene->CreateActorWithUUID(uuid, name, marker);
+			deserializedActor.SetActive(isActive);
 
 			uint64_t parentHandle = actor["Parent"] ? actor["Parent"].as<uint64_t>() : 0;
-			deserializedEntity.SetParentUUID(static_cast<UUID>(parentHandle));
+			deserializedActor.SetParentUUID(static_cast<UUID>(parentHandle));
 
 			const auto children = actor["Children"];
 
@@ -787,7 +795,7 @@ namespace Vortex {
 				for (auto& child : children)
 				{
 					uint64_t childHandle = child["Handle"].as<uint64_t>();
-					deserializedEntity.AddChild(static_cast<UUID>(childHandle));
+					deserializedActor.AddChild(static_cast<UUID>(childHandle));
 				}
 			}
 
@@ -795,7 +803,7 @@ namespace Vortex {
 			if (transformComponent)
 			{
 				// All Entities have a transform
-				auto& transform = deserializedEntity.GetComponent<TransformComponent>();
+				auto& transform = deserializedActor.GetComponent<TransformComponent>();
 				transform.Translation = transformComponent["Translation"].as<Math::vec3>();
 				transform.SetRotationEuler(transformComponent["Rotation"].as<Math::vec3>());
 				transform.Scale = transformComponent["Scale"].as<Math::vec3>();
@@ -804,7 +812,7 @@ namespace Vortex {
 			auto cameraComponent = actor["CameraComponent"];
 			if (cameraComponent)
 			{
-				auto& cc = deserializedEntity.AddComponent<CameraComponent>();
+				auto& cc = deserializedActor.AddComponent<CameraComponent>();
 
 				auto cameraProps = cameraComponent["Camera"];
 				cc.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
@@ -826,7 +834,7 @@ namespace Vortex {
 			auto skyboxComponent = actor["SkyboxComponent"];
 			if (skyboxComponent)
 			{
-				auto& skybox = deserializedEntity.AddComponent<SkyboxComponent>();
+				auto& skybox = deserializedActor.AddComponent<SkyboxComponent>();
 
 				if (skyboxComponent["Skybox"])
 				{
@@ -847,7 +855,7 @@ namespace Vortex {
 			auto lightSourceComponent = actor["LightSourceComponent"];
 			if (lightSourceComponent)
 			{
-				auto& lightComponent = deserializedEntity.AddComponent<LightSourceComponent>();
+				auto& lightComponent = deserializedActor.AddComponent<LightSourceComponent>();
 				
 				if (lightSourceComponent["Visible"])
 					lightComponent.Visible = lightSourceComponent["Visible"].as<bool>();
@@ -896,7 +904,7 @@ namespace Vortex {
 			{
 				if (meshComponent["MeshHandle"])
 				{
-					auto& meshRendererComponent = deserializedEntity.AddComponent<MeshRendererComponent>();
+					auto& meshRendererComponent = deserializedActor.AddComponent<MeshRendererComponent>();
 					AssetHandle meshHandle = meshComponent["MeshHandle"].as<uint64_t>();
 					if (AssetManager::IsHandleValid(meshHandle))
 					{
@@ -921,7 +929,7 @@ namespace Vortex {
 			auto staticMeshComponent = actor["StaticMeshRendererComponent"];
 			if (staticMeshComponent)
 			{
-				auto& staticMeshRendererComponent = deserializedEntity.AddComponent<StaticMeshRendererComponent>();
+				auto& staticMeshRendererComponent = deserializedActor.AddComponent<StaticMeshRendererComponent>();
 				staticMeshRendererComponent.Type = Utils::MeshTypeFromString(staticMeshComponent["MeshType"].as<std::string>());
 
 				if (staticMeshRendererComponent.Type != MeshType::Custom)
@@ -1003,7 +1011,7 @@ namespace Vortex {
 			auto spriteComponent = actor["SpriteRendererComponent"];
 			if (spriteComponent)
 			{
-				auto& spriteRendererComponent = deserializedEntity.AddComponent<SpriteRendererComponent>();
+				auto& spriteRendererComponent = deserializedActor.AddComponent<SpriteRendererComponent>();
 				spriteRendererComponent.SpriteColor = spriteComponent["Color"].as<Math::vec4>();
 
 				if (spriteComponent["Visible"])
@@ -1025,7 +1033,7 @@ namespace Vortex {
 			auto circleComponent = actor["CircleRendererComponent"];
 			if (circleComponent)
 			{
-				auto& circleRendererComponent = deserializedEntity.AddComponent<CircleRendererComponent>();
+				auto& circleRendererComponent = deserializedActor.AddComponent<CircleRendererComponent>();
 
 				if (circleComponent["Visible"])
 					circleRendererComponent.Visible = circleComponent["Visible"].as<bool>();
@@ -1038,16 +1046,31 @@ namespace Vortex {
 			auto particleEmitterComponent = actor["ParticleEmitterComponent"];
 			if (particleEmitterComponent)
 			{
-				auto& pmc = deserializedEntity.AddComponent<ParticleEmitterComponent>();
+				auto& pmc = deserializedActor.AddComponent<ParticleEmitterComponent>();
 
 				if (particleEmitterComponent["EmitterHandle"])
-					pmc.EmitterHandle = particleEmitterComponent["EmitterHandle"].as<uint64_t>();
+				{
+					AssetHandle emitterHandle = particleEmitterComponent["EmitterHandle"].as<uint64_t>();
+					if (AssetManager::IsHandleValid(emitterHandle))
+					{
+						pmc.EmitterHandle = emitterHandle;
+					}
+				}
+
+				if (particleEmitterComponent["IsActive"])
+				{
+					pmc.IsActive = particleEmitterComponent["IsActive"].as<bool>();
+				}
+				else
+				{
+					pmc.IsActive = false;
+				}
 			}
 
 			auto textMeshComponent = actor["TextMeshComponent"];
 			if (textMeshComponent)
 			{
-				auto& tmc = deserializedEntity.AddComponent<TextMeshComponent>();
+				auto& tmc = deserializedActor.AddComponent<TextMeshComponent>();
 
 				if (textMeshComponent["Visible"])
 					tmc.Visible = textMeshComponent["Visible"].as<bool>();
@@ -1074,15 +1097,15 @@ namespace Vortex {
 			auto animationComponent = actor["AnimationComponent"];
 			if (animationComponent)
 			{
-				if (!deserializedEntity.HasComponent<MeshRendererComponent>())
+				if (!deserializedActor.HasComponent<MeshRendererComponent>())
 				{
 					VX_CONSOLE_LOG_WARN("Trying to add Animation Component without Mesh Renderer Component!");
 					return;
 				}
 
 				// TODO fix animations to take in mesh asset handle
-				/*auto& animation = deserializedEntity.AddComponent<AnimationComponent>();
-				SharedRef<Mesh> mesh = deserializedEntity.GetComponent<MeshRendererComponent>().Mesh;
+				/*auto& animation = deserializedActor.AddComponent<AnimationComponent>();
+				SharedRef<Mesh> mesh = deserializedActor.GetComponent<MeshRendererComponent>().Mesh;
 				std::string filepath = mesh->GetPath();
 				animation.Animation = Animation::Create(filepath, mesh);*/
 			}
@@ -1090,25 +1113,43 @@ namespace Vortex {
 			auto animatorComponent = actor["AnimatorComponent"];
 			if (animatorComponent)
 			{
-				if (!deserializedEntity.HasComponent<AnimationComponent>())
+				if (!deserializedActor.HasComponent<AnimationComponent>())
 				{
 					VX_CONSOLE_LOG_WARN("Trying to add Animator Component without Animation Component!");
 					return;
 				}
 
-				auto& animator = deserializedEntity.AddComponent<AnimatorComponent>();
-				animator.Animator = Animator::Create(deserializedEntity.GetComponent<AnimationComponent>().Animation);
+				auto& animator = deserializedActor.AddComponent<AnimatorComponent>();
+				animator.Animator = Animator::Create(deserializedActor.GetComponent<AnimationComponent>().Animation);
 			}
 
 			auto audioSourceComponent = actor["AudioSourceComponent"];
 			if (audioSourceComponent)
 			{
-				auto& asc = deserializedEntity.AddComponent<AudioSourceComponent>();
+				auto& asc = deserializedActor.AddComponent<AudioSourceComponent>();
 
 				AssetHandle audioHandle = audioSourceComponent["AudioHandle"].as<uint64_t>();
 				if (AssetManager::IsHandleValid(audioHandle))
 				{
 					asc.AudioHandle = audioHandle;
+				}
+
+				if (audioSourceComponent["PlayOnStart"])
+				{
+					asc.PlayOnStart = audioSourceComponent["PlayOnStart"].as<bool>();
+				}
+				else
+				{
+					asc.PlayOnStart = false;
+				}
+
+				if (audioSourceComponent["PlayOneShot"])
+				{
+					asc.PlayOneShot = audioSourceComponent["PlayOneShot"].as<bool>();
+				}
+				else
+				{
+					asc.PlayOneShot = false;
 				}
 			}
 
@@ -1121,7 +1162,7 @@ namespace Vortex {
 			auto rigidbodyComponent = actor["RigidbodyComponent"];
 			if (rigidbodyComponent)
 			{
-				auto& rigidbody = deserializedEntity.AddComponent<RigidBodyComponent>();
+				auto& rigidbody = deserializedActor.AddComponent<RigidBodyComponent>();
 
 				rigidbody.Type = Utils::RigidBodyTypeFromString(rigidbodyComponent["BodyType"].as<std::string>());
 				if (rigidbodyComponent["Mass"])
@@ -1151,7 +1192,7 @@ namespace Vortex {
 			auto characterControllerComponent = actor["CharacterControllerComponent"];
 			if (characterControllerComponent)
 			{
-				auto& characterController = deserializedEntity.AddComponent<CharacterControllerComponent>();
+				auto& characterController = deserializedActor.AddComponent<CharacterControllerComponent>();
 
 				if (characterControllerComponent["NonWalkableMode"])
 					characterController.NonWalkMode = Utils::NonWalkableModeFromString(characterControllerComponent["NonWalkableMode"].as<std::string>());
@@ -1168,7 +1209,7 @@ namespace Vortex {
 			auto fixedJointComponent = actor["FixedJointComponent"];
 			if (fixedJointComponent)
 			{
-				auto& fixedJoint = deserializedEntity.AddComponent<FixedJointComponent>();
+				auto& fixedJoint = deserializedActor.AddComponent<FixedJointComponent>();
 
 				VX_DESERIALIZE_PROPERTY(ConnectedActor, uint64_t, fixedJoint.ConnectedActor, fixedJointComponent);
 				VX_DESERIALIZE_PROPERTY(BreakForce, float, fixedJoint.BreakForce, fixedJointComponent);
@@ -1181,7 +1222,7 @@ namespace Vortex {
 			auto boxColliderComponent = actor["BoxColliderComponent"];
 			if (boxColliderComponent)
 			{
-				auto& boxCollider = deserializedEntity.AddComponent<BoxColliderComponent>();
+				auto& boxCollider = deserializedActor.AddComponent<BoxColliderComponent>();
 
 				boxCollider.HalfSize = boxColliderComponent["HalfSize"].as<glm::vec3>();
 				boxCollider.Offset = boxColliderComponent["Offset"].as<glm::vec3>();
@@ -1209,7 +1250,7 @@ namespace Vortex {
 			auto sphereColliderComponent = actor["SphereColliderComponent"];
 			if (sphereColliderComponent)
 			{
-				auto& sphereCollider = deserializedEntity.AddComponent<SphereColliderComponent>();
+				auto& sphereCollider = deserializedActor.AddComponent<SphereColliderComponent>();
 
 				sphereCollider.Radius = sphereColliderComponent["Radius"].as<float>();
 				sphereCollider.Offset = sphereColliderComponent["Offset"].as<Math::vec3>();
@@ -1236,7 +1277,7 @@ namespace Vortex {
 			auto capsuleColliderComponent = actor["CapsuleColliderComponent"];
 			if (capsuleColliderComponent)
 			{
-				auto& capsuleCollider = deserializedEntity.AddComponent<CapsuleColliderComponent>();
+				auto& capsuleCollider = deserializedActor.AddComponent<CapsuleColliderComponent>();
 
 				capsuleCollider.Radius = capsuleColliderComponent["Radius"].as<float>();
 				capsuleCollider.Height = capsuleColliderComponent["Height"].as<float>();
@@ -1264,7 +1305,7 @@ namespace Vortex {
 			auto meshColliderComponent = actor["MeshColliderComponent"];
 			if (meshColliderComponent)
 			{
-				auto& meshCollider = deserializedEntity.AddComponent<MeshColliderComponent>();
+				auto& meshCollider = deserializedActor.AddComponent<MeshColliderComponent>();
 
 				// TODO
 			}
@@ -1272,7 +1313,7 @@ namespace Vortex {
 			auto rigidbody2DComponent = actor["Rigidbody2DComponent"];
 			if (rigidbody2DComponent)
 			{
-				auto& rb2d = deserializedEntity.AddComponent<RigidBody2DComponent>();
+				auto& rb2d = deserializedActor.AddComponent<RigidBody2DComponent>();
 
 				rb2d.Type = Utils::RigidBody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
 				if (rigidbody2DComponent["Velocity"])
@@ -1292,7 +1333,7 @@ namespace Vortex {
 			auto boxCollider2DComponent = actor["BoxCollider2DComponent"];
 			if (boxCollider2DComponent)
 			{
-				auto& bc2d = deserializedEntity.AddComponent<BoxCollider2DComponent>();
+				auto& bc2d = deserializedActor.AddComponent<BoxCollider2DComponent>();
 
 				bc2d.Offset = boxCollider2DComponent["Offset"].as<glm::vec2>();
 				bc2d.Size = boxCollider2DComponent["Size"].as<glm::vec2>();
@@ -1307,7 +1348,7 @@ namespace Vortex {
 			auto circleCollider2DComponent = actor["CircleCollider2DComponent"];
 			if (circleCollider2DComponent)
 			{
-				auto& cc2d = deserializedEntity.AddComponent<CircleCollider2DComponent>();
+				auto& cc2d = deserializedActor.AddComponent<CircleCollider2DComponent>();
 
 				cc2d.Offset = circleCollider2DComponent["Offset"].as<glm::vec2>();
 				cc2d.Radius = circleCollider2DComponent["Radius"].as<float>();
@@ -1320,7 +1361,7 @@ namespace Vortex {
 			auto scriptComponent = actor["ScriptComponent"];
 			if (scriptComponent)
 			{
-				auto& sc = deserializedEntity.AddComponent<ScriptComponent>();
+				auto& sc = deserializedActor.AddComponent<ScriptComponent>();
 				sc.ClassName = scriptComponent["ClassName"].as<std::string>();
 
 				if (ScriptEngine::ActorClassExists(sc.ClassName))
@@ -1329,18 +1370,18 @@ namespace Vortex {
 
 					if (scriptFields)
 					{
-						SharedReference<ScriptClass> entityClass = ScriptEngine::GetActorClass(sc.ClassName);
+						SharedReference<ScriptClass> actorClass = ScriptEngine::GetActorClass(sc.ClassName);
 
-						if (entityClass)
+						if (actorClass)
 						{
-							const auto& fields = entityClass->GetFields();
-							ScriptFieldMap& entityScriptFields = ScriptEngine::GetMutableScriptFieldMap(deserializedEntity);
+							const auto& fields = actorClass->GetFields();
+							ScriptFieldMap& actorScriptFields = ScriptEngine::GetMutableScriptFieldMap(deserializedActor);
 
 							for (auto scriptField : scriptFields)
 							{
 								std::string name = scriptField["Name"].as<std::string>();
 
-								ScriptFieldInstance& fieldInstance = entityScriptFields[name];
+								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
 
 								if (fields.find(name) == fields.end())
 								{

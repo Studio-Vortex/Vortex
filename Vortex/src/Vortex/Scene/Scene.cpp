@@ -805,7 +805,7 @@ namespace Vortex {
 		SystemManager::GetSystem<UISystem>()->OnUpdateRuntime(this);
 	}
 
-	void Scene::OnUpdateActorGui()
+	void Scene::OnRenderActorGui()
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -1503,9 +1503,12 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		Actor actor = { e, this };
-		const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+		ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+
 		if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
-			SystemManager::GetAssetSystem<ParticleSystem>()->CreateAsset(actor);
+		{
+			pmc.EmitterHandle = AssetManager::CreateMemoryOnlyAsset<ParticleEmitter>();
+		}
 	}
 
 	void Scene::OnParticleEmitterDestruct(entt::registry& registry, entt::entity e)

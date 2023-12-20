@@ -57,6 +57,8 @@ namespace Vortex {
 
 	void AudioSystem::OnContextSceneDestroyed(Scene* context)
 	{
+		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		auto view = context->GetAllActorsWith<AudioSourceComponent>();
@@ -92,6 +94,7 @@ namespace Vortex {
 	void AudioSystem::OnRuntimeStart(Scene* context)
 	{
 		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		auto view = context->GetAllActorsWith<AudioSourceComponent>();
@@ -112,12 +115,16 @@ namespace Vortex {
 
 			// First we have to check if the audio source
 			// was playing while editing the scene, and if so, stop it
-			if (audioSource->GetPlaybackDevice().GetSound().IsPlaying())
+			PlaybackDevice device = audioSource->GetPlaybackDevice();
+			if (device.GetSound().IsPlaying())
 			{
-				audioSource->GetPlaybackDevice().Stop();
+				device.Stop();
 			}
 
-			// TODO once Wave has PlayOnStart or something similar we can handle it here
+			if (!asc.PlayOnStart)
+				continue;
+
+			device.Play();
 		}
 	}
 
@@ -129,6 +136,7 @@ namespace Vortex {
 	void AudioSystem::OnRuntimeScenePaused(Scene* context)
 	{
 		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		auto view = context->GetAllActorsWith<AudioSourceComponent>();
@@ -165,6 +173,7 @@ namespace Vortex {
 	void AudioSystem::OnRuntimeSceneResumed(Scene* context)
 	{
 		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		for (AssetHandle assetHandle : s_Data.PausedAudioSources)
@@ -195,6 +204,7 @@ namespace Vortex {
 	void AudioSystem::OnRuntimeStop(Scene* context)
 	{
 		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
 		auto view = context->GetAllActorsWith<AudioSourceComponent>();

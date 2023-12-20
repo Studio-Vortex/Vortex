@@ -3109,14 +3109,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Velocity with an invalid asset handle!");
 				return;
 			}
 			
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3133,14 +3133,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Velocity with an invalid asset handle!");
 				return;
 			}
 			
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3157,14 +3157,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.VelocityVariation with invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3181,14 +3181,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Velocity with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3205,14 +3205,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Velocity with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3229,14 +3229,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Velocity with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3253,14 +3253,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeBegin with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3277,14 +3277,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeBegin with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3301,14 +3301,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeEnd with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3325,14 +3325,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeEnd with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3349,14 +3349,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeVariation with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3373,14 +3373,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeVariation with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3397,14 +3397,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.ColorBegin with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3421,14 +3421,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.ColorBegin with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3445,14 +3445,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.ColorEnd with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3469,14 +3469,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.ColorEnd with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3493,14 +3493,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Rotation with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3517,14 +3517,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Rotation with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3541,14 +3541,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.LifeTime with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3565,14 +3565,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.LifeTime with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
+			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(pmc.EmitterHandle);
 			if (!particleEmitter)
 				return;
 
@@ -3589,18 +3589,14 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling ParticleEmitter.Start with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
-			if (!particleEmitter)
-				return;
-
-			particleEmitter->Start();
+			pmc.IsActive = true;
 		}
 
 		void ParticleEmitterComponent_Stop(UUID actorUUID)
@@ -3613,18 +3609,34 @@ namespace Vortex {
 				return;
 			}
 
-			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
-			if (!AssetManager::IsHandleValid(particleEmitterComponent.EmitterHandle))
+			ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
 				VX_CONSOLE_LOG_ERROR("Calling ParticleEmitter.Stop with an invalid asset handle!");
 				return;
 			}
 
-			SharedReference<ParticleEmitter> particleEmitter = AssetManager::GetAsset<ParticleEmitter>(particleEmitterComponent.EmitterHandle);
-			if (!particleEmitter)
-				return;
+			pmc.IsActive = false;
+		}
 
-			particleEmitter->Stop();
+		bool ParticleEmitterComponent_IsActive(UUID actorUUID)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<ParticleEmitterComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.IsActive without a Particle Emitter!");
+				return false;
+			}
+
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.IsActive with an invalid asset handle!");
+				return false;
+			}
+
+			return pmc.IsActive;
 		}
 
 #pragma endregion
@@ -9327,6 +9339,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_SetLifeTime);
 		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_Start);
 		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_Stop);
+		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_IsActive);
 
 		VX_REGISTER_INTERNAL_CALL(Texture2D_LoadFromPath);
 		VX_REGISTER_INTERNAL_CALL(Texture2D_Constructor);
