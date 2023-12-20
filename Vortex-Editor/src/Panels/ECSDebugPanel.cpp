@@ -38,11 +38,12 @@ namespace Vortex {
 		if (Gui::Button((const char*)VX_ICON_CHEVRON_LEFT))
 		{
 			// pop uuid from the stack
-			UUID lastClickedUUID = m_ClickedActors.top();
-			m_ClickedActors.pop();
+			UUID lastClickedUUID = PopClickedActor();
 
-			Actor lastClickedActor = m_ContextScene->TryGetActorWithUUID(lastClickedUUID);
-			SelectionManager::SetSelectedActor(lastClickedActor);
+			if (Actor lastClicked = m_ContextScene->TryGetActorWithUUID(lastClickedUUID))
+			{
+				SelectionManager::SetSelectedActor(lastClicked);
+			}
 		}
 		Gui::EndDisabled();
 		UI::SetTooltip("previous actor");
@@ -83,8 +84,7 @@ namespace Vortex {
 				if (Gui::IsItemClicked())
 				{
 					Actor parent = selectedActor.GetParent();
-					SelectionManager::SetSelectedActor(parent);
-					m_ClickedActors.push(parent);
+					PushClickedActor(parent);
 				}
 			}
 
@@ -113,8 +113,7 @@ namespace Vortex {
 
 			if (Gui::IsItemClicked())
 			{
-				SelectionManager::SetSelectedActor(childActor);
-				m_ClickedActors.push(childActor);
+				PushClickedActor(childActor);
 			}
 		}
 
@@ -150,14 +149,38 @@ namespace Vortex {
 
 				if (Gui::IsItemClicked())
 				{
-					SelectionManager::SetSelectedActor(actor);
-					m_ClickedActors.push(actor);
+					PushClickedActor(actor);
 				}
 				
 				Gui::TableNextColumn();
 				Gui::Text("%llu", actor.GetUUID());
 			});
 		});
+	}
+
+	void ECSDebugPanel::PushClickedActor(Actor actor)
+	{
+		// we don't need duplicates next to each other on the stack
+		const bool empty = m_ClickedActors.empty();
+		if (!empty && m_ClickedActors.top() == actor.GetUUID())
+		{
+			return;
+		} 
+
+		SelectionManager::SetSelectedActor(actor);
+		m_ClickedActors.push(actor);
+	}
+
+	UUID ECSDebugPanel::PopClickedActor()
+	{
+		if (m_ClickedActors.empty())
+		{
+			return UUID();
+		}
+
+		UUID top = m_ClickedActors.top();
+		m_ClickedActors.pop();
+		return top;
 	}
 
 }

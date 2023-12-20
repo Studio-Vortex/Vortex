@@ -20,6 +20,9 @@ namespace Vortex {
 		void RenderSelectedActorView(Actor selectedActor);
 		void RenderSceneActorView();
 
+		void PushClickedActor(Actor actor);
+		UUID PopClickedActor();
+
 		template <typename... TComponent>
 		inline void RenderActorComponentSignature(Actor actor)
 		{
