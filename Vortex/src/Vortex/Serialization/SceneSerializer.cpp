@@ -549,6 +549,7 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(HalfSize, boxColliderComponent.HalfSize, out);
 			VX_SERIALIZE_PROPERTY(Offset, boxColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, boxColliderComponent.IsTrigger, out);
+			VX_SERIALIZE_PROPERTY(Visible, boxColliderComponent.Visible, out);
 
 			if (AssetManager::IsHandleValid(boxColliderComponent.Material))
 			{
@@ -575,6 +576,7 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(Radius, sphereColliderComponent.Radius, out);
 			VX_SERIALIZE_PROPERTY(Offset, sphereColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, sphereColliderComponent.IsTrigger, out);
+			VX_SERIALIZE_PROPERTY(Visible, sphereColliderComponent.Visible, out);
 
 			if (AssetManager::IsHandleValid(sphereColliderComponent.Material))
 			{
@@ -602,6 +604,7 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(Height, capsuleColliderComponent.Height, out);
 			VX_SERIALIZE_PROPERTY(Offset, capsuleColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, capsuleColliderComponent.IsTrigger, out);
+			VX_SERIALIZE_PROPERTY(Visible, capsuleColliderComponent.Visible, out);
 
 			if (AssetManager::IsHandleValid(capsuleColliderComponent.Material))
 			{
@@ -1228,6 +1231,8 @@ namespace Vortex {
 				boxCollider.Offset = boxColliderComponent["Offset"].as<glm::vec3>();
 				if (boxColliderComponent["IsTrigger"])
 					boxCollider.IsTrigger = boxColliderComponent["IsTrigger"].as<bool>();
+				if (boxColliderComponent["Visible"])
+					boxCollider.Visible = boxColliderComponent["Visible"].as<bool>();
 
 				auto physicsMaterialData = boxColliderComponent["PhysicsMaterial"];
 
@@ -1255,6 +1260,8 @@ namespace Vortex {
 				sphereCollider.Radius = sphereColliderComponent["Radius"].as<float>();
 				sphereCollider.Offset = sphereColliderComponent["Offset"].as<Math::vec3>();
 				sphereCollider.IsTrigger = sphereColliderComponent["IsTrigger"].as<bool>();
+				if (sphereColliderComponent["Visible"])
+					sphereCollider.Visible = sphereColliderComponent["Visible"].as<bool>();
 
 				auto physicsMaterialData = boxColliderComponent["PhysicsMaterial"];
 
@@ -1283,6 +1290,8 @@ namespace Vortex {
 				capsuleCollider.Height = capsuleColliderComponent["Height"].as<float>();
 				capsuleCollider.Offset = capsuleColliderComponent["Offset"].as<Math::vec3>();
 				capsuleCollider.IsTrigger = capsuleColliderComponent["IsTrigger"].as<bool>();
+				if (capsuleColliderComponent["Visible"])
+					capsuleCollider.Visible = capsuleColliderComponent["Visible"].as<bool>();
 
 				auto physicsMaterialData = boxColliderComponent["PhysicsMaterial"];
 
