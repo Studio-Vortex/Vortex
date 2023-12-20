@@ -1561,12 +1561,13 @@ namespace Vortex::UI {
 			if (path.empty())
 				continue;
 
-			const std::string pathAsString = path.string();
-
-			filepaths.push_back(pathAsString);
-			const std::string& back = filepaths.back();
-			options.push_back(back.c_str());
+			filepaths.push_back(path.string());
 			handles.push_back(assetHandle);
+		}
+
+		for (size_t i = 0; i < filepaths.size(); i++)
+		{
+			options.push_back(filepaths[i].c_str());
 		}
 
 		PushID();
