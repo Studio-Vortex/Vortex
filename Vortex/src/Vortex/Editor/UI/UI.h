@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vortex/Core/Log.h"
 #include "Vortex/Core/String.h"
 
 #include "Vortex/Math/Math.h"
@@ -246,7 +247,7 @@ namespace Vortex::UI {
 
 	inline static const char* GenerateLabelID(std::string_view label)
 	{
-		*fmt::format_to_n(s_LabelIDBuffer, std::size(s_LabelIDBuffer), "{}##{}", label, s_Counter++).out = 0;
+		*std::format_to_n(s_LabelIDBuffer, std::size(s_LabelIDBuffer), "{}##{}", label, s_Counter++).out = 0;
 		return s_LabelIDBuffer;
 	}
 
@@ -631,7 +632,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::Checkbox(fmt::format("##{}", label).c_str(), &value))
+		if (Gui::Checkbox(std::format("##{}", label).c_str(), &value))
 		{
 			modified = true;
 		}
@@ -655,7 +656,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_S8, &value, speed, (const void*)&min, (const void*)&max))
+		if (Gui::DragScalar(std::format("##{}", label).c_str(), ImGuiDataType_S8, &value, speed, (const void*)&min, (const void*)&max))
 		{
 			modified = true;
 		}
@@ -679,7 +680,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_U8, &value, speed, (const void*)&min, (const void*)&max))
+		if (Gui::DragScalar(std::format("##{}", label).c_str(), ImGuiDataType_U8, &value, speed, (const void*)&min, (const void*)&max))
 		{
 			modified = true;
 		}
@@ -703,7 +704,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_S16, &value, speed, (const void*)&min, (const void*)&max))
+		if (Gui::DragScalar(std::format("##{}", label).c_str(), ImGuiDataType_S16, &value, speed, (const void*)&min, (const void*)&max))
 		{
 			modified = true;
 		}
@@ -727,7 +728,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_U16, &value, speed, (const void*)&min, (const void*)&max))
+		if (Gui::DragScalar(std::format("##{}", label).c_str(), ImGuiDataType_U16, &value, speed, (const void*)&min, (const void*)&max))
 		{
 			modified = true;
 		}
@@ -751,7 +752,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragInt(fmt::format("##{}", label).c_str(), &value, speed, min, max))
+		if (Gui::DragInt(std::format("##{}", label).c_str(), &value, speed, min, max))
 		{
 			modified = true;
 		}
@@ -775,7 +776,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_U32, &value, speed, (const void*)&min, (const void*)&max))
+		if (Gui::DragScalar(std::format("##{}", label).c_str(), ImGuiDataType_U32, &value, speed, (const void*)&min, (const void*)&max))
 		{
 			modified = true;
 		}
@@ -799,7 +800,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_S64, &value, speed, (const void*)&min, (const void*)&max))
+		if (Gui::DragScalar(std::format("##{}", label).c_str(), ImGuiDataType_S64, &value, speed, (const void*)&min, (const void*)&max))
 		{
 			modified = true;
 		}
@@ -823,7 +824,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_U64, &value, speed, (const void*)&min, (const void*)&max))
+		if (Gui::DragScalar(std::format("##{}", label).c_str(), ImGuiDataType_U64, &value, speed, (const void*)&min, (const void*)&max))
 		{
 			modified = true;
 		}
@@ -847,7 +848,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragFloat(fmt::format("##{}", label).c_str(), &value, speed, min, max, format))
+		if (Gui::DragFloat(std::format("##{}", label).c_str(), &value, speed, min, max, format))
 		{
 			modified = true;
 		}
@@ -871,7 +872,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragScalar(fmt::format("##{}", label).c_str(), ImGuiDataType_Double, &value, speed, (const void*)&min, (const void*)&max))
+		if (Gui::DragScalar(std::format("##{}", label).c_str(), ImGuiDataType_Double, &value, speed, (const void*)&min, (const void*)&max))
 		{
 			modified = true;
 		}
@@ -895,7 +896,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragFloat2(fmt::format("##{}", label).c_str(), Math::ValuePtr(value), speed, min, max, format))
+		if (Gui::DragFloat2(std::format("##{}", label).c_str(), Math::ValuePtr(value), speed, min, max, format))
 		{
 			modified = true;
 		}
@@ -919,7 +920,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragFloat3(fmt::format("##{}", label).c_str(), Math::ValuePtr(value), speed, min, max, format))
+		if (Gui::DragFloat3(std::format("##{}", label).c_str(), Math::ValuePtr(value), speed, min, max, format))
 		{
 			modified = true;
 		}
@@ -943,7 +944,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::DragFloat4(fmt::format("##{}", label).c_str(), Math::ValuePtr(value), speed, min, max, format))
+		if (Gui::DragFloat4(std::format("##{}", label).c_str(), Math::ValuePtr(value), speed, min, max, format))
 		{
 			modified = true;
 		}
@@ -967,7 +968,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::ColorEdit3(fmt::format("##{}", label).c_str(), Math::ValuePtr(*value)))
+		if (Gui::ColorEdit3(std::format("##{}", label).c_str(), Math::ValuePtr(*value)))
 		{
 			modified = true;
 		}
@@ -991,7 +992,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::ColorEdit4(fmt::format("##{}", label).c_str(), Math::ValuePtr(*value)))
+		if (Gui::ColorEdit4(std::format("##{}", label).c_str(), Math::ValuePtr(*value)))
 		{
 			modified = true;
 		}
@@ -1024,7 +1025,7 @@ namespace Vortex::UI {
 		if (enterReturnsTrue)
 			flags |= ImGuiInputTextFlags_EnterReturnsTrue;
 
-		if (Gui::InputText(fmt::format("##{}", label).c_str(), buffer, 256, flags))
+		if (Gui::InputText(std::format("##{}", label).c_str(), buffer, 256, flags))
 		{
 			value = buffer;
 			modified = true;
@@ -1068,7 +1069,7 @@ namespace Vortex::UI {
 
 		Gui::SameLine();
 
-		if (Gui::InputText(fmt::format("##{}", label).c_str(), buffer, 256, flags))
+		if (Gui::InputText(std::format("##{}", label).c_str(), buffer, 256, flags))
 		{
 			value = buffer;
 			modified = true;
@@ -1093,7 +1094,7 @@ namespace Vortex::UI {
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
 
-		if (Gui::SliderFloat(fmt::format("##{}", label).c_str(), &value, min, max, format))
+		if (Gui::SliderFloat(std::format("##{}", label).c_str(), &value, min, max, format))
 		{
 			modified = true;
 		}
@@ -1122,7 +1123,7 @@ namespace Vortex::UI {
 
 		const ImGuiInputTextFlags inputTextFlags = readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
 
-		if (Gui::InputTextMultiline(fmt::format("##{}", label).c_str(), buffer, 2048, ImVec2{ 0, 0 }, inputTextFlags))
+		if (Gui::InputTextMultiline(std::format("##{}", label).c_str(), buffer, 2048, ImVec2{ 0, 0 }, inputTextFlags))
 		{
 			value = buffer;
 			modified = true;
@@ -1614,6 +1615,47 @@ namespace Vortex::UI {
 
 			Gui::EndDragDropTarget();
 		}
+
+		return modified;
+	}
+
+	template <typename TImageAssetType>
+	inline static bool PropertyAssetImageReference(const char* label, const std::string& filepath, AssetHandle& assetHandle, const AssetDropFn& onAssetDroppedFn, const AssetRegistry& registry)
+	{
+		bool modified = false;
+
+		AssetType assetType = TImageAssetType::GetStaticType();
+		
+		static const AssetType availableAssetTypes[] = { AssetType::TextureAsset, AssetType::EnvironmentAsset };
+		static const size_t availableAssetTypesCount = VX_ARRAYSIZE(availableAssetTypes);
+
+		bool isAvailableAssetType = false;
+
+		for (size_t i = 0; i < availableAssetTypesCount; i++)
+		{
+			AssetType availableAssetType = availableAssetTypes[i];
+			if (assetType != availableAssetType)
+				continue;
+
+			isAvailableAssetType = true;
+		}
+
+		if (!isAvailableAssetType)
+		{
+			std::string availableAssetTypesStr = "";
+			for (size_t i = 0; i < availableAssetTypesCount; i++)
+			{
+				const std::string assetTypeStr = Utils::StringFromAssetType(availableAssetTypes[i]);
+				const bool isLastType = (i == availableAssetTypesCount - 1);
+				availableAssetTypesStr += assetTypeStr + (isLastType ? " " : ", ");
+			}
+			VX_CONSOLE_LOG_ERROR("::PropertyAssetImageReference<TImageAssetType>() Expected one of these types!");
+			VX_CONSOLE_LOG_ERROR(availableAssetTypesStr);
+			VX_CONSOLE_LOG_ERROR("Got: '{}'", Utils::StringFromAssetType(assetType));
+			return false;
+		}
+
+
 
 		return modified;
 	}

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include <vector>
 #include <string>
 #include <string_view>
