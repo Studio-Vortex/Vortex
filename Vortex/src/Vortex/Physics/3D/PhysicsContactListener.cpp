@@ -66,20 +66,14 @@ namespace Vortex {
 
 			if (nativeJoint->is<physx::PxFixedJoint>())
 			{
+				ManagedMethod method = ManagedMethod::OnFixedJointDisconnected;
 				physx::PxFixedJoint* fixedJoint = nativeJoint->is<physx::PxFixedJoint>();
 				const std::pair<Math::vec3, Math::vec3>& forceAndTorque = Physics::GetLastReportedFixedJointForces(fixedJoint);
 
 				RuntimeMethodArgument arg0(forceAndTorque);
 
-				if (ScriptEngine::HasValidScriptClass(actor))
-				{
-					ScriptEngine::Invoke(ManagedMethod::OnFixedJointDisconnected, actor, { arg0 });
-				}
-
-				if (ScriptEngine::HasValidScriptClass(connectedActor))
-				{
-					ScriptEngine::Invoke(ManagedMethod::OnFixedJointDisconnected, connectedActor, { arg0 });
-				}
+				Utils::CallMethod(actor, method, { arg0 });
+				Utils::CallMethod(connectedActor, method, { arg0 });
 			}
 		}
 	}
@@ -113,10 +107,15 @@ namespace Vortex {
 			return;
 		}
 
-		const PhysicsBodyData* actorA_UserData = (PhysicsBodyData*)pairHeader.actors[0]->userData;
-		const PhysicsBodyData* actorB_UserData = (PhysicsBodyData*)pairHeader.actors[1]->userData;
+		const PhysicsBodyData* actorA_UserData = (const PhysicsBodyData*)pairHeader.actors[0]->userData;
+		const PhysicsBodyData* actorB_UserData = (const PhysicsBodyData*)pairHeader.actors[1]->userData;
 
-		if (!actorA_UserData || !actorB_UserData)
+		if (!actorA_UserData)
+		{
+			return;
+		}
+
+		if (!actorB_UserData)
 		{
 			return;
 		}
@@ -147,19 +146,13 @@ namespace Vortex {
 			ManagedMethod method = ManagedMethod::OnCollisionExit;
 			Collision collision{};
 
-			if (ScriptEngine::HasValidScriptClass(actorA) && ScriptEngine::ScriptInstanceHasMethod(actorA, method))
-			{
-				collision.ActorID = actorB.GetUUID();
-				RuntimeMethodArgument arg0(collision);
-				ScriptEngine::Invoke(method, actorA, { arg0 });
-			}
+			collision.ActorID = actorB.GetUUID();
+			RuntimeMethodArgument arg0(collision);
+			Utils::CallMethod(actorA, method, { arg0 });
 
-			if (ScriptEngine::HasValidScriptClass(actorB) && ScriptEngine::ScriptInstanceHasMethod(actorB, method))
-			{
-				collision.ActorID = actorA.GetUUID();
-				RuntimeMethodArgument arg0(collision);
-				ScriptEngine::Invoke(method, actorB, { arg0 });
-			}
+			collision.ActorID = actorA.GetUUID();
+			RuntimeMethodArgument arg1(collision);
+			Utils::CallMethod(actorB, method, { arg1 });
 		}
 	}
 
@@ -177,20 +170,49 @@ namespace Vortex {
 			if (pairs[i].flags & (physx::PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | physx::PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
 				continue;
 
-			const PhysicsBodyData* triggerActorUserData = (PhysicsBodyData*)pairs[i].triggerActor->userData;
-			const PhysicsBodyData* otherActorUserData = (PhysicsBodyData*)pairs[i].otherActor->userData;
+			const PhysicsBodyData* triggerActorUserData = (const PhysicsBodyData*)pairs[i].triggerActor->userData;
+			PhysicsBodyData* otherActorUserData = (PhysicsBodyData*)pairs[i].otherActor->userData;
 
 			if (!triggerActorUserData)
 				continue;
 
+			bool foundController = false;
+
+			// TODO: currently we just look for the first controller
+			// in the scene and use is as the 'otherActor', this will probably need to be
+			// expanded in the future to find the actual controller, (i.e. if we had a scene with multiple character controllers we would have some weird bugs with triggers)
 			if (!otherActorUserData)
 			{
-				// figure out how to get controller info here
-				continue;
+				// since all rigid actors have userData because Physics creates it for them
+				// lets try to look for a controller, because nothing else in the scene could be the 'otherActor'
+				const std::unordered_map<UUID, physx::PxController*>& controllers = Physics::GetControllers();
+
+				for (const auto& [actorUUID, pxController] : controllers)
+				{
+					otherActorUserData = new PhysicsBodyData();
+					otherActorUserData->ActorUUID = actorUUID;
+					otherActorUserData->ContextScene = contextScene;
+					foundController = true;
+					break;
+				}
+
+				// we didn't find a controller
+				if (otherActorUserData == nullptr)
+					continue;
 			}
 
 			Actor triggerActor = contextScene->TryGetActorWithUUID(triggerActorUserData->ActorUUID);
 			Actor otherActor = contextScene->TryGetActorWithUUID(otherActorUserData->ActorUUID);
+
+#ifdef VX_DEBUG
+			const std::string& triggerActorName = triggerActor.GetName();
+			const std::string& otherActorName = otherActor.GetName();
+#endif
+
+			if (foundController)
+			{
+				delete otherActorUserData;
+			}
 
 			if (!triggerActor || !otherActor)
 				continue;
@@ -200,38 +222,26 @@ namespace Vortex {
 				ManagedMethod method = ManagedMethod::OnTriggerEnter;
 				Collision collision{};
 
-				if (ScriptEngine::HasValidScriptClass(triggerActor) && ScriptEngine::ScriptInstanceHasMethod(triggerActor, method))
-				{
-					collision.ActorID = otherActor.GetUUID();
-					RuntimeMethodArgument arg0(collision);
-					ScriptEngine::Invoke(method, triggerActor, { arg0 });
-				}
+				collision.ActorID = otherActor.GetUUID();
+				RuntimeMethodArgument arg0(collision);
+				Utils::CallMethod(triggerActor, method, { arg0 });
 
-				if (ScriptEngine::HasValidScriptClass(otherActor) && ScriptEngine::ScriptInstanceHasMethod(otherActor, method))
-				{
-					collision.ActorID = triggerActor.GetUUID();
-					RuntimeMethodArgument arg0(collision);
-					ScriptEngine::Invoke(method, otherActor, { arg0 });
-				}
+				collision.ActorID = triggerActor.GetUUID();
+				RuntimeMethodArgument arg1(collision);
+				Utils::CallMethod(otherActor, method, { arg1 });
 			}
 			else if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
 				ManagedMethod method = ManagedMethod::OnTriggerExit;
 				Collision collision{};
 
-				if (ScriptEngine::HasValidScriptClass(triggerActor) && ScriptEngine::ScriptInstanceHasMethod(triggerActor, method))
-				{
-					collision.ActorID = otherActor.GetUUID();
-					RuntimeMethodArgument arg0(collision);
-					ScriptEngine::Invoke(method, triggerActor, { arg0 });
-				}
+				collision.ActorID = otherActor.GetUUID();
+				RuntimeMethodArgument arg0(collision);
+				Utils::CallMethod(triggerActor, method, { arg0 });
 
-				if (ScriptEngine::HasValidScriptClass(otherActor) && ScriptEngine::ScriptInstanceHasMethod(otherActor, method))
-				{
-					collision.ActorID = triggerActor.GetUUID();
-					RuntimeMethodArgument arg0(collision);
-					ScriptEngine::Invoke(method, otherActor, { arg0 });
-				}
+				collision.ActorID = triggerActor.GetUUID();
+				RuntimeMethodArgument arg1(collision);
+				Utils::CallMethod(otherActor, method, { arg1 });
 			}
 		}
 	}

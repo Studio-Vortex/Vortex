@@ -324,7 +324,6 @@ namespace Vortex {
 	{
 		if (!actor.HasComponent<ScriptComponent>())
 		{
-			VX_CORE_ASSERT(false, "this should never happen!");
 			return false;
 		}
 

@@ -41,12 +41,14 @@ namespace Vortex {
 
 		static void ReplaceInconsistentVectorAxis(Math::vec3& vector, const physx::PxVec3& replacementVector)
 		{
-			uint32_t size = vector.length();
+			const uint32_t size = vector.length();
 
 			for (uint32_t i = 0; i < size; i++)
 			{
-				if (vector[i] == 0.0f)
-					vector[i] = replacementVector[i];
+				if (vector[i] != 0.0f)
+					continue;
+
+				vector[i] = replacementVector[i];
 			}
 		}
 
