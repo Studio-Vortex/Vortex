@@ -1189,6 +1189,11 @@ namespace Vortex {
 		transformComponentCallbacks.IsRemoveable = false;
 		DrawComponent<TransformComponent>("Transform", actor, transformComponentCallbacks);
 
+		ComponentUICallbacks<ScriptComponent> scriptComponentCallbacks;
+		scriptComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::ScriptComponentOnGuiRender);
+		scriptComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = ScriptComponent(); };
+		DrawComponent<ScriptComponent>("Script", actor, scriptComponentCallbacks);
+
 		ComponentUICallbacks<CameraComponent> cameraComponentCallbacks;
 		cameraComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::CameraComponentOnGuiRender);
 		cameraComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) {
@@ -1339,11 +1344,6 @@ namespace Vortex {
 		navMeshAgentComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::NavMeshAgentComponentOnGuiRender);
 		navMeshAgentComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = NavMeshAgentComponent(); };
 		DrawComponent<NavMeshAgentComponent>("Nav Mesh Agent", actor, navMeshAgentComponentCallbacks);
-
-		ComponentUICallbacks<ScriptComponent> scriptComponentCallbacks;
-		scriptComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::ScriptComponentOnGuiRender);
-		scriptComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = ScriptComponent(); };
-		DrawComponent<ScriptComponent>("Script", actor, scriptComponentCallbacks);
 
 		ComponentUICallbacks<NativeScriptComponent> nativeScriptComponentCallbacks;
 		DrawComponent<NativeScriptComponent>("Native Script", actor, nativeScriptComponentCallbacks);
