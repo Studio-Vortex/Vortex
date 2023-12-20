@@ -105,33 +105,33 @@ namespace Vortex {
 		static void ShutdownPhysicsSceneInternal();
 
 	private:
-		static void SimulationStep();
+		static void RT_SimulationStep();
 
-		static void UpdateActors();
-		static void UpdateControllers();
-		static void UpdateFixedJoints();
+		static void RT_UpdateActors();
+		static void RT_UpdateControllers();
+		static void RT_UpdateJoints();
 
-		static void RegisterPhysicsActor(Actor actor, physx::PxRigidActor* pxActor);
-		static physx::PxRigidActor* CreateRuntimeActor(Actor actor, RigidBodyComponent& rigidbody);
-		static void CreatePhysicsActorInternal(Actor actor);
-		static void CreateCharacterControllerInternal(Actor actor);
+		static void RT_RegisterPhysicsActor(Actor actor, physx::PxRigidActor* pxActor);
+		static physx::PxRigidActor* RT_CreateRigidActor(Actor actor, RigidBodyComponent& rigidbody);
+		static void RT_CreatePhysicsActorInternal(Actor actor);
+		static void RT_CreateCharacterControllerInternal(Actor actor);
 
-		static void CreateCollider(Actor actor, physx::PxRigidActor* pxActor);
+		static void RT_CreateCollider(Actor actor, physx::PxRigidActor* pxActor);
 		static void AddColliderShape(Actor actor, physx::PxRigidActor* pxActor, ColliderType type);
 		static physx::PxMaterial* AddControllerColliderShape(Actor actor, physx::PxRigidActor* pxActor, ColliderType type);
-		static void CreateFixedJoint(Actor actor);
-		static physx::PxController* CreateController(Actor actor, physx::PxRigidActor* pxActor);
+		static void RT_CreateFixedJoint(Actor actor);
+		static physx::PxController* RT_CreateController(Actor actor, physx::PxRigidActor* pxActor);
 
-		static void SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask);
-		static void UpdateDynamicActorProperties(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor);
+		static void RT_SetCollisionFilters(physx::PxRigidActor* actor, uint32_t filterGroup, uint32_t filterMask);
+		static void RT_UpdateDynamicActorProperties(const RigidBodyComponent& rigidbody, physx::PxRigidDynamic* dynamicActor);
 		static void InitializeUninitializedActors();
 
-		static void DestroyFixedJointInternal(UUID actorUUID);
-		static void DestroyCharacterControllerInternal(UUID actorUUID);
-		static void DestroyPhysicsActorInternal(UUID actorUUID);
-		static void DestroyColliderShapesInternal(UUID actorUUID);
-		static void DestroyPhysicsBodyDataInternal(UUID actorUUID);
-		static void DestroyConstrainedJointDataInternal(UUID actorUUID);
+		static void RT_DestroyFixedJointInternal(UUID actorUUID);
+		static void RT_DestroyCharacterControllerInternal(UUID actorUUID);
+		static void RT_DestroyPhysicsActorInternal(UUID actorUUID);
+		static void RT_DestroyColliderShapesInternal(UUID actorUUID);
+		static void RT_DestroyPhysicsBodyDataInternal(UUID actorUUID);
+		static void RT_DestroyConstrainedJointDataInternal(UUID actorUUID);
 	};
 
 }
