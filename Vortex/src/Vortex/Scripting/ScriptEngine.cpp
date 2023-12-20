@@ -76,7 +76,9 @@ namespace Vortex {
 	static void OnAppAssemblyFileSystemEvent(const std::string& path, const filewatch::Event changeType)
 	{
 		const bool assemblyModified = changeType == filewatch::Event::modified;
+		const bool assemblyRemoved = changeType == filewatch::Event::removed;
 		const bool reloadNotPending = !s_Data->AssemblyReloadPending;
+		const bool reloadPending = s_Data->AssemblyReloadPending;
 
 		if (assemblyModified && reloadNotPending)
 		{
@@ -88,7 +90,6 @@ namespace Vortex {
 				s_Data->AppAssemblyFilewatcher.reset();
 
 				ScriptEngine::ReloadAssembly();
-				s_Data->AppAssemblyReloadSound->GetPlaybackDevice().Play();
 			});
 		}
 	}
@@ -106,21 +107,22 @@ namespace Vortex {
 		InitMono();
 		ScriptRegistry::RegisterMethods();
 
-		std::filesystem::path coreAssemblyPath = "Resources/Scripts/Vortex-ScriptCore.dll";
+		const Fs::Path coreAssemblyPath = "Resources/Scripts/Vortex-ScriptCore.dll";
 		bool assemblyLoaded = LoadAssembly(coreAssemblyPath);
 
 		if (!assemblyLoaded)
 		{
-			VX_CONSOLE_LOG_ERROR("Failed to load Vortex-ScriptCore from path: {}", coreAssemblyPath);
+			VX_CONSOLE_LOG_ERROR("Failed to load Vortex-ScriptCore '{}'", coreAssemblyPath);
 			return;
 		}
 
-		std::filesystem::path appAssemblyPath = Project::GetAssetDirectory() / projectProps.ScriptingProps.ScriptBinaryPath;
+		const Fs::Path appAssemblyPath = Project::GetAssetDirectory() / projectProps.ScriptingProps.ScriptBinaryPath;
 		assemblyLoaded = LoadAppAssembly(appAssemblyPath);
 		
 		if (!assemblyLoaded)
 		{
-			VX_CONSOLE_LOG_ERROR("Failed to load App Assembly from path: {}", appAssemblyPath);
+			VX_CONSOLE_LOG_ERROR("Failed to load App Assembly '{}'", appAssemblyPath);
+			VX_CONSOLE_LOG_ERROR("Try re-building the project solution");
 			return;
 		}
 
@@ -268,14 +270,38 @@ namespace Vortex {
 
 		mono_domain_unload(s_Data->AppDomain);
 
-		LoadAssembly(s_Data->CoreAssemblyFilepath);
-		LoadAppAssembly(s_Data->AppAssemblyFilepath);
+		ScriptRegistry::RegisterMethods();
+
+		bool assemblyLoaded = LoadAssembly(s_Data->CoreAssemblyFilepath);
+
+		if (!assemblyLoaded)
+		{
+			VX_CONSOLE_LOG_ERROR("Failed to load Vortex-ScriptCore '{}'", s_Data->CoreAssemblyFilepath);
+			return;
+		}
+
+		assemblyLoaded = LoadAppAssembly(s_Data->AppAssemblyFilepath);
+
+		if (!assemblyLoaded)
+		{
+			VX_CONSOLE_LOG_ERROR("Failed to load App Assembly '{}'", s_Data->AppAssemblyFilepath);
+			return;
+		}
 
 		LoadAssemblyClasses();
 
 		ScriptRegistry::RegisterComponents();
 
 		s_Data->ActorClass = SharedReference<ScriptClass>::Create("Vortex", "Actor", true);
+
+		// play the assembly reload sound only in the editor
+		// can we come up with a better way of checking for runtime?
+		// perhaps a macro VX_RUNTIME could be defined in VortexRuntimeApp.cpp
+		// that way we can actually strip code from the runtime app
+		if (!Application::Get().IsRuntime())
+		{
+			s_Data->AppAssemblyReloadSound->GetPlaybackDevice().Play();
+		}
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* contextScene)

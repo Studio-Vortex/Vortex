@@ -3029,9 +3029,9 @@ namespace Vortex {
 
 		if (properties.ScriptingProps.ReloadAssemblyOnPlay)
 		{
-			using namespace std::chrono_literals;
-			std::this_thread::sleep_for(500ms);
 			ScriptEngine::ReloadAssembly();
+			using namespace std::chrono_literals;
+			std::this_thread::sleep_for(750ms);
 		}
 
 		m_SceneViewportMaximized = properties.EditorProps.MaximizeOnPlay;
