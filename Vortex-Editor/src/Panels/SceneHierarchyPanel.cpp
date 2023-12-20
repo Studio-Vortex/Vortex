@@ -323,6 +323,7 @@ namespace Vortex {
 				selected.AddComponent<RigidBodyComponent>();
 				BoxColliderComponent& boxCollider = selected.AddComponent<BoxColliderComponent>();
 				boxCollider.Visible = true;
+				boxCollider.IsTrigger = true;
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				actorCreated = true;
 			}
@@ -334,6 +335,7 @@ namespace Vortex {
 				selected.AddComponent<RigidBodyComponent>();
 				SphereColliderComponent& sphereCollider = selected.AddComponent<SphereColliderComponent>();
 				sphereCollider.Visible = true;
+				sphereCollider.IsTrigger = true;
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				actorCreated = true;
 			}
@@ -345,6 +347,7 @@ namespace Vortex {
 				selected.AddComponent<RigidBodyComponent>();
 				CapsuleColliderComponent& capsuleCollider = selected.AddComponent<CapsuleColliderComponent>();
 				capsuleCollider.Visible = true;
+				capsuleCollider.IsTrigger = true;
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				actorCreated = true;
 			}
