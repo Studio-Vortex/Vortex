@@ -925,15 +925,18 @@ namespace Vortex {
 		const uint32_t sceneTextureID = m_Framebuffer->GetColorAttachmentRendererID();
 		UI::ImageEx(sceneTextureID, ImVec2{ m_ViewportPanelSize.x, m_ViewportPanelSize.y }, { 1, 1, 1, 1 }, borderColor);
 
-		if (InEditSceneState())
+		if (inEditMode)
 		{
 			UIHandleAssetDrop();
 			UIOnPopupRender();
 		}
 
+		const bool scenePanelVisible = Gui::IsItemVisible();
 		const bool normalCursorMode = Input::GetCursorMode() == CursorMode::Normal;
-
-		if (Gui::IsItemVisible() && normalCursorMode)
+		const bool inPlayMode = InPlaySceneState();
+		const bool displayToolbars = scenePanelVisible && !(!normalCursorMode && inPlayMode);
+		
+		if (displayToolbars)
 		{
 			UIGizmosToolbar();
 			UICentralToolbar();
