@@ -1,7 +1,5 @@
 #include "ProjectSettingsPanel.h"
 
-#include <Vortex/Physics/3D/PhysXAPIHelpers.h>
-
 namespace Vortex {
 
 	ProjectSettingsPanel::ProjectSettingsPanel(SharedReference<Project> project)
@@ -20,8 +18,6 @@ namespace Vortex {
 
 	void ProjectSettingsPanel::OnGuiRender()
 	{
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-
 		if (!IsOpen)
 			return;
 
@@ -62,21 +58,19 @@ namespace Vortex {
 	{
 		UI::BeginPropertyGrid();
 
-		std::string& projectName = m_ProjectProperties.General.Name;
-		UI::Property("Project Name", projectName);
+		UI::Property("Project Name", m_ProjectProperties.General.Name);
 
-		std::filesystem::path& assetDirectory = m_ProjectProperties.General.AssetDirectory;
+		const Fs::Path& assetDirectory = m_ProjectProperties.General.AssetDirectory;
 		std::string assetDirectoryStr = assetDirectory.string();
 		UI::Property("Asset Directory", assetDirectoryStr, true);
 
-		std::filesystem::path& assetRegistry = m_ProjectProperties.General.AssetRegistryPath;
+		const Fs::Path& assetRegistry = m_ProjectProperties.General.AssetRegistryPath;
 		std::string assetRegistryStr = assetRegistry.string();
 		UI::Property("Asset Registry", assetRegistryStr, true);
 
-		std::filesystem::path& startScene = m_ProjectProperties.General.StartScene;
+		const Fs::Path& startScene = m_ProjectProperties.General.StartScene;
 		std::string startSceneStr = startScene.string();
-		if (UI::Property("Start Scene", startSceneStr, true))
-			m_ProjectProperties.General.StartScene = startSceneStr;
+		UI::Property("Start Scene", startSceneStr, true);
 
 		UI::EndPropertyGrid();
 	}
@@ -90,29 +84,27 @@ namespace Vortex {
 		static int32_t currentTheme = (int32_t)Theme::Dark;
 		if (UI::PropertyDropdown("Editor Theme", themes, VX_ARRAYSIZE(themes), currentTheme))
 		{
-			if (currentTheme == 0)
-				Application::Get().GetGuiLayer()->SetDarkThemeColors();
-			if (currentTheme == 1)
-				Application::Get().GetGuiLayer()->SetLightGrayThemeColors();
-			if (currentTheme == 2)
-				Gui::StyleColorsDark();
-			if (currentTheme == 3)
-				Gui::StyleColorsClassic();
-			if (currentTheme == 4)
-				Gui::StyleColorsLight();
+			switch (currentTheme)
+			{
+				case 0: Application::Get().GetGuiLayer()->SetDarkThemeColors(); break;
+				case 1: Application::Get().GetGuiLayer()->SetLightGrayThemeColors(); break;
+				case 2: Gui::StyleColorsDark(); break;
+				case 3: Gui::StyleColorsClassic(); break;
+				case 4: Gui::StyleColorsLight(); break;
+			}
 		}
 
-		const auto& io = Gui::GetIO();
+		const ImGuiIO& io = Gui::GetIO();
 		std::vector<const char*> buffer;
-		uint32_t count = io.Fonts->Fonts.Size;
+		const uint32_t fontCount = io.Fonts->Fonts.Size;
 
-		for (uint32_t i = 0; i < count; i++)
+		for (uint32_t i = 0; i < fontCount; i++)
 		{
 			buffer.push_back(io.Fonts->Fonts[i]->GetDebugName());
 		}
 
 		ImFont* currentFont = Gui::GetFont();
-		UI::FontSelector("Editor Font", buffer.data(), count, currentFont);
+		UI::FontSelector("Editor Font", buffer.data(), fontCount, currentFont);
 
 		UI::Property("Frame Step Count", m_ProjectProperties.EditorProps.FrameStepCount);
 		UI::Property("Draw Editor Grid", m_ProjectProperties.EditorProps.DrawEditorGrid);
@@ -133,7 +125,9 @@ namespace Vortex {
 		UI::Property("Gizmo Size", m_ProjectProperties.GizmoProps.GizmoSize, 0.05f, FLT_MIN, FLT_MAX);
 		UI::Property("Draw Grid", m_ProjectProperties.GizmoProps.DrawGrid);
 		if (m_ProjectProperties.GizmoProps.DrawGrid)
+		{
 			UI::Property("Grid Size", m_ProjectProperties.GizmoProps.GridSize, 0.5f, FLT_MIN, FLT_MAX);
+		}
 
 		UI::EndPropertyGrid();
 	}
@@ -150,26 +144,36 @@ namespace Vortex {
 			if (UI::Property("Gravity", gravity3D))
 			{
 				Physics::SetPhysicsSceneGravity(gravity3D);
+
+				// we need to wake up all the actors because a number of them could be sleeping
 				Physics::WakeUpActors();
 			}
 
 			static const char* broadphaseTypes[] = { "Sweep And Prune", "Multi Box Pruning", "Automatic Box Pruning" };
 			int32_t currentBroadphaseType = (int32_t)m_ProjectProperties.PhysicsProps.BroadphaseModel;
 			if (UI::PropertyDropdown("Broadphase Model", broadphaseTypes, VX_ARRAYSIZE(broadphaseTypes), currentBroadphaseType))
+			{
 				m_ProjectProperties.PhysicsProps.BroadphaseModel = (BroadphaseType)currentBroadphaseType;
+			}
 
 			static const char* frictionTypes[3] = { "Patch", "One Directional", "Two Directional" };
 			int32_t currentFrictionType = (int32_t)m_ProjectProperties.PhysicsProps.FrictionModel;
 			if (UI::PropertyDropdown("Friction Model", frictionTypes, VX_ARRAYSIZE(frictionTypes), currentFrictionType))
+			{
 				m_ProjectProperties.PhysicsProps.FrictionModel = (FrictionType)currentFrictionType;
+			}
 
 			int32_t positionIterations3D = Physics::GetPhysicsScenePositionIterations();
 			if (UI::Property("Position Iterations", positionIterations3D, 1, 1, 256))
+			{
 				Physics::SetPhysicsScenePositionIterations(positionIterations3D);
+			}
 
 			int32_t velocityIterations3D = Physics::GetPhysicsSceneVelocityIterations();
 			if (UI::Property("Velocity Iterations", velocityIterations3D, 1, 1, 256))
+			{
 				Physics::SetPhysicsSceneVelocityIterations(velocityIterations3D);
+			}
 
 			UI::EndPropertyGrid();
 			UI::EndTreeNode();
@@ -183,15 +187,21 @@ namespace Vortex {
 
 			Math::vec2 gravity2D = Physics2D::GetPhysicsWorldGravity();
 			if (UI::Property("Gravity", gravity2D))
+			{
 				Physics2D::SetPhysicsWorldGravitty(gravity2D);
+			}
 
 			int32_t positionIterations2D = Physics2D::GetPhysicsWorldPositionIterations();
 			if (UI::Property("Position Iterations", positionIterations2D, 1.0f, 1, 100))
+			{
 				Physics2D::SetPhysicsWorldPositionIterations(positionIterations2D);
+			}
 
 			int32_t velocityIterations2D = Physics2D::GetPhysicsWorldVelocityIterations();
 			if (UI::Property("Velocity Iterations", velocityIterations2D, 1.0f, 1, 100))
+			{
 				Physics2D::SetPhysicsWorldVelocityIterations(velocityIterations2D);
+			}
 
 			UI::EndPropertyGrid();
 			UI::EndTreeNode();
@@ -211,7 +221,7 @@ namespace Vortex {
 	{
 		UI::BeginPropertyGrid();
 
-		const std::filesystem::path& scriptBinaryPath = m_ProjectProperties.ScriptingProps.ScriptBinaryPath;
+		const Fs::Path& scriptBinaryPath = m_ProjectProperties.ScriptingProps.ScriptBinaryPath;
 		std::string scriptBinaryPathStr = scriptBinaryPath.string();
 		UI::Property("Script Binary Path", scriptBinaryPathStr, true);
 		UI::Property("Debug Listener Port", m_ProjectProperties.ScriptingProps.DebugListenerPort);

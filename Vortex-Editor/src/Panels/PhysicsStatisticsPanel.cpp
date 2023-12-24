@@ -1,6 +1,6 @@
 #include "PhysicsStatisticsPanel.h"
 
-#include <Vortex/Physics/3D/PhysXAPIHelpers.h>
+#include <Vortex/Physics/3D/PhysicsUtils.h>
 
 #include <PhysX/PxPhysicsAPI.h>
 
@@ -53,7 +53,9 @@ namespace Vortex {
 		Gui::Text("Partitions: %u", simulationStats->nbPartitions);
 
 		for (uint32_t i = 0; i < physx::PxGeometryType::eGEOMETRY_COUNT; i++)
-			Gui::Text("%s Shapes: %u", PhysXGeometryTypeToString((physx::PxGeometryType::Enum)i).c_str(), simulationStats->nbShapes[i]);
+		{
+			Gui::Text("%s Shapes: %u", PhysicsUtils::PhysXGeometryTypeToString((physx::PxGeometryType::Enum)i).c_str(), simulationStats->nbShapes[i]);
+		}
 
 		Gui::Text("Compressed Contact Size (Bytes): %u", simulationStats->compressedContactSize);
 		Gui::Text("Peak Constraint Size (Bytes): %u", simulationStats->peakConstraintMemory);
