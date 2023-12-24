@@ -80,7 +80,7 @@
 
 /// Physics
 #include "Vortex/Physics/3D/Physics.h"
-#include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsTypes.h"
 #include "Vortex/Physics/3D/PhysicsMaterial.h"
 #include "Vortex/Physics/3D/PhysicsShapes.h"
 #include "Vortex/Physics/2D/Physics2D.h"

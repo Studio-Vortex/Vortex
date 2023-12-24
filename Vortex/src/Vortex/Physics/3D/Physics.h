@@ -5,8 +5,7 @@
 #include "Vortex/Core/UUID.h"
 #include "Vortex/Core/TimeStep.h"
 
-#include "Vortex/Physics/3D/PhysXTypes.h"
-#include "Vortex/Physics/3D/PhysicsData.h"
+#include "Vortex/Physics/3D/PhysicsTypes.h"
 #include "Vortex/Physics/3D/PhysicsShapes.h"
 
 #include "Vortex/Scene/Scene.h"

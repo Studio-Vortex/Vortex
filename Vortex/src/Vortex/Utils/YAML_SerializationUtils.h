@@ -9,7 +9,7 @@
 
 #include "Vortex/Audio/AudioTypes.h"
 
-#include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsTypes.h"
 
 #include <yaml-cpp/yaml.h>
 

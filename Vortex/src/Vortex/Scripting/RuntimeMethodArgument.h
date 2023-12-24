@@ -4,7 +4,7 @@
 
 #include "Vortex/Core/TimeStep.h"
 
-#include "Vortex/Physics/3D/PhysicsData.h"
+#include "Vortex/Physics/3D/PhysicsTypes.h"
 
 namespace Vortex {
 

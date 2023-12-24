@@ -1,10 +1,13 @@
 #include "vxpch.h"
 #include "PhysicsShapes.h"
 
-#include "Vortex/Project/Project.h"
-#include "Vortex/Asset/AssetManager.h"
 #include "Vortex/Physics/3D/Physics.h"
-#include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsTypes.h"
+#include "Vortex/Physics/3D/PhysicsUtils.h"
+
+#include "Vortex/Project/Project.h"
+
+#include "Vortex/Asset/AssetManager.h"
 
 #include <PhysX/PxPhysicsAPI.h>
 
@@ -60,7 +63,7 @@ namespace Vortex {
 		m_Shape = physx::PxRigidActorExt::createExclusiveShape(pxActor, boxGeometry, *m_Material);
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
-		m_Shape->setLocalPose(ToPhysXTransform(component.Offset, Math::vec3(0.0f)));
+		m_Shape->setLocalPose(PhysicsUtils::ToPhysXTransform(component.Offset, Math::vec3(0.0f)));
 		m_Shape->userData = this;
 	}
 
@@ -91,7 +94,7 @@ namespace Vortex {
 	void BoxColliderShape::SetOffset(const Math::vec3& offset)
 	{
 		BoxColliderComponent& boxCollider = m_Actor.GetComponent<BoxColliderComponent>();
-		m_Shape->setLocalPose(ToPhysXTransform(offset, Math::vec3(0.0f)));
+		m_Shape->setLocalPose(PhysicsUtils::ToPhysXTransform(offset, Math::vec3(0.0f)));
 		boxCollider.Offset = offset;
 	}
 
@@ -141,7 +144,7 @@ namespace Vortex {
 		m_Shape = physx::PxRigidActorExt::createExclusiveShape(pxActor, sphereGeometry, *m_Material);
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
-		m_Shape->setLocalPose(ToPhysXTransform(component.Offset, Math::vec3(0.0f)));
+		m_Shape->setLocalPose(PhysicsUtils::ToPhysXTransform(component.Offset, Math::vec3(0.0f)));
 		m_Shape->userData = this;
 	}
 
@@ -172,7 +175,7 @@ namespace Vortex {
 	void SphereColliderShape::SetOffset(const Math::vec3& offset)
 	{
 		SphereColliderComponent& sphereCollider = m_Actor.GetComponent<SphereColliderComponent>();
-		m_Shape->setLocalPose(ToPhysXTransform(offset, Math::vec3(0.0f)));
+		m_Shape->setLocalPose(PhysicsUtils::ToPhysXTransform(offset, Math::vec3(0.0f)));
 		sphereCollider.Offset = offset;
 	}
 
@@ -222,7 +225,7 @@ namespace Vortex {
 		m_Shape = physx::PxRigidActorExt::createExclusiveShape(pxActor, capsuleGeometry, *m_Material);
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, component.IsTrigger);
-		m_Shape->setLocalPose(ToPhysXTransform(component.Offset, Math::vec3(0.0f, 0.0f, physx::PxHalfPi)));
+		m_Shape->setLocalPose(PhysicsUtils::ToPhysXTransform(component.Offset, Math::vec3(0.0f, 0.0f, physx::PxHalfPi)));
 		m_Shape->userData = this;
 	}
 
@@ -276,7 +279,7 @@ namespace Vortex {
 	void CapsuleColliderShape::SetOffset(const Math::vec3& offset)
 	{
 		CapsuleColliderComponent& capsuleCollider = m_Actor.GetComponent<CapsuleColliderComponent>();
-		m_Shape->setLocalPose(ToPhysXTransform(offset, Math::vec3(0.0f, 0.0f, physx::PxHalfPi)));
+		m_Shape->setLocalPose(PhysicsUtils::ToPhysXTransform(offset, Math::vec3(0.0f, 0.0f, physx::PxHalfPi)));
 		capsuleCollider.Offset = offset;
 	}
 

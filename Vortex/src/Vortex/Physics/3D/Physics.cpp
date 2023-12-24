@@ -9,11 +9,10 @@
 
 #include "Vortex/Renderer/Renderer2D.h"
 
-#include "Vortex/Physics/3D/PhysXUtilities.h"
-#include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 #include "Vortex/Physics/3D/PhysicsFilterShader.h"
 #include "Vortex/Physics/3D/PhysicsContactListener.h"
 #include "Vortex/Physics/3D/CookingFactory.h"
+#include "Vortex/Physics/3D/PhysicsUtils.h"
 
 #include "Vortex/Scripting/ScriptEngine.h"
 
@@ -264,7 +263,7 @@ namespace Vortex {
 	uint32_t Physics::Raycast(const Math::vec3& origin, const Math::vec3& direction, float maxDistance, RaycastHit* outInfo)
 	{
 		physx::PxRaycastBuffer hitInfo;
-		const bool result = s_Data->PhysicsScene->raycast(ToPhysXVector(origin), ToPhysXVector(Math::Normalize(direction)), maxDistance, hitInfo);
+		const bool result = s_Data->PhysicsScene->raycast(PhysicsUtils::ToPhysXVector(origin), PhysicsUtils::ToPhysXVector(Math::Normalize(direction)), maxDistance, hitInfo);
 
 		if (result == false)
 			return 0;
@@ -281,8 +280,8 @@ namespace Vortex {
 		UUID actor = physicsBodyData->ActorUUID;
 
 		outInfo->ActorID = actor;
-		outInfo->Position = FromPhysXVector(hitInfo.block.position);
-		outInfo->Normal = FromPhysXVector(hitInfo.block.normal);
+		outInfo->Position = PhysicsUtils::FromPhysXVector(hitInfo.block.position);
+		outInfo->Normal = PhysicsUtils::FromPhysXVector(hitInfo.block.normal);
 		outInfo->Distance = hitInfo.block.distance;
 
 		return 1;
@@ -338,13 +337,13 @@ namespace Vortex {
 			characterControllerComponent.SpeedDown += gravity * delta;
 		}
 
-		const Math::vec3 upDirection = FromPhysXVector(controller->getUpDirection());
-		const Math::vec3 movement = (displacement - upDirection) * (characterControllerComponent.SpeedDown * delta);
+		const Math::vec3 upDirection = PhysicsUtils::FromPhysXVector(controller->getUpDirection());
+		const Math::vec3 movement = displacement - upDirection * (characterControllerComponent.SpeedDown * delta);
 
-		const physx::PxControllerCollisionFlags collisionFlags = controller->move(ToPhysXVector(movement), 0.0f, delta, filters);
+		const physx::PxControllerCollisionFlags collisionFlags = controller->move(PhysicsUtils::ToPhysXVector(movement), 0.0f, delta, filters);
 		TransformComponent& transform = actor.GetTransform();
 		const physx::PxExtendedVec3& controllerPosition = controller->getPosition();
-		transform.Translation = FromPhysXExtendedVector(controllerPosition);
+		transform.Translation = PhysicsUtils::FromPhysXExtendedVector(controllerPosition);
 
 		// test if grounded
 		if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
@@ -357,7 +356,7 @@ namespace Vortex {
 	{
 		s_Data->PhysicsScene->simulate(s_Data->FixedTimeStep);
 		s_Data->PhysicsScene->fetchResults(true);
-		s_Data->PhysicsScene->setGravity(ToPhysXVector(s_Data->SceneGravity));
+		s_Data->PhysicsScene->setGravity(PhysicsUtils::ToPhysXVector(s_Data->SceneGravity));
 	}
 
 	void Physics::RT_UpdateActors()
@@ -376,13 +375,13 @@ namespace Vortex {
 				case RigidBodyType::Static:
 				{
 					// Synchronize with actor Transform
-					pxActor->setGlobalPose(ToPhysXTransform(transform));
+					pxActor->setGlobalPose(PhysicsUtils::ToPhysXTransform(transform));
 					break;
 				}
 				case RigidBodyType::Dynamic:
 				{
 					physx::PxRigidDynamic* dynamicActor = pxActor->is<physx::PxRigidDynamic>();
-					actor.SetTransform(FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(transform.Scale));
+					actor.SetTransform(PhysicsUtils::FromPhysXTransform(dynamicActor->getGlobalPose()) * Math::Scale(transform.Scale));
 					RT_UpdateDynamicActorProperties(rigidbody, dynamicActor);
 					break;
 				}
@@ -398,11 +397,6 @@ namespace Vortex {
 			if (!actor)
 				continue;
 
-			// NOTE: we have to call displaceCharacterController each frame so that we can apply gravity,
-			// this should be reworked when we have an actual characterController class
-			const TimeStep delta = Time::GetDeltaTime();
-			RT_DisplaceCharacterController(delta, actorUUID, Math::vec3(0.0f));
-
 			Math::vec3 colliderOffset(0.0f);
 
 			if (actor.HasComponent<CapsuleColliderComponent>())
@@ -417,7 +411,7 @@ namespace Vortex {
 			}
 
 			const physx::PxExtendedVec3 controllerPosition = characterController->getPosition();
-			const Math::vec3 translation = FromPhysXExtendedVector(controllerPosition) - colliderOffset;
+			const Math::vec3 translation = PhysicsUtils::FromPhysXExtendedVector(controllerPosition) - colliderOffset;
 			
 			const CharacterControllerComponent& characterControllerComponent = actor.GetComponent<CharacterControllerComponent>();
 			
@@ -442,8 +436,8 @@ namespace Vortex {
 			physx::PxVec3 angular(0.0f);
 			fixedJoint->getConstraint()->getForce(linear, angular);
 
-			const Math::vec3 linearForce = FromPhysXVector(linear);
-			const Math::vec3 angularForce = FromPhysXVector(angular);
+			const Math::vec3 linearForce = PhysicsUtils::FromPhysXVector(linear);
+			const Math::vec3 angularForce = PhysicsUtils::FromPhysXVector(angular);
 			const std::pair<Math::vec3, Math::vec3> lastReportedForces = std::make_pair(linearForce, angularForce);
 			s_Data->LastReportedJointForces[(physx::PxFixedJoint*)fixedJoint] = lastReportedForces;
 		}
@@ -473,13 +467,13 @@ namespace Vortex {
 		{
 			case RigidBodyType::Static:
 			{
-				physx::PxRigidActor* rigidActor = s_Data->PhysXSDK->createRigidStatic(ToPhysXTransform(transform));
+				physx::PxRigidActor* rigidActor = s_Data->PhysXSDK->createRigidStatic(PhysicsUtils::ToPhysXTransform(transform));
 				pxActor = rigidActor;
 				break;
 			}
 			case RigidBodyType::Dynamic:
 			{
-				physx::PxRigidDynamic* dynamicActor = s_Data->PhysXSDK->createRigidDynamic(ToPhysXTransform(transform));
+				physx::PxRigidDynamic* dynamicActor = s_Data->PhysXSDK->createRigidDynamic(PhysicsUtils::ToPhysXTransform(transform));
 				RT_UpdateDynamicActorProperties(rigidbody, dynamicActor);
 				pxActor = dynamicActor;
 				break;
@@ -651,8 +645,8 @@ namespace Vortex {
 			return;
 		}
 
-		physx::PxTransform localFrame0 = Utils::GetLocalFrame(actor0);
-		physx::PxTransform localFrame1 = Utils::GetLocalFrame(actor1);
+		physx::PxTransform localFrame0 = PhysicsUtils::GetLocalFrame(actor0);
+		physx::PxTransform localFrame1 = PhysicsUtils::GetLocalFrame(actor1);
 
 		VX_CORE_ASSERT(!s_Data->ActiveFixedJoints.contains(actor.GetUUID()), "Entities can only have one Fixed Joint!");
 
@@ -686,7 +680,7 @@ namespace Vortex {
 			const float radiusScale = Math::Max(transform.Scale.x, transform.Scale.y);
 
 			physx::PxCapsuleControllerDesc desc;
-			desc.position = ToPhysXExtendedVector(transform.Translation + capsuleCollider.Offset);
+			desc.position = PhysicsUtils::ToPhysXExtendedVector(transform.Translation + capsuleCollider.Offset);
 			desc.height = capsuleCollider.Height * transform.Scale.y;
 			desc.radius = capsuleCollider.Radius * radiusScale;
 			desc.nonWalkableMode = (physx::PxControllerNonWalkableMode::Enum)characterController.NonWalkMode;
@@ -706,7 +700,7 @@ namespace Vortex {
 			physx::PxMaterial* material = AddControllerColliderShape(actor, pxActor, ColliderType::Box);
 
 			physx::PxBoxControllerDesc desc;
-			desc.position = ToPhysXExtendedVector(transform.Translation + boxCollider.Offset);
+			desc.position = PhysicsUtils::ToPhysXExtendedVector(transform.Translation + boxCollider.Offset);
 			desc.halfHeight = (boxCollider.HalfSize.y * transform.Scale.y);
 			desc.halfSideExtent = (boxCollider.HalfSize.x * transform.Scale.x);
 			desc.halfForwardExtent = (boxCollider.HalfSize.z * transform.Scale.z);
@@ -758,9 +752,9 @@ namespace Vortex {
 			Math::vec3 linearVelocity = rigidbody.LinearVelocity;
 			physx::PxVec3 actorVelocity = dynamicActor->getLinearVelocity();
 			// If any component of the vector is 0 just use the actors velocity
-			Utils::ReplaceInconsistentVectorAxis(linearVelocity, actorVelocity);
+			PhysicsUtils::ReplaceInconsistentVectorAxis(linearVelocity, actorVelocity);
 
-			dynamicActor->setLinearVelocity(ToPhysXVector(linearVelocity));
+			dynamicActor->setLinearVelocity(PhysicsUtils::ToPhysXVector(linearVelocity));
 		}
 
 		dynamicActor->setMaxLinearVelocity(rigidbody.MaxLinearVelocity);
@@ -771,9 +765,9 @@ namespace Vortex {
 			Math::vec3 angularVelocity = rigidbody.AngularVelocity;
 			physx::PxVec3 pxActorVelocity = dynamicActor->getAngularVelocity();
 			// If any component of the vector is 0 just use the actors velocity
-			Utils::ReplaceInconsistentVectorAxis(angularVelocity, pxActorVelocity);
+			PhysicsUtils::ReplaceInconsistentVectorAxis(angularVelocity, pxActorVelocity);
 
-			dynamicActor->setAngularVelocity(ToPhysXVector(angularVelocity));
+			dynamicActor->setAngularVelocity(PhysicsUtils::ToPhysXVector(angularVelocity));
 		}
 
 		dynamicActor->setMaxAngularVelocity(rigidbody.MaxAngularVelocity);
@@ -977,13 +971,13 @@ namespace Vortex {
 		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
 		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
 
-		sceneDescription.gravity = ToPhysXVector(s_Data->SceneGravity);
+		sceneDescription.gravity = PhysicsUtils::ToPhysXVector(s_Data->SceneGravity);
 
 		SharedReference<Project> activeProject = Project::GetActive();
 		const ProjectProperties& projectProps = activeProject->GetProperties();
 
-		sceneDescription.broadPhaseType = Utils::VortexBroadphaseTypeToPhysXBroadphaseType(projectProps.PhysicsProps.BroadphaseModel);
-		sceneDescription.frictionType = Utils::VortexFrictionTypeToPhysXFrictionType(projectProps.PhysicsProps.FrictionModel);
+		sceneDescription.broadPhaseType = PhysicsUtils::VortexBroadphaseTypeToPhysXBroadphaseType(projectProps.PhysicsProps.BroadphaseModel);
+		sceneDescription.frictionType = PhysicsUtils::VortexFrictionTypeToPhysXFrictionType(projectProps.PhysicsProps.FrictionModel);
 
 		sceneDescription.cpuDispatcher = s_Data->Dispatcher;
 		sceneDescription.filterShader = PhysicsFilterShader::FilterShader;

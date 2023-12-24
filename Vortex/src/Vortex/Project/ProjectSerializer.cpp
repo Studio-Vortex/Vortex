@@ -7,7 +7,6 @@
 #include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Physics/3D/Physics.h"
 #include "Vortex/Physics/2D/Physics2D.h"
-#include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 
 #include <fstream>
 

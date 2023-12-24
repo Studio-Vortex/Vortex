@@ -8,13 +8,15 @@
 #include "Vortex/Scene/Components.h"
 
 #include "Vortex/Physics/3D/PhysicsMaterial.h"
-#include "Vortex/Physics/3D/PhysXAPIHelpers.h"
 
 #include "Vortex/ReferenceCounting/SharedRef.h"
 
 namespace physx {
 
 	class PxMaterial;
+	struct PxFilterData;
+	class PxRigidActor;
+	class PxShape;
 
 }
 

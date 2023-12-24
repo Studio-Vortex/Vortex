@@ -8,7 +8,7 @@
 
 #include "Vortex/Renderer/Material.h"
 
-#include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsTypes.h"
 
 namespace Vortex {
 

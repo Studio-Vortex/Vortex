@@ -5,7 +5,7 @@
 #include "Vortex/Math/Math.h"
 
 #include "Vortex/Renderer/Color.h"
-#include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsTypes.h"
 
 #include "Vortex/Utils/FileSystem.h"
 
@@ -18,9 +18,9 @@ namespace Vortex {
 		struct VORTEX_API GeneralProperties
 		{
 			std::string Name = "Untitled";
-			std::filesystem::path AssetDirectory = "";
-			std::filesystem::path AssetRegistryPath = "AssetRegistry.vxr";
-			std::filesystem::path StartScene = "";
+			Fs::Path AssetDirectory = "";
+			Fs::Path AssetRegistryPath = "AssetRegistry.vxr";
+			Fs::Path StartScene = "";
 		} General;
 
 		struct VORTEX_API BuildProperties
@@ -96,7 +96,7 @@ namespace Vortex {
 
 		struct VORTEX_API ScriptingProperties
 		{
-			std::filesystem::path ScriptBinaryPath = "";
+			Fs::Path ScriptBinaryPath = "";
 			uint32_t DebugListenerPort = 2550;
 			bool EnableMonoDebugging = false;
 			bool ReloadAssemblyOnPlay = false;
