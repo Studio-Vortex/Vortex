@@ -634,17 +634,28 @@ public class Untitled : Actor
 
 	SharedReference<Texture2D> ContentBrowserPanel::FindMeshIcon(const Fs::Path& extension)
 	{
-		if (extension == ".obj")
-		{
-			return EditorResources::OBJIcon;
-		}
-		else if (extension == ".fbx")
+		std::string ext = extension.string();
+		String::ToLower(ext);
+
+		if (ext == ".fbx")
 		{
 			return EditorResources::FBXIcon;
 		}
-		else if (extension == ".gltf")
+		else if (ext == ".gltf")
 		{
 			return EditorResources::FileIcon;
+		}
+		else if (ext == ".dae")
+		{
+			return EditorResources::FileIcon;
+		}
+		else if (ext == ".glb")
+		{
+			return EditorResources::FileIcon;
+		}
+		else if (ext == ".obj")
+		{
+			return EditorResources::OBJIcon;
 		}
 
 		VX_CORE_ASSERT(false, "Unknown extension!");
