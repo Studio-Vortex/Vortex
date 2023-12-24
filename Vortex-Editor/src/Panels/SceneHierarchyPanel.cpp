@@ -466,13 +466,17 @@ namespace Vortex {
 		Gui::SetNextItemWidth(Gui::GetContentRegionAvail().x - Gui::CalcTextSize((const char*)VX_ICON_PLUS).x * 2.0f - 4.0f);
 		const bool isSearching = Gui::InputTextWithHint("##ActorSearch", "Search...", m_ActorSearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_ActorSearchInputTextFilter.InputBuf));
 		if (isSearching)
+		{
 			m_ActorSearchInputTextFilter.Build();
+		}
 
 		Gui::SameLine();
 
 		UI::ShiftCursorX(-4.0f);
 		if (Gui::Button((const char*)VX_ICON_PLUS, { 30.0f, 0.0f }))
+		{
 			Gui::OpenPopup("CreateActor");
+		}
 
 		if (Gui::BeginPopup("CreateActor"))
 		{
@@ -602,10 +606,12 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::DisplayAddComponentPopup()
 	{
-		if (Gui::BeginPopup("AddComponent", ImGuiWindowFlags_NoMove))
+		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoMove;
+
+		if (Gui::BeginPopup("AddComponent", flags))
 		{
 			// Search Bar + Filtering
-			const bool isSearching = Gui::InputTextWithHint("##ComponentSearch", "Search", m_ComponentSearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
+			const bool isSearching = Gui::InputTextWithHint("##ComponentSearch", "Search...", m_ComponentSearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
 			const bool searchBarInUse = strlen(m_ComponentSearchInputTextFilter.InputBuf) != 0;
 
 			if (isSearching)
@@ -1036,138 +1042,9 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::DrawComponents(Actor actor)
 	{
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-
 		// Tag Component
-		{
-			TagComponent& tagComponent = actor.GetComponent<TagComponent>();
-			std::string& tag = tagComponent.Tag;
-
-			char buffer[256];
-			memset(buffer, 0, sizeof(buffer));
-			strcpy_s(buffer, sizeof(buffer), tag.c_str());
-
-			const bool shouldRename = m_ActorShouldBeRenamed && SelectionManager::GetSelectedActor() == actor;
-			ImGuiInputTextFlags flags = shouldRename ? ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue : 0;
-
-			if (shouldRename)
-			{
-				Gui::SetKeyboardFocusHere();
-				m_IsEditingActorName = true;
-			}
-			if (Gui::InputTextWithHint("##Tag", "Actor Name", buffer, sizeof(buffer), flags))
-			{
-				tag = std::string(buffer);
-
-				// Set the focus to the scene panel otherwise the keyboard focus will still be on the input text box
-				if (m_ActorShouldBeRenamed)
-					Gui::SetWindowFocus("Scene");
-
-				m_ActorShouldBeRenamed = false;
-				m_IsEditingActorName = false;
-			}
-
-			m_IsEditingActorName = Gui::IsItemActive();
-
-			UI::DrawItemActivityOutline();
-
-			Gui::SameLine();
-			Gui::PushItemWidth(-1);
-
-			const bool controlPressed = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
-			const bool shiftPressed = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
-
-			if (Gui::Button("Add Component") || (Input::IsKeyDown(KeyCode::A) && controlPressed && shiftPressed && Gui::IsWindowHovered()))
-			{
-				Gui::OpenPopup("AddComponent");
-
-				// We should reset the search bar here
-				memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
-				m_ComponentSearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
-			}
-
-			UI::DrawItemActivityOutline();
-
-			UI::BeginPropertyGrid(100.0f);
-
-			bool active = tagComponent.IsActive;
-			if (UI::Property("Active", active))
-			{
-				actor.SetActive(active);
-			}
-
-			UI::EndPropertyGrid();
-
-			Gui::SameLine();
-
-			auto& markers = tagComponent.Markers;
-			auto& current = tagComponent.Marker;
-
-			if (auto it = std::find(markers.begin(), markers.end(), current); it != markers.end())
-			{
-				const char* currentIt = (*it).c_str();
-
-				if (Gui::BeginCombo("##Marker", currentIt, ImGuiComboFlags_HeightLarge))
-				{
-					uint32_t arraySize = markers.size();
-
-					for (uint32_t i = 0; i < arraySize; i++)
-					{
-						const bool isSelected = strcmp(currentIt, markers[i].c_str()) == 0;
-
-						if (Gui::Selectable(markers[i].c_str(), isSelected))
-						{
-							currentIt = markers[i].c_str();
-							current = markers[i];
-						}
-
-						if (isSelected)
-						{
-							Gui::SetItemDefaultFocus();
-						}
-
-						// skip last item
-						if (i != arraySize - 1)
-						{
-							UI::Draw::Underline();
-							Gui::Spacing();
-						}
-						else
-						{
-							UI::Draw::Underline();
-
-							const char* addMarkerButtonText = "Add Marker";
-							if (Gui::Button(addMarkerButtonText, { Gui::GetContentRegionAvail().x, Gui::CalcTextSize(addMarkerButtonText).y * 1.5f }))
-							{
-								m_DisplayAddMarkerPopup = true;
-							}
-
-							if (m_DisplayAddMarkerPopup)
-							{
-								Gui::OpenPopup("AddMarker");
-								m_DisplayAddMarkerPopup = false;
-							}
-
-							if (UI::BeginPopup("AddMarker", ImGuiWindowFlags_NoMove))
-							{
-								DisplayAddMarkerPopup(tagComponent);
-
-								UI::EndPopup();
-							}
-						}
-					}
-
-					Gui::EndCombo();
-				}
-
-				UI::DrawItemActivityOutline();
-			}
-			else
-			{
-				// Add to markers vector because it's not a default marker
-				tagComponent.AddMarker(tagComponent.Marker);
-			}
-		}
+		TagComponent& tagComponent = actor.GetComponent<TagComponent>();
+		TagComponentOnGuiRender(tagComponent, actor);
 
 		Gui::PopItemWidth();
 
@@ -1347,6 +1224,140 @@ namespace Vortex {
 
 		ComponentUICallbacks<NativeScriptComponent> nativeScriptComponentCallbacks;
 		DrawComponent<NativeScriptComponent>("Native Script", actor, nativeScriptComponentCallbacks);
+	}
+
+	void SceneHierarchyPanel::TagComponentOnGuiRender(TagComponent& component, Actor actor)
+	{
+		std::string& tag = component.Tag;
+
+		char buffer[256];
+		memset(buffer, 0, sizeof(buffer));
+		strcpy_s(buffer, sizeof(buffer), tag.c_str());
+
+		const bool shouldRename = m_ActorShouldBeRenamed && SelectionManager::GetSelectedActor() == actor;
+		const ImGuiInputTextFlags flags = shouldRename ? ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue : 0;
+
+		if (shouldRename)
+		{
+			Gui::SetKeyboardFocusHere();
+			m_IsEditingActorName = true;
+		}
+		if (Gui::InputTextWithHint("##Tag", "Actor Name", buffer, sizeof(buffer), flags))
+		{
+			tag = std::string(buffer);
+
+			// Set the focus to the scene panel otherwise the keyboard focus will still be on the input text box
+			if (m_ActorShouldBeRenamed)
+				Gui::SetWindowFocus("Scene");
+
+			m_ActorShouldBeRenamed = false;
+			m_IsEditingActorName = false;
+		}
+
+		m_IsEditingActorName = Gui::IsItemActive();
+
+		UI::DrawItemActivityOutline();
+
+		Gui::SameLine();
+		Gui::PushItemWidth(-1);
+
+		const bool controlPressed = Input::IsKeyDown(KeyCode::LeftControl) || Input::IsKeyDown(KeyCode::RightControl);
+		const bool shiftPressed = Input::IsKeyDown(KeyCode::LeftShift) || Input::IsKeyDown(KeyCode::RightShift);
+		const bool aKeyPressed = Input::IsKeyDown(KeyCode::A);
+		const bool shortcutPressed = controlPressed && shiftPressed && aKeyPressed;
+		const bool windowHovered = Gui::IsWindowHovered();
+
+		if (Gui::Button("Add Component") || (shortcutPressed && windowHovered))
+		{
+			Gui::OpenPopup("AddComponent");
+
+			// We should reset the search bar here
+			memset(m_ComponentSearchInputTextFilter.InputBuf, 0, IM_ARRAYSIZE(m_ComponentSearchInputTextFilter.InputBuf));
+			m_ComponentSearchInputTextFilter.Build(); // We also need to rebuild to search results because the buffer has changed
+		}
+
+		UI::DrawItemActivityOutline();
+
+		UI::BeginPropertyGrid(100.0f);
+
+		bool active = component.IsActive;
+		if (UI::Property("Active", active))
+		{
+			actor.SetActive(active);
+		}
+
+		UI::EndPropertyGrid();
+
+		Gui::SameLine();
+
+		std::vector<std::string>& markers = component.Markers;
+		std::string& currentMarker = component.Marker;
+
+		auto it = std::find(markers.begin(), markers.end(), currentMarker);
+
+		if (it != markers.end())
+		{
+			const char* currentCStr = (*it).c_str();
+
+			if (Gui::BeginCombo("##Marker", currentCStr, ImGuiComboFlags_HeightLarge))
+			{
+				uint32_t arraySize = markers.size();
+
+				for (uint32_t i = 0; i < arraySize; i++)
+				{
+					const bool isSelected = strcmp(currentCStr, markers[i].c_str()) == 0;
+
+					if (Gui::Selectable(markers[i].c_str(), isSelected))
+					{
+						currentMarker = markers[i];
+					}
+
+					if (isSelected)
+					{
+						Gui::SetItemDefaultFocus();
+					}
+
+					// skip last item
+					if (i != arraySize - 1)
+					{
+						UI::Draw::Underline();
+						Gui::Spacing();
+					}
+					else
+					{
+						UI::Draw::Underline();
+
+						const char* addMarkerButtonText = "Add Marker";
+						if (Gui::Button(addMarkerButtonText, { Gui::GetContentRegionAvail().x, Gui::CalcTextSize(addMarkerButtonText).y * 1.5f }))
+						{
+							m_DisplayAddMarkerPopup = true;
+						}
+
+						if (m_DisplayAddMarkerPopup)
+						{
+							Gui::OpenPopup("AddMarker");
+							m_DisplayAddMarkerPopup = false;
+						}
+
+						if (UI::BeginPopup("AddMarker", ImGuiWindowFlags_NoMove))
+						{
+							DisplayAddMarkerPopup(component);
+
+							UI::EndPopup();
+						}
+					}
+				}
+
+				Gui::EndCombo();
+			}
+
+			UI::DrawItemActivityOutline();
+		}
+		else
+		{
+			// Add to markers vector because it's not a default marker
+			component.AddMarker(component.Marker);
+		}
 	}
 
 	void SceneHierarchyPanel::TransformComponentOnGuiRender(TransformComponent& component, Actor actor)

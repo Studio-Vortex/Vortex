@@ -1161,8 +1161,10 @@ namespace Vortex::UI {
 
 		bool modified = false;
 
+		const ImGuiComboFlags flags = ImGuiComboFlags_None;
+
 		const std::string id = "##" + std::string(label);
-		if (Gui::BeginCombo(id.c_str(), current))
+		if (Gui::BeginCombo(id.c_str(), current, flags))
 		{
 			for (uint32_t i = 0; i < count; i++)
 			{
