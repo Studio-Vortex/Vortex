@@ -20,7 +20,7 @@ namespace Vortex {
 
 	void ColliderShape::Release()
 	{
-		if (m_IsShared && m_Material == nullptr)
+		if (m_Material == nullptr)
 		{
 			return;
 		}
