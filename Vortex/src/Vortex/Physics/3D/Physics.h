@@ -53,19 +53,18 @@ namespace Vortex {
 		static void WakeUpActor(Actor actor);
 		static void WakeUpActors();
 
-		static bool Raycast(const Math::vec3& origin, const Math::vec3& direction, float maxDistance, RaycastHit* outHitInfo);
+		static uint32_t Raycast(const Math::vec3& origin, const Math::vec3& direction, float maxDistance, RaycastHit* outInfo);
 
 		static bool IsConstraintBroken(UUID actorUUID);
 		static void BreakJoint(UUID actorUUID);
 
-		static void OnCharacterControllerUpdateRuntime(UUID actorUUID, const Math::vec3& displacement);
+		static void RT_DisplaceCharacterController(TimeStep delta, UUID actorUUID, const Math::vec3& displacement);
 
-	public:
-		static const std::unordered_map<UUID, physx::PxRigidActor*>& GetActors();
+		static const std::unordered_map<UUID, physx::PxRigidActor*>& GetPhysicsActors();
 		static const std::unordered_map<UUID, physx::PxController*>& GetControllers();
 		static const std::unordered_map<UUID, physx::PxFixedJoint*> GetFixedJoints();
 
-		static physx::PxRigidActor* GetActor(UUID actorUUID);
+		static physx::PxRigidActor* GetPhysicsActor(UUID actorUUID);
 		static const std::vector<SharedReference<ColliderShape>>& GetActorColliders(UUID actorUUID);
 		static physx::PxController* GetController(UUID actorUUID);
 		static physx::PxFixedJoint* GetFixedJoint(UUID actorUUID);
@@ -77,7 +76,6 @@ namespace Vortex {
 
 		static Scene* GetContextScene();
 
-	public:
 		static physx::PxScene* GetPhysicsScene();
 
 #ifndef VX_DIST
@@ -104,7 +102,6 @@ namespace Vortex {
 		static void ShutdownPhysicsSDKInternal();
 		static void ShutdownPhysicsSceneInternal();
 
-	private:
 		static void RT_SimulationStep();
 
 		static void RT_UpdateActors();
@@ -118,6 +115,7 @@ namespace Vortex {
 
 		static void RT_CreateCollider(Actor actor, physx::PxRigidActor* pxActor);
 		static void AddColliderShape(Actor actor, physx::PxRigidActor* pxActor, ColliderType type);
+		static std::vector<SharedReference<ColliderShape>>& GetActorColliderShapesInternal(UUID actorUUID);
 		static physx::PxMaterial* AddControllerColliderShape(Actor actor, physx::PxRigidActor* pxActor, ColliderType type);
 		static void RT_CreateFixedJoint(Actor actor);
 		static physx::PxController* RT_CreateController(Actor actor, physx::PxRigidActor* pxActor);

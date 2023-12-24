@@ -814,7 +814,7 @@ namespace Vortex {
 					return;
 				}
 
-				physx::PxRigidDynamic* actor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* actor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 				Math::vec3 translation = FromPhysXVector(actor->getGlobalPose().p);
 
 				*outTranslation = translation;
@@ -853,7 +853,7 @@ namespace Vortex {
 					return;
 				}
 
-				physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 
 				const auto& transformComponent = actor.GetTransform();
 				physx::PxTransform physxTransform = pxActor->getGlobalPose();
@@ -887,7 +887,7 @@ namespace Vortex {
 
 			if (actor.HasComponent<RigidBodyComponent>() && actor.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
 			{
-				physx::PxRigidDynamic* actor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* actor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 				physx::PxTransform physxTranform = actor->getGlobalPose();
 				Math::quaternion rotation = FromPhysXQuat(physxTranform.q);
 
@@ -921,7 +921,7 @@ namespace Vortex {
 
 			if (actor.HasComponent<RigidBodyComponent>() && actor.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
 			{
-				physx::PxRigidDynamic* actor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* actor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 				physx::PxTransform physxTransform = actor->getGlobalPose();
 				physxTransform.q = ToPhysXQuat(*rotation);
 
@@ -952,7 +952,7 @@ namespace Vortex {
 
 			if (actor.HasComponent<RigidBodyComponent>() && actor.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
 			{
-				physx::PxRigidDynamic* actor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* actor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 				Math::quaternion orientation = FromPhysXQuat(actor->getGlobalPose().q);
 
 				*outEulerAngles = Math::EulerAngles(orientation);
@@ -995,7 +995,7 @@ namespace Vortex {
 
 			if (actor.HasComponent<RigidBodyComponent>() && actor.GetComponent<RigidBodyComponent>().Type == RigidBodyType::Dynamic)
 			{
-				physx::PxRigidDynamic* actor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+				physx::PxRigidDynamic* actor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 				physx::PxTransform physxTransform = actor->getGlobalPose();
 				physxTransform.q = ToPhysXQuat(Math::quaternion(*eulerAngles));
 
@@ -1163,7 +1163,7 @@ namespace Vortex {
 
 				if (rigidbody.Type == RigidBodyType::Dynamic)
 				{
-					physx::PxRigidDynamic* actor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+					physx::PxRigidDynamic* actor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 					physx::PxTransform physxTransform = actor->getGlobalPose();
 
 					const Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
@@ -5799,7 +5799,7 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 			physx::PxTransform target;
 
 			if (pxActor->getKinematicTarget(target))
@@ -5828,7 +5828,7 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 			physx::PxTransform targetTransform;
 			targetTransform.p = ToPhysXVector(*translation);
 
@@ -5860,7 +5860,7 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 			physx::PxTransform target;
 
 			if (pxActor->getKinematicTarget(target))
@@ -5889,7 +5889,7 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 			physx::PxTransform targetTransform;
 			targetTransform.q = ToPhysXQuat(*rotation);
 
@@ -5951,7 +5951,7 @@ namespace Vortex {
 				rigidbody.LockFlags &= ~(uint8_t)flag;
 			}
 
-			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 
 			pxActor->setRigidDynamicLockFlag((physx::PxRigidDynamicLockFlag::Enum)flag, value);
 
@@ -6000,7 +6000,7 @@ namespace Vortex {
 				return false;
 			}
 
-			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 			return pxActor->isSleeping();
 		}
 
@@ -6022,7 +6022,7 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 			pxActor->wakeUp();
 		}
 
@@ -6044,7 +6044,7 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 			pxActor->addForce(ToPhysXVector(*force), (physx::PxForceMode::Enum)mode);
 		}
 
@@ -6071,7 +6071,7 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 			physx::PxRigidBodyExt::addForceAtPos(*pxActor, ToPhysXVector(*force), ToPhysXVector(*position), (physx::PxForceMode::Enum)mode);
 		}
 
@@ -6093,7 +6093,7 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 			pxActor->addTorque(ToPhysXVector(*torque), (physx::PxForceMode::Enum)mode);
 		}
 
@@ -6115,7 +6115,7 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 			pxActor->clearTorque((physx::PxForceMode::Enum)mode);
 		}
 
@@ -6137,7 +6137,7 @@ namespace Vortex {
 				return;
 			}
 
-			physx::PxRigidDynamic* pxActor = Physics::GetActor(actorUUID)->is<physx::PxRigidDynamic>();
+			physx::PxRigidDynamic* pxActor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 			pxActor->clearForce((physx::PxForceMode::Enum)mode);
 		}
 
@@ -6403,7 +6403,9 @@ namespace Vortex {
 				return;
 			}
 
-			Physics::OnCharacterControllerUpdateRuntime(actorUUID, *displacement);
+			const TimeStep delta = Time::GetDeltaTime();
+
+			Physics::RT_DisplaceCharacterController(delta, actorUUID, *displacement);
 		}
 
 		void CharacterControllerComponent_Jump(UUID actorUUID, float jumpForce)
@@ -6674,8 +6676,8 @@ namespace Vortex {
 			if (!contextScene->TryGetActorWithUUID(connectedActorUUID))
 				return;
 
-			physx::PxRigidActor* actor0 = Physics::GetActor(actorUUID);
-			physx::PxRigidActor* actor1 = Physics::GetActor(connectedActorUUID);
+			physx::PxRigidActor* actor0 = Physics::GetPhysicsActor(actorUUID);
+			physx::PxRigidActor* actor1 = Physics::GetPhysicsActor(connectedActorUUID);
 
 			if (!actor0 || !actor1)
 			{
