@@ -877,8 +877,19 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
+		ImVec4 borderColor = { 0, 0, 0, 0 };
+		const bool timeLeft = m_SceneViewportBorderFadeTimer > 0.0f;
+		const bool inEditMode = InEditSceneState();
+		const bool fading = timeLeft && !inEditMode;
+
 		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
-		Gui::Begin("Scene", &m_SceneViewportPanelOpen, ImGuiWindowFlags_NoCollapse);
+		if (fading)
+		{
+			Gui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 3.0f);
+			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 1.0f, 1.0f });
+		}
+		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar;
+		Gui::Begin("Scene", &m_SceneViewportPanelOpen, flags);
 
 		const ImVec2 viewportMinRegion = Gui::GetWindowContentRegionMin();
 		const ImVec2 viewportMaxRegion = Gui::GetWindowContentRegionMax();
@@ -898,16 +909,31 @@ namespace Vortex {
 		m_SceneViewportHovered = Gui::IsWindowHovered();
 		Application::Get().GetGuiLayer()->BlockEvents(!m_SceneViewportHovered && !m_SecondViewportFocused);
 
+		// Scene Viewport Border
+		if (fading)
+		{
+			m_SceneViewportBorderFadeTimer -= Time::GetDeltaTime();
+			const float mapped = Math::Min(1.0f, m_SceneViewportBorderFadeTimer * 0.5f + 0.5f);
+			const Math::vec4& viewportBorderColor = InPlaySceneState() ? m_SceneViewportOnPlayBorderColor : m_SceneViewportOnSimulateBorderColor;
+			const Math::vec4 lvalue = viewportBorderColor * mapped;
+			borderColor = *(ImVec4*)&(lvalue);
+		}
+		
 		const ImVec2 scenePanelSize = Gui::GetContentRegionAvail();
 		m_ViewportPanelSize = { scenePanelSize.x, scenePanelSize.y };
 
 		const uint32_t sceneTextureID = m_Framebuffer->GetColorAttachmentRendererID();
-		UI::ImageEx(sceneTextureID, ImVec2{ m_ViewportPanelSize.x, m_ViewportPanelSize.y });
+		UI::ImageEx(sceneTextureID, ImVec2{ m_ViewportPanelSize.x, m_ViewportPanelSize.y }, { 1, 1, 1, 1 }, borderColor);
 
-		UIHandleAssetDrop();
-		UIOnPopupRender();
+		if (InEditSceneState())
+		{
+			UIHandleAssetDrop();
+			UIOnPopupRender();
+		}
 
-		if (Gui::IsItemVisible())
+		const bool normalCursorMode = Input::GetCursorMode() == CursorMode::Normal;
+
+		if (Gui::IsItemVisible() && normalCursorMode)
 		{
 			UIGizmosToolbar();
 			UICentralToolbar();
@@ -917,6 +943,11 @@ namespace Vortex {
 		if ((m_SceneViewportHovered || !m_SecondViewportPanelOpen) && !InPlaySceneState())
 		{
 			OnGizmosRender(m_EditorCamera, m_ViewportBounds);
+		}
+
+		if (fading)
+		{
+			Gui::PopStyleVar(2);
 		}
 
 		Gui::End();
@@ -3057,6 +3088,8 @@ namespace Vortex {
 		SetSceneContext(m_ActiveScene);
 
 		OnSelectGizmoToolSelected();
+
+		m_SceneViewportBorderFadeTimer = m_SceneViewportBorderFadeLengthInSeconds;
 	}
 
 	void EditorLayer::OnScenePause()
@@ -3158,6 +3191,8 @@ namespace Vortex {
 		m_ActiveScene->OnPhysicsSimulationStart();
 
 		SetSceneContext(m_ActiveScene);
+
+		m_SceneViewportBorderFadeTimer = m_SceneViewportBorderFadeLengthInSeconds;
 	}
 
 	void EditorLayer::RestartSceneSimulation()

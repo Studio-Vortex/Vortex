@@ -189,6 +189,11 @@ namespace Vortex {
 		int32_t m_GizmoType = -1;
 		uint32_t m_TranslationMode = 0; // Local mode
 
+		float m_SceneViewportBorderFadeLengthInSeconds = 3.0f;
+		float m_SceneViewportBorderFadeTimer;
+		Math::vec4 m_SceneViewportOnPlayBorderColor = ColorToVec4(Color::Red);
+		Math::vec4 m_SceneViewportOnSimulateBorderColor = ColorToVec4(Color::Green);
+
 		bool m_SceneViewportPanelOpen = true;
 		bool m_SecondViewportPanelOpen = false;
 		bool m_ShowViewportCreateActorMenu = false;
