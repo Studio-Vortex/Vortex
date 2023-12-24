@@ -22,6 +22,8 @@
 #include "Vortex/Editor/FontAwesome.h"
 #include "Vortex/Editor/EditorResources.h"
 
+#include <string>
+
 #include <imgui_internal.h>
 
 namespace Vortex {
@@ -1626,11 +1628,11 @@ namespace Vortex::UI {
 
 	struct VORTEX_API PropertyAssetImageReferenceSettings
 	{
-		const char* Label;
-		const std::string& Filepath;
-		AssetHandle& AssetHandle;
-		const AssetDropFn& OnAssetDroppedFn = nullptr;
-		const AssetRegistry& Registry;
+		const char* Label = nullptr;
+		std::string* Filepath = nullptr;
+		AssetHandle* Handle = nullptr;
+		AssetDropFn OnAssetDroppedFn = nullptr;
+		const AssetRegistry* Registry = nullptr;
 	};
 
 	template <typename TImageAssetType>
@@ -1674,7 +1676,7 @@ namespace Vortex::UI {
 
 		std::vector<std::string> filepaths;
 
-		for (const auto& [assetHandle, metadata] : settings.Registry)
+		for (const auto& [assetHandle, metadata] : *settings.Registry)
 		{
 			if (metadata.Type != assetType)
 				continue;
@@ -1698,12 +1700,12 @@ namespace Vortex::UI {
 		PushID();
 
 		auto OnClearedFn = [&] {
-			settings.AssetHandle = 0;
+			*settings.Handle = 0;
 			modified = true;
 			Gui::CloseCurrentPopup();
 		};
 
-		std::string current = settings.Filepath;
+		std::string current = *settings.Filepath;
 		BeginPropertyGrid();
 		if (PropertyDropdownSearch(settings.Label, options.data(), options.size(), current, s_TextFilters[s_UIContextID - 1], OnClearedFn))
 		{
@@ -1717,7 +1719,7 @@ namespace Vortex::UI {
 				}
 			}
 
-			settings.AssetHandle = handles[pos];
+			*settings.Handle = handles[pos];
 			modified = true;
 			Gui::CloseCurrentPopup();
 		}

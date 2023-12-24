@@ -1772,6 +1772,17 @@ namespace Vortex {
 			icon = AssetManager::GetAsset<Texture2D>(component.Texture);
 		}
 
+		UI::PropertyAssetImageReferenceSettings settings;
+		settings.Label = "Texture";
+		using namespace std::string_literals;
+		std::string relativePath = ""s;
+		settings.Filepath = &relativePath;
+		settings.Handle = &component.Texture;
+		settings.OnAssetDroppedFn = nullptr;
+		settings.Registry = &Project::GetEditorAssetManager()->GetAssetRegistry();
+
+		UI::PropertyAssetImageReference<Texture2D>(settings);
+
 		if (UI::ImageButton("Texture", icon, { 64, 64 }, { 0, 0, 0, 0 }, tintColor))
 		{
 			component.Texture = 0;
