@@ -192,11 +192,11 @@ namespace Vortex {
 
 		Gui::Text((const char*)VX_ICON_SPINNER);
 		Gui::SameLine();
-		if (Gui::BeginMenu("Create 2D"))
+		if (Gui::BeginMenu("Create Sprite"))
 		{
-			if (Gui::MenuItem("Quad"))
+			if (Gui::MenuItem("Sprite"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Quad"));
+				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Sprite"));
 				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
 				selected.GetTransform().Translation.z = 0.0f;
 				selected.AddComponent<SpriteRendererComponent>();
