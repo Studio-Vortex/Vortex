@@ -113,7 +113,6 @@ namespace Vortex {
 	}
 
 	static SceneRenderer s_SceneRenderer;
-	static QueueFreeData s_NullQueueFreeData;
 	static Timer s_NullTimer = Timer("", 0.0f, nullptr);
 
 	Scene::Scene(SharedReference<Framebuffer>& targetFramebuffer)
@@ -220,26 +219,9 @@ namespace Vortex {
 		//SubmitToPostUpdateQueue(OnDestroyedFn);
 	}
 
-	void Scene::SubmitToDestroyActor(const QueueFreeData& queueFreeData)
-	{
-		DestroyActorInternal(queueFreeData);
-	}
-
 	void Scene::ClearEntities()
 	{
 		m_Registry.clear();
-	}
-
-	const QueueFreeData& Scene::GetQueueFreeStatus(UUID actorUUID) const
-	{
-		VX_CORE_ASSERT(m_QueueFreeMap.contains(actorUUID), "actor was not found in queue free map!");
-
-		if (auto it = m_QueueFreeMap.find(actorUUID); it != m_QueueFreeMap.end())
-		{
-			return m_QueueFreeMap.at(actorUUID);
-		}
-
-		return s_NullQueueFreeData;
 	}
 
 	void Scene::DestroyActorInternal(Actor actor, bool excludeChildren)
@@ -327,68 +309,6 @@ namespace Vortex {
 		m_Registry.destroy(actor);
 
 		SortActors();
-	}
-
-	void Scene::DestroyActorInternal(const QueueFreeData& queueFreeData)
-	{
-		VX_PROFILE_FUNCTION();
-
-		if (!m_ActorMap.contains(queueFreeData.ActorUUID))
-		{
-			return;
-		}
-
-		if (m_QueueFreeMap.contains(queueFreeData.ActorUUID))
-		{
-			return;
-		}
-
-		const bool invalidTimer = queueFreeData.WaitTime <= 0.0f;
-
-		if (invalidTimer)
-		{
-			Actor actor = m_ActorMap[queueFreeData.ActorUUID];
-			SubmitToDestroyActor(actor, queueFreeData.ExcludeChildren);
-			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyActorInternal with a wait time of 0, Use the regular method instead!");
-			return;
-		}
-
-		m_QueueFreeMap[queueFreeData.ActorUUID] = queueFreeData;
-	}
-
-	void Scene::OnUpdateQueueFreeTimers(TimeStep delta)
-	{
-		VX_PROFILE_FUNCTION();
-
-		// Update timers for entites to be destroyed
-		for (auto& [uuid, queueFreeData] : m_QueueFreeMap)
-		{
-			queueFreeData.WaitTime -= delta;
-
-			// If the timer isn't finished just move on
-			const bool timerDone = queueFreeData.WaitTime <= 0.0f;
-			if (!timerDone)
-				continue;
-			
-			auto it = std::find(m_EntitiesToBeRemovedFromQueue.begin(), m_EntitiesToBeRemovedFromQueue.end(), uuid);
-			if (it != m_EntitiesToBeRemovedFromQueue.end())
-				continue;
-
-			// Timer is done so lets add it to queue
-			m_EntitiesToBeRemovedFromQueue.push_back(uuid);
-		}
-
-		// Destroy entities that are done waiting
-		for (const auto& uuid : m_EntitiesToBeRemovedFromQueue)
-		{
-			VX_CORE_ASSERT(m_ActorMap.contains(uuid), "Invalid Actor UUID!");
-			Actor actor = TryGetActorWithUUID(uuid);
-			const QueueFreeData& data = GetQueueFreeStatus(uuid);
-			SubmitToDestroyActor(actor, data.ExcludeChildren);
-			m_QueueFreeMap.erase(uuid);
-		}
-
-		m_EntitiesToBeRemovedFromQueue.clear();
 	}
 
 	void Scene::OnUpdateActorTimers(TimeStep delta)
@@ -673,7 +593,6 @@ namespace Vortex {
 
 		if (updateCurrentFrame)
 		{
-			OnUpdateQueueFreeTimers(delta);
 			OnUpdateActorTimers(delta);
 		}
 

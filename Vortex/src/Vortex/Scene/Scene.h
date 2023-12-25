@@ -24,13 +24,6 @@ namespace Vortex {
 	class StaticMesh;
 	class EditorCamera;
 
-	struct VORTEX_API QueueFreeData
-	{
-		UUID ActorUUID = 0;
-		float WaitTime = 0.0f;
-		bool ExcludeChildren = false;
-	};
-
 	struct VORTEX_API SceneGeometry : public RefCounted
 	{
 		std::vector<SharedReference<Mesh>> Meshes;
@@ -53,17 +46,12 @@ namespace Vortex {
 		Actor CreateActorWithUUID(UUID uuid, const std::string& name = std::string(), const std::string& marker = std::string());
 
 		void SubmitToDestroyActor(Actor actor, bool excludeChildren = false);
-		void SubmitToDestroyActor(const QueueFreeData& queueFreeData);
 
 		void ClearEntities();
 
-		const QueueFreeData& GetQueueFreeStatus(UUID actorUUID) const;
-
 	private:
 		void DestroyActorInternal(Actor actor, bool excludeChildren = false);
-		void DestroyActorInternal(const QueueFreeData& queueFreeData);
 
-		void OnUpdateQueueFreeTimers(TimeStep delta);
 		void OnUpdateActorTimers(TimeStep delta);
 
 	public:
@@ -206,10 +194,6 @@ namespace Vortex {
 
 		using ActorMap = std::unordered_map<UUID, Actor>;
 		ActorMap m_ActorMap;
-
-		using QueueFreeMap = std::unordered_map<UUID, QueueFreeData>;
-		QueueFreeMap m_QueueFreeMap;
-		std::vector<UUID> m_EntitiesToBeRemovedFromQueue;
 
 		std::unordered_map<UUID, std::vector<Timer>> m_Timers;
 		std::vector<Timer> m_FinishedTimers;

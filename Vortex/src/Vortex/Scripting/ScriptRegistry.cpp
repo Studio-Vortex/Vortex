@@ -607,12 +607,9 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
-			QueueFreeData queueFreeData;
-			queueFreeData.ActorUUID = actorUUID;
-			queueFreeData.ExcludeChildren = excludeChildren;
-			queueFreeData.WaitTime = delay;
-
-			contextScene->SubmitToDestroyActor(queueFreeData);
+			auto onFinishedFn = [&]() { contextScene->SubmitToDestroyActor(actor, excludeChildren); };
+			Timer timer(actor.GetName() + std::to_string(actorUUID), delay, onFinishedFn);
+			contextScene->AddOrReplaceTimer(actor, std::move(timer));
 		}
 
 		void Actor_Invoke(UUID actorUUID, MonoString* methodName)
