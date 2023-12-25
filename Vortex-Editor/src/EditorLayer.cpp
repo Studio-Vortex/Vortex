@@ -1511,7 +1511,7 @@ namespace Vortex {
 
 		if (hasPauseButton)
 		{
-			SharedReference<Texture2D> icon = EditorResources::PauseIcon;
+			SharedReference<Texture2D> icon = scenePaused ? EditorResources::PlayIcon : EditorResources::PauseIcon;
 			if (UI::ImageButtonEx(icon, textureSize, normalColor, tintColor))
 			{
 				const bool isPaused = !scenePaused;
@@ -1528,7 +1528,7 @@ namespace Vortex {
 				Gui::SetWindowFocus("Scene");
 			}
 
-			UI::SetTooltip("Pause Scene");
+			UI::SetTooltip(scenePaused ? "Resume Scene" : "Pause Scene");
 
 			if (scenePaused)
 			{
