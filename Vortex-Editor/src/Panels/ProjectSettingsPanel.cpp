@@ -140,13 +140,10 @@ namespace Vortex {
 
 			UI::Property("Collider Color", &m_ProjectProperties.PhysicsProps.Physics3DColliderColor);
 
-			Math::vec3 gravity3D = Physics::GetPhysicsSceneGravity();
+			Math::vec3 gravity3D = PhysicsScene::GetGravity();
 			if (UI::Property("Gravity", gravity3D))
 			{
-				Physics::SetPhysicsSceneGravity(gravity3D);
-
-				// we need to wake up all the actors because a number of them could be sleeping
-				Physics::WakeUpActors();
+				PhysicsScene::SetGravity(gravity3D);
 			}
 
 			static const char* broadphaseTypes[] = { "Sweep And Prune", "Multi Box Pruning", "Automatic Box Pruning" };
@@ -163,16 +160,16 @@ namespace Vortex {
 				m_ProjectProperties.PhysicsProps.FrictionModel = (FrictionType)currentFrictionType;
 			}
 
-			int32_t positionIterations3D = Physics::GetPhysicsScenePositionIterations();
+			uint32_t positionIterations3D = PhysicsScene::GetPositionIterations();
 			if (UI::Property("Position Iterations", positionIterations3D, 1, 1, 256))
 			{
-				Physics::SetPhysicsScenePositionIterations(positionIterations3D);
+				PhysicsScene::SetPositionIterations(positionIterations3D);
 			}
 
-			int32_t velocityIterations3D = Physics::GetPhysicsSceneVelocityIterations();
+			uint32_t velocityIterations3D = PhysicsScene::GetVelocityIterations();
 			if (UI::Property("Velocity Iterations", velocityIterations3D, 1, 1, 256))
 			{
-				Physics::SetPhysicsSceneVelocityIterations(velocityIterations3D);
+				PhysicsScene::SetVelocityIterations(velocityIterations3D);
 			}
 
 			UI::EndPropertyGrid();

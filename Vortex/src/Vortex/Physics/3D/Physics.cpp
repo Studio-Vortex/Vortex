@@ -9,8 +9,7 @@
 
 #include "Vortex/Renderer/Renderer2D.h"
 
-#include "Vortex/Physics/3D/PhysicsFilterShader.h"
-#include "Vortex/Physics/3D/PhysicsContactListener.h"
+#include "Vortex/Physics/3D/PhysicsScene.h"
 #include "Vortex/Physics/3D/CookingFactory.h"
 #include "Vortex/Physics/3D/PhysicsUtils.h"
 
@@ -26,16 +25,13 @@ namespace Vortex {
 		physx::PxDefaultErrorCallback ErrorCallback;
 		physx::PxFoundation* Foundation = nullptr;
 		physx::PxPhysics* PhysXSDK = nullptr;
-		physx::PxDefaultCpuDispatcher* Dispatcher = nullptr;
 		physx::PxControllerManager* ControllerManager = nullptr;
-		physx::PxScene* PhysicsScene = nullptr;
 		physx::PxTolerancesScale TolerancesScale;
+		physx::PxDefaultCpuDispatcher* Dispatcher = nullptr;
 
 #ifndef VX_DIST
 		physx::PxSimulationStatistics SimulationStats;
 #endif
-		
-		PhysicsContactListener ContactListener;
 
 		// TODO substep through the simulation
 		struct SubstepInfo
@@ -63,9 +59,6 @@ namespace Vortex {
 		std::unordered_map<UUID, ConstrainedJointData*> ConstrainedJointData;
 
 		constexpr static float FixedTimeStep = 1.0f / 100.0f;
-		Math::vec3 SceneGravity = Math::vec3(0.0f, -9.81f, 0.0f);
-		uint32_t PositionSolverIterations = 8;
-		uint32_t VelocitySolverIterations = 2;
 
 		SubModule Module;
 	};
@@ -116,7 +109,7 @@ namespace Vortex {
 		RT_UpdateJoints();
 
 #ifndef VX_DIST
-		s_Data->PhysicsScene->getSimulationStatistics(s_Data->SimulationStats);
+		((physx::PxScene*)PhysicsScene::GetScene())->getSimulationStatistics(s_Data->SimulationStats);
 #endif
 	}
 
@@ -231,62 +224,6 @@ namespace Vortex {
 		}
 	}
 
-	void Physics::WakeUpActors()
-	{
-		VX_PROFILE_FUNCTION();
-
-		if (!s_Data->PhysicsScene || !s_Data->ContextScene)
-			return;
-
-		physx::PxActorTypeFlags flags = physx::PxActorTypeFlag::eRIGID_DYNAMIC;
-		uint32_t count = s_Data->PhysicsScene->getNbActors(flags);
-
-		physx::PxActor** buffer = new physx::PxActor*[count];
-		s_Data->PhysicsScene->getActors(flags, buffer, count);
-
-		for (uint32_t i = 0; i < count; i++)
-		{
-			physx::PxRigidDynamic* actor = buffer[i]->is<physx::PxRigidDynamic>();
-
-			const bool gravityDisabled = actor->getActorFlags() & physx::PxActorFlag::eDISABLE_GRAVITY;
-			const bool isAwake = !actor->isSleeping();
-
-			if (gravityDisabled || isAwake)
-				continue;
-
-			actor->wakeUp();
-		}
-
-		delete[] buffer;
-	}
-
-	uint32_t Physics::Raycast(const Math::vec3& origin, const Math::vec3& direction, float maxDistance, RaycastHit* outInfo)
-	{
-		physx::PxRaycastBuffer hitInfo;
-		const bool result = s_Data->PhysicsScene->raycast(PhysicsUtils::ToPhysXVector(origin), PhysicsUtils::ToPhysXVector(Math::Normalize(direction)), maxDistance, hitInfo);
-
-		if (result == false)
-			return 0;
-		
-		const void* userData = hitInfo.block.actor->userData;
-
-		if (userData == nullptr)
-		{
-			*outInfo = RaycastHit();
-			return 1;
-		}
-
-		const PhysicsBodyData* physicsBodyData = (const PhysicsBodyData*)userData;
-		UUID actor = physicsBodyData->ActorUUID;
-
-		outInfo->ActorID = actor;
-		outInfo->Position = PhysicsUtils::FromPhysXVector(hitInfo.block.position);
-		outInfo->Normal = PhysicsUtils::FromPhysXVector(hitInfo.block.normal);
-		outInfo->Distance = hitInfo.block.distance;
-
-		return 1;
-	}
-
 	bool Physics::IsConstraintBroken(UUID actorUUID)
 	{
 		if (s_Data->ActiveFixedJoints.contains(actorUUID))
@@ -330,7 +267,7 @@ namespace Vortex {
 		physx::PxControllerFilters filters; // TODO
 		physx::PxController* controller = s_Data->ActiveControllers[actorUUID];
 
-		const float gravity = Math::Length(Physics::GetPhysicsSceneGravity());
+		const float gravity = Math::Length(PhysicsScene::GetGravity());
 
 		if (!characterControllerComponent.DisableGravity)
 		{
@@ -354,9 +291,7 @@ namespace Vortex {
 
 	void Physics::RT_SimulationStep()
 	{
-		s_Data->PhysicsScene->simulate(s_Data->FixedTimeStep);
-		s_Data->PhysicsScene->fetchResults(true);
-		s_Data->PhysicsScene->setGravity(PhysicsUtils::ToPhysXVector(s_Data->SceneGravity));
+		PhysicsScene::Simulate(s_Data->FixedTimeStep, true);
 	}
 
 	void Physics::RT_UpdateActors()
@@ -507,7 +442,7 @@ namespace Vortex {
 			case RigidBodyType::Dynamic: RT_SetCollisionFilters(pxActor, (uint32_t)FilterGroup::Dynamic, filterMask); break;
 		}
 
-		s_Data->PhysicsScene->addActor(*pxActor);
+		((physx::PxScene*)PhysicsScene::GetScene())->addActor(*pxActor);
 	}
 
 	void Physics::RT_CreateCharacterControllerInternal(Actor actor)
@@ -743,8 +678,8 @@ namespace Vortex {
 		dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, rigidbody.IsKinematic);
 		dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, rigidbody.DisableGravity);
 
-		const uint32_t minPositionIterations = s_Data->PositionSolverIterations;
-		const uint32_t minVelocityIterations = s_Data->VelocitySolverIterations;
+		const uint32_t minPositionIterations = PhysicsScene::GetPositionIterations();
+		const uint32_t minVelocityIterations = PhysicsScene::GetVelocityIterations();
 		dynamicActor->setSolverIterationCounts(minPositionIterations, minVelocityIterations);
 
 		if (rigidbody.LinearVelocity != Math::vec3(0.0f))
@@ -900,7 +835,7 @@ namespace Vortex {
 
 		RigidBodyComponent& rigidbody = actor.GetComponent<RigidBodyComponent>();
 		physx::PxRigidActor* pxActor = GetPhysicsActor(actorUUID);
-		s_Data->PhysicsScene->removeActor(*pxActor);
+		((physx::PxScene*)PhysicsScene::GetScene())->removeActor(*pxActor);
 		pxActor->release();
 		rigidbody.RuntimeActor = nullptr;
 		s_Data->ActiveActors.erase(actorUUID);
@@ -966,25 +901,8 @@ namespace Vortex {
 
 	void Physics::InitPhysicsSceneInternal()
 	{
-		physx::PxSceneDesc sceneDescription = physx::PxSceneDesc(s_Data->TolerancesScale);
-		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
-		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
-		sceneDescription.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
-
-		sceneDescription.gravity = PhysicsUtils::ToPhysXVector(s_Data->SceneGravity);
-
-		SharedReference<Project> activeProject = Project::GetActive();
-		const ProjectProperties& projectProps = activeProject->GetProperties();
-
-		sceneDescription.broadPhaseType = PhysicsUtils::VortexBroadphaseTypeToPhysXBroadphaseType(projectProps.PhysicsProps.BroadphaseModel);
-		sceneDescription.frictionType = PhysicsUtils::VortexFrictionTypeToPhysXFrictionType(projectProps.PhysicsProps.FrictionModel);
-
-		sceneDescription.cpuDispatcher = s_Data->Dispatcher;
-		sceneDescription.filterShader = PhysicsFilterShader::FilterShader;
-		sceneDescription.simulationEventCallback = &s_Data->ContactListener;
-
-		s_Data->PhysicsScene = s_Data->PhysXSDK->createScene(sceneDescription);
-		s_Data->ControllerManager = PxCreateControllerManager(*s_Data->PhysicsScene);
+		PhysicsScene::Init();
+		s_Data->ControllerManager = PxCreateControllerManager(*((physx::PxScene*)PhysicsScene::GetScene()));
 	}
 
 	void Physics::ShutdownPhysicsSDKInternal()
@@ -1002,8 +920,7 @@ namespace Vortex {
 		s_Data->ControllerManager->release();
 		s_Data->ControllerManager = nullptr;
 
-		s_Data->PhysicsScene->release();
-		s_Data->PhysicsScene = nullptr;
+		PhysicsScene::Shutdown();
 
 		s_Data->ContextScene = nullptr;
 
@@ -1115,9 +1032,9 @@ namespace Vortex {
 		return s_Data->ContextScene;
 	}
 
-	physx::PxScene* Physics::GetPhysicsScene()
+	void* Physics::GetDispatcher()
 	{
-		return s_Data->PhysicsScene;
+		return (void*)s_Data->Dispatcher;
 	}
 
 #ifndef VX_DIST
@@ -1129,49 +1046,19 @@ namespace Vortex {
 
 #endif
 
-	uint32_t Physics::GetPhysicsScenePositionIterations()
+	void* Physics::GetPhysicsSDK()
 	{
-		return s_Data->PositionSolverIterations;
+		return (void*)s_Data->PhysXSDK;
 	}
 
-	void Physics::SetPhysicsScenePositionIterations(uint32_t positionIterations)
+	void* Physics::GetTolerancesScale()
 	{
-		s_Data->PositionSolverIterations = positionIterations;
+		return (void*)&s_Data->TolerancesScale;
 	}
 
-	uint32_t Physics::GetPhysicsSceneVelocityIterations()
+	void* Physics::GetFoundation()
 	{
-		return s_Data->VelocitySolverIterations;
-	}
-
-	void Physics::SetPhysicsSceneVelocityIterations(uint32_t veloctiyIterations)
-	{
-		s_Data->VelocitySolverIterations = veloctiyIterations;
-	}
-
-	Math::vec3 Physics::GetPhysicsSceneGravity()
-	{
-		return s_Data->SceneGravity;
-	}
-
-	void Physics::SetPhysicsSceneGravity(const Math::vec3& gravity)
-	{
-		s_Data->SceneGravity = gravity;
-	}
-
-	physx::PxPhysics* Physics::GetPhysicsSDK()
-	{
-		return s_Data->PhysXSDK;
-	}
-
-	physx::PxTolerancesScale* Physics::GetTolerancesScale()
-	{
-		return &s_Data->TolerancesScale;
-	}
-
-	physx::PxFoundation* Physics::GetFoundation()
-	{
-		return s_Data->Foundation;
+		return (void*)s_Data->Foundation;
 	}
 
 }

@@ -38,7 +38,7 @@ namespace Vortex {
 		if (m_Material != nullptr)
 			m_Material->release();
 
-		m_Material = Physics::GetPhysicsSDK()->createMaterial(material->StaticFriction, material->DynamicFriction, material->Bounciness);
+		m_Material = ((physx::PxPhysics*)Physics::GetPhysicsSDK())->createMaterial(material->StaticFriction, material->DynamicFriction, material->Bounciness);
 		m_Material->setFrictionCombineMode((physx::PxCombineMode::Enum)material->FrictionCombineMode);
 		m_Material->setRestitutionCombineMode((physx::PxCombineMode::Enum)material->BouncinessCombineMode);
 	}

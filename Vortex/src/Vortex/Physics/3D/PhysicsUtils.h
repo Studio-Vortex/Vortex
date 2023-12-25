@@ -5,6 +5,7 @@
 #include "Vortex/Math/Math.h"
 
 #include "Vortex/Physics/3D/Physics.h"
+#include "Vortex/Physics/3D/PhysicsScene.h"
 #include "Vortex/Physics/3D/PhysicsTypes.h"
 
 #include "Vortex/Scene/Actor.h"
@@ -193,7 +194,7 @@ namespace Vortex {
 			physx::PxOverlapBuffer buf(s_OverlapBuffer.data(), VX_PHYSICS_OVERLAP_MAX_COLLIDERS);
 			physx::PxTransform pose = ToPhysXTransform(Math::Translate(origin));
 
-			bool result = Physics::GetPhysicsScene()->overlap(geometry, pose, buf);
+			bool result = ((physx::PxScene*)PhysicsScene::GetScene())->overlap(geometry, pose, buf);
 
 			if (result)
 			{

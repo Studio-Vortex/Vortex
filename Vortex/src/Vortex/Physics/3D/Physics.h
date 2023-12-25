@@ -18,8 +18,6 @@
 
 namespace physx {
 
-	class PxScene;
-	class PxPhysics;
 	class PxMaterial;
 	class PxController;
 	class PxFixedJoint;
@@ -27,9 +25,6 @@ namespace physx {
 	class PxRigidDynamic;
 	class PxControllerManager;
 	class PxSimulationStatistics;
-	class PxTolerancesScale;
-	class PxFoundation;
-	class PxPhysics;
 
 }
 
@@ -50,9 +45,6 @@ namespace Vortex {
 		static void DestroyPhysicsActor(Actor actor);
 
 		static void WakeUpActor(Actor actor);
-		static void WakeUpActors();
-
-		static uint32_t Raycast(const Math::vec3& origin, const Math::vec3& direction, float maxDistance, RaycastHit* outInfo);
 
 		static bool IsConstraintBroken(UUID actorUUID);
 		static void BreakJoint(UUID actorUUID);
@@ -75,24 +67,15 @@ namespace Vortex {
 
 		static Scene* GetContextScene();
 
-		static physx::PxScene* GetPhysicsScene();
+		static void* GetDispatcher();
 
 #ifndef VX_DIST
 		static physx::PxSimulationStatistics* GetSimulationStatistics();
 #endif
 
-		static uint32_t GetPhysicsScenePositionIterations();
-		static void SetPhysicsScenePositionIterations(uint32_t positionIterations);
-
-		static uint32_t GetPhysicsSceneVelocityIterations();
-		static void SetPhysicsSceneVelocityIterations(uint32_t veloctiyIterations);
-
-		static Math::vec3 GetPhysicsSceneGravity();
-		static void SetPhysicsSceneGravity(const Math::vec3& gravity);
-
-		static physx::PxPhysics* GetPhysicsSDK();
-		static physx::PxTolerancesScale* GetTolerancesScale();
-		static physx::PxFoundation* GetFoundation();
+		static void* GetPhysicsSDK();
+		static void* GetTolerancesScale();
+		static void* GetFoundation();
 
 	private:
 		static void InitPhysicsSDKInternal();

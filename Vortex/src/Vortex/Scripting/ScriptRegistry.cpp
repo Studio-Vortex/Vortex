@@ -24,10 +24,12 @@
 #include "Vortex/Audio/AudioUtils.h"
 
 #include "Vortex/Physics/3D/Physics.h"
+#include "Vortex/Physics/3D/PhysicsScene.h"
 #include "Vortex/Physics/3D/PhysicsMaterial.h"
 #include "Vortex/Physics/3D/PhysicsShapes.h"
 #include "Vortex/Physics/3D/PhysicsTypes.h"
 #include "Vortex/Physics/3D/PhysicsUtils.h"
+
 #include "Vortex/Physics/2D/Physics2D.h"
 
 #include "Vortex/Renderer/Renderer.h"
@@ -6149,50 +6151,53 @@ namespace Vortex {
 		{
 			Scene* contextScene = GetContextScene();
 
-			return Physics::Raycast(*origin, *direction, maxDistance, outHit);
+			const uint32_t result = PhysicsScene::Raycast(*origin, *direction, maxDistance, outHit);
+
+			return (bool)result;
 		}
 
 		void Physics_GetSceneGravity(Math::vec3* outGravity)
 		{
 			Scene* contextScene = GetContextScene();
 
-			*outGravity = Physics::GetPhysicsSceneGravity();
+			*outGravity = PhysicsScene::GetGravity();
 		}
 
 		void Physics_SetSceneGravity(Math::vec3* gravity)
 		{
 			Scene* contextScene = GetContextScene();
 
-			Physics::SetPhysicsSceneGravity(*gravity);
-			Physics::WakeUpActors();
+			VX_CORE_ASSERT(PhysicsScene::GetScene(), "invalid physics scene!");
+
+			PhysicsScene::SetGravity(*gravity);
 		}
 
 		uint32_t Physics_GetScenePositionIterations()
 		{
 			Scene* contextScene = GetContextScene();
 
-			return Physics::GetPhysicsScenePositionIterations();
+			return PhysicsScene::GetPositionIterations();
 		}
 
 		void Physics_SetScenePositionIterations(uint32_t positionIterations)
 		{
 			Scene* contextScene = GetContextScene();
 
-			Physics::SetPhysicsScenePositionIterations(positionIterations);
+			PhysicsScene::SetPositionIterations(positionIterations);
 		}
 
 		uint32_t Physics_GetSceneVelocityIterations()
 		{
 			Scene* contextScene = GetContextScene();
 
-			return Physics::GetPhysicsSceneVelocityIterations();
+			return PhysicsScene::GetVelocityIterations();
 		}
 
 		void Physics_SetSceneVelocityIterations(uint32_t velocityIterations)
 		{
 			Scene* contextScene = GetContextScene();
 
-			Physics::SetPhysicsSceneVelocityIterations(velocityIterations);
+			PhysicsScene::SetVelocityIterations(velocityIterations);
 		}
 
 #pragma endregion

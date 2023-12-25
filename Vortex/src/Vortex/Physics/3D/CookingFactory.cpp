@@ -16,10 +16,10 @@ namespace Vortex {
 
 	void CookingFactory::Init()
 	{
-		physx::PxCookingParams cookingParams = physx::PxCookingParams(*Physics::GetTolerancesScale());
+		physx::PxCookingParams cookingParams = physx::PxCookingParams(*((physx::PxTolerancesScale*)Physics::GetTolerancesScale()));
 		cookingParams.midphaseDesc = physx::PxMeshMidPhase::eBVH34;
 
-		s_Data.CookingSDK = PxCreateCooking(PX_PHYSICS_VERSION, *Physics::GetFoundation(), cookingParams);
+		s_Data.CookingSDK = PxCreateCooking(PX_PHYSICS_VERSION, *((physx::PxFoundation*)Physics::GetFoundation()), cookingParams);
 		VX_CORE_ASSERT(s_CookingSDK, "Failed to Initialize PhysX Cooking!");
 	}
 

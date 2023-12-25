@@ -2392,13 +2392,15 @@ namespace Vortex {
 		if (UI::PropertyDropdown("Body Type", bodyTypes, VX_ARRAYSIZE(bodyTypes), currentBodyType))
 		{
 			const bool bodyTypeChanged = component.Type != (RigidBodyType)currentBodyType;
-			component.Type = (RigidBodyType)currentBodyType;
-
-			const bool simulationRunning = m_ContextScene->IsRunning() || m_ContextScene->IsSimulating();
-
-			if (simulationRunning && bodyTypeChanged)
+			if (bodyTypeChanged)
 			{
-				Physics::ReCreateActor(actor);
+				component.Type = (RigidBodyType)currentBodyType;
+
+				const bool isSimulating = PhysicsScene::GetScene();
+				if (isSimulating)
+				{
+					Physics::ReCreateActor(actor);
+				}
 			}
 		}
 
@@ -2531,8 +2533,8 @@ namespace Vortex {
 
 			if (modified)
 			{
-				const bool simulationRunning = m_ContextScene->IsRunning() || m_ContextScene->IsSimulating();
-				if (simulationRunning)
+				const bool isSimulating = PhysicsScene::GetScene();
+				if (isSimulating)
 				{
 					Physics::WakeUpActor(actor);
 				}

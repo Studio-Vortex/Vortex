@@ -13,13 +13,13 @@ namespace Vortex {
 
 		Gui::Begin("Physics Statistics", &IsOpen);
 
-		const bool isSimulating = m_ContextScene->IsRunning() || m_ContextScene->IsSimulating();
+		const bool isSimulating = PhysicsScene::GetScene();
 
 		if (isSimulating)
 		{
 			if (Gui::Button("Wake up actors"))
 			{
-				Physics::WakeUpActors();
+				PhysicsScene::WakeUpActors();
 			}
 
 			RenderPhysicsStats();
