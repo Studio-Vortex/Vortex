@@ -203,20 +203,9 @@ namespace Vortex {
 
 	void Scene::SubmitToDestroyActor(Actor actor, bool excludeChildren)
 	{
-		// Temporary fix
-		// this immediately destroys the actor which is not ideal but works for now
-		SubmitToPostUpdateQueue([&]() { DestroyActorInternal(actor, excludeChildren); });
-
-		// TODO figure out why this doesn't work
-		// When the lambda is passed over to the queue, all of the actor's information is lost,
-		// i.e. the scene pointer etc...
-		// This most likely has to do with the way the arguments are passed on the stack
-
-		// It would be safest to wait until the end of the current frame to delete the actor
-		// otherwise something may reference it later on during ::OnUpdateRuntime()
-		
-		//auto OnDestroyedFn = [&]() { DestroyActorInternal(actor, excludeChildren); };
-		//SubmitToPostUpdateQueue(OnDestroyedFn);
+		SubmitToPostUpdateQueue([&]() {
+			DestroyActorInternal(actor, excludeChildren);
+		});
 	}
 
 	void Scene::ClearEntities()
