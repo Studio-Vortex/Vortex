@@ -205,7 +205,7 @@ namespace Vortex {
 	{
 		// Temporary fix
 		// this immediately destroys the actor which is not ideal but works for now
-		DestroyActorInternal(actor, excludeChildren);
+		SubmitToPostUpdateQueue([&]() { DestroyActorInternal(actor, excludeChildren); });
 
 		// TODO figure out why this doesn't work
 		// When the lambda is passed over to the queue, all of the actor's information is lost,

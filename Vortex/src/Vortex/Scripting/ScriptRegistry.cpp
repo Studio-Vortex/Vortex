@@ -609,6 +609,8 @@ namespace Vortex {
 
 			auto onFinishedFn = [&]() { contextScene->SubmitToDestroyActor(actor, excludeChildren); };
 			Timer timer(actor.GetName() + std::to_string(actorUUID), delay, onFinishedFn);
+			timer.Start();
+
 			contextScene->AddOrReplaceTimer(actor, std::move(timer));
 		}
 
