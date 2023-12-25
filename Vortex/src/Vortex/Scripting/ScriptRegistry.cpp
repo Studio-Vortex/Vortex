@@ -17,6 +17,8 @@
 #include "Vortex/Scripting/ScriptClass.h"
 #include "Vortex/Scripting/ScriptInstance.h"
 #include "Vortex/Scripting/ScriptUtils.h"
+#include "Vortex/Scripting/ManagedArray.h"
+#include "Vortex/Scripting/ManagedString.h"
 
 #include "Vortex/Audio/Audio.h"
 #include "Vortex/Audio/AudioSource.h"
@@ -327,11 +329,10 @@ namespace Vortex {
 
 		uint64_t Scene_FindActorByName(MonoString* name)
 		{
-			char* managedString = mono_string_to_utf8(name);
+			ManagedString mstring(name);
 
 			Scene* contextScene = GetContextScene();
-			Actor actor = contextScene->FindActorByName(managedString);
-			mono_free(managedString);
+			Actor actor = contextScene->FindActorByName(mstring.String());
 
 			if (!actor)
 				return 0;
@@ -341,7 +342,7 @@ namespace Vortex {
 
 		uint64_t Scene_FindChildByName(UUID actorUUID, MonoString* childName)
 		{
-			char* managedString = mono_string_to_utf8(childName);
+			ManagedString mstring(childName);
 
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
@@ -352,7 +353,7 @@ namespace Vortex {
 			{
 				Actor childActor = contextScene->TryGetActorWithUUID(child);
 
-				if (childActor && childActor.GetName() == managedString)
+				if (childActor && childActor.GetName() == mstring.String())
 				{
 					return childActor.GetUUID();
 				}
@@ -363,11 +364,10 @@ namespace Vortex {
 
 		uint64_t Scene_CreateActor(MonoString* name)
 		{
-			char* managedString = mono_string_to_utf8(name);
+			ManagedString mstring(name);
 
 			Scene* contextScene = GetContextScene();
-			Actor actor = contextScene->CreateActor(managedString);
-			mono_free(managedString);
+			Actor actor = contextScene->CreateActor(mstring.String());
 
 			return actor.GetUUID();
 		}
@@ -446,11 +446,9 @@ namespace Vortex {
 		{
 			Scene* contextScene = GetContextScene();
 
-			char* managedString = mono_string_to_utf8(sceneName);
+			ManagedString mstring(sceneName);
 
 			// TODO
-
-			mono_free(managedString);
 		}
 
 #pragma endregion
@@ -531,9 +529,10 @@ namespace Vortex {
 		{
 			Actor actor = GetActor(actorUUID);
 
-			char* managedString = mono_string_to_utf8(tag);
-			actor.GetComponent<TagComponent>().Tag = std::string(managedString);
-			mono_free(managedString);
+			TagComponent& tagComponent = actor.GetComponent<TagComponent>();
+
+			ManagedString mstring(tag);
+			tagComponent.Tag = std::string(mstring.String());
 		}
 
 		MonoString* Actor_GetMarker(UUID actorUUID)
@@ -547,9 +546,10 @@ namespace Vortex {
 		{
 			Actor actor = GetActor(actorUUID);
 
-			char* managedString = mono_string_to_utf8(marker);
-			actor.GetComponent<TagComponent>().Marker = std::string(managedString);
-			mono_free(managedString);
+			TagComponent& tagComponent = actor.GetComponent<TagComponent>();
+
+			ManagedString mstring(marker);
+			tagComponent.Marker = mstring.String();
 		}
 
 		bool Actor_AddChild(UUID parentUUID, UUID childUUID)
@@ -638,16 +638,14 @@ namespace Vortex {
 
 			SharedReference<ScriptClass> scriptClass = ScriptEngine::GetActorClass(className);
 
-			char* managedString = mono_string_to_utf8(methodName);
-			const std::string methodNameString = std::string(managedString);
-			mono_free(managedString);
+			ManagedString mstring(methodName);
 
 			const int paramCount = 0;
-			MonoMethod* method = scriptClass->GetMethod(methodNameString, paramCount);
+			MonoMethod* method = scriptClass->GetMethod(mstring.String(), paramCount);
 
 			if (method == nullptr)
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Actor.Invoke with an invalid method name '{}'", methodNameString);
+				VX_CONSOLE_LOG_ERROR("Calling Actor.Invoke with an invalid method name '{}'", mstring.String());
 				return;
 			}
 
@@ -691,11 +689,9 @@ namespace Vortex {
 			Scene* scene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
-			char* managedString = mono_string_to_utf8(name);
-			std::string timerName = std::string(managedString);
-			mono_free(managedString);
+			ManagedString mstring(name);
 
-			Timer timer(timerName, delay, nullptr);
+			Timer timer(mstring.String(), delay, nullptr);
 			scene->AddOrReplaceTimer(actor, std::move(timer));
 		}
 
@@ -717,16 +713,14 @@ namespace Vortex {
 			Scene* scene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
-			char* managedString = mono_string_to_utf8(name);
-			std::string timerName = std::string(managedString);
-			mono_free(managedString);
+			ManagedString mstring(name);
 
-			Timer& timer = scene->TryGetMutableTimerByName(actor, timerName);
+			Timer& timer = scene->TryGetMutableTimerByName(actor, mstring.String());
 
 			if (timer.GetName().empty())
 			{
 				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), timerName);
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), mstring.String());
 				return 0.0f;
 			}
 
@@ -738,16 +732,14 @@ namespace Vortex {
 			Scene* scene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
-			char* managedString = mono_string_to_utf8(name);
-			std::string timerName = std::string(managedString);
-			mono_free(managedString);
+			ManagedString mstring(name);
 
-			Timer& timer = scene->TryGetMutableTimerByName(actor, timerName);
+			Timer& timer = scene->TryGetMutableTimerByName(actor, mstring.String());
 
 			if (timer.GetName().empty())
 			{
 				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), timerName);
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), mstring.String());
 				return false;
 			}
 
@@ -759,16 +751,14 @@ namespace Vortex {
 			Scene* scene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
-			char* managedString = mono_string_to_utf8(name);
-			std::string timerName = std::string(managedString);
-			mono_free(managedString);
+			ManagedString mstring(name);
 
-			Timer& timer = scene->TryGetMutableTimerByName(actor, timerName);
+			Timer& timer = scene->TryGetMutableTimerByName(actor, mstring.String());
 
 			if (timer.GetName().empty())
 			{
 				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), timerName);
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), mstring.String());
 				return false;
 			}
 
@@ -780,16 +770,14 @@ namespace Vortex {
 			Scene* scene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
-			char* managedString = mono_string_to_utf8(name);
-			std::string timerName = std::string(managedString);
-			mono_free(managedString);
+			ManagedString mstring(name);
 
-			Timer& timer = scene->TryGetMutableTimerByName(actor, timerName);
+			Timer& timer = scene->TryGetMutableTimerByName(actor, mstring.String());
 
 			if (timer.GetName().empty())
 			{
 				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), timerName);
+				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), mstring.String());
 			}
 
 			timer.Start();
@@ -1928,11 +1916,11 @@ namespace Vortex {
 				return;
 			}
 
-			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
-			char* managedString = mono_string_to_utf8(textString);
+			ManagedString mstring(textString);
 
-			textMeshComponent.TextString = std::string(managedString);
-			mono_free(managedString);
+			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
+			textMeshComponent.TextString = mstring.String();
+			textMeshComponent.TextHash = std::hash<std::string>()(mstring.String());
 		}
 
 		void TextMeshComponent_GetColor(UUID actorUUID, Math::vec4* outColor)
@@ -8190,9 +8178,8 @@ namespace Vortex {
 
 		bool Texture2D_LoadFromPath(MonoString* filepath, AssetHandle* outHandle)
 		{
-			char* managedString = mono_string_to_utf8(filepath);
-			AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(managedString);
-			mono_free(managedString);
+			ManagedString mstring(filepath);
+			AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(mstring.String());
 
 			*outHandle = textureHandle;
 
@@ -8663,130 +8650,106 @@ namespace Vortex {
 
 		void Gui_Text(MonoString* text)
 		{
-			char* managedString = mono_string_to_utf8(text);
+			ManagedString mstring(text);
 
-			Gui::Text(managedString);
-
-			mono_free(managedString);
+			Gui::Text(mstring.String().c_str());
 		}
 
 		bool Gui_Button(MonoString* text)
 		{
-			char* managedString = mono_string_to_utf8(text);
+			ManagedString mstring(text);
 
-			bool result = Gui::Button(managedString);
-
-			mono_free(managedString);
+			const bool result = Gui::Button(mstring.String().c_str());
 
 			return result;
 		}
 
 		bool Gui_PropertyBool(MonoString* label, bool* value)
 		{
-			char* managedString = mono_string_to_utf8(label);
+			ManagedString mstring(label);
 
-			bool modified = UI::Property(managedString, *value);
-
-			mono_free(managedString);
+			const bool modified = UI::Property(mstring.String().c_str(), *value);
 
 			return modified;
 		}
 
 		bool Gui_PropertyInt(MonoString* label, int* value)
 		{
-			char* managedString = mono_string_to_utf8(label);
+			ManagedString mstring(label);
 
-			bool modified = UI::Property(managedString, *value);
-
-			mono_free(managedString);
+			const bool modified = UI::Property(mstring.String().c_str(), *value);
 
 			return modified;
 		}
 
 		bool Gui_PropertyULong(MonoString* label, unsigned int* value)
 		{
-			char* managedString = mono_string_to_utf8(label);
+			ManagedString mstring(label);
 
-			bool modified = UI::Property(managedString, *value);
-
-			mono_free(managedString);
+			const bool modified = UI::Property(mstring.String().c_str(), *value);
 
 			return modified;
 		}
 
 		bool Gui_PropertyFloat(MonoString* label, float* value)
 		{
-			char* managedString = mono_string_to_utf8(label);
+			ManagedString mstring(label);
 
-			bool modified = UI::Property(managedString, *value);
-
-			mono_free(managedString);
+			const bool modified = UI::Property(mstring.String().c_str(), *value);
 
 			return modified;
 		}
 
 		bool Gui_PropertyDouble(MonoString* label, double* value)
 		{
-			char* managedString = mono_string_to_utf8(label);
+			ManagedString mstring(label);
 
-			bool modified = UI::Property(managedString, *value);
-
-			mono_free(managedString);
+			const bool modified = UI::Property(mstring.String().c_str(), *value);
 
 			return modified;
 		}
 
 		bool Gui_PropertyVec2(MonoString* label, Math::vec2* value)
 		{
-			char* managedString = mono_string_to_utf8(label);
+			ManagedString mstring(label);
 
-			bool modified = UI::Property(managedString, *value);
-
-			mono_free(managedString);
+			const bool modified = UI::Property(mstring.String().c_str(), *value);
 
 			return modified;
 		}
 
 		bool Gui_PropertyVec3(MonoString* label, Math::vec3* value)
 		{
-			char* managedString = mono_string_to_utf8(label);
+			ManagedString mstring(label);
 
-			bool modified = UI::Property(managedString, *value);
-
-			mono_free(managedString);
+			const bool modified = UI::Property(mstring.String().c_str(), *value);
 
 			return modified;
 		}
 
 		bool Gui_PropertyVec4(MonoString* label, Math::vec4* value)
 		{
-			char* managedString = mono_string_to_utf8(label);
+			ManagedString mstring(label);
 
-			bool modified = UI::Property(managedString, *value);
-
-			mono_free(managedString);
+			const bool modified = UI::Property(mstring.String().c_str(), *value);
 
 			return modified;
 		}
 
 		bool Gui_PropertyColor3(MonoString* label, Math::vec3* value)
 		{
-			char* managedString = mono_string_to_utf8(label);
+			ManagedString mstring(label);
 
-			bool modified = UI::Property(managedString, value);
-
-			mono_free(managedString);
+			const bool modified = UI::Property(mstring.String().c_str(), value);
 
 			return modified;
 		}
 
 		bool Gui_PropertyColor4(MonoString* label, Math::vec4* value)
 		{
-			char* managedString = mono_string_to_utf8(label);
+			ManagedString mstring(label);
 
-			bool modified = UI::Property(managedString, value);
-
-			mono_free(managedString);
+			const bool modified = UI::Property(mstring.String().c_str(), value);
 
 			return modified;
 		}
@@ -8797,18 +8760,17 @@ namespace Vortex {
 
 		void Log_Message(MonoString* message, Log::LogLevel type)
 		{
-			char* managedString = mono_string_to_utf8(message);
+			ManagedString mstring(message);
+			const std::string& msg = mstring.String();
 
 			switch (type)
 			{
-				case Log::LogLevel::Trace: VX_CONSOLE_LOG_TRACE("{}", managedString); break;
-				case Log::LogLevel::Info:  VX_CONSOLE_LOG_INFO("{}", managedString);  break;
-				case Log::LogLevel::Warn:  VX_CONSOLE_LOG_WARN("{}", managedString);  break;
-				case Log::LogLevel::Error: VX_CONSOLE_LOG_ERROR("{}", managedString); break;
-				case Log::LogLevel::Fatal: VX_CONSOLE_LOG_FATAL("{}", managedString); break;
+				case Log::LogLevel::Trace: VX_CONSOLE_LOG_TRACE("{}", msg); break;
+				case Log::LogLevel::Info:  VX_CONSOLE_LOG_INFO("{}", msg);  break;
+				case Log::LogLevel::Warn:  VX_CONSOLE_LOG_WARN("{}", msg);  break;
+				case Log::LogLevel::Error: VX_CONSOLE_LOG_ERROR("{}", msg); break;
+				case Log::LogLevel::Fatal: VX_CONSOLE_LOG_FATAL("{}", msg); break;
 			}
-
-			mono_free(managedString);
 		}
 
 #pragma endregion
