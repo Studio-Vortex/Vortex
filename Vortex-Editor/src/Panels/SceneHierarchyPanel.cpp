@@ -97,7 +97,7 @@ namespace Vortex {
 		StaticMeshRendererComponent& staticMeshRendererComponent = actor.AddComponent<StaticMeshRendererComponent>();
 		staticMeshRendererComponent.Type = static_cast<MeshType>(defaultMesh);
 		staticMeshRendererComponent.StaticMesh = Project::GetEditorAssetManager()->GetDefaultStaticMesh(defaultMesh);
-		actor.GetTransform().Translation = editorCamera->GetFocalPoint();
+		actor.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 
 		actor.AddComponent<RigidBodyComponent>();
 
@@ -129,7 +129,7 @@ namespace Vortex {
 		if (Gui::MenuItem("Create Empty"))
 		{
 			Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Empty Actor"));
-			selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+			selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 			actorCreated = true;
 		}
 		separator();
@@ -197,7 +197,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Sprite"))
 			{
 				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Sprite"));
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				selected.GetTransform().Translation.z = 0.0f;
 				selected.AddComponent<SpriteRendererComponent>();
 				selected.AddComponent<RigidBody2DComponent>();
@@ -209,7 +209,7 @@ namespace Vortex {
 			if (Gui::MenuItem("Circle"))
 			{
 				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Circle"));
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				selected.GetTransform().Translation.z = 0.0f;
 				selected.AddComponent<CircleRendererComponent>();
 				selected.AddComponent<RigidBody2DComponent>();
@@ -230,7 +230,7 @@ namespace Vortex {
 				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Camera"));
 				CameraComponent& cameraComponent = selected.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 			separator();
@@ -240,7 +240,7 @@ namespace Vortex {
 				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Camera"));
 				CameraComponent& cameraComponent = selected.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 
@@ -257,7 +257,7 @@ namespace Vortex {
 				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Directional Light"));
 				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Directional;
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 			separator();
@@ -267,7 +267,7 @@ namespace Vortex {
 				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Point Light"));
 				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Point;
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 			separator();
@@ -277,7 +277,7 @@ namespace Vortex {
 				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Spot Light"));
 				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Spot;
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 
@@ -324,7 +324,7 @@ namespace Vortex {
 				BoxColliderComponent& boxCollider = selected.AddComponent<BoxColliderComponent>();
 				boxCollider.Visible = true;
 				boxCollider.IsTrigger = true;
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 			separator();
@@ -336,7 +336,7 @@ namespace Vortex {
 				SphereColliderComponent& sphereCollider = selected.AddComponent<SphereColliderComponent>();
 				sphereCollider.Visible = true;
 				sphereCollider.IsTrigger = true;
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 			separator();
@@ -348,7 +348,7 @@ namespace Vortex {
 				CapsuleColliderComponent& capsuleCollider = selected.AddComponent<CapsuleColliderComponent>();
 				capsuleCollider.Visible = true;
 				capsuleCollider.IsTrigger = true;
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 			separator();
@@ -366,7 +366,7 @@ namespace Vortex {
 				selected.AddComponent<SpriteRendererComponent>();
 				selected.AddComponent<RigidBody2DComponent>();
 				selected.AddComponent<BoxCollider2DComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 			separator();
@@ -377,7 +377,7 @@ namespace Vortex {
 				selected.AddComponent<CircleRendererComponent>();
 				selected.AddComponent<RigidBody2DComponent>();
 				selected.AddComponent<CircleCollider2DComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 
@@ -393,7 +393,7 @@ namespace Vortex {
 			{
 				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Audio Source"));
 				selected.AddComponent<AudioSourceComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 			separator();
@@ -402,7 +402,7 @@ namespace Vortex {
 			{
 				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Audio Listener"));
 				selected.AddComponent<AudioListenerComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 
@@ -418,7 +418,7 @@ namespace Vortex {
 			{
 				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("UI Text"));
 				selected.AddComponent<TextMeshComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 			separator();
@@ -427,7 +427,7 @@ namespace Vortex {
 			{
 				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("UI Button"));
 				selected.AddComponent<ButtonComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 
@@ -443,7 +443,7 @@ namespace Vortex {
 			{
 				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Particle Emitter"));
 				selected.AddComponent<ParticleEmitterComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint();
+				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
 				actorCreated = true;
 			}
 
@@ -798,11 +798,8 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::DrawActorNode(Actor actor, const EditorCamera* editorCamera)
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
-		const auto& tag = actor.GetComponent<TagComponent>().Tag;
+		const TagComponent& tagComponent = actor.GetComponent<TagComponent>();
+		const std::string& tag = tagComponent.Tag;
 
 		ImGuiTreeNodeFlags flags = ((SelectionManager::GetSelectedActor() == actor) ? ImGuiTreeNodeFlags_Selected : 0)
 			| ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -871,7 +868,9 @@ namespace Vortex {
 			UI::Draw::Underline();
 
 			if (Gui::MenuItem("Delete Actor", "Del") && SelectionManager::GetSelectedActor())
+			{
 				m_ActorShouldBeDestroyed = true;
+			}
 
 			Gui::EndPopup();
 		}
@@ -896,7 +895,7 @@ namespace Vortex {
 
 		if (opened)
 		{
-			const auto& children = actor.Children();
+			const std::vector<UUID>& children = actor.Children();
 			for (const auto& child : children)
 			{
 				Actor childActor = m_ContextScene->TryGetActorWithUUID(child);
