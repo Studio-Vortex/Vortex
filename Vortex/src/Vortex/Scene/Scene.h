@@ -199,9 +199,9 @@ namespace Vortex {
 		std::vector<Timer> m_FinishedTimers;
 
 		std::vector<std::function<void()>> m_PreUpdateQueue;
-		std::mutex m_PreUpdateQueueMutex;
-
 		std::vector<std::function<void()>> m_PostUpdateQueue;
+
+		std::mutex m_PreUpdateQueueMutex;
 		std::mutex m_PostUpdateQueueMutex;
 
 #ifndef VX_DIST

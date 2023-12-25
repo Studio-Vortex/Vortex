@@ -607,7 +607,7 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
-			auto onFinishedFn = [&]() { contextScene->SubmitToDestroyActor(actor, excludeChildren); };
+			auto onFinishedFn = [=]() { contextScene->SubmitToDestroyActor(actor, excludeChildren); };
 			Timer timer(actor.GetName() + std::to_string(actorUUID), delay, onFinishedFn);
 			timer.Start();
 

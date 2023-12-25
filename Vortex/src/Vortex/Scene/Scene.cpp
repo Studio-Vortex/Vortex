@@ -203,7 +203,7 @@ namespace Vortex {
 
 	void Scene::SubmitToDestroyActor(Actor actor, bool excludeChildren)
 	{
-		SubmitToPostUpdateQueue([&]() {
+		SubmitToPostUpdateQueue([=]() {
 			DestroyActorInternal(actor, excludeChildren);
 		});
 	}
@@ -594,7 +594,9 @@ namespace Vortex {
 
 		ExecutePreUpdateQueue();
 
-		if (!m_IsPaused || m_StepFrames > 0)
+		const bool updateCurrentFrame = !m_IsPaused || m_StepFrames > 0;
+
+		if (updateCurrentFrame)
 		{
 			OnPhysicsSimulationUpdate(delta);
 
