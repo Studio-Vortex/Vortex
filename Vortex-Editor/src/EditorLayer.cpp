@@ -881,13 +881,14 @@ namespace Vortex {
 		const bool timeLeft = m_SceneViewportBorderFadeTimer > 0.0f;
 		const bool inEditMode = InEditSceneState();
 		const bool fading = timeLeft && !inEditMode;
+		const TimeStep delta = Time::GetDeltaTime();
 
-		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ 0.0f, 0.0f });
+		UI::ScopedStyle windowPadding(ImGuiStyleVar_WindowPadding, ImVec2{ m_SceneViewportBorderSize, m_SceneViewportBorderSize });
 		if (fading)
 		{
-			Gui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 3.0f);
-			Gui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 1.0f, 1.0f });
+			Gui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, m_SceneViewportBorderSize);
 		}
+
 		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar;
 		Gui::Begin("Scene", &m_SceneViewportPanelOpen, flags);
 
@@ -912,7 +913,7 @@ namespace Vortex {
 		// Scene Viewport Border
 		if (fading)
 		{
-			m_SceneViewportBorderFadeTimer -= Time::GetDeltaTime();
+			m_SceneViewportBorderFadeTimer -= delta;
 			const float mapped = Math::Min(1.0f, m_SceneViewportBorderFadeTimer * 0.5f + 0.5f);
 			const Math::vec4& viewportBorderColor = InPlaySceneState() ? m_SceneViewportOnPlayBorderColor : m_SceneViewportOnSimulateBorderColor;
 			const Math::vec4 lvalue = viewportBorderColor * mapped;
@@ -950,7 +951,7 @@ namespace Vortex {
 
 		if (fading)
 		{
-			Gui::PopStyleVar(2);
+			Gui::PopStyleVar();
 		}
 
 		Gui::End();
@@ -1230,7 +1231,7 @@ namespace Vortex {
 				Math::ValuePtr(cameraView),
 				Math::ValuePtr(cameraProjection),
 				(ImGuizmo::OPERATION)m_GizmoType,
-				(ImGuizmo::MODE)m_TranslationMode,
+				(ImGuizmo::MODE)m_TransformationMode,
 				Math::ValuePtr(transform),
 				nullptr,
 				snapEnabled ? snapValues.data() : nullptr
@@ -1695,14 +1696,14 @@ namespace Vortex {
 					drawHeading("Gizmos");
 					UI::BeginPropertyGrid(columnWidth);
 
-					if (UI::ImageButton("Local Mode", EditorResources::LocalModeIcon, textureSize, m_TranslationMode == 0 ? bgColor : normalColor, tintColor))
+					if (UI::ImageButton("Local Mode", EditorResources::LocalModeIcon, textureSize, m_TransformationMode == 0 ? bgColor : normalColor, tintColor))
 					{
-						m_TranslationMode = (uint32_t)ImGuizmo::MODE::LOCAL;
+						m_TransformationMode = (uint32_t)ImGuizmo::MODE::LOCAL;
 					}
 
-					if (UI::ImageButton("World Mode", EditorResources::WorldModeIcon, textureSize, m_TranslationMode == 1 ? bgColor : normalColor, tintColor))
+					if (UI::ImageButton("World Mode", EditorResources::WorldModeIcon, textureSize, m_TransformationMode == 1 ? bgColor : normalColor, tintColor))
 					{
-						m_TranslationMode = (uint32_t)ImGuizmo::MODE::WORLD;
+						m_TransformationMode = (uint32_t)ImGuizmo::MODE::WORLD;
 					}
 
 					UI::Property("Enable Snapping", properties.GizmoProps.SnapEnabled);
@@ -3281,8 +3282,8 @@ namespace Vortex {
 			if (camera == nullptr)
 				continue;
 
-			camera->Focus(origin);
 			camera->SetDistance(distance);
+			camera->Focus(origin);
 		}
 	}
 
