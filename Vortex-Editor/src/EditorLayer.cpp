@@ -939,6 +939,7 @@ namespace Vortex {
 		
 		if (displayToolbars)
 		{
+			UITransformationModeToolbar();
 			UIGizmosToolbar();
 			UICentralToolbar();
 			UIViewportSettingsToolbar();
@@ -1358,10 +1359,61 @@ namespace Vortex {
 		}
 	}
 
+	void EditorLayer::UITransformationModeToolbar()
+	{
+		const UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		const UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		const UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
+		const UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		const UI::ScopedColor buttonBackground(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+
+		const ImVec4 normalColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+		const ImVec4 bgColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+		const ImVec4 tintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+		const float buttonSize = 18.0f;
+		const float edgeOffset = 4.0f;
+		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
+		const float numberOfButtons = 2.0f;
+		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
+		const ImVec2 textureSize = { buttonSize, buttonSize };
+
+		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds.MinBound.x + 14, m_ViewportBounds.MinBound.y + edgeOffset));
+		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
+		Gui::SetNextWindowBgAlpha(0.0f);
+		Gui::Begin("Transformation Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
+
+		const float desiredHeight = 26.0f;
+		ImRect background = UI::RectExpanded(Gui::GetCurrentWindow()->Rect(), 0.0f, -(windowHeight - desiredHeight) / 2.0f);
+		Gui::GetWindowDrawList()->AddRectFilled(background.Min, background.Max, IM_COL32(15, 15, 15, 127), 4.0f);
+
+		Gui::BeginVertical("##viewportTransformationModeToolbarV", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::Spring();
+		Gui::BeginHorizontal("##viewportTransformationModeToolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
+		Gui::Spring();
+
+		if (UI::ImageButtonEx(EditorResources::LocalModeIcon, textureSize, m_TransformationMode == 0 ? bgColor : normalColor, tintColor))
+		{
+			m_TransformationMode = (uint32_t)ImGuizmo::MODE::LOCAL;
+		}
+		UI::SetTooltip("Local Transformation");
+
+		if (UI::ImageButtonEx(EditorResources::WorldModeIcon, textureSize, m_TransformationMode == 1 ? bgColor : normalColor, tintColor))
+		{
+			m_TransformationMode = (uint32_t)ImGuizmo::MODE::WORLD;
+		}
+		UI::SetTooltip("World Transformation");
+
+		Gui::Spring();
+		Gui::EndHorizontal();
+		Gui::Spring();
+		Gui::EndVertical();
+
+		Gui::End();
+	}
+
 	void EditorLayer::UIGizmosToolbar()
 	{
-		VX_PROFILE_FUNCTION();
-
 		const UI::ScopedStyle disableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 		const UI::ScopedStyle disableWindowBorder(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		const UI::ScopedStyle windowRounding(ImGuiStyleVar_WindowRounding, 4.0f);
@@ -1379,7 +1431,7 @@ namespace Vortex {
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;
 		const ImVec2 textureSize = { buttonSize, buttonSize };
 
-		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds.MinBound.x + 14, m_ViewportBounds.MinBound.y + edgeOffset));
+		Gui::SetNextWindowPos(ImVec2(m_ViewportBounds.MinBound.x + 150, m_ViewportBounds.MinBound.y + edgeOffset));
 		Gui::SetNextWindowSize(ImVec2(backgroundWidth, windowHeight));
 		Gui::SetNextWindowBgAlpha(0.0f);
 		Gui::Begin("Gizmos Toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking);
@@ -1427,8 +1479,6 @@ namespace Vortex {
 
 	void EditorLayer::UICentralToolbar()
 	{
-		VX_PROFILE_FUNCTION();
-
 		SharedReference<Project> project = Project::GetActive();
 		const ProjectProperties& properties = project->GetProperties();
 
@@ -1553,8 +1603,6 @@ namespace Vortex {
 
 	void EditorLayer::UIViewportSettingsToolbar()
 	{
-		VX_PROFILE_FUNCTION();
-
 		UI::PushID();
 
 		SharedReference<Project> project = Project::GetActive();
@@ -1566,7 +1614,7 @@ namespace Vortex {
 		const UI::ScopedStyle disablePadding(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
 		const float buttonSize = 18.0f;
-		const float edgeOffset = 2.0f;
+		const float edgeOffset = 4.0f;
 		const float windowHeight = 32.0f; // annoying limitation of ImGui, window can't be smaller than 32 pixels
 		const float numberOfButtons = 1.0f;
 		const float backgroundWidth = edgeOffset * 6.0f + buttonSize * numberOfButtons + edgeOffset * (numberOfButtons - 1.0f) * 2.0f;

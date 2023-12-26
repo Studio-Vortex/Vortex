@@ -36,6 +36,7 @@ namespace Vortex {
 
 		// UI
 
+		void UITransformationModeToolbar();
 		void UIGizmosToolbar();
 		void UICentralToolbar();
 		void UIViewportSettingsToolbar();
