@@ -188,6 +188,9 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Actor_AddTimer(ulong actorID, string name, float delay);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Actor_IsValid(ulong actorID);
 
 		#endregion
 

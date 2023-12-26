@@ -695,6 +695,14 @@ namespace Vortex {
 			scene->AddOrReplaceTimer(actor, std::move(timer));
 		}
 
+		bool Actor_IsValid(UUID actorUUID)
+		{
+			Scene* scene = GetContextScene();
+			Actor actor = GetActor(actorUUID);
+
+			return bool(actor);
+		}
+
 #pragma endregion
 
 #pragma region AssetHandle
@@ -8887,6 +8895,7 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Actor_InvokeWithDelay);
 		VX_REGISTER_INTERNAL_CALL(Actor_SetActive);
 		VX_REGISTER_INTERNAL_CALL(Actor_AddTimer);
+		VX_REGISTER_INTERNAL_CALL(Actor_IsValid);
 
 		VX_REGISTER_INTERNAL_CALL(AssetHandle_IsValid);
 

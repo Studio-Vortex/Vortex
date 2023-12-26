@@ -125,6 +125,7 @@ namespace Vortex {
 		void Actor_InvokeWithDelay(UUID actorUUID, MonoString* methodName, float delay);
 		void Actor_SetActive(UUID actorUUID, bool isActive);
 		void Actor_AddTimer(UUID actorUUID, MonoString* name, float delay);
+		bool Actor_IsValid(UUID actorUUID);
 
 #pragma endregion
 

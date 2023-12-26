@@ -180,6 +180,7 @@ namespace Vortex {
 
 		public static bool operator ==(Actor actorA, Actor actorB) => actorA is null ? actorB is null : actorA.Equals(actorB);
 		public static bool operator !=(Actor actorA, Actor actorB) => !(actorA == actorB);
+		public static implicit operator bool(Actor actor) => InternalCalls.Actor_IsValid(actor.ID);
 	}
 
 }

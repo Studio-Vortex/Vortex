@@ -42,7 +42,21 @@ namespace Vortex {
 
 		public const float kEpsilonNormalSqrt = 1e-15F;
 
-		public float sqrMagnitude { get { return X * X + Y * Y + Z * Z; } }
+		public float Magnitude { get => X * X + Y * Y + Z * Z; }
+
+		public uint Length() => 3;
+
+		public Vector3 Normalized()
+		{
+			return new Vector3(X / Magnitude, Y / Magnitude, Z / Magnitude);
+		}
+
+		public void Normalize()
+		{
+			X /= Magnitude;
+			Y /= Magnitude;
+			Z /= Magnitude;
+		}
 
 		public static Vector3 operator +(Vector3 vector, Vector3 other) => new Vector3(vector.X + other.X, vector.Y + other.Y, vector.Z + other.Z);
 		public static Vector3 operator +(Vector3 vector, float scalar) => new Vector3(vector.X + scalar, vector.Y + scalar, vector.Z + scalar);
@@ -57,7 +71,7 @@ namespace Vortex {
 		public static Vector3 operator /(Vector3 vector, Vector3 other) => new Vector3(vector.X / other.X, vector.Y / other.Y, vector.Z / other.Z);
 		public static Vector3 operator /(Vector3 vector, float scalar) => new Vector3(vector.X / scalar, vector.Y / scalar, vector.Z / scalar);
 		public static Vector3 operator /(float scalar, Vector3 vector) => new Vector3(vector.X / scalar, vector.Y / scalar, vector.Z / scalar);
-		
+
 		public static bool operator <(Vector3 vector, Vector3 other) => vector.X < other.X && vector.Y < other.Y && vector.Z < other.Z;
 		public static bool operator >(Vector3 vector, Vector3 other) => !(vector < other);
 		public static bool operator <=(Vector3 vector, Vector3 other) => vector.X <= other.X && vector.Y <= other.Y && vector.Z <= other.Z;
@@ -75,26 +89,6 @@ namespace Vortex {
 		public bool Equals(Vector3 right) => X == right.X && Y == right.Y && Z == right.Z;
 
 		public override int GetHashCode() => (X, Y, Z).GetHashCode();
-
-		public float Length() => Mathf.Sqrt(X * X + Y * Y + Z * Z);
-
-		public Vector3 Normalized()
-		{
-			float length = Length();
-
-			if (length > 0.0f)
-				return new Vector3(X / length, Y / length, Z / length);
-			else
-				return new Vector3(X, Y, Z);
-		}
-
-		public void Normalize()
-		{
-			float length = Length();
-			X /= length;
-			Y /= length;
-			Z /= length;
-		}
 
 		public static float Distance(Vector3 lhs, Vector3 rhs)
 		{
@@ -142,7 +136,7 @@ namespace Vortex {
 		public static float Angle(Vector3 from, Vector3 to)
 		{
 			// sqrt(a) * sqrt(b) = sqrt(a * b) -- valid for real numbers
-			float denominator = (float)Math.Sqrt(from.sqrMagnitude * to.sqrMagnitude);
+			float denominator = (float)Math.Sqrt(from.Magnitude * to.Magnitude);
 			if (denominator < kEpsilonNormalSqrt)
 				return 0F;
 

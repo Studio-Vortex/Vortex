@@ -28,6 +28,21 @@
 			Y = y;
 		}
 
+		public float Magnitude { get => X * X + Y * Y; }
+
+		public uint Length() => 2;
+
+		public Vector2 Normalized()
+		{
+			return new Vector2(X / Magnitude, Y / Magnitude);
+		}
+
+		public void Normalize()
+		{
+			X /= Magnitude;
+			Y /= Magnitude;
+		}
+
 		public static Vector2 operator -(Vector2 vector)
 		{
 			return new Vector2(-vector.X, -vector.Y);
@@ -77,6 +92,8 @@
 		{
 			return !(vector == other);
 		}
+
+		public override int GetHashCode() => (X, Y).GetHashCode();
 
 		public static implicit operator Color2(Vector2 vector) => new Color2(vector.X, vector.Y);
 
