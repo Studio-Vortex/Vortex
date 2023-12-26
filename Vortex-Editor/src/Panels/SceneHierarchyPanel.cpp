@@ -899,10 +899,10 @@ namespace Vortex {
 			for (const auto& child : children)
 			{
 				Actor childActor = m_ContextScene->TryGetActorWithUUID(child);
-				if (childActor && std::find(children.begin(), children.end(), child) != children.end());
-				{
-					DrawActorNode(childActor, editorCamera);
-				}
+				if (!childActor)
+					continue;
+
+				DrawActorNode(childActor, editorCamera);
 			}
 
 			Gui::TreePop();
@@ -935,92 +935,91 @@ namespace Vortex {
 	template <typename TComponent>
 	static void DrawComponent(const std::string& name, Actor actor, const ComponentUICallbacks<TComponent>& callbacks)
 	{
-		if (actor.HasComponent<TComponent>())
+		if (!actor.HasComponent<TComponent>())
+			return;
+
+		auto& component = actor.GetComponent<TComponent>();
+		const ImVec2 contentRegionAvailable = Gui::GetContentRegionAvail();
+
+		Gui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
+		const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		UI::Draw::Underline();
+		const bool propertyGridHeaderOpen = UI::PropertyGridHeader(name.c_str());
+		Gui::PopStyleVar();
+		Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.6f);
+		UI::ShiftCursorY(2.0f);
+		if (Gui::Button((const char*)VX_ICON_COG, { lineHeight, lineHeight }))
+			Gui::OpenPopup("ComponentSettings");
+
+		bool removeComponent = false;
+		if (Gui::BeginPopup("ComponentSettings"))
 		{
-			auto& component = actor.GetComponent<TComponent>();
-			const ImVec2 contentRegionAvailable = Gui::GetContentRegionAvail();
+			Gui::BeginDisabled(callbacks.OnComponentCopiedFn == nullptr);
+			if (Gui::MenuItem("Copy Component"))
+			{
+				if (callbacks.OnComponentCopiedFn != nullptr)
+				{
+					std::invoke(callbacks.OnComponentCopiedFn, component, actor);
+				}
+				Gui::CloseCurrentPopup();
+			}
+			Gui::EndDisabled();
 
-			Gui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
-			const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 			UI::Draw::Underline();
-			const bool propertyGridHeaderOpen = UI::PropertyGridHeader(name.c_str());
-			Gui::PopStyleVar();
-			Gui::SameLine(contentRegionAvailable.x - lineHeight * 0.6f);
-			UI::ShiftCursorY(2.0f);
-			if (Gui::Button((const char*)VX_ICON_COG, { lineHeight, lineHeight }))
-				Gui::OpenPopup("ComponentSettings");
 
-			bool removeComponent = false;
-			if (Gui::BeginPopup("ComponentSettings"))
+			Gui::BeginDisabled(callbacks.OnComponentPastedFn == nullptr);
+			if (Gui::MenuItem("Paste Component"))
 			{
-				Gui::BeginDisabled(callbacks.OnComponentCopiedFn == nullptr);
-				if (Gui::MenuItem("Copy Component"))
+				if (callbacks.OnComponentPastedFn != nullptr)
 				{
-					if (callbacks.OnComponentCopiedFn != nullptr)
-					{
-						std::invoke(callbacks.OnComponentCopiedFn, component, actor);
-					}
-					Gui::CloseCurrentPopup();
+					std::invoke(callbacks.OnComponentPastedFn, component, actor);
 				}
-				Gui::EndDisabled();
+				Gui::CloseCurrentPopup();
+			}
+			Gui::EndDisabled();
 
+			UI::Draw::Underline();
+
+			Gui::BeginDisabled(callbacks.OnComponentResetFn == nullptr);
+			if (Gui::MenuItem("Reset Component"))
+			{
+				if (callbacks.OnComponentResetFn != nullptr)
+				{
+					std::invoke(callbacks.OnComponentResetFn, component, actor);
+				}
+				Gui::CloseCurrentPopup();
+			}
+			Gui::EndDisabled();
+
+			if (callbacks.IsRemoveable)
+			{
 				UI::Draw::Underline();
 
-				Gui::BeginDisabled(callbacks.OnComponentPastedFn == nullptr);
-				if (Gui::MenuItem("Paste Component"))
+				if (Gui::MenuItem("Remove Component"))
 				{
-					if (callbacks.OnComponentPastedFn != nullptr)
-					{
-						std::invoke(callbacks.OnComponentPastedFn, component, actor);
-					}
+					removeComponent = true;
 					Gui::CloseCurrentPopup();
 				}
-				Gui::EndDisabled();
-
-				UI::Draw::Underline();
-
-				Gui::BeginDisabled(callbacks.OnComponentResetFn == nullptr);
-				if (Gui::MenuItem("Reset Component"))
-				{
-					if (callbacks.OnComponentResetFn != nullptr)
-					{
-						std::invoke(callbacks.OnComponentResetFn, component, actor);
-					}
-					Gui::CloseCurrentPopup();
-				}
-				Gui::EndDisabled();
-
-				if (callbacks.IsRemoveable)
-					UI::Draw::Underline();
-
-				if (callbacks.IsRemoveable)
-				{
-					if (Gui::MenuItem("Remove Component"))
-					{
-						removeComponent = true;
-						Gui::CloseCurrentPopup();
-					}
-				}
-
-				Gui::EndPopup();
 			}
 
-			if (propertyGridHeaderOpen)
+			Gui::EndPopup();
+		}
+
+		if (propertyGridHeaderOpen)
+		{
+			VX_CORE_ASSERT(callbacks.OnGuiRenderFn != nullptr, "All components must have OnGuiRender callback!");
+			std::invoke(callbacks.OnGuiRenderFn, component, actor);
+			UI::EndTreeNode();
+		}
+
+		if (removeComponent)
+		{
+			if (callbacks.OnComponentRemovedFn != nullptr)
 			{
-				VX_CORE_ASSERT(callbacks.OnGuiRenderFn != nullptr, "All components must have OnGuiRender callback!");
-				std::invoke(callbacks.OnGuiRenderFn, component, actor);
-				UI::EndTreeNode();
+				std::invoke(callbacks.OnComponentRemovedFn, component, actor);
 			}
 
-			if (removeComponent)
-			{
-				if (callbacks.OnComponentRemovedFn != nullptr)
-				{
-					std::invoke(callbacks.OnComponentRemovedFn, component, actor);
-				}
-
-				actor.RemoveComponent<TComponent>();
-			}
+			actor.RemoveComponent<TComponent>();
 		}
 	}
 
@@ -1910,7 +1909,7 @@ namespace Vortex {
 					component.IsActive = false;
 				}
 			}
-			UI::SetTooltip("Play");
+			UI::SetTooltip("Stop");
 			Gui::EndDisabled();
 			Gui::EndDisabled();
 		}
