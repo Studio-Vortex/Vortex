@@ -181,10 +181,8 @@ namespace Vortex {
 			InternalCalls.TransformComponent_SetTranslationAndRotation(Actor.ID, ref translation, ref rotation);
 		}
 
-		public void LookAt(Vector3 worldPoint)
-		{
-			InternalCalls.TransformComponent_LookAt(Actor.ID, ref worldPoint);
-		}
+		public void LookAt(Vector3 worldPoint) => InternalCalls.TransformComponent_LookAt(Actor.ID, ref worldPoint);
+		public void LookAt(Actor target) => LookAt(target.transform.Translation);
 
 		public static Transform operator *(Transform a, Transform b)
 		{
