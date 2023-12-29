@@ -501,10 +501,6 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		const ImGuiIO& io = Gui::GetIO();
-		const auto boldFont = io.Fonts->Fonts[0];
-		const auto largeFont = io.Fonts->Fonts[1];
-
 		SharedReference<Project> project = Project::GetActive();
 		ProjectProperties& properties = project->GetProperties();
 
@@ -593,19 +589,7 @@ namespace Vortex {
 					}
 					separator();
 
-					Actor selectedActor = SelectionManager::GetSelectedActor();
-
-					if (!selectedActor)
-					{
-						if (Gui::BeginMenu("Create Actor"))
-						{
-							EditorCamera* camera = GetCurrentEditorCamera();
-							m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateActorMenu(camera);
-
-							Gui::EndMenu();
-						}
-					}
-					else
+					if (Actor selectedActor = SelectionManager::GetSelectedActor())
 					{
 						if (Gui::MenuItem("Rename Actor", "F2"))
 						{
@@ -720,6 +704,14 @@ namespace Vortex {
 					ToggleSceneViewportMaximized();
 					Gui::CloseCurrentPopup();
 				}
+
+				Gui::EndMenu();
+			}
+
+			if (Gui::BeginMenu("Actor"))
+			{
+				EditorCamera* camera = GetCurrentEditorCamera();
+				m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateActorMenu(camera);
 
 				Gui::EndMenu();
 			}
