@@ -428,6 +428,8 @@ namespace Vortex {
 	{
 		SharedReference<Framebuffer> framebuffer = renderPacket.TargetFramebuffer;
 
+		PreparePostProcess(renderPacket);
+
 		if (renderPacket.EditorScene)
 		{
 			EditorCamera* camera = (EditorCamera*)renderPacket.PrimaryCamera;
@@ -449,6 +451,44 @@ namespace Vortex {
 		Renderer::EndScene();
 	}
 
+	void SceneRenderer::PreparePostProcess(const SceneRenderPacket& renderPacket)
+	{
+		Scene* scene = renderPacket.Scene;
+		Actor primaryCamera = scene->GetPrimaryCameraActor();
+
+		if (!primaryCamera)
+		{
+			return;
+		}
+
+		const CameraComponent& cameraComponent = primaryCamera.GetComponent<CameraComponent>();
+		const CameraComponent::PostProcessInfo& postProcessInfo = cameraComponent.PostProcessing;
+
+		if (postProcessInfo.Enabled)
+		{
+			const CameraComponent::PostProcessInfo::BloomInfo& bloomInfo = postProcessInfo.Bloom;
+
+			if (bloomInfo.Enabled)
+			{
+				if (!Renderer::IsFlagSet(RenderFlag::EnableBloom))
+				{
+					Renderer::SetFlag(RenderFlag::EnableBloom);
+				}
+
+				Renderer::SetBloomThreshold(bloomInfo.Threshold);
+				Renderer::SetBloomKnee(bloomInfo.Knee);
+				Renderer::SetBloomIntensity(bloomInfo.Intensity);
+			}
+			else
+			{
+				if (Renderer::IsFlagSet(RenderFlag::EnableBloom))
+				{
+					Renderer::DisableFlag(RenderFlag::EnableBloom);
+				}
+			}
+		}
+	}
+
 	void SceneRenderer::LightPass(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
@@ -460,15 +500,17 @@ namespace Vortex {
 		for (const auto e : lightSourceView)
 		{
 			Actor actor{ e, scene };
-			const LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lsc = actor.GetComponent<LightSourceComponent>();
 
 			if (!actor.IsActive())
 				continue;
 
-			if (!lightSourceComponent.Visible)
+			if (!lsc.Visible)
 				continue;
 
-			Renderer::RenderLightSource(scene->GetWorldSpaceTransform(actor), lightSourceComponent);
+			TransformComponent transform = scene->GetWorldSpaceTransform(actor);
+
+			Renderer::RenderLightSource(transform, lsc);
 		}
 	}
 
@@ -483,15 +525,15 @@ namespace Vortex {
 		for (const auto e : meshView)
 		{
 			Actor actor{ e, scene };
-			const MeshRendererComponent& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
+			const MeshRendererComponent& mrc = actor.GetComponent<MeshRendererComponent>();
 
 			if (!actor.IsActive())
 				continue;
 
-			if (!AssetManager::IsHandleValid(meshRendererComponent.Mesh))
+			if (!AssetManager::IsHandleValid(mrc.Mesh))
 				continue;
 
-			SharedReference<MaterialTable> materialTable = meshRendererComponent.Materials;
+			SharedReference<MaterialTable> materialTable = mrc.Materials;
 			VX_CORE_ASSERT(materialTable, "invalid material table!");
 			const uint32_t materialCount = materialTable->GetMaterialCount();
 
@@ -525,15 +567,15 @@ namespace Vortex {
 		for (const auto e : staticMeshView)
 		{
 			Actor actor{ e, scene };
-			const StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
+			const StaticMeshRendererComponent& smrc = actor.GetComponent<StaticMeshRendererComponent>();
 
 			if (!actor.IsActive())
 				continue;
 
-			if (!AssetManager::IsHandleValid(staticMeshRendererComponent.StaticMesh))
+			if (!AssetManager::IsHandleValid(smrc.StaticMesh))
 				continue;
 
-			SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
+			SharedReference<MaterialTable> materialTable = smrc.Materials;
 			VX_CORE_ASSERT(materialTable, "invalid material table!");
 			const uint32_t materialCount = materialTable->GetMaterialCount();
 
@@ -578,28 +620,28 @@ namespace Vortex {
 			for (const auto e : meshRendererView)
 			{
 				Actor actor{ e, scene };
-				const MeshRendererComponent& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
+				const MeshRendererComponent& mrc = actor.GetComponent<MeshRendererComponent>();
 
 				if (!actor.IsActive())
 					continue;
 
-				if (!meshRendererComponent.Visible)
+				if (!mrc.Visible)
 					continue;
 
-				const Math::vec3 actorWorldSpaceTranslation = scene->GetWorldSpaceTransform(actor).Translation;
+				const Math::vec3 worldSpaceTranslation = scene->GetWorldSpaceTransform(actor).Translation;
 
 				if (renderPacket.EditorScene)
 				{
 					const EditorCamera* editorCamera = (EditorCamera*)renderPacket.PrimaryCamera;
 					const Math::vec3& cameraPosition = editorCamera->GetPosition();
-					const float distance = Math::Distance(cameraPosition, actorWorldSpaceTranslation);
+					const float distance = Math::Distance(cameraPosition, worldSpaceTranslation);
 
 					SortActorByDistance(sortedGeometry, distance, actor, i);
 				}
 				else
 				{
 					const Math::vec3& cameraPosition = renderPacket.PrimaryCameraWorldSpaceTranslation;
-					const float distance = Math::Distance(cameraPosition, actorWorldSpaceTranslation);
+					const float distance = Math::Distance(cameraPosition, worldSpaceTranslation);
 
 					SortActorByDistance(sortedGeometry, distance, actor, i);
 				}
@@ -616,28 +658,28 @@ namespace Vortex {
 			for (const auto e : staticMeshRendererView)
 			{
 				Actor actor{ e, scene };
-				const StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
+				const StaticMeshRendererComponent& smrc = actor.GetComponent<StaticMeshRendererComponent>();
 
 				if (!actor.IsActive())
 					continue;
 
-				if (!staticMeshRendererComponent.Visible)
+				if (!smrc.Visible)
 					continue;
 
-				const Math::vec3 actorWorldSpaceTranslation = scene->GetWorldSpaceTransform(actor).Translation;
+				const Math::vec3 worldSpaceTranslation = scene->GetWorldSpaceTransform(actor).Translation;
 
 				if (renderPacket.EditorScene)
 				{
 					const EditorCamera* editorCamera = (EditorCamera*)renderPacket.PrimaryCamera;
 					const Math::vec3& cameraPosition = editorCamera->GetPosition();
-					const float distance = Math::Distance(cameraPosition, actorWorldSpaceTranslation);
+					const float distance = Math::Distance(cameraPosition, worldSpaceTranslation);
 
 					SortActorByDistance(sortedGeometry, distance, actor, i);
 				}
 				else
 				{
 					const Math::vec3& cameraPosition = renderPacket.PrimaryCameraWorldSpaceTranslation;
-					const float distance = Math::Distance(cameraPosition, actorWorldSpaceTranslation);
+					const float distance = Math::Distance(cameraPosition, worldSpaceTranslation);
 
 					SortActorByDistance(sortedGeometry, distance, actor, i);
 				}
@@ -867,6 +909,8 @@ namespace Vortex {
 
 	void SceneRenderer::SetMaterialFlags(const SharedReference<Material>& material)
 	{
+		m_LastCullMode = Renderer::GetCullMode();
+
 		if (material->HasFlag(MaterialFlag::NoDepthTest))
 		{
 			RenderCommand::DisableDepthTest();
@@ -876,8 +920,7 @@ namespace Vortex {
 
 	void SceneRenderer::ResetMaterialFlags()
 	{
-		RendererAPI::TriangleCullMode cullMode = Renderer::GetCullMode();
-		RenderCommand::SetCullMode(cullMode);
+		RenderCommand::SetCullMode(m_LastCullMode);
 		RenderCommand::EnableDepthTest();
 	}
 

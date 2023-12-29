@@ -56,15 +56,16 @@ namespace Vortex {
 		size_t extensionPos = filepath.find(".");
 		size_t lastSlashPos = filepath.find_last_of("/\\") + 1;
 		size_t length = filepath.length();
-		bool invalidFile = length == 0;
+		const bool invalidFile = length == 0;
 
-		std::string sceneName = invalidFile ? "Untitled" : filepath.substr(lastSlashPos, extensionPos - lastSlashPos);
+		const std::string sceneName = invalidFile ? "Untitled" : filepath.substr(lastSlashPos, extensionPos - lastSlashPos);
 
 		YAML::Emitter out;
-		out << YAML::BeginMap;
+		out << YAML::BeginMap; // Scene
 		
 		out << YAML::Key << "Scene" << YAML::Value << sceneName;
-		out << YAML::Key << "Actors" << YAML::Value << YAML::BeginSeq;
+		out << YAML::Key << "Actors" << YAML::Value;
+		out << YAML::BeginSeq; // Actors
 
 		m_Scene->m_Registry.each([&](auto actorID)
 		{
@@ -76,8 +77,8 @@ namespace Vortex {
 			SerializeActor(out, actor);
 		});
 
-		out << YAML::EndSeq;
-		out << YAML::EndMap;
+		out << YAML::EndSeq; // Actors
+		out << YAML::EndMap; // Scene
 
 		std::ofstream fout(filepath);
 		fout << out.c_str();
@@ -203,6 +204,24 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(ClearColor, cameraComponent.ClearColor, out);
 			VX_SERIALIZE_PROPERTY(Primary, cameraComponent.Primary, out);
 			VX_SERIALIZE_PROPERTY(FixedAspectRatio, cameraComponent.FixedAspectRatio, out);
+			VX_SERIALIZE_PROPERTY(PostProcessingEnabled, cameraComponent.PostProcessing.Enabled, out);
+
+			if (cameraComponent.PostProcessing.Enabled)
+			{
+				out << YAML::Key << "PostProcessing" << YAML::Value;
+
+				out << YAML::BeginMap; // PostProcessing
+				{
+					out << YAML::Key << "Bloom" << YAML::Value;
+					out << YAML::BeginMap; // Bloom
+					VX_SERIALIZE_PROPERTY(Threshold, cameraComponent.PostProcessing.Bloom.Threshold, out);
+					VX_SERIALIZE_PROPERTY(Knee, cameraComponent.PostProcessing.Bloom.Knee, out);
+					VX_SERIALIZE_PROPERTY(Intensity, cameraComponent.PostProcessing.Bloom.Intensity, out);
+					VX_SERIALIZE_PROPERTY(Enabled, cameraComponent.PostProcessing.Bloom.Enabled, out);
+					out << YAML::EndMap; // Bloom
+				}
+				out << YAML::EndMap; // PostProcessing
+			}
 
 			out << YAML::EndMap; // CameraComponent
 		}
@@ -832,6 +851,21 @@ namespace Vortex {
 					cc.ClearColor = cameraComponent["ClearColor"].as<Math::vec3>();
 				cc.Primary = cameraComponent["Primary"].as<bool>();
 				cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
+				if (cameraComponent["PostProcessingEnabled"])
+					cc.PostProcessing.Enabled = cameraComponent["PostProcessingEnabled"].as<bool>();
+
+				if (cc.PostProcessing.Enabled)
+				{
+					auto postProcessData = cameraComponent["PostProcessing"];
+					
+					{
+						auto bloomData = postProcessData["Bloom"];
+						cc.PostProcessing.Bloom.Threshold = bloomData["Threshold"].as<float>();
+						cc.PostProcessing.Bloom.Knee = bloomData["Knee"].as<float>();
+						cc.PostProcessing.Bloom.Intensity = bloomData["Intensity"].as<float>();
+						cc.PostProcessing.Bloom.Enabled = bloomData["Enabled"].as<float>();
+					}
+				}
 			}
 
 			auto skyboxComponent = actor["SkyboxComponent"];

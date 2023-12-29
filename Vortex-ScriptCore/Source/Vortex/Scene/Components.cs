@@ -260,6 +260,17 @@ namespace Vortex {
 			set => InternalCalls.CameraComponent_SetOrthographicFar(Actor.ID, value);
 		}
 
+		public Color3 ClearColor
+		{
+			get
+			{
+				InternalCalls.CameraComponent_GetClearColor(Actor.ID, out Vector3 result);
+				return result;
+			}
+
+			set => InternalCalls.CameraComponent_SetClearColor(Actor.ID, ref value);
+		}
+
 		public bool IsFixedAspectRatio
 		{
 			get
@@ -271,15 +282,9 @@ namespace Vortex {
 			set => InternalCalls.CameraComponent_SetFixedAspectRatio(Actor.ID, value);
 		}
 
-		public Color3 ClearColor
+		public PostProcessInfo PostProcess
 		{
-			get
-			{
-				InternalCalls.CameraComponent_GetClearColor(Actor.ID, out Vector3 result);
-				return result;
-			}
-
-			set => InternalCalls.CameraComponent_SetClearColor(Actor.ID, ref value);
+			get => new PostProcessInfo(Actor);
 		}
 
 		public Ray Raycast(Vector2 position, float maxDistance)

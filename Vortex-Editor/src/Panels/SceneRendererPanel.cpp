@@ -232,61 +232,6 @@ namespace Vortex {
 			}
 
 			UI::EndPropertyGrid();
-
-			if (UI::PropertyGridHeader("Bloom", false))
-			{
-				UI::BeginPropertyGrid();
-
-				bool bloomEnabled = Renderer::IsFlagSet(RenderFlag::EnableBloom);
-				if (UI::Property("Enable Bloom", bloomEnabled))
-				{
-					Renderer::ToggleFlag(RenderFlag::EnableBloom);
-				}
-
-				if (bloomEnabled)
-				{
-					Math::vec3 bloomSettings = Renderer::GetBloomSettings();
-					bool modified = false;
-					if (UI::Property("Threshold", bloomSettings.x, 0.01f, FLT_MIN, FLT_MAX))
-						modified = true;
-					if (UI::Property("Knee", bloomSettings.y, 0.01f, FLT_MIN, FLT_MAX))
-						modified = true;
-					if (UI::Property("Intensity", bloomSettings.z, 0.01f, FLT_MIN, FLT_MAX))
-						modified = true;
-
-					if (modified)
-					{
-						Renderer::SetBloomSettings(bloomSettings);
-					}
-
-					static const char* bloomBlurSampleSizes[] = { "5", "10", "15", "20", "40" };
-					uint32_t bloomSampleSize = Renderer::GetBloomSampleSize();
-
-					uint32_t currentBloomBlurSamplesSize = 0;
-
-					if (bloomSampleSize == 5)  currentBloomBlurSamplesSize = 0;
-					if (bloomSampleSize == 10) currentBloomBlurSamplesSize = 1;
-					if (bloomSampleSize == 15) currentBloomBlurSamplesSize = 2;
-					if (bloomSampleSize == 20) currentBloomBlurSamplesSize = 3;
-					if (bloomSampleSize == 40) currentBloomBlurSamplesSize = 4;
-
-					if (UI::PropertyDropdown("Bloom Blur Samples", bloomBlurSampleSizes, VX_ARRAYSIZE(bloomBlurSampleSizes), currentBloomBlurSamplesSize))
-					{
-						switch (currentBloomBlurSamplesSize)
-						{
-							case 0: Renderer::SetBloomSampleSize(5);  break;
-							case 1: Renderer::SetBloomSampleSize(10); break;
-							case 2: Renderer::SetBloomSampleSize(15); break;
-							case 3: Renderer::SetBloomSampleSize(20); break;
-							case 4: Renderer::SetBloomSampleSize(40); break;
-						}
-					}
-				}
-
-				UI::EndPropertyGrid();
-				UI::EndTreeNode();
-			}
-
 			UI::EndTreeNode();
 		}
 

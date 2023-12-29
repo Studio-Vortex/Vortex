@@ -56,12 +56,6 @@ namespace Vortex {
 
 #pragma region SceneRenderer
 
-		float SceneRenderer_GetBloomThreshold();
-		void SceneRenderer_SetBloomThreshold(float threshold);
-		float SceneRenderer_GetBloomSoftKnee();
-		void SceneRenderer_SetBloomSoftKnee(float softKnee);
-		float SceneRenderer_GetBloomUnknown();
-		void SceneRenderer_SetBloomUnknown(float unknown);
 		float SceneRenderer_GetExposure();
 		void SceneRenderer_SetExposure(float exposure);
 		float SceneRenderer_GetGamma();
@@ -196,6 +190,26 @@ namespace Vortex {
 		void CameraComponent_Raycast(UUID actorUUID, Math::vec3* position, float maxDistance, Math::Ray* outRay);
 		void CameraComponent_ScreenToWorldPoint(UUID actorUUID, Math::vec2* position, float maxDistance, Math::vec3* outWorldPoint);
 		void CameraComponent_ScreenToViewportPoint(UUID actorUUID, Math::vec2* position, Math::vec2* outViewportPoint);
+
+#pragma endregion
+
+#pragma region PostProcessInfo
+
+		bool PostProcessInfo_GetEnabled(UUID actorUUID);
+		void PostProcessInfo_SetEnabled(UUID actorUUID, bool enabled);
+
+#pragma endregion
+
+#pragma region BloomInfo
+
+		float BloomInfo_GetThreshold(UUID actorUUID);
+		void BloomInfo_SetThreshold(UUID actorUUID, float threshold);
+		float BloomInfo_GetKnee(UUID actorUUID);
+		void BloomInfo_SetKnee(UUID actorUUID, float knee);
+		float BloomInfo_GetIntensity(UUID actorUUID);
+		void BloomInfo_SetIntensity(UUID actorUUID, float intensity);
+		bool BloomInfo_GetEnabled(UUID actorUUID);
+		void BloomInfo_SetEnabled(UUID actorUUID, bool enabled);
 
 #pragma endregion
 

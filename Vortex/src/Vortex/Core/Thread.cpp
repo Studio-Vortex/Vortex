@@ -3,7 +3,7 @@
 
 namespace Vortex {
 
-	Thread::Thread(const Fn& fn)
+	Thread::Thread(const LaunchFn& fn)
 		: m_Thread(fn)
 	{
 	}

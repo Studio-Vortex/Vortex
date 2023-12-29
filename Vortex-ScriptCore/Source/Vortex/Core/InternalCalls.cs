@@ -24,24 +24,6 @@ namespace Vortex {
 		#region SceneRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float SceneRenderer_GetBloomThreshold();
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SceneRenderer_SetBloomThreshold(float threshold);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float SceneRenderer_GetBloomSoftKnee();
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SceneRenderer_SetBloomSoftKnee(float softKnee);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float SceneRenderer_GetBloomUnknown();
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void SceneRenderer_SetBloomUnknown(float unknown);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float SceneRenderer_GetExposure();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -357,6 +339,44 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void CameraComponent_ScreenToViewportPoint(ulong actorID, ref Vector2 position, out Vector2 result);
+
+		#endregion
+
+		#region PostProcessInfo
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool PostProcessInfo_GetEnabled(ulong actorID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void PostProcessInfo_SetEnabled(ulong actorID, bool enabled);
+
+		#endregion
+
+		#region BloomInfo
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float BloomInfo_GetThreshold(ulong actorID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BloomInfo_SetThreshold(ulong actorID, float threshold);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float BloomInfo_GetKnee(ulong actorID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BloomInfo_SetKnee(ulong actorID, float knee);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float BloomInfo_GetIntensity(ulong actorID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BloomInfo_SetIntensity(ulong actorID, float intensity);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool BloomInfo_GetEnabled(ulong actorID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void BloomInfo_SetEnabled(ulong actorID, bool enabled);
 
 		#endregion
 

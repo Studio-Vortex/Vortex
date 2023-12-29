@@ -135,48 +135,6 @@ namespace Vortex {
 
 #pragma region SceneRenderer
 
-		float SceneRenderer_GetBloomThreshold()
-		{
-			Scene* contextScene = GetContextScene();
-
-			return Renderer::GetBloomSettings().x;
-		}
-
-		void SceneRenderer_SetBloomThreshold(float threshold)
-		{
-			Scene* contextScene = GetContextScene();
-
-			Renderer::SetBloomThreshold(threshold);
-		}
-
-		float SceneRenderer_GetBloomSoftKnee()
-		{
-			Scene* contextScene = GetContextScene();
-
-			return Renderer::GetBloomSettings().y;
-		}
-
-		void SceneRenderer_SetBloomSoftKnee(float softKnee)
-		{
-			Scene* contextScene = GetContextScene();
-
-			Renderer::SetBloomKnee(softKnee);
-		}
-
-		float SceneRenderer_GetBloomUnknown()
-		{
-			Scene* contextScene = GetContextScene();
-
-			return Renderer::GetBloomSettings().z;
-		}
-
-		void SceneRenderer_SetBloomUnknown(float unknown)
-		{
-			Scene* contextScene = GetContextScene();
-
-			Renderer::SetBloomIntensity(unknown);
-		}
-
 		float SceneRenderer_GetExposure()
 		{
 			Scene* contextScene = GetContextScene();
@@ -1638,6 +1596,154 @@ namespace Vortex {
 			const SceneCamera& sceneCamera = cameraComponent.Camera;
 
 			*outViewportPoint = sceneCamera.ScreenPointToViewportPoint(*position);
+		}
+
+#pragma endregion
+
+#pragma region PostProcessInfo
+
+        bool PostProcessInfo_GetEnabled(UUID actorUUID)
+        {
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access PostProcessInfo.Enabled without a Camera!");
+				return false;
+			}
+
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
+            return cameraComponent.PostProcessing.Enabled;
+        }
+
+        void PostProcessInfo_SetEnabled(UUID actorUUID, bool enabled)
+        {
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set PostProcessInfo.Enabled without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
+			cameraComponent.PostProcessing.Enabled = enabled;
+        }
+
+#pragma endregion
+
+#pragma region BloomInfo
+
+		float BloomInfo_GetThreshold(UUID actorUUID)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BloomInfo.Threshold without a Camera!");
+				return 0.0f;
+			}
+
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
+			return cameraComponent.PostProcessing.Bloom.Threshold;
+		}
+
+		void BloomInfo_SetThreshold(UUID actorUUID, float threshold)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BloomInfo.Threshold without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
+			cameraComponent.PostProcessing.Bloom.Threshold = threshold;
+		}
+
+		float BloomInfo_GetKnee(UUID actorUUID)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BloomInfo.Knee without a Camera!");
+				return 0.0f;
+			}
+
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
+			return cameraComponent.PostProcessing.Bloom.Knee;
+		}
+
+		void BloomInfo_SetKnee(UUID actorUUID, float knee)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BloomInfo.Knee without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
+			cameraComponent.PostProcessing.Bloom.Knee = knee;
+		}
+
+		float BloomInfo_GetIntensity(UUID actorUUID)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BloomInfo.Intensity without a Camera!");
+				return 0.0f;
+			}
+
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
+			return cameraComponent.PostProcessing.Bloom.Intensity;
+		}
+
+		void BloomInfo_SetIntensity(UUID actorUUID, float intensity)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BloomInfo.Intensity without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
+			cameraComponent.PostProcessing.Bloom.Intensity = intensity;
+		}
+
+		bool BloomInfo_GetEnabled(UUID actorUUID)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to access BloomInfo.Enabled without a Camera!");
+				return false;
+			}
+
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
+			return cameraComponent.PostProcessing.Bloom.Enabled;
+		}
+
+		void BloomInfo_SetEnabled(UUID actorUUID, bool enabled)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<CameraComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("Trying to set BloomInfo.Enabled without a Camera!");
+				return;
+			}
+
+			CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
+			cameraComponent.PostProcessing.Bloom.Enabled = enabled;
 		}
 
 #pragma endregion
@@ -8842,12 +8948,6 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Application_GetPosition);
 		VX_REGISTER_INTERNAL_CALL(Application_IsMaximized);
 
-		VX_REGISTER_INTERNAL_CALL(SceneRenderer_GetBloomThreshold);
-		VX_REGISTER_INTERNAL_CALL(SceneRenderer_SetBloomThreshold);
-		VX_REGISTER_INTERNAL_CALL(SceneRenderer_GetBloomSoftKnee);
-		VX_REGISTER_INTERNAL_CALL(SceneRenderer_SetBloomSoftKnee);
-		VX_REGISTER_INTERNAL_CALL(SceneRenderer_GetBloomUnknown);
-		VX_REGISTER_INTERNAL_CALL(SceneRenderer_SetBloomUnknown);
 		VX_REGISTER_INTERNAL_CALL(SceneRenderer_GetExposure);
 		VX_REGISTER_INTERNAL_CALL(SceneRenderer_SetExposure);
 		VX_REGISTER_INTERNAL_CALL(SceneRenderer_GetGamma);
@@ -8950,6 +9050,18 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(CameraComponent_Raycast);
 		VX_REGISTER_INTERNAL_CALL(CameraComponent_ScreenToWorldPoint);
 		VX_REGISTER_INTERNAL_CALL(CameraComponent_ScreenToViewportPoint);
+
+		VX_REGISTER_INTERNAL_CALL(PostProcessInfo_GetEnabled);
+		VX_REGISTER_INTERNAL_CALL(PostProcessInfo_SetEnabled);
+
+		VX_REGISTER_INTERNAL_CALL(BloomInfo_GetThreshold);
+		VX_REGISTER_INTERNAL_CALL(BloomInfo_SetThreshold);
+		VX_REGISTER_INTERNAL_CALL(BloomInfo_GetKnee);
+		VX_REGISTER_INTERNAL_CALL(BloomInfo_SetKnee);
+		VX_REGISTER_INTERNAL_CALL(BloomInfo_GetIntensity);
+		VX_REGISTER_INTERNAL_CALL(BloomInfo_SetIntensity);
+		VX_REGISTER_INTERNAL_CALL(BloomInfo_GetEnabled);
+		VX_REGISTER_INTERNAL_CALL(BloomInfo_SetEnabled);
 
 		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_GetLightType);
 		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetLightType);

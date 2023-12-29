@@ -146,8 +146,22 @@ namespace Vortex {
 	{
 		SceneCamera Camera;
 		Math::vec3 ClearColor = Math::vec3((38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f)); // Dark blue
+		
 		bool Primary = true;
 		bool FixedAspectRatio = false;
+
+		struct PostProcessInfo
+		{
+			struct BloomInfo
+			{
+				float Threshold = 0.2126f;
+				float Knee = 0.7152f;
+				float Intensity = 0.0722f;
+				bool Enabled = false;
+			} Bloom;
+
+			bool Enabled = false;
+		} PostProcessing;
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;

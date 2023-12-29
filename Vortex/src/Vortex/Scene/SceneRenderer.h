@@ -63,6 +63,8 @@ namespace Vortex {
 		void BeginScene(const SceneRenderPacket& renderPacket);
 		void EndScene();
 
+		void PreparePostProcess(const SceneRenderPacket& renderPacket);
+
 		void LightPass(const SceneRenderPacket& renderPacket);
 		void EmissiveMeshPass(const SceneRenderPacket& renderPacket);
 		void SortMeshGeometry(const SceneRenderPacket& renderPacket, std::map<float, Actor>& sortedGeometry);
@@ -85,6 +87,7 @@ namespace Vortex {
 
 	private:
 		std::mutex m_GeometrySortMutex;
+		RendererAPI::TriangleCullMode m_LastCullMode;
 	};
 
 }

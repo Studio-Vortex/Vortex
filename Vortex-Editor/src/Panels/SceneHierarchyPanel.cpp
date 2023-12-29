@@ -1388,64 +1388,126 @@ namespace Vortex {
 		const char* projectionTypes[] = { "Perspective", "Othrographic" };
 		int32_t currentProjectionType = (int32_t)camera.GetProjectionType();
 		if (UI::PropertyDropdown("Projection", projectionTypes, VX_ARRAYSIZE(projectionTypes), currentProjectionType))
+		{
 			camera.SetProjectionType((SceneCamera::ProjectionType)currentProjectionType);
+		}
 
 		bool modified = false;
 
-		if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+		switch (camera.GetProjectionType())
 		{
-			float perspectiveVerticalFOV = Math::Rad2Deg(camera.GetPerspectiveVerticalFOVRad());
-			if (UI::Property("Field of View", perspectiveVerticalFOV, 1.0f, FLT_MIN, 180.0f))
+			case SceneCamera::ProjectionType::Perspective:
 			{
-				camera.SetPerspectiveVerticalFOVRad(Math::Deg2Rad(perspectiveVerticalFOV));
-				modified = true;
+				float perspectiveVerticalFOV = Math::Rad2Deg(camera.GetPerspectiveVerticalFOVRad());
+				if (UI::Property("Field of View", perspectiveVerticalFOV, 1.0f, FLT_MIN, 180.0f))
+				{
+					camera.SetPerspectiveVerticalFOVRad(Math::Deg2Rad(perspectiveVerticalFOV));
+					modified = true;
+				}
+
+				float nearClip = camera.GetPerspectiveNearClip();
+				float farClip = camera.GetPerspectiveFarClip();
+
+				if (UI::Property("Near", nearClip, 0.1f, FLT_MIN, farClip))
+				{
+					camera.SetPerspectiveNearClip(nearClip);
+					modified = true;
+				}
+
+				if (UI::Property("Far", farClip, 0.1f, nearClip, FLT_MAX))
+				{
+					camera.SetPerspectiveFarClip(farClip);
+					modified = true;
+				}
+
+				break;
 			}
-
-			float nearClip = camera.GetPerspectiveNearClip();
-			float farClip = camera.GetPerspectiveFarClip();
-
-			if (UI::Property("Near", nearClip, 0.1f, FLT_MIN, farClip))
+			case SceneCamera::ProjectionType::Orthographic:
 			{
-				camera.SetPerspectiveNearClip(nearClip);
-				modified = true;
-			}
+				float orthoSize = camera.GetOrthographicSize();
+				if (UI::Property("Size", orthoSize, 0.1f, FLT_MIN, FLT_MAX))
+				{
+					camera.SetOrthographicSize(orthoSize);
+					modified = true;
+				}
 
-			if (UI::Property("Far", farClip, 0.1f, nearClip, FLT_MAX))
-			{
-				camera.SetPerspectiveFarClip(farClip);
-				modified = true;
-			}
-		}
-		else
-		{
-			float orthoSize = camera.GetOrthographicSize();
-			if (UI::Property("Size", orthoSize, 0.1f, FLT_MIN, FLT_MAX))
-			{
-				camera.SetOrthographicSize(orthoSize);
-				modified = true;
-			}
+				float nearClip = camera.GetOrthographicNearClip();
+				float farClip = camera.GetOrthographicFarClip();
 
-			float nearClip = camera.GetOrthographicNearClip();
-			float farClip = camera.GetOrthographicFarClip();
+				if (UI::Property("Near", nearClip, 0.1f, FLT_MIN, farClip))
+				{
+					camera.SetOrthographicNearClip(nearClip);
+					modified = true;
+				}
 
-			if (UI::Property("Near", nearClip, 0.1f, FLT_MIN, farClip))
-			{
-				camera.SetOrthographicNearClip(nearClip);
-				modified = true;
+				if (UI::Property("Far", farClip, 0.1f, nearClip, FLT_MAX))
+				{
+					camera.SetOrthographicFarClip(farClip);
+					modified = true;
+				}
+
+				UI::Property("Fixed Aspect Ratio", component.FixedAspectRatio);
+
+				break;
 			}
-
-			if (UI::Property("Far", farClip, 0.1f, nearClip, FLT_MAX))
-			{
-				camera.SetOrthographicFarClip(farClip);
-				modified = true;
-			}
-
-			UI::Property("Fixed Aspect Ratio", component.FixedAspectRatio);
 		}
 
 		UI::Property("Clear Color", &component.ClearColor);
+		
+		if (UI::Property("Post Processing", component.PostProcessing.Enabled))
+		{
+			if (!component.PostProcessing.Enabled)
+			{
+				// turn off all post processing effects
+				component.PostProcessing.Bloom.Enabled = false;
+			}
+		}
 
 		UI::EndPropertyGrid();
+
+		if (component.PostProcessing.Enabled && UI::PropertyGridHeader("Post Processing", false))
+		{
+			if (UI::PropertyGridHeader("Bloom", false))
+			{
+				UI::BeginPropertyGrid();
+				UI::Property("Enabled", component.PostProcessing.Bloom.Enabled);
+
+				if (component.PostProcessing.Bloom.Enabled)
+				{
+					UI::Property("Threshold", component.PostProcessing.Bloom.Threshold);
+					UI::Property("Knee", component.PostProcessing.Bloom.Knee);
+					UI::Property("Intensity", component.PostProcessing.Bloom.Intensity);
+
+					static const char* bloomBlurSampleSizes[] = { "5", "10", "15", "20", "40" };
+					uint32_t bloomSampleSize = Renderer::GetBloomSampleSize();
+
+					uint32_t currentBloomBlurSamplesSize = 0;
+
+					if (bloomSampleSize == 5)  currentBloomBlurSamplesSize = 0;
+					if (bloomSampleSize == 10) currentBloomBlurSamplesSize = 1;
+					if (bloomSampleSize == 15) currentBloomBlurSamplesSize = 2;
+					if (bloomSampleSize == 20) currentBloomBlurSamplesSize = 3;
+					if (bloomSampleSize == 40) currentBloomBlurSamplesSize = 4;
+
+					if (UI::PropertyDropdown("Bloom Blur Samples", bloomBlurSampleSizes, VX_ARRAYSIZE(bloomBlurSampleSizes), currentBloomBlurSamplesSize))
+					{
+						switch (currentBloomBlurSamplesSize)
+						{
+							case 0: Renderer::SetBloomSampleSize(5);  break;
+							case 1: Renderer::SetBloomSampleSize(10); break;
+							case 2: Renderer::SetBloomSampleSize(15); break;
+							case 3: Renderer::SetBloomSampleSize(20); break;
+							case 4: Renderer::SetBloomSampleSize(40); break;
+						}
+					}
+				}
+
+				UI::EndPropertyGrid();
+				UI::EndTreeNode();
+			}
+
+			UI::EndTreeNode();
+		}
 
 		if (modified)
 		{
