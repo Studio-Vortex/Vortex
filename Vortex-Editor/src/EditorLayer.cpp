@@ -587,10 +587,11 @@ namespace Vortex {
 						OnSceneSimulate();
 						Gui::CloseCurrentPopup();
 					}
-					separator();
 
 					if (Actor selectedActor = SelectionManager::GetSelectedActor())
 					{
+						separator();
+
 						if (Gui::MenuItem("Rename Actor", "F2"))
 						{
 							m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnActorName(true);
