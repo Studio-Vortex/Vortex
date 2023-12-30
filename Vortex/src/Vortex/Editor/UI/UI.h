@@ -1665,9 +1665,7 @@ namespace Vortex::UI {
 				const bool isLastType = (i == availableAssetTypesCount - 1);
 				availableAssetTypesStr += assetTypeStr + (isLastType ? " " : ", ");
 			}
-			VX_CONSOLE_LOG_ERROR("UI::PropertyAssetImageReference<TImageAssetType>() Expected one of these types!");
-			VX_CONSOLE_LOG_ERROR(availableAssetTypesStr);
-			VX_CONSOLE_LOG_ERROR("Got: '{}'", Utils::StringFromAssetType(assetType));
+			VX_CONSOLE_LOG_ERROR("UI::PropertyAssetImageReference<T>() expected one of these types [{}], got: '{}'", availableAssetTypesStr, Utils::StringFromAssetType(assetType));
 			return false;
 		}
 

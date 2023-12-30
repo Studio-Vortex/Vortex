@@ -167,7 +167,7 @@ namespace Vortex {
 
 				Gui::TableNextColumn();
 				UI::ShiftCursorX(4.0f);
-				Gui::Text(msg.ShortMessage.c_str());
+				Gui::TextWrapped(msg.ShortMessage.c_str());
 
 				if (i == m_MessageBuffer.size() - 1 && m_ScrollToLatest)
 				{
