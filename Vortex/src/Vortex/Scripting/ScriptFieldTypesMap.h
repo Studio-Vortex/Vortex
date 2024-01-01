@@ -13,6 +13,7 @@ namespace Vortex {
 		{ "System.Double",      ScriptFieldType::Double      },
 		{ "System.Boolean",     ScriptFieldType::Bool        },
 		{ "System.Char",        ScriptFieldType::Char        },
+		{ "System.String",      ScriptFieldType::String      },
 		{ "System.Int16",       ScriptFieldType::Short       },
 		{ "System.Int32",       ScriptFieldType::Int         },
 		{ "System.Int64",       ScriptFieldType::Long        },

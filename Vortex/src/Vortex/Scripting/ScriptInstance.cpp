@@ -218,7 +218,7 @@ namespace Vortex {
 
 	bool ScriptInstance::GetFieldValueInternal(const std::string& fieldName, void* buffer)
 	{
-		const auto& fields = m_ScriptClass->GetFields();
+		const std::map<std::string, ScriptField>& fields = m_ScriptClass->GetFields();
 		auto it = fields.find(fieldName);
 
 		if (it == fields.end())
@@ -231,7 +231,7 @@ namespace Vortex {
 
 	bool ScriptInstance::SetFieldValueInternal(const std::string& fieldName, const void* value)
 	{
-		const auto& fields = m_ScriptClass->GetFields();
+		const std::map<std::string, ScriptField>& fields = m_ScriptClass->GetFields();
 		auto it = fields.find(fieldName);
 
 		if (it == fields.end())

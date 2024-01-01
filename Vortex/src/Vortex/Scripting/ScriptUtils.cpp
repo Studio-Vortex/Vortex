@@ -141,6 +141,7 @@ namespace Vortex {
 			case ScriptFieldType::Double:      return "Double";
 			case ScriptFieldType::Bool:        return "Bool";
 			case ScriptFieldType::Char:        return "Char";
+			case ScriptFieldType::String:      return "String";
 			case ScriptFieldType::Short:       return "Short";
 			case ScriptFieldType::Int:         return "Int";
 			case ScriptFieldType::Long:        return "Long";
@@ -168,6 +169,7 @@ namespace Vortex {
 		if (fieldType == "Double")      return ScriptFieldType::Double;
 		if (fieldType == "Bool")        return ScriptFieldType::Bool;
 		if (fieldType == "Char")        return ScriptFieldType::Char;
+		if (fieldType == "String")      return ScriptFieldType::String;
 		if (fieldType == "Short")       return ScriptFieldType::Short;
 		if (fieldType == "Int")         return ScriptFieldType::Int;
 		if (fieldType == "Long")        return ScriptFieldType::Long;

@@ -2808,9 +2808,23 @@ namespace Vortex {
 			currentClassName = component.ClassName;
 		}
 
+		bool renderFields = true;
+
+		auto OnClassClearedFn = [&]() {
+			component.ClassName.clear();
+			renderFields = false;
+		};
+
 		// Display available actor classes to choose from
-		if (UI::PropertyDropdownSearch("Class", actorClassNameStrings.data(), actorClassNameStrings.size(), currentClassName, m_ActorClassNameInputTextFilter))
+		if (UI::PropertyDropdownSearch("Class", actorClassNameStrings.data(), actorClassNameStrings.size(), currentClassName, m_ActorClassNameInputTextFilter, OnClassClearedFn))
+		{
 			component.ClassName = currentClassName;
+		}
+
+		if (renderFields == false) { // We can't render fields for some reason
+			UI::EndPropertyGrid(); // cleanup
+			return;
+		}
 
 		const bool sceneRunning = m_ContextScene->IsRunning();
 
@@ -2821,152 +2835,178 @@ namespace Vortex {
 
 			if (scriptInstance)
 			{
-				const auto& fields = scriptInstance->GetScriptClass()->GetFields();
+				const std::map<std::string, ScriptField>& fields = scriptInstance->GetScriptClass()->GetFields();
 
 				for (const auto& [name, field] : fields)
 				{
-					if (field.Type == ScriptFieldType::Float)
+					switch (field.Type)
 					{
-						float data = scriptInstance->GetFieldValue<float>(name);
-						if (UI::Property(name.c_str(), data, 0.01f))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Double)
-					{
-						double data = scriptInstance->GetFieldValue<double>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Vector2)
-					{
-						Math::vec2 data = scriptInstance->GetFieldValue<Math::vec2>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Vector3)
-					{
-						Math::vec3 data = scriptInstance->GetFieldValue<Math::vec3>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Vector4)
-					{
-						Math::vec4 data = scriptInstance->GetFieldValue<Math::vec4>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Color3)
-					{
-						Math::vec3 data = scriptInstance->GetFieldValue<Math::vec3>(name);
-						if (UI::Property(name.c_str(), &data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Color4)
-					{
-						Math::vec4 data = scriptInstance->GetFieldValue<Math::vec4>(name);
-						if (UI::Property(name.c_str(), &data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Bool)
-					{
-						bool data = scriptInstance->GetFieldValue<bool>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Char)
-					{
-						char data = scriptInstance->GetFieldValue<char>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Short)
-					{
-						short data = scriptInstance->GetFieldValue<short>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Int)
-					{
-						int data = scriptInstance->GetFieldValue<int>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Long)
-					{
-						long long data = scriptInstance->GetFieldValue<long long>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Byte)
-					{
-						unsigned char data = scriptInstance->GetFieldValue<unsigned char>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::UShort)
-					{
-						unsigned short data = scriptInstance->GetFieldValue<unsigned short>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::UInt)
-					{
-						unsigned int data = scriptInstance->GetFieldValue<unsigned int>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::ULong)
-					{
-						unsigned long long data = scriptInstance->GetFieldValue<unsigned long long>(name);
-						if (UI::Property(name.c_str(), data))
-							scriptInstance->SetFieldValue(name, data);
-					}
-					if (field.Type == ScriptFieldType::Actor)
-					{
-						uint64_t data = scriptInstance->GetFieldValue<uint64_t>(name);
-						if (UI::Property(name.c_str(), data))
+						case ScriptFieldType::Float:
 						{
-							scriptInstance->SetFieldValue(name, data);
+							float data = scriptInstance->GetFieldValue<float>(name);
+							if (UI::Property(name.c_str(), data, 0.01f))
+								scriptInstance->SetFieldValue(name, data);
+							break;
 						}
-
-						UI::EndPropertyGrid();
-
-						if (Gui::BeginDragDropTarget())
+						case ScriptFieldType::Double:
 						{
-							if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+							double data = scriptInstance->GetFieldValue<double>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::Vector2:
+						{
+							Math::vec2 data = scriptInstance->GetFieldValue<Math::vec2>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::Vector3:
+						{
+							Math::vec3 data = scriptInstance->GetFieldValue<Math::vec3>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::Vector4:
+						{
+							Math::vec4 data = scriptInstance->GetFieldValue<Math::vec4>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::Color3:
+						{
+							Math::vec3 data = scriptInstance->GetFieldValue<Math::vec3>(name);
+							if (UI::Property(name.c_str(), &data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::Color4:
+						{
+							Math::vec4 data = scriptInstance->GetFieldValue<Math::vec4>(name);
+							if (UI::Property(name.c_str(), &data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::Bool:
+						{
+							bool data = scriptInstance->GetFieldValue<bool>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::Char:
+						{
+							char data = scriptInstance->GetFieldValue<char>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::String:
+						{
+							// TODO
+							break;
+						}
+						case ScriptFieldType::Short:
+						{
+							short data = scriptInstance->GetFieldValue<short>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::Int:
+						{
+							int data = scriptInstance->GetFieldValue<int>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::Long:
+						{
+							long long data = scriptInstance->GetFieldValue<long long>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::Byte:
+						{
+							unsigned char data = scriptInstance->GetFieldValue<unsigned char>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::UShort:
+						{
+							unsigned short data = scriptInstance->GetFieldValue<unsigned short>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::UInt:
+						{
+							unsigned int data = scriptInstance->GetFieldValue<unsigned int>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::ULong:
+						{
+							unsigned long long data = scriptInstance->GetFieldValue<unsigned long long>(name);
+							if (UI::Property(name.c_str(), data))
+								scriptInstance->SetFieldValue(name, data);
+							break;
+						}
+						case ScriptFieldType::Actor:
+						{
+							uint64_t data = scriptInstance->GetFieldValue<uint64_t>(name);
+							if (UI::Property(name.c_str(), data))
 							{
-								Actor& droppedActor = *((Actor*)payload->Data);
 								scriptInstance->SetFieldValue(name, data);
 							}
 
-							Gui::EndDragDropTarget();
-						}
+							UI::EndPropertyGrid();
 
-						UI::BeginPropertyGrid();
-					}
-					if (field.Type == ScriptFieldType::AssetHandle)
-					{
-						uint64_t data = scriptInstance->GetFieldValue<uint64_t>(name);
-						if (UI::Property(name.c_str(), data))
-						{
-							scriptInstance->SetFieldValue(name, data);
-						}
-
-						UI::EndPropertyGrid();
-
-						if (Gui::BeginDragDropTarget())
-						{
-							// TODO
-							/*if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+							if (Gui::BeginDragDropTarget())
 							{
-								Actor& droppedActor = *((Actor*)payload->Data);
-								scriptInstance->SetFieldValue(name, data);
-							}*/
+								if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+								{
+									Actor& droppedActor = *((Actor*)payload->Data);
+									scriptInstance->SetFieldValue(name, data);
+								}
 
-							Gui::EndDragDropTarget();
+								Gui::EndDragDropTarget();
+							}
+
+							UI::BeginPropertyGrid();
+							break;
 						}
+						case ScriptFieldType::AssetHandle:
+						{
+							uint64_t data = scriptInstance->GetFieldValue<uint64_t>(name);
+							if (UI::Property(name.c_str(), data))
+							{
+								scriptInstance->SetFieldValue(name, data);
+							}
 
-						UI::BeginPropertyGrid();
+							UI::EndPropertyGrid();
+
+							if (Gui::BeginDragDropTarget())
+							{
+								// TODO
+								/*if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
+								{
+									Actor& droppedActor = *((Actor*)payload->Data);
+									scriptInstance->SetFieldValue(name, data);
+								}*/
+
+								Gui::EndDragDropTarget();
+							}
+
+							UI::BeginPropertyGrid();
+							break;
+						}
 					}
 				}
 			}
@@ -2976,7 +3016,7 @@ namespace Vortex {
 			if (scriptClassExists)
 			{
 				SharedReference<ScriptClass> actorClass = ScriptEngine::GetActorClass(component.ClassName);
-				const auto& fields = actorClass->GetFields();
+				const std::map<std::string, ScriptField>& fields = actorClass->GetFields();
 
 				ScriptFieldMap& actorScriptFields = ScriptEngine::GetMutableScriptFieldMap(actor);
 
