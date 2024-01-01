@@ -62,15 +62,15 @@ namespace Vortex {
 			{ "Resources/Fonts/opensans/OpenSans-Medium.ttf", 19.0f, false },
 			{ "Resources/Fonts/opensans/OpenSans-Medium.ttf", 20.0f, false },
 			{ "Resources/Fonts/SegoeUI.ttf", 17.0f, false },
-			{ "Resources/Fonts/SegoeUI.ttf", 18.0f, true },
-			{ "Resources/Fonts/SegoeUI.ttf", 19.0f, false },
+			{ "Resources/Fonts/SegoeUI.ttf", 18.0f, false },
+			{ "Resources/Fonts/SegoeUI.ttf", 19.0f, true },
 			{ "Resources/Fonts/SegoeUI.ttf", 20.0f, false },
 			{ "Resources/Fonts/SegoeUI.ttf", 21.0f, false },
 			{ "Resources/Fonts/SegoeUI.ttf", 22.0f, false },
 			{ "Resources/Fonts/SegoeUI.ttf", 24.0f, false },
 		};
 
-		for (const auto& font : fonts)
+		for (const UIFont& font : fonts)
 		{
 			ImFont* f = io.Fonts->AddFontFromFileTTF(font.Filepath, font.FontSize);
 			

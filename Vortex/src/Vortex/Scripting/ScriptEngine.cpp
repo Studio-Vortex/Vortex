@@ -464,11 +464,7 @@ namespace Vortex {
 
 		for (size_t i = 0; i < methodCount; i++)
 		{
-			ManagedMethod method = methods[i];
-			if (!ScriptInstanceHasMethod(actor, method))
-				continue;
-
-			Invoke(method, actor);
+			actor.CallMethod(methods[i]);
 		}
 	}
 

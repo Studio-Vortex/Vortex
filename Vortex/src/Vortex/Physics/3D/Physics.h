@@ -40,6 +40,8 @@ namespace Vortex {
 		static void OnSimulationUpdate(TimeStep delta);
 		static void OnSimulationStop(Scene* contextScene);
 
+		static bool IsPhysicsActor(UUID actorUUID);
+
 		static void CreatePhysicsActor(Actor actor);
 		static void ReCreateActor(Actor actor);
 		static void DestroyPhysicsActor(Actor actor);

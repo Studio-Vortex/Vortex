@@ -248,14 +248,7 @@ namespace Vortex {
 		if (m_IsRunning)
 		{
 			// Invoke Actor.OnDestroy
-			if (ScriptEngine::HasValidScriptClass(actor))
-			{
-				ManagedMethod method = ManagedMethod::OnDestroy;
-				if (ScriptEngine::ScriptInstanceHasMethod(actor, method))
-				{
-					ScriptEngine::Invoke(method, actor);
-				}
-			}
+			actor.CallMethod(ManagedMethod::OnDestroy);
 
 			if (actor.HasComponent<NativeScriptComponent>())
 			{
@@ -374,14 +367,7 @@ namespace Vortex {
 			{
 				Actor actor{ e, this };
 
-				if (!ScriptEngine::HasValidScriptClass(actor))
-					continue;
-
-				ManagedMethod method = ManagedMethod::OnAwake;
-				if (!ScriptEngine::ScriptInstanceHasMethod(actor, method))
-					continue;
-
-				ScriptEngine::Invoke(method, actor);
+				actor.CallMethod(ManagedMethod::OnAwake);
 			}
 
 			// Invoke Actor.OnCreate
@@ -389,14 +375,7 @@ namespace Vortex {
 			{
 				Actor actor{ e, this };
 
-				if (!ScriptEngine::HasValidScriptClass(actor))
-					continue;
-
-				ManagedMethod method = ManagedMethod::OnCreate;
-				if (!ScriptEngine::ScriptInstanceHasMethod(actor, method))
-					continue;
-
-				ScriptEngine::Invoke(method, actor);
+				actor.CallMethod(ManagedMethod::OnCreate);
 			}
 		}
 
@@ -422,15 +401,9 @@ namespace Vortex {
 		{
 			Actor actor{ actorID, this };
 
-			if (!ScriptEngine::HasValidScriptClass(actor))
-				return;
-
-			ManagedMethod method = ManagedMethod::OnDestroy;
-			if (!ScriptEngine::ScriptInstanceHasMethod(actor, method))
-				return;
-
-			ScriptEngine::Invoke(method, actor);
+			actor.CallMethod(ManagedMethod::OnDestroy);
 		});
+
 		ScriptEngine::OnRuntimeStop();
 
 		// C++ Actor Lifecycle
@@ -732,14 +705,7 @@ namespace Vortex {
 			if (!actor.IsActive())
 				continue;
 
-			if (!ScriptEngine::HasValidScriptClass(actor))
-				continue;
-
-			ManagedMethod method = ManagedMethod::OnGui;
-			if (!ScriptEngine::ScriptInstanceHasMethod(actor, method))
-				continue;
-
-			ScriptEngine::Invoke(method, actor);
+			actor.CallMethod(ManagedMethod::OnGui);
 		}
 	}
 

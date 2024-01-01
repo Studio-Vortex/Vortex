@@ -155,6 +155,18 @@ namespace Vortex {
 		ShutdownPhysicsSceneInternal();
 	}
 
+	bool Physics::IsPhysicsActor(UUID actorUUID)
+	{
+		if (s_Data->ActiveActors.contains(actorUUID))
+			return true;
+		if (s_Data->ActiveControllers.contains(actorUUID))
+			return true;
+		if (s_Data->ActiveFixedJoints.contains(actorUUID))
+			return true;
+
+		return false;
+	}
+
 	void Physics::CreatePhysicsActor(Actor actor)
 	{
 		if (actor.HasComponent<CharacterControllerComponent>())

@@ -63,7 +63,7 @@ namespace Vortex {
 		auto buttonView = context->GetAllActorsWith<ButtonComponent>();
 
 		Actor primaryCamera = context->GetPrimaryCameraActor();
-		if (!primaryCamera)
+		if (!primaryCamera || !context->IsRunning())
 			return;
 
 		const CameraComponent& cc = primaryCamera.GetComponent<CameraComponent>();
