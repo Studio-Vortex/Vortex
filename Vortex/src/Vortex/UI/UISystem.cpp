@@ -8,6 +8,8 @@
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Actor.h"
 
+#include "Vortex/Asset/AssetManager.h"
+
 #include "Vortex/Renderer/Renderer2D.h"
 
 namespace Vortex {
@@ -70,19 +72,58 @@ namespace Vortex {
 		const SceneCamera& camera = cc.Camera;
 
 		const Math::mat4 transform = context->GetWorldSpaceTransformMatrix(primaryCamera);
-		const Math::mat4 view = Math::Inverse(transform);
+		const Math::mat4 cameraView = Math::Inverse(transform);
 
-		Renderer2D::BeginScene(camera, view);
+		Renderer2D::BeginScene(camera, cameraView);
 
 		for (const auto e : buttonView)
 		{
-			Actor entity{ e, context };
-			
-			const Math::mat4 transform = context->GetWorldSpaceTransformMatrix(entity);
+			Actor actor{ e, context };
 
-			const Math::vec4& buttonColor = ColorToVec4(Color::Red);
+			const ButtonComponent& buttonComponent = actor.GetComponent<ButtonComponent>();
 
-			Renderer2D::DrawQuad(transform, buttonColor);
+			if (!buttonComponent.Visible)
+				continue;
+
+			TransformComponent transform = context->GetWorldSpaceTransform(actor);
+
+			Renderer2D::DrawQuadBillboard(
+				cameraView,
+				transform.Translation,
+				Math::vec2(transform.Scale),
+				buttonComponent.BackgroundColor,
+				(int)(entt::entity)e
+			);
+
+			const AssetHandle fontHandle = buttonComponent.Font.FontAsset;
+			SharedReference<Font> font = nullptr;
+
+			if (AssetManager::IsHandleValid(fontHandle))
+			{
+				font = AssetManager::GetAsset<Font>(fontHandle);
+			}
+			else
+			{
+				font = Font::GetDefaultFont();
+			}
+
+			const Math::vec3 backward = transform.CalculateBackward();
+
+			// NOTE: we need to be adding in world units here otherwise the text won't be visible
+			transform.Translation += Math::vec3(buttonComponent.Font.Offset, 0.0f) + (backward * 0.01f);
+			transform.Scale = Math::vec3(buttonComponent.Font.Scale * Math::vec2(transform.Scale), transform.Scale.z);
+
+			Renderer2D::DrawString(
+				buttonComponent.Font.TextString,
+				font,
+				transform.GetTransform(),
+				buttonComponent.Font.MaxWidth,
+				buttonComponent.Font.Color,
+				buttonComponent.Font.BackgroundColor,
+				buttonComponent.Font.LineSpacing,
+				buttonComponent.Font.Kerning,
+				(int)(entt::entity)e
+			);
 		}
 
 		Renderer2D::EndScene();

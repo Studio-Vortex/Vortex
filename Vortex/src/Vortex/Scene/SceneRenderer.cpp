@@ -318,7 +318,7 @@ namespace Vortex {
 				worldSpaceTransform,
 				textMeshComponent.MaxWidth,
 				textMeshComponent.Color,
-				textMeshComponent.BgColor,
+				textMeshComponent.BackgroundColor,
 				textMeshComponent.LineSpacing,
 				textMeshComponent.Kerning,
 				(int)(entt::entity)e

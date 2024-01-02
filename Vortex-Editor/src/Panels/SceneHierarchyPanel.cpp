@@ -2092,7 +2092,7 @@ namespace Vortex {
 		}
 
 		UI::Property("Color", &component.Color);
-		UI::Property("Background Color", &component.BgColor);
+		UI::Property("Background Color", &component.BackgroundColor);
 		UI::Property("Line Spacing", component.LineSpacing, 0.1f, FLT_MIN, FLT_MAX);
 		UI::Property("Kerning", component.Kerning, 0.1f, FLT_MIN, FLT_MAX);
 		UI::Property("Max Width", component.MaxWidth, 0.1f, FLT_MIN, FLT_MAX);
@@ -2102,8 +2102,68 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::ButtonComponentOnGuiRender(ButtonComponent& component, Actor actor)
 	{
+		std::string relativePath = "Default Font";
+
+		if (AssetManager::IsHandleValid(component.Font.FontAsset))
+		{
+			const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(component.Font.FontAsset);
+			relativePath = metadata.Filepath.stem().string();
+		}
+
+		auto OnFontDroppedFn = [&](const Fs::Path& filepath) {
+			// Make sure we are recieving an actual font otherwise we will have trouble opening it
+			if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::FontAsset)
+			{
+				const std::string extension = FileSystem::GetFileExtension(filepath);
+				if (extension == ".vfa")
+				{
+					const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(filepath);
+					component.Font.FontAsset = metadata.Handle;
+				}
+				else
+				{
+					VX_CONSOLE_LOG_WARN("Failed to load font '{}'", filepath.filename().string());
+				}
+			}
+			else
+			{
+				VX_CONSOLE_LOG_WARN("Failed to load font '{}'", filepath.filename().string());
+			}
+		};
+
 		UI::BeginPropertyGrid();
+		UI::PropertyAssetReference<Font>("Font Source", relativePath, component.Font.FontAsset, OnFontDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry());
 		UI::EndPropertyGrid();
+
+		UI::BeginPropertyGrid();
+
+		UI::Property("Visible", component.Visible);
+
+		if (UI::MultilineTextBox("Text", component.Font.TextString))
+		{
+			component.Font.TextHash = std::hash<std::string>()(component.Font.TextString);
+		}
+
+		UI::Property("Background Color", &component.BackgroundColor);
+		UI::Property("Clicked Color", &component.OnClickedColor);
+		
+		UI::EndPropertyGrid();
+
+		if (UI::PropertyGridHeader("Text", false))
+		{
+			UI::BeginPropertyGrid();
+			
+			UI::Property("Color", &component.Font.Color);
+			UI::Property("Outline Color", &component.Font.BackgroundColor);
+			UI::Property("Offset", component.Font.Offset, 0.01f);
+			UI::Property("Scale", component.Font.Scale, 0.01f, FLT_MIN, FLT_MAX);
+			UI::Property("Line Spacing", component.Font.LineSpacing, 0.1f, FLT_MIN, FLT_MAX);
+			UI::Property("Kerning", component.Font.Kerning, 0.1f, FLT_MIN, FLT_MAX);
+			UI::Property("Max Width", component.Font.MaxWidth, 0.1f, FLT_MIN, FLT_MAX);
+
+			UI::EndPropertyGrid();
+			UI::EndTreeNode();
+		}
 	}
 
 	void SceneHierarchyPanel::AudioSourceComponentOnGuiRender(AudioSourceComponent& component, Actor actor)

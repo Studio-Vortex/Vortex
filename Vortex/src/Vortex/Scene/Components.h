@@ -28,7 +28,7 @@ namespace Vortex {
 
 	struct VORTEX_API TagComponent
 	{
-		inline static std::vector<std::string> Markers = { "Untagged", "Start", "Finish", "Player", "MainCamera" };
+		VX_FORCE_INLINE static std::vector<std::string> Markers = { "Untagged", "Start", "Finish", "Player", "MainCamera" };
 
 		std::string Tag = "";
 		std::string Marker = Markers[0];
@@ -39,24 +39,24 @@ namespace Vortex {
 		TagComponent(const std::string& tag)
 			: Tag(tag) { }
 
-		inline static void AddMarker(const std::string& marker)
+		VX_FORCE_INLINE static void AddMarker(const std::string& marker)
 		{
 			Markers.push_back(marker);
 			s_AddedMarkers.push_back(marker);
 		}
 
-		inline static void ResetAddedMarkers()
+		VX_FORCE_INLINE static void ResetAddedMarkers()
 		{
 			s_AddedMarkers.clear();
 		}
 
-		inline static const auto& GetAddedMarkers()
+		VX_FORCE_INLINE static const auto& GetAddedMarkers()
 		{
 			return s_AddedMarkers;
 		}
 
 	private:
-		inline static std::vector<std::string> s_AddedMarkers;
+		VX_FORCE_INLINE static std::vector<std::string> s_AddedMarkers;
 	};
 
 	struct VORTEX_API HierarchyComponent
@@ -85,12 +85,12 @@ namespace Vortex {
 		TransformComponent(const Math::vec3& translation, const Math::vec3& rotation, const Math::vec3& scale)
 			: Translation(translation), Rotation(rotation), Scale(scale) { }
 
-		inline Math::mat4 GetTransform() const
+		VX_FORCE_INLINE Math::mat4 GetTransform() const
 		{
 			return Math::Translate(Translation) * Math::ToMat4(Rotation) * Math::Scale(Scale);
 		}
 
-		inline void SetTransform(const Math::mat4& transform)
+		VX_FORCE_INLINE void SetTransform(const Math::mat4& transform)
 		{
 			Math::vec3 skew;
 			Math::vec4 perspective;
@@ -98,26 +98,56 @@ namespace Vortex {
 			RotationEuler = Math::EulerAngles(Rotation);
 		}
 
-		inline Math::quaternion GetRotation() const
+		VX_FORCE_INLINE Math::quaternion GetRotation() const
 		{
 			return Rotation;
 		}
 
-		inline void SetRotation(const Math::quaternion& rotation)
+		VX_FORCE_INLINE void SetRotation(const Math::quaternion& rotation)
 		{
 			Rotation = rotation;
 			RotationEuler = Math::EulerAngles(Rotation);
 		}
 
-		inline Math::vec3 GetRotationEuler() const
+		VX_FORCE_INLINE Math::vec3 GetRotationEuler() const
 		{
 			return RotationEuler;
 		}
 
-		inline void SetRotationEuler(const Math::vec3& euler)
+		VX_FORCE_INLINE void SetRotationEuler(const Math::vec3& euler)
 		{
 			RotationEuler = euler;
 			Rotation = Math::quaternion(RotationEuler);
+		}
+
+		VX_FORCE_INLINE Math::vec3 CalculateForward() const
+		{
+			return Math::Rotate(Rotation, Math::vec3(0.0f, 0.0f, -1.0f));
+		}
+
+		VX_FORCE_INLINE Math::vec3 CalculateBackward() const
+		{
+			return Math::Rotate(Rotation, Math::vec3(0.0f, 0.0f, 1.0f));
+		}
+
+		VX_FORCE_INLINE Math::vec3 CalculateUp() const
+		{
+			return Math::Rotate(Rotation, Math::vec3(0.0f, 1.0f, 0.0f));
+		}
+
+		VX_FORCE_INLINE Math::vec3 CalculateDown() const
+		{
+			return Math::Rotate(Rotation, Math::vec3(0.0f, -1.0f, 0.0f));
+		}
+
+		VX_FORCE_INLINE Math::vec3 CalculateRight() const
+		{
+			return Math::Rotate(Rotation, Math::vec3(1.0f, 0.0f, 0.0f));
+		}
+
+		VX_FORCE_INLINE Math::vec3 CalculateLeft() const
+		{
+			return Math::Rotate(Rotation, Math::vec3(-1.0f, 0.0f, 0.0f));
 		}
 
 	private:
@@ -299,7 +329,7 @@ namespace Vortex {
 
 		// Font
 		Math::vec4 Color = Math::vec4(1.0f);
-		Math::vec4 BgColor = Math::vec4(0.0f);
+		Math::vec4 BackgroundColor = Math::vec4(0.0f); // TODO this needs some work
 		float LineSpacing = 0.0f;
 		float Kerning = 0.0f;
 
@@ -312,19 +342,29 @@ namespace Vortex {
 
 	struct VORTEX_API ButtonComponent
 	{
-		UUID UI_ID = 0;
-		AssetHandle FontAsset = 0;
-		std::string TextString = "";
-		size_t TextHash = 0;
+		UUID UI_ID = 0; // TODO are we gonna use this?
+		bool Visible = true;
 
-		// Font
-		Math::vec4 TextColor = Math::vec4(1.0f);
-		Math::vec4 BgColor = Math::vec4(0.8f, 0.8f, 0.8f, 1.0f);
-		float LineSpacing = 0.0f;
-		float Kerning = 0.0f;
+		Math::vec4 BackgroundColor = Math::vec4(0.2f, 0.2f, 0.2f, 1.0f);
+		Math::vec4 OnClickedColor = Math::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 
-		// Layout
-		float MaxWidth = 10.0f;
+		struct FontInfo
+		{
+			AssetHandle FontAsset = 0;
+			std::string TextString = "";
+			size_t TextHash = 0;
+
+			Math::vec4 Color = Math::vec4(1.0f);
+			Math::vec4 BackgroundColor = Math::vec4(0.0f);
+			Math::vec2 Offset = Math::vec2(0.0f);
+			Math::vec2 Scale = Math::vec2(0.25f);
+
+			float LineSpacing = 0.0f;
+			float Kerning = 0.0f;
+
+			// Layout
+			float MaxWidth = 10.0f;
+		} Font;
 
 		ButtonComponent() = default;
 		ButtonComponent(const ButtonComponent&) = default;

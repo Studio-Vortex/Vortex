@@ -55,6 +55,8 @@
 
 #define VX_ARRAYSIZE(ident) sizeof(ident) / sizeof(ident[0])
 
+#define VX_STRINGIFY(input) #input
+
 #define VX_BIND_CALLBACK(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
 #define VORTEX_BUILD_ID "v0.1a"

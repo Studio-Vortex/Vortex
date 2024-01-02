@@ -129,11 +129,38 @@
 			set => InternalCalls.TransformComponent_SetTransformMatrix(Actor.ID, ref value);
 		}
 
+		public Vector3 Forward
+		{
+			get
+			{
+				InternalCalls.TransformComponent_GetForwardDirection(Actor.ID, out Vector3 result);
+				return result;
+			}
+		}
+
+		public Vector3 Backward
+		{
+			get
+			{
+				InternalCalls.TransformComponent_GetBackwardDirection(Actor.ID, out Vector3 result);
+				return result;
+			}
+		}
+
 		public Vector3 Up
 		{
 			get
 			{
 				InternalCalls.TransformComponent_GetUpDirection(Actor.ID, out Vector3 result);
+				return result;
+			}
+		}
+
+		public Vector3 Down
+		{
+			get
+			{
+				InternalCalls.TransformComponent_GetDownDirection(Actor.ID, out Vector3 result);
 				return result;
 			}
 		}
@@ -147,11 +174,11 @@
 			}
 		}
 
-		public Vector3 Forward
+		public Vector3 Left
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetForwardDirection(Actor.ID, out Vector3 result);
+				InternalCalls.TransformComponent_GetLeftDirection(Actor.ID, out Vector3 result);
 				return result;
 			}
 		}
@@ -385,15 +412,15 @@
 			set => InternalCalls.TextMeshComponent_SetColor(Actor.ID, ref value);
 		}
 
-		public Vector4 BackgroundColor
+		public Vector4 OutlineColor
 		{
 			get
 			{
-				InternalCalls.TextMeshComponent_GetBackgroundColor(Actor.ID, out Vector4 color);
+				InternalCalls.TextMeshComponent_GetOutlineColor(Actor.ID, out Vector4 color);
 				return color;
 			}
 			
-			set => InternalCalls.TextMeshComponent_SetBackgroundColor(Actor.ID, ref value);
+			set => InternalCalls.TextMeshComponent_SetOutlineColor(Actor.ID, ref value);
 		}
 
 		public float LineSpacing
@@ -419,6 +446,11 @@
 			get => InternalCalls.TextMeshComponent_IsVisible(Actor.ID);
 			set => InternalCalls.TextMeshComponent_SetVisible(Actor.ID, value);
 		}
+	}
+
+	public class Button : Component
+	{
+
 	}
 
 	public class Animation: Component
