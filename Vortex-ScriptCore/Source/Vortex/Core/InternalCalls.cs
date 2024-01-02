@@ -10,14 +10,39 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Application_Quit();
 
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Application_GetSize(out Vector2 size);
+		#endregion
+
+		#region Window
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Application_GetPosition(out Vector2 position);
+		internal extern static void Window_GetSize(out Vector2 size);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Application_IsMaximized();
+		internal extern static void Window_GetPosition(out Vector2 position);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Window_IsMaximized();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Window_SetMaximized(bool maximized);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Window_IsResizeable();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Window_SetResizeable(bool resizable);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Window_IsDecorated();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Window_SetDecorated(bool decorated);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Window_IsVSyncEnabled();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Window_SetVSync(bool use);
 
 		#endregion
 
@@ -247,10 +272,19 @@ namespace Vortex {
 		internal extern static void TransformComponent_GetForwardDirection(ulong actorID, out Vector3 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetBackwardDirection(ulong actorID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_GetUpDirection(ulong actorID, out Vector3 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetDownDirection(ulong actorID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_GetRightDirection(ulong actorID, out Vector3 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void TransformComponent_GetLeftDirection(ulong actorID, out Vector3 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_LookAt(ulong actorID, ref Vector3 worldPoint);
@@ -453,10 +487,10 @@ namespace Vortex {
 		internal extern static void TextMeshComponent_SetColor(ulong actorID, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TextMeshComponent_GetBackgroundColor(ulong actorID, out Vector4 result);
+		internal extern static void TextMeshComponent_GetOutlineColor(ulong actorID, out Vector4 result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void TextMeshComponent_SetBackgroundColor(ulong actorID, ref Vector4 color);
+		internal extern static void TextMeshComponent_SetOutlineColor(ulong actorID, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static float TextMeshComponent_GetLineSpacing(ulong actorID);

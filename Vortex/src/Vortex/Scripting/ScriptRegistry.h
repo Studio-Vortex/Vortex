@@ -48,9 +48,21 @@ namespace Vortex {
 #pragma region Application
 
 		void Application_Quit();
-		void Application_GetSize(Math::vec2* outSize);
-		void Application_GetPosition(Math::vec2* outPosition);
-		bool Application_IsMaximized();
+
+#pragma endregion
+
+#pragma region Window
+
+		void Window_GetSize(Math::vec2* outSize);
+		void Window_GetPosition(Math::vec2* outPosition);
+		bool Window_IsMaximized();
+		void Window_SetMaximized(bool maximized);
+		bool Window_IsResizeable();
+		void Window_SetResizeable(bool resizeable);
+		bool Window_IsDecorated();
+		void Window_SetDecorated(bool decorated);
+		bool Window_IsVSyncEnabled();
+		void Window_SetVSync(bool use);
 
 #pragma endregion
 
@@ -155,8 +167,11 @@ namespace Vortex {
 		void TransformComponent_GetTransformMatrix(UUID actorUUID, Math::mat4* outTransform);
 		void TransformComponent_SetTransformMatrix(UUID actorUUID, Math::mat4* transform);
 		void TransformComponent_GetForwardDirection(UUID actorUUID, Math::vec3* outDirection);
+		void TransformComponent_GetBackwardDirection(UUID actorUUID, Math::vec3* outDirection);
 		void TransformComponent_GetUpDirection(UUID actorUUID, Math::vec3* outDirection);
+		void TransformComponent_GetDownDirection(UUID actorUUID, Math::vec3* outDirection);
 		void TransformComponent_GetRightDirection(UUID actorUUID, Math::vec3* outDirection);
+		void TransformComponent_GetLeftDirection(UUID actorUUID, Math::vec3* outDirection);
 		void TransformComponent_LookAt(UUID actorUUID, Math::vec3* worldPoint);
 		uint64_t TransformComponent_GetParent(UUID actorUUID);
 		void TransformComponent_SetParent(UUID childUUID, UUID parentUUID);
@@ -242,8 +257,8 @@ namespace Vortex {
 		void TextMeshComponent_SetTextString(UUID actorUUID, MonoString* textString);
 		void TextMeshComponent_GetColor(UUID actorUUID, Math::vec4* outColor);
 		void TextMeshComponent_SetColor(UUID actorUUID, Math::vec4* color);
-		void TextMeshComponent_GetBackgroundColor(UUID actorUUID, Math::vec4* outBackgroundColor);
-		void TextMeshComponent_SetBackgroundColor(UUID actorUUID, Math::vec4* backgroundcolor);
+		void TextMeshComponent_GetOutlineColor(UUID actorUUID, Math::vec4* outOutlineColor);
+		void TextMeshComponent_SetOutlineColor(UUID actorUUID, Math::vec4* outlineColor);
 		float TextMeshComponent_GetLineSpacing(UUID actorUUID);
 		void TextMeshComponent_SetLineSpacing(UUID actorUUID, float lineSpacing);
 		float TextMeshComponent_GetKerning(UUID actorUUID);

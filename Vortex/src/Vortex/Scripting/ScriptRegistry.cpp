@@ -65,9 +65,11 @@
 
 namespace Vortex {
 
-#define VX_REGISTER_INTERNAL_CALL(icall) mono_add_internal_call("Vortex.InternalCalls::" #icall, InternalCalls::icall)
+#define VX_SCRIPT_CORE_NAMESPACE "Vortex"
+#define VX_DEFAULT_INTERNAL_CALL_CLASSNAME "InternalCalls"
+#define VX_REGISTER_INTERNAL_CALL(icall) mono_add_internal_call(fmt::format("{}.{}::{}", VX_SCRIPT_CORE_NAMESPACE, VX_DEFAULT_INTERNAL_CALL_CLASSNAME, VX_STRINGIFY(icall)).c_str(), InternalCalls::icall)
 
-	struct ScriptingData
+	struct ScriptRegistryInternalData
 	{
 		std::unordered_map<MonoType*, std::function<void(Actor)>> ActorAddComponentFuncs;
 		std::unordered_map<MonoType*, std::function<bool(Actor)>> ActorHasComponentFuncs;
@@ -76,11 +78,9 @@ namespace Vortex {
 		Actor HoveredActor = Actor{};
 
 		float SceneStartTime = 0.0f;
-
-		Math::vec4 RaycastDebugLineColor = Math::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	};
 
-	static ScriptingData s_Data;
+	static ScriptRegistryInternalData s_Data;
 
 	namespace InternalCalls {
 
@@ -110,25 +110,88 @@ namespace Vortex {
 			Application::Get().Close();
 		}
 
-		void Application_GetSize(Math::vec2* outSize)
+#pragma endregion
+
+#pragma region Window
+
+		void Window_GetSize(Math::vec2* outSize)
 		{
 			Scene* contextScene = GetContextScene();
 
-			*outSize = Application::Get().GetWindow().GetSize();
+			const Window& window = Application::Get().GetWindow();
+			*outSize = window.GetSize();
 		}
 
-		void Application_GetPosition(Math::vec2* outPosition)
+		void Window_GetPosition(Math::vec2* outPosition)
 		{
 			Scene* contextScene = GetContextScene();
 
-			*outPosition = Application::Get().GetWindow().GetPosition();
+			const Window& window = Application::Get().GetWindow();
+			*outPosition = window.GetPosition();
 		}
 
-		bool Application_IsMaximized()
+		bool Window_IsMaximized()
 		{
 			Scene* contextScene = GetContextScene();
 
-			return Application::Get().GetWindow().IsMaximized();
+			const Window& window = Application::Get().GetWindow();
+			return window.IsMaximized();
+		}
+
+		void Window_SetMaximized(bool maximized)
+		{
+			Scene* contextScene = GetContextScene();
+
+			Window& window = Application::Get().GetWindow();
+			window.SetMaximized(maximized);
+		}
+
+		bool Window_IsResizeable()
+		{
+			Scene* contextScene = GetContextScene();
+
+			const Window& window = Application::Get().GetWindow();
+			return window.IsResizeable();
+		}
+
+		void Window_SetResizeable(bool resizeable)
+		{
+			Scene* contextScene = GetContextScene();
+
+			Window& window = Application::Get().GetWindow();
+			window.SetResizeable(resizeable);
+		}
+
+		bool Window_IsDecorated()
+		{
+			Scene* contextScene = GetContextScene();
+
+			const Window& window = Application::Get().GetWindow();
+			return window.IsDecorated();
+		}
+
+		void Window_SetDecorated(bool decorated)
+		{
+			Scene* contextScene = GetContextScene();
+
+			Window& window = Application::Get().GetWindow();
+			window.SetDecorated(decorated);
+		}
+
+		bool Window_IsVSyncEnabled()
+		{
+			Scene* contextScene = GetContextScene();
+
+			const Window& window = Application::Get().GetWindow();
+			return window.IsVSyncEnabled();
+		}
+
+		void Window_SetVSync(bool use)
+		{
+			Scene* contextScene = GetContextScene();
+
+			Window& window = Application::Get().GetWindow();
+			window.SetVSync(use);
 		}
 
 #pragma endregion
@@ -1077,11 +1140,19 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
-			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(actor);
+			TransformComponent worldSpaceTransform = contextScene->GetWorldSpaceTransform(actor);
 
-			Math::quaternion rotation = worldSpaceTransform.GetRotation();
+			*outDirection = worldSpaceTransform.CalculateForward();
+		}
 
-			*outDirection = Math::Rotate(rotation, Math::vec3(0.0f, 0.0f, -1.0f));
+		void TransformComponent_GetBackwardDirection(UUID actorUUID, Math::vec3* outDirection)
+		{
+			Scene* contextScene = GetContextScene();
+			Actor actor = GetActor(actorUUID);
+
+			TransformComponent worldSpaceTransform = contextScene->GetWorldSpaceTransform(actor);
+
+			*outDirection = worldSpaceTransform.CalculateBackward();
 		}
 
 		void TransformComponent_GetUpDirection(UUID actorUUID, Math::vec3* outDirection)
@@ -1089,11 +1160,19 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
-			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(actor);
+			TransformComponent worldSpaceTransform = contextScene->GetWorldSpaceTransform(actor);
 
-			Math::quaternion rotation = worldSpaceTransform.GetRotation();
+			*outDirection = worldSpaceTransform.CalculateUp();
+		}
 
-			*outDirection = Math::Rotate(rotation, Math::vec3(0.0f, 1.0f, 0.0f));
+		void TransformComponent_GetDownDirection(UUID actorUUID, Math::vec3* outDirection)
+		{
+			Scene* contextScene = GetContextScene();
+			Actor actor = GetActor(actorUUID);
+
+			TransformComponent worldSpaceTransform = contextScene->GetWorldSpaceTransform(actor);
+
+			*outDirection = worldSpaceTransform.CalculateDown();
 		}
 
 		void TransformComponent_GetRightDirection(UUID actorUUID, Math::vec3* outDirection)
@@ -1101,11 +1180,19 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
-			const auto& worldSpaceTransform = contextScene->GetWorldSpaceTransform(actor);
+			TransformComponent worldSpaceTransform = contextScene->GetWorldSpaceTransform(actor);
 
-			Math::quaternion rotation = worldSpaceTransform.GetRotation();
+			*outDirection = worldSpaceTransform.CalculateRight();
+		}
 
-			*outDirection = Math::Rotate(rotation, Math::vec3(1.0f, 0.0f, 0.0f));
+		void TransformComponent_GetLeftDirection(UUID actorUUID, Math::vec3* outDirection)
+		{
+			Scene* contextScene = GetContextScene();
+			Actor actor = GetActor(actorUUID);
+
+			TransformComponent worldSpaceTransform = contextScene->GetWorldSpaceTransform(actor);
+
+			*outDirection = worldSpaceTransform.CalculateLeft();
 		}
 
 		void TransformComponent_LookAt(UUID actorUUID, Math::vec3* worldPoint)
@@ -2065,32 +2152,32 @@ namespace Vortex {
 			textMeshComponent.Color = *color;
 		}
 
-		void TextMeshComponent_GetBackgroundColor(UUID actorUUID, Math::vec4* outBackgroundColor)
+		void TextMeshComponent_GetOutlineColor(UUID actorUUID, Math::vec4* outOutlineColor)
 		{
 			Actor actor = GetActor(actorUUID);
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.BackgroundColor without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.OutlineColor without a Text Mesh!");
 				return;
 			}
 
 			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
-			*outBackgroundColor = textMeshComponent.BgColor;
+			*outOutlineColor = textMeshComponent.BackgroundColor;
 		}
 
-		void TextMeshComponent_SetBackgroundColor(UUID actorUUID, Math::vec4* backgroundcolor)
+		void TextMeshComponent_SetOutlineColor(UUID actorUUID, Math::vec4* outlineColor)
 		{
 			Actor actor = GetActor(actorUUID);
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.BackgroundColor without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.OutlineColor without a Text Mesh!");
 				return;
 			}
 
 			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
-			textMeshComponent.BgColor = *backgroundcolor;
+			textMeshComponent.BackgroundColor = *outlineColor;
 		}
 
 		float TextMeshComponent_GetLineSpacing(UUID actorUUID)
@@ -8944,9 +9031,17 @@ namespace Vortex {
 	void ScriptRegistry::RegisterMethods()
 	{
 		VX_REGISTER_INTERNAL_CALL(Application_Quit);
-		VX_REGISTER_INTERNAL_CALL(Application_GetSize);
-		VX_REGISTER_INTERNAL_CALL(Application_GetPosition);
-		VX_REGISTER_INTERNAL_CALL(Application_IsMaximized);
+
+		VX_REGISTER_INTERNAL_CALL(Window_GetSize);
+		VX_REGISTER_INTERNAL_CALL(Window_GetPosition);
+		VX_REGISTER_INTERNAL_CALL(Window_IsMaximized);
+		VX_REGISTER_INTERNAL_CALL(Window_SetMaximized);
+		VX_REGISTER_INTERNAL_CALL(Window_IsResizeable);
+		VX_REGISTER_INTERNAL_CALL(Window_SetResizeable);
+		VX_REGISTER_INTERNAL_CALL(Window_IsDecorated);
+		VX_REGISTER_INTERNAL_CALL(Window_SetDecorated);
+		VX_REGISTER_INTERNAL_CALL(Window_IsVSyncEnabled);
+		VX_REGISTER_INTERNAL_CALL(Window_SetVSync);
 
 		VX_REGISTER_INTERNAL_CALL(SceneRenderer_GetExposure);
 		VX_REGISTER_INTERNAL_CALL(SceneRenderer_SetExposure);
@@ -9019,8 +9114,11 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetTransformMatrix);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetTransformMatrix);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetForwardDirection);
+		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetBackwardDirection);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetUpDirection);
+		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetDownDirection);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetRightDirection);
+		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetLeftDirection);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_LookAt);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetParent);
 		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetParent);
@@ -9086,8 +9184,8 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetTextString);
 		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetColor);
 		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetColor);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetBackgroundColor);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetBackgroundColor);
+		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetOutlineColor);
+		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetOutlineColor);
 		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetLineSpacing);
 		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetLineSpacing);
 		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetKerning);

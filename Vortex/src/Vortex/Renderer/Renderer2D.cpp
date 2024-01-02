@@ -1206,8 +1206,12 @@ namespace Vortex
 
 					quadMin *= fsScale;
 					quadMax *= fsScale;
+
 					quadMin += Math::vec2(x, y);
 					quadMax += Math::vec2(x, y);
+
+					Math::vec2 textSize(quadMax - quadMin);
+					VX_CONSOLE_LOG_INFO("TextSize: {}", textSize);
 
 					if (quadMax.x > maxWidth && lastSpace != -1)
 					{
