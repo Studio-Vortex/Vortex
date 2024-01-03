@@ -470,6 +470,8 @@ namespace Vortex {
 			m_ActorSearchInputTextFilter.Build();
 		}
 
+		UI::DrawItemActivityOutline();
+
 		Gui::SameLine();
 
 		UI::ShiftCursorX(-4.0f);
@@ -2145,7 +2147,7 @@ namespace Vortex {
 		}
 
 		UI::Property("Background Color", &component.BackgroundColor);
-		UI::Property("Clicked Color", &component.OnClickedColor);
+		UI::Property("Clicked Color", &component.OnClickedColor, "color when the button is clicked");
 		
 		UI::EndPropertyGrid();
 

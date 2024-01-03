@@ -608,7 +608,7 @@ namespace Vortex::UI {
 		Gui::PopID();
 	}
 
-	VORTEX_API inline static bool PropertyCheckboxGroup(const char* label, bool& value)
+	VORTEX_API inline static bool PropertyCheckboxGroup(const char* label, bool& value, const char* desc = nullptr)
 	{
 		bool modified = false;
 
@@ -616,6 +616,10 @@ namespace Vortex::UI {
 			Gui::SameLine();
 
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::SameLine();
 
 		if (Gui::Checkbox(GenerateID(), &value))
@@ -626,12 +630,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, bool& value)
+	VORTEX_API inline static bool Property(const char* label, bool& value, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -650,12 +658,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, char& value, float speed = 1.0f, int min = 0, int max = 0)
+	VORTEX_API inline static bool Property(const char* label, char& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -674,12 +686,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, unsigned char& value, float speed = 1.0f, int min = 0, int max = 0)
+	VORTEX_API inline static bool Property(const char* label, unsigned char& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -698,12 +714,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, short& value, float speed = 1.0f, int min = 0, int max = 0)
+	VORTEX_API inline static bool Property(const char* label, short& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -722,12 +742,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, unsigned short& value, float speed = 1.0f, int min = 0, int max = 0)
+	VORTEX_API inline static bool Property(const char* label, unsigned short& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -746,12 +770,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, int& value, float speed = 1.0f, int min = 0, int max = 0)
+	VORTEX_API inline static bool Property(const char* label, int& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -770,12 +798,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, uint32_t& value, float speed = 1.0f, int min = 0, int max = 0)
+	VORTEX_API inline static bool Property(const char* label, uint32_t& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -794,12 +826,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, long long& value, float speed = 1.0f, int min = 0, int max = 0)
+	VORTEX_API inline static bool Property(const char* label, long long& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -818,12 +854,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, unsigned long long& value, float speed = 1.0f, int min = 0, int max = 0)
+	VORTEX_API inline static bool Property(const char* label, unsigned long long& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -842,12 +882,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, float& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f")
+	VORTEX_API inline static bool Property(const char* label, float& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -866,12 +910,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, double& value, float speed = 1.0f, int min = 0, int max = 0)
+	VORTEX_API inline static bool Property(const char* label, double& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -890,12 +938,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, Math::vec2& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f")
+	VORTEX_API inline static bool Property(const char* label, Math::vec2& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -914,12 +966,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, Math::vec3& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f")
+	VORTEX_API inline static bool Property(const char* label, Math::vec3& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -938,12 +994,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, Math::vec4& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f")
+	VORTEX_API inline static bool Property(const char* label, Math::vec4& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -962,12 +1022,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, Math::vec3* value)
+	VORTEX_API inline static bool Property(const char* label, Math::vec3* value, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -986,12 +1050,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, Math::vec4* value)
+	VORTEX_API inline static bool Property(const char* label, Math::vec4* value, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -1010,12 +1078,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 	
-	VORTEX_API inline static bool Property(const char* label, std::string& value, bool readOnly = false, bool multiline = false, bool enterReturnsTrue = false)
+	VORTEX_API inline static bool Property(const char* label, std::string& value, bool readOnly = false, bool multiline = false, bool enterReturnsTrue = false, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -1044,12 +1116,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool PropertyWithButton(const char* label, const char* buttonLabel, std::string& value, const std::function<void()>& onClickedFn, bool readOnly = false, bool multiline = false, bool enterReturnsTrue = false)
+	VORTEX_API inline static bool PropertyWithButton(const char* label, const char* buttonLabel, std::string& value, const std::function<void()>& onClickedFn, bool readOnly = false, bool multiline = false, bool enterReturnsTrue = false, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -1088,12 +1164,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool PropertySlider(const char* label, float& value, float min = 0.0f, float max = 0.0f, const char* format = "%.2f")
+	VORTEX_API inline static bool PropertySlider(const char* label, float& value, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -1112,12 +1192,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool MultilineTextBox(const char* label, std::string& value, bool readOnly = false)
+	VORTEX_API inline static bool MultilineTextBox(const char* label, std::string& value, bool readOnly = false, const char* desc = nullptr)
 	{
 		bool modified = false;
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -1150,13 +1234,17 @@ namespace Vortex::UI {
 	}
 
 	template <typename TEnum, typename TUnderlying = int32_t>
-	VORTEX_API inline static bool PropertyDropdown(const char* label, const char** options, uint32_t count, TEnum& selected)
+	VORTEX_API inline static bool PropertyDropdown(const char* label, const char** options, uint32_t count, TEnum& selected, const char* desc = nullptr)
 	{
 		TUnderlying selectedIndex = (TUnderlying)selected;
 		const char* current = options[selectedIndex];
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -1205,12 +1293,16 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool PropertyDropdownSearch(const char* label, const char** options, uint32_t count, std::string& selected, ImGuiTextFilter& textFilter, const std::function<void()>& clearCallback = nullptr)
+	VORTEX_API inline static bool PropertyDropdownSearch(const char* label, const char** options, uint32_t count, std::string& selected, ImGuiTextFilter& textFilter, const std::function<void()>& clearCallback = nullptr, const char* desc = nullptr)
 	{
 		const char* current = selected.c_str();
 
 		ShiftCursor(10.0f, 9.0f);
 		Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
 		Gui::NextColumn();
 		ShiftCursorY(4.0f);
 		Gui::PushItemWidth(-1);
@@ -1488,8 +1580,6 @@ namespace Vortex::UI {
 		if (!ImGui::BeginTable(tableName, columnCount, flags, size))
 			return;
 
-		const float cursorX = ImGui::GetCursorScreenPos().x;
-
 		for (uint32_t i = 0; i < columnCount; i++)
 			ImGui::TableSetupColumn(columns[i]);
 
@@ -1511,7 +1601,6 @@ namespace Vortex::UI {
 				ShiftCursor(-edgeOffset * 3.0f, -edgeOffset * 2.0f);
 				ImGui::PopID();
 			}
-			ImGui::SetCursorScreenPos(ImVec2(cursorX, ImGui::GetCursorScreenPos().y));
 			Draw::Underline(true, 0.0f, 5.0f);
 		}
 
@@ -1528,8 +1617,8 @@ namespace Vortex::UI {
 		ImGui::TableNextColumn();
 
 		window->DC.CurrLineTextBaseOffset = 3.0f;
-		const ImVec2 rowAreaMin = ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), 0).Min;
-		const ImVec2 rowAreaMax = { ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), ImGui::TableGetColumnCount() - 1).Max.x, rowAreaMin.y + rowHeight };
+		ImVec2 rowAreaMin = ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), 0).Min;
+		ImVec2 rowAreaMax = { ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), ImGui::TableGetColumnCount() - 1).Max.x, rowAreaMin.y + rowHeight };
 
 		ImGui::PushClipRect(rowAreaMin, rowAreaMax, false);
 
@@ -1545,7 +1634,7 @@ namespace Vortex::UI {
 	using VORTEX_API AssetDropFn = std::function<void(const Fs::Path&)>;
 
 	template <typename TAssetType>
-	VORTEX_API inline static bool PropertyAssetReference(const char* label, const std::string& filepath, AssetHandle& assetHandle, const AssetDropFn& onAssetDroppedFn, const AssetRegistry& registry)
+	VORTEX_API inline static bool PropertyAssetReference(const char* label, const std::string& filepath, AssetHandle& assetHandle, const AssetDropFn& onAssetDroppedFn, const AssetRegistry& registry, const char* desc = nullptr)
 	{
 		bool modified = false;
 
@@ -1587,7 +1676,7 @@ namespace Vortex::UI {
 
 		std::string current = filepath;
 		BeginPropertyGrid();
-		if (PropertyDropdownSearch(label, options.data(), options.size(), current, s_TextFilters[s_UIContextID - 1], OnClearedFn))
+		if (PropertyDropdownSearch(label, options.data(), options.size(), current, s_TextFilters[s_UIContextID - 1], OnClearedFn, desc))
 		{
 			size_t pos = 0;
 			for (size_t i = 0; i < options.size(); i++)
@@ -1633,6 +1722,7 @@ namespace Vortex::UI {
 		AssetHandle* Handle = nullptr;
 		AssetDropFn OnAssetDroppedFn = nullptr;
 		const AssetRegistry* Registry = nullptr;
+		const char* Description = nullptr;
 	};
 
 	template <typename TImageAssetType>
@@ -1705,7 +1795,7 @@ namespace Vortex::UI {
 
 		std::string current = *settings.Filepath;
 		BeginPropertyGrid();
-		if (PropertyDropdownSearch(settings.Label, options.data(), options.size(), current, s_TextFilters[s_UIContextID - 1], OnClearedFn))
+		if (PropertyDropdownSearch(settings.Label, options.data(), options.size(), current, s_TextFilters[s_UIContextID - 1], OnClearedFn, settings.Description))
 		{
 			size_t pos = 0;
 			for (size_t i = 0; i < options.size(); i++)

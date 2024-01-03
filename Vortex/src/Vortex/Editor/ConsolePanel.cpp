@@ -3,9 +3,12 @@
 
 #include "Vortex/Core/Application.h"
 #include "Vortex/Core/Log.h"
+
 #include "Vortex/Scene/Scene.h"
 
 #include "Vortex/Editor/UI/UI.h"
+
+#include "Vortex/Input/Input.h"
 
 namespace Vortex {
 
@@ -30,16 +33,12 @@ namespace Vortex {
 
 	void ConsolePanel::OnGuiRender()
 	{
-		ImGuiIO& io = Gui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
 		if (!IsOpen)
 			return;
 
 		Gui::Begin(m_PanelName.c_str(), &IsOpen);
 
-		auto contentRegionAvail = Gui::GetContentRegionAvail();
+		const ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
 		Math::vec2 consoleSize = { contentRegionAvail.x, contentRegionAvail.y };
 		consoleSize.y -= 32.0f;
 
@@ -101,7 +100,7 @@ namespace Vortex {
 	{
 		static const char* s_Columns[] = { "Type", "Time", "Message" };
 
-		UI::Table("Console##internal", s_Columns, 3, { size.x, size.y }, [&]()
+		UI::Table("Console##internal", s_Columns, 3, *(ImVec2*)&size, [&]()
 		{
 			std::scoped_lock<std::mutex> lock(m_MessageBufferMutex);
 
@@ -114,18 +113,18 @@ namespace Vortex {
 
 			m_PreviousScrollY = scrollY;
 
-			float rowHeight = 24.0f;
+			float rowHeight = 26.0f;
 			for (uint32_t i = 0; i < m_MessageBuffer.size(); i++)
 			{
-				const auto& msg = m_MessageBuffer[i];
+				const ConsoleMessage& msg = m_MessageBuffer[i];
 
 				if (!(m_MessageFilters & (int16_t)msg.Flags))
 					continue;
 
 				Gui::PushID(&msg);
 
-				const bool clicked = UI::TableRowClickable(msg.ShortMessage.c_str(), rowHeight);
-				const auto& color = GetMessageColor(msg);
+				const bool clicked = UI::TableRowClickable(msg.ShortMessage.c_str(), rowHeight) || (Gui::IsItemHovered() && Input::IsMouseButtonDown(MouseButton::Left));
+				const Math::vec4& color = GetMessageColor(msg);
 
 				if (m_ContextScene->IsRunning())
 				{
@@ -157,13 +156,13 @@ namespace Vortex {
 				localtime_s(&timeBuffer, &msg.Time);
 				timeString << std::put_time(&timeBuffer, "%I:%M:%S %p");
 
-				std::string&& fmt = timeString.str();
-				if (size_t pos = fmt.find("AM"); pos != std::string::npos)
-					fmt.replace(fmt.begin() + pos, fmt.end(), "am");
-				else if (size_t pos = fmt.find("PM"); pos != std::string::npos)
-					fmt.replace(fmt.begin() + pos, fmt.end(), "pm");
+				std::string&& timeFmt = timeString.str();
+				if (size_t pos = timeFmt.find("AM"); pos != std::string::npos)
+					timeFmt.replace(timeFmt.begin() + pos, timeFmt.end(), "am");
+				else if (size_t pos = timeFmt.find("PM"); pos != std::string::npos)
+					timeFmt.replace(timeFmt.begin() + pos, timeFmt.end(), "pm");
 
-				Gui::Text(fmt.c_str());
+				Gui::Text(timeFmt.c_str());
 
 				Gui::TableNextColumn();
 				UI::ShiftCursorX(4.0f);
@@ -178,10 +177,12 @@ namespace Vortex {
 				if (clicked)
 				{
 					Gui::OpenPopup("Detailed Message");
-					const auto& size = Application::Get().GetWindow().GetSize();
-					const auto& position = Application::Get().GetWindow().GetPosition();
+					const Application& app = Application::Get();
+					const Window& window = app.GetWindow();
+					const Math::vec2& size = window.GetSize();
+					const Math::vec2& position = window.GetPosition();
 					ImGui::SetNextWindowSize({ (float)size.x * 0.5f, (float)size.y * 0.5f });
-					ImGui::SetNextWindowPos({ position.x + (float)size.x / 2.0f, position.y + (float)size.y / 2.5f }, 0, { 0.5, 0.5 });
+					ImGui::SetNextWindowPos({ position.x + (float)size.x / 2.0f, position.y + (float)size.y / 2.5f }, 0, { 0.5f, 0.5f });
 					m_DetailedPanelOpen = true;
 				}
 
