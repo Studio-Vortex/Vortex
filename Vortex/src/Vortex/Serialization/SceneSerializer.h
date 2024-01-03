@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
+
 #include "Vortex/Scene/Scene.h"
 
 #include <string>

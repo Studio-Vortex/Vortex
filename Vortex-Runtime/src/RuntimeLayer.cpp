@@ -202,8 +202,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		// TODO this should be changed to LoadRuntimeProject in the future
-		const bool success = ProjectLoader::LoadEditorProject(filepath);
-		if (!success)
+		if (!ProjectLoader::LoadEditorProject(filepath))
 		{
 			return false;
 		}

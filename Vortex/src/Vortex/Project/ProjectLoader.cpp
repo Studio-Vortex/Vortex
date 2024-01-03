@@ -9,21 +9,21 @@
 
 namespace Vortex {
 
-	bool ProjectLoader::LoadEditorProject(const std::filesystem::path& filepath)
+	bool ProjectLoader::LoadEditorProject(const Fs::Path& filepath)
 	{
 		const std::string filename = filepath.filename().string();
 		if (filepath.extension() != ".vxproject")
 		{
-			VX_CONSOLE_LOG_WARN("Failed to load project '{}' - not a vortex project file!", filename);
+			VX_CONSOLE_LOG_ERROR("[Editor] Failed to load project '{}' - not a vortex project file!", filename);
 			return false;
 		}
 
 		const std::string timerName = fmt::format("{} Project Load Time", filename);
 		InstrumentationTimer timer(timerName.c_str());
 
-		const bool projectLoaded = (bool)Project::Load(filepath);
-		if (!projectLoaded)
+		if (!Project::Load(filepath))
 		{
+			VX_CONSOLE_LOG_ERROR("[Editor] Failed to load project: '{}'", filepath.string());
 			return false;
 		}
 
@@ -38,7 +38,14 @@ namespace Vortex {
 		VX_CORE_ASSERT(Project::GetActive(), "No active project!");
 
 		SharedReference<Project> project = Project::GetActive();
-		return project->SaveToDisk();
+
+		if (!project->SaveToDisk())
+		{
+			VX_CONSOLE_LOG_ERROR("[Editor] Failed to save project '{}'", project->GetName());
+			return false;
+		}
+
+		return true;
 	}
 
 	bool ProjectLoader::LoadRuntimeProject()

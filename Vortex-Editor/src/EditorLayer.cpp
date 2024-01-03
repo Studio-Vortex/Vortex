@@ -965,7 +965,7 @@ namespace Vortex {
 
 				if (assetType == AssetType::None)
 				{
-					VX_CONSOLE_LOG_ERROR("Could not load asset with AssetType of none!");
+					VX_CONSOLE_LOG_ERROR("[Editor] Could not load asset with AssetType of none!");
 					Gui::EndDragDropTarget();
 					return;
 				}
@@ -1012,7 +1012,7 @@ namespace Vortex {
 
 						if (scriptComponent.ClassName.empty())
 						{
-							VX_CONSOLE_LOG_ERROR("Failed to locate class name for script '{}', the class and script name must match!", droppedClassName);
+							VX_CONSOLE_LOG_ERROR("[Editor] Failed to locate class name for script '{}', the class and script name must match!", droppedClassName);
 						}
 
 						break;
@@ -2906,18 +2906,14 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (Project::GetActive())
-		{
+		if (Project::GetActive()) {
 			CloseProject();
 		}
 
 		m_HoveredActor = Actor{};
 		SelectionManager::DeselectActor();
 
-		const bool success = ProjectLoader::LoadEditorProject(filepath);
-		if (!success)
-		{
-			VX_CORE_FATAL("Failed to open project: '{}'", filepath.string());
+		if (!ProjectLoader::LoadEditorProject(filepath)) {
 			return false;
 		}
 
@@ -2938,17 +2934,12 @@ namespace Vortex {
 	{
 		SaveScene();
 
-		if (m_CaptureSceneViewportFramebufferToDiskOnSave)
-		{
+		if (m_CaptureSceneViewportFramebufferToDiskOnSave) {
 			CaptureSceneViewportFramebufferImageToDisk();
 		}
 
-		const bool success = ProjectLoader::SaveActiveEditorProject();
-
-		if (!success)
-		{
-			const std::string& projectName = Project::GetActive()->GetName();
-			VX_CONSOLE_LOG_ERROR("Failed to save project '{}'", projectName);
+		if (!ProjectLoader::SaveActiveEditorProject()) {
+			return;
 		}
 	}
 
@@ -3106,6 +3097,7 @@ namespace Vortex {
 		if (properties.ScriptingProps.ReloadAssemblyOnPlay)
 		{
 			ScriptEngine::ReloadAssembly();
+			// NOTE: this doesn't work, the assembly still doesn't get reloaded
 			using namespace std::chrono_literals;
 			std::this_thread::sleep_for(750ms);
 		}
@@ -3121,9 +3113,11 @@ namespace Vortex {
 		// Make a copy of the editors scene
 		m_ActiveScene = Scene::Copy(m_EditorScene);
 
-		if (!m_ActiveScene->GetPrimaryCameraActor()) // we should let the user know
+		// we should let the user know
+		Actor primaryCamera = m_ActiveScene->GetPrimaryCameraActor();
+		if (!primaryCamera)
 		{
-			VX_CONSOLE_LOG_ERROR("Scene cannot render without a camera! Attach a camera component to an actor and enable 'Primary'");
+			VX_CONSOLE_LOG_ERROR("[Scene Renderer] Scene cannot render without a camera! Attach a camera component to an actor and enable 'Primary'");
 		}
 
 		ScriptRegistry::SetSceneStartTime(Time::GetTime());
@@ -3159,6 +3153,8 @@ namespace Vortex {
 		}
 
 		m_ActiveScene->SetPaused(false);
+
+		m_SceneViewportBorderFadeTimer = m_SceneViewportBorderFadeLengthInSeconds;
 	}
 
 	void EditorLayer::OnSceneStop()

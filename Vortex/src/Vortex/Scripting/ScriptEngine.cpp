@@ -129,6 +129,7 @@ namespace Vortex {
 		LoadAssemblyClasses();
 
 		ScriptRegistry::RegisterComponents();
+		ScriptRegistry::LoadPlayerPrefs();
 
 		// Define the Actor class in the Mono runtime
 		s_Data->ActorClass = SharedReference<ScriptClass>::Create("Vortex", "Actor", true);
@@ -153,6 +154,8 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		ShutdownMono();
+
+		ScriptRegistry::SavePlayerPrefs();
 
 		// NOTE:
 		// We need to manually clean up this audio source because

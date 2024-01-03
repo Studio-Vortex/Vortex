@@ -373,7 +373,7 @@ namespace Vortex {
 		if (!stream.is_open())
 		{
 			const std::string assetRegistryPath = m_ProjectAssetRegistryPath.string();
-			VX_CONSOLE_LOG_ERROR("Failed to open Asset Registry File /'{}'", assetRegistryPath);
+			VX_CONSOLE_LOG_ERROR("[Asset Manager] Failed to open Asset Registry File /'{}'", assetRegistryPath);
 		}
 
 		std::stringstream ss;
@@ -384,7 +384,7 @@ namespace Vortex {
 		YAML::Node assetHandles = data["Assets"];
 		if (!assetHandles)
 		{
-			VX_CONSOLE_LOG_ERROR("Asset Registry was corrupted!");
+			VX_CONSOLE_LOG_ERROR("[Asset Manager] Asset Registry was corrupted!");
 			return;
 		}
 
@@ -439,7 +439,7 @@ namespace Vortex {
 							score++;
 					}
 
-					VX_CONSOLE_LOG_WARN("'{}' has a score of {}, best score is {}", path.string(), score, bestScore);
+					VX_CONSOLE_LOG_WARN("[Asset Manager] '{}' has a score of {}, best score is {}", path.string(), score, bestScore);
 
 					if (bestScore > 0 && score == bestScore)
 					{

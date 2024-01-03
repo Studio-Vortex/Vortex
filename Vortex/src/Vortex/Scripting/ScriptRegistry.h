@@ -41,6 +41,8 @@ namespace Vortex {
 		static void RegisterComponents();
 		static void SetHoveredActor(Actor actor);
 		static void SetSceneStartTime(float startTime);
+		static bool SavePlayerPrefs();
+		static bool LoadPlayerPrefs();
 	};
 
 	namespace InternalCalls {
@@ -798,9 +800,18 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region PlayerPrefs
+
+		bool PlayerPrefs_HasKey(MonoString* key);
+		bool PlayerPrefs_RemoveKey(MonoString* key);
+		void PlayerPrefs_WriteInt(MonoString* key, int32_t value);
+		int32_t PlayerPrefs_ReadInt(MonoString* key);
+		int32_t PlayerPrefs_ReadIntWithDefault(MonoString* key, int32_t defaultValue);
+
+#pragma endregion
+
 #pragma region Gui
 
-		void BeginWindow(char* text, uint32_t flags = 0);
 		void Gui_Begin(MonoString* text);
 		void Gui_BeginWithPosition(MonoString* text, Math::vec2* position);
 		void Gui_BeginWithSize(MonoString* text, float width, float height);

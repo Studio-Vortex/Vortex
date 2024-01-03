@@ -45,6 +45,8 @@
 #include "Vortex/Animation/Animator.h"
 #include "Vortex/Animation/Animation.h"
 
+#include "Vortex/Serialization/PlayerPrefsSerializer.h"
+
 #include "Vortex/Utils/Random.h"
 #include "Vortex/Utils/Time.h"
 
@@ -78,6 +80,9 @@ namespace Vortex {
 		Actor HoveredActor = Actor{};
 
 		float SceneStartTime = 0.0f;
+
+		PlayerPrefsSerializer Serializer;
+		const std::string PlayerPrefsFilename = "PlayerPrefs.prefs";
 	};
 
 	static ScriptRegistryInternalData s_Data;
@@ -8782,9 +8787,69 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region PlayerPrefs
+
+		bool PlayerPrefs_HasKey(MonoString* key)
+		{
+			ManagedString mstring(key);
+			return s_Data.Serializer.HasKey(mstring.String());
+		}
+
+		bool PlayerPrefs_RemoveKey(MonoString* key)
+		{
+			ManagedString mstring(key);
+			
+			if (!s_Data.Serializer.Remove(mstring.String())) {
+				VX_CONSOLE_LOG_ERROR("[Player Prefs] Trying to remove invalid key '{}'", mstring.String());
+				return false;
+			}
+
+			return s_Data.Serializer.Remove(mstring.String());
+		}
+
+		void PlayerPrefs_WriteInt(MonoString* key, int32_t value)
+		{
+			ManagedString mstring(key);
+			s_Data.Serializer.WriteInt(mstring.String(), value);
+		}
+
+		// This function is extremly dangerous because if Serializer.ReadInt fails then value will be uninitialized memory
+		int32_t PlayerPrefs_ReadInt(MonoString* key)
+		{
+			ManagedString mstring(key);
+
+			if (!s_Data.Serializer.HasKey(mstring.String())) {
+				VX_CONSOLE_LOG_ERROR("[Player Prefs] Trying to read int with invalid key '{}'", mstring.String());
+				return 0;
+			}
+
+			int32_t value;
+			s_Data.Serializer.ReadInt(mstring.String(), &value);
+			return value;
+		}
+
+		int32_t PlayerPrefs_ReadIntWithDefault(MonoString* key, int32_t defaultValue)
+		{
+			ManagedString mstring(key);
+
+			if (!s_Data.Serializer.HasKey(mstring.String())) {
+				VX_CONSOLE_LOG_ERROR("[Player Prefs] Trying to read int with invalid key '{}'", mstring.String());
+				return defaultValue;
+			}
+
+			int32_t value;
+			const bool success = s_Data.Serializer.ReadInt(mstring.String(), &value);
+			if (!success)
+				return defaultValue;
+
+			return value;
+		}
+
+#pragma endregion
+
 #pragma region Gui
 
-		void BeginWindow(char* text, uint32_t flags)
+		static void BeginWindow(const char* text, uint32_t flags = 0)
 		{
 			Gui::Begin(text, nullptr, flags);
 			UI::BeginPropertyGrid();
@@ -8792,42 +8857,34 @@ namespace Vortex {
 
 		void Gui_Begin(MonoString* text)
 		{
-			char* textCStr = mono_string_to_utf8(text);
+			ManagedString mstring(text);
 
-			BeginWindow(textCStr);
-
-			mono_free(textCStr);
+			BeginWindow(mstring.String().c_str());
 		}
 
 		void Gui_BeginWithPosition(MonoString* text, Math::vec2* position)
 		{
-			char* textCStr = mono_string_to_utf8(text);
+			ManagedString mstring(text);
 
 			Gui::SetNextWindowPos({ position->x, position->y });
-			BeginWindow(textCStr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
-
-			mono_free(textCStr);
+			BeginWindow(mstring.String().c_str(), ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
 		}
 
 		void Gui_BeginWithSize(MonoString* text, float width, float height)
 		{
-			char* textCStr = mono_string_to_utf8(text);
+			ManagedString mstring(text);
 
 			Gui::SetNextWindowSize({ width, height });
-			BeginWindow(textCStr, ImGuiWindowFlags_NoResize);
-
-			mono_free(textCStr);
+			BeginWindow(mstring.String().c_str(), ImGuiWindowFlags_NoResize);
 		}
 
 		void Gui_BeginWithPositionAndSize(MonoString* text, Math::vec2* position, Math::vec2* size)
 		{
-			char* textCStr = mono_string_to_utf8(text);
+			ManagedString mstring(text);
 
 			Gui::SetNextWindowPos({ position->x, position->y });
 			Gui::SetNextWindowSize({ size->x, size->y });
-			BeginWindow(textCStr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-
-			mono_free(textCStr);
+			BeginWindow(mstring.String().c_str(), ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 		}
 
 		void Gui_End()
@@ -9027,6 +9084,16 @@ namespace Vortex {
 	{
 		s_Data.SceneStartTime = startTime;
 	}
+
+    bool ScriptRegistry::SavePlayerPrefs()
+    {
+		return s_Data.Serializer.Save(s_Data.PlayerPrefsFilename);
+    }
+
+    bool ScriptRegistry::LoadPlayerPrefs()
+    {
+		return s_Data.Serializer.Load(s_Data.PlayerPrefsFilename);
+    }
 
 	void ScriptRegistry::RegisterMethods()
 	{
@@ -9598,6 +9665,12 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(Input_GetGamepadAxis);
 		VX_REGISTER_INTERNAL_CALL(Input_GetCursorMode);
 		VX_REGISTER_INTERNAL_CALL(Input_SetCursorMode);
+
+		VX_REGISTER_INTERNAL_CALL(PlayerPrefs_HasKey);
+		VX_REGISTER_INTERNAL_CALL(PlayerPrefs_RemoveKey);
+		VX_REGISTER_INTERNAL_CALL(PlayerPrefs_WriteInt);
+		VX_REGISTER_INTERNAL_CALL(PlayerPrefs_ReadInt);
+		VX_REGISTER_INTERNAL_CALL(PlayerPrefs_ReadIntWithDefault);
 
 		VX_REGISTER_INTERNAL_CALL(Gui_Begin);
 		VX_REGISTER_INTERNAL_CALL(Gui_BeginWithPosition);

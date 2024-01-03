@@ -13,7 +13,7 @@ namespace Vortex {
 		const bool typesEqual = lhs.Type == rhs.Type;
 		const bool filepathsEqual = lhs.Filepath == rhs.Filepath;
 		const bool handlesEqual = lhs.Handle == rhs.Handle;
-		const bool consistent = (lhs.IsMemoryOnly && rhs.IsMemoryOnly) || (!lhs.IsMemoryOnly && !rhs.IsMemoryOnly);
+		const bool consistent = lhs.IsMemoryOnly == rhs.IsMemoryOnly;
 
 		return typesEqual && filepathsEqual && handlesEqual && consistent;
 	}

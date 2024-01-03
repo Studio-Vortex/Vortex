@@ -1765,6 +1765,25 @@ namespace Vortex {
 
 		#endregion
 
+		#region PlayerPrefs
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool PlayerPrefs_HasKey(string key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool PlayerPrefs_RemoveKey(string key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void PlayerPrefs_WriteInt(string key, int value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static int PlayerPrefs_ReadInt(string key);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static int PlayerPrefs_ReadIntWithDefault(string key, int defaultValue);
+
+		#endregion
+
 		#region Gui
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
