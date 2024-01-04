@@ -238,17 +238,19 @@ namespace Vortex {
 		void DebugRenderer_BeginScene()
 		{
 			Scene* contextScene = GetContextScene();
-
 			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
 
 			if (!primaryCameraActor)
 			{
-				VX_CORE_WARN_TAG("Scripting", "Scene must include a primary camera to call debug render functions!");
+				VX_CONSOLE_LOG_WARN("[Scripting] Scene must include a primary camera to call debug render functions!");
 				return;
 			}
 
-			SceneCamera& camera = primaryCameraActor.GetComponent<CameraComponent>().Camera;
-			Renderer2D::BeginScene(camera, primaryCameraActor.GetTransform().GetTransform());
+			const SceneCamera& camera = primaryCameraActor.GetComponent<CameraComponent>().Camera;
+			const Math::mat4 transform = contextScene->GetWorldSpaceTransformMatrix(primaryCameraActor);
+			const Math::mat4 view = Math::Inverse(transform);
+
+			Renderer2D::BeginScene(camera, view);
 		}
 
 		void DebugRenderer_SetClearColor(Math::vec3* color)
@@ -272,13 +274,14 @@ namespace Vortex {
 
 			if (!primaryCameraActor)
 			{
-				VX_CORE_WARN_TAG("Scripting", "Scene must include a primary camera to call debug render functions!");
+				VX_CONSOLE_LOG_WARN("[Scripting] Scene must include a primary camera to call debug render functions!");
 				return;
 			}
 
-			Math::mat4 cameraView = Math::Inverse(primaryCameraActor.GetTransform().GetTransform());
+			const Math::mat4 transform = contextScene->GetWorldSpaceTransformMatrix(primaryCameraActor);
+			const Math::mat4 view = Math::Inverse(transform);
 
-			Renderer2D::DrawQuadBillboard(cameraView, *translation, *size, *color);
+			Renderer2D::DrawQuadBillboard(view, *translation, *size, *color);
 		}
 
 		void DebugRenderer_DrawCircleVec2(Math::vec2* translation, Math::vec2* size, Math::vec4* color, float thickness, float fade)
@@ -299,12 +302,12 @@ namespace Vortex {
 		{
 			Scene* contextScene = GetContextScene();
 
-			Math::AABB aabb{
+			const Math::AABB aabb{
 				-Math::vec3(0.5f),
 				+Math::vec3(0.5f),
 			};
 
-			Math::mat4 transform = Math::Identity() * Math::Translate(*worldPosition) * Math::Scale(*size);
+			const Math::mat4 transform = Math::Identity() * Math::Translate(*worldPosition) * Math::Scale(*size);
 			Renderer2D::DrawAABB(aabb, transform, *color);
 		}
 
@@ -313,12 +316,12 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
-			Math::AABB aabb{
+			const Math::AABB aabb{
 				-Math::vec3(0.5f),
 				+Math::vec3(0.5f),
 			};
 
-			Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(actor);
+			const Math::mat4 worldSpaceTransform = contextScene->GetWorldSpaceTransformMatrix(actor);
 
 			Renderer2D::DrawAABB(aabb, worldSpaceTransform, *color);
 		}
@@ -405,7 +408,7 @@ namespace Vortex {
 
 			if (!actor)
 			{
-				VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Actor UUID!");
+				VX_CONSOLE_LOG_WARN("[Scripting] Scene.Instantiate called with Invalid Actor UUID!");
 				return 0;
 			}
 
@@ -422,7 +425,7 @@ namespace Vortex {
 
 			if (!actor || !parent)
 			{
-				VX_CORE_WARN_TAG("Scripting", "Scene.Instantiate called with Invalid Actor UUID!");
+				VX_CONSOLE_LOG_WARN("[Scripting] Scene.Instantiate called with Invalid Actor UUID!");
 				return 0;
 			}
 
