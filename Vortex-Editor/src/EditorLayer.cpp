@@ -3140,6 +3140,11 @@ namespace Vortex {
 			return;
 		}
 
+		if (InPlaySceneState() && m_ActiveScene->IsPaused())
+		{
+			return;
+		}
+
 		m_ActiveScene->SetPaused(true);
 	}
 
@@ -3148,6 +3153,11 @@ namespace Vortex {
 		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "Scene must be running!");
 
 		if (InEditSceneState())
+		{
+			return;
+		}
+
+		if (InPlaySceneState() && !m_ActiveScene->IsPaused())
 		{
 			return;
 		}
