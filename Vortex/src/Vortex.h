@@ -49,6 +49,7 @@
 /// UI
 #include "Vortex/Gui/GuiLayer.h"
 #include "Vortex/Editor/UI/UI.h"
+#include "Vortex/Editor/UI/UI_Widgets.h"
 /// ---------------------------------------------------
 
 /// Project

@@ -62,8 +62,8 @@ namespace Vortex {
 			{ "Resources/Fonts/opensans/OpenSans-Medium.ttf", 19.0f, false },
 			{ "Resources/Fonts/opensans/OpenSans-Medium.ttf", 20.0f, false },
 			{ "Resources/Fonts/SegoeUI.ttf", 17.0f, false },
-			{ "Resources/Fonts/SegoeUI.ttf", 18.0f, true },
-			{ "Resources/Fonts/SegoeUI.ttf", 19.0f, false },
+			{ "Resources/Fonts/SegoeUI.ttf", 18.0f, false },
+			{ "Resources/Fonts/SegoeUI.ttf", 19.0f, true },
 			{ "Resources/Fonts/SegoeUI.ttf", 20.0f, false },
 			{ "Resources/Fonts/SegoeUI.ttf", 21.0f, false },
 			{ "Resources/Fonts/SegoeUI.ttf", 22.0f, false },
@@ -278,20 +278,6 @@ namespace Vortex {
 		const ImWchar iconRanges[] = { VX_ICON_MIN, VX_ICON_MAX, 0 };
 		io.Fonts->AddFontFromFileTTF(VX_FONT_ICON_FILE_NAME, 16.0f, &config, iconRanges);
 		io.Fonts->Build();
-	}
-
-}
-
-namespace ImGui {
-
-	void TextCentered(const char* text, float y, ...)
-	{
-		va_list args;
-		va_start(args, text);
-		ImVec2 textSize = CalcTextSize(text);
-		SetCursorPos({ (GetWindowWidth() / 2.0f) - (textSize.x / 2.0f), y });
-		TextV(text, args);
-		va_end(args);
 	}
 
 }

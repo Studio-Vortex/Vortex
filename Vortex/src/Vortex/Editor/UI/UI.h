@@ -1374,6 +1374,15 @@ namespace Vortex::UI {
 		return modified;
 	}
 
+	struct VORTEX_API UIImage
+	{
+		SharedReference<Texture2D> Texture = nullptr;
+		Math::vec2 Size = Math::vec2(64.0f, 64.0f);
+		Math::vec4 TintColor = Math::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	};
+
+	VORTEX_API bool PropertyDropdownSearchWithImages(const char* label, const char** options, uint32_t count, const std::vector<UIImage>& images, std::string& selected, const UIImage& selectedImage, ImGuiTextFilter& textFilter, const std::function<void()>& clearCallback = nullptr, const char* desc = nullptr);
+
 	VORTEX_API inline static void ImageEx(uint32_t rendererID, const ImVec2& size = ImVec2(64, 64), const ImVec4& tintColor = ImVec4(1, 1, 1, 1), const ImVec4& borderColor = ImVec4(0, 0, 0, 0))
 	{
 		Gui::Image((ImTextureID)rendererID, size, { 0, 1 }, { 1, 0 }, tintColor, borderColor);
@@ -1718,8 +1727,10 @@ namespace Vortex::UI {
 	struct VORTEX_API PropertyAssetImageReferenceSettings
 	{
 		const char* Label = nullptr;
-		std::string* Filepath = nullptr;
-		AssetHandle* Handle = nullptr;
+		std::string* CurrentFilepath = nullptr;
+		AssetHandle* CurrentHandle = nullptr;
+		UIImage CurrentImage;
+		std::vector<UIImage> AvailableImages;
 		AssetDropFn OnAssetDroppedFn = nullptr;
 		const AssetRegistry* Registry = nullptr;
 		const char* Description = nullptr;
@@ -1761,7 +1772,6 @@ namespace Vortex::UI {
 
 		std::vector<const char*> options;
 		std::vector<AssetHandle> handles;
-
 		std::vector<std::string> filepaths;
 
 		for (const auto& [assetHandle, metadata] : *settings.Registry)
@@ -1788,26 +1798,26 @@ namespace Vortex::UI {
 		PushID();
 
 		auto OnClearedFn = [&] {
-			*settings.Handle = 0;
+			*settings.CurrentHandle = 0;
 			modified = true;
 			Gui::CloseCurrentPopup();
 		};
 
-		std::string current = *settings.Filepath;
+		std::string currentFilepath = *settings.CurrentFilepath;
 		BeginPropertyGrid();
-		if (PropertyDropdownSearch(settings.Label, options.data(), options.size(), current, s_TextFilters[s_UIContextID - 1], OnClearedFn, settings.Description))
+		if (PropertyDropdownSearchWithImages(settings.Label, options.data(), options.size(), settings.AvailableImages, currentFilepath, settings.CurrentImage, s_TextFilters[s_UIContextID - 1], OnClearedFn, settings.Description))
 		{
 			size_t pos = 0;
 			for (size_t i = 0; i < options.size(); i++)
 			{
-				if (current.find(options[i]) != std::string::npos)
+				if (currentFilepath.find(options[i]) != std::string::npos)
 				{
 					pos = i;
 					break;
 				}
 			}
 
-			*settings.Handle = handles[pos];
+			*settings.CurrentHandle = handles[pos];
 			modified = true;
 			Gui::CloseCurrentPopup();
 		}
