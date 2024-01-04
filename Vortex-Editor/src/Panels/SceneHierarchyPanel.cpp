@@ -14,9 +14,9 @@
 
 namespace Vortex {
 
-#define MAX_MARKER_SIZE 64
-
-#define MAX_CHILD_ACTOR_SEARCH_DEPTH 10
+#define ACTOR_TAG_BUF_SIZE 256
+#define ACTOR_MAX_MARKER_SIZE 64
+#define ACTOR_MAX_CHILD_ACTOR_SEARCH_DEPTH 10
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const SharedReference<Scene>& context)
 	{
@@ -43,7 +43,7 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::RecursiveActorSearch(UUID rootActor, const EditorCamera* editorCamera, uint32_t& searchDepth)
 	{
-		if (searchDepth > MAX_CHILD_ACTOR_SEARCH_DEPTH)
+		if (searchDepth > ACTOR_MAX_CHILD_ACTOR_SEARCH_DEPTH)
 			return;
 
 		const Actor actor = m_ContextScene->TryGetActorWithUUID(rootActor);
@@ -112,25 +112,24 @@ namespace Vortex {
 			case DefaultMesh::StaticMeshType::Torus:    actor.AddComponent<MeshColliderComponent>();    break;
 		}
 
-		SelectionManager::SetSelectedActor(actor);
-
 		return actor;
 	}
 
 	void SceneHierarchyPanel::DisplayCreateActorMenu(const EditorCamera* editorCamera)
 	{
-		bool actorCreated = false;
+		Actor actor;
 
 		auto separator = []() {
 			UI::Draw::Underline();
 			Gui::Spacing();
 		};
 
+		const Math::vec3 relativeToEditorCamera = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
+
 		if (Gui::MenuItem("Create Empty"))
 		{
-			Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Empty Actor"));
-			selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-			actorCreated = true;
+			actor = m_ContextScene->CreateActor("Empty Actor");
+			actor.GetTransform().Translation = relativeToEditorCamera;
 		}
 		separator();
 		
@@ -140,50 +139,43 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Cube"))
 			{
-				CreateDefaultMesh("Cube", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
-				actorCreated = true;
+				actor = CreateDefaultMesh("Cube", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
 			}
 			separator();
 
 			if (Gui::MenuItem("Sphere"))
 			{
-				CreateDefaultMesh("Sphere", DefaultMesh::StaticMeshType::Sphere, m_ContextScene, editorCamera);
-				actorCreated = true;
+				actor = CreateDefaultMesh("Sphere", DefaultMesh::StaticMeshType::Sphere, m_ContextScene, editorCamera);
 			}
 			separator();
 
 			if (Gui::MenuItem("Capsule"))
 			{
-				CreateDefaultMesh("Capsule", DefaultMesh::StaticMeshType::Capsule, m_ContextScene, editorCamera);
-				actorCreated = true;
+				actor = CreateDefaultMesh("Capsule", DefaultMesh::StaticMeshType::Capsule, m_ContextScene, editorCamera);
 			}
 			separator();
 
 			if (Gui::MenuItem("Cone"))
 			{
-				CreateDefaultMesh("Cone", DefaultMesh::StaticMeshType::Cone, m_ContextScene, editorCamera);
-				actorCreated = true;
+				actor = CreateDefaultMesh("Cone", DefaultMesh::StaticMeshType::Cone, m_ContextScene, editorCamera);
 			}
 			separator();
 
 			if (Gui::MenuItem("Cylinder"))
 			{
-				CreateDefaultMesh("Cylinder", DefaultMesh::StaticMeshType::Cylinder, m_ContextScene, editorCamera);
-				actorCreated = true;
+				actor = CreateDefaultMesh("Cylinder", DefaultMesh::StaticMeshType::Cylinder, m_ContextScene, editorCamera);
 			}
 			separator();
 
 			if (Gui::MenuItem("Plane"))
 			{
-				CreateDefaultMesh("Plane", DefaultMesh::StaticMeshType::Plane, m_ContextScene, editorCamera);
-				actorCreated = true;
+				actor = CreateDefaultMesh("Plane", DefaultMesh::StaticMeshType::Plane, m_ContextScene, editorCamera);
 			}
 			separator();
 
 			if (Gui::MenuItem("Torus"))
 			{
-				CreateDefaultMesh("Torus", DefaultMesh::StaticMeshType::Torus, m_ContextScene, editorCamera);
-				actorCreated = true;
+				actor = CreateDefaultMesh("Torus", DefaultMesh::StaticMeshType::Torus, m_ContextScene, editorCamera);
 			}
 
 			Gui::EndMenu();
@@ -196,25 +188,23 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Sprite"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Sprite"));
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				selected.GetTransform().Translation.z = 0.0f;
-				selected.AddComponent<SpriteRendererComponent>();
-				selected.AddComponent<RigidBody2DComponent>();
-				selected.AddComponent<BoxCollider2DComponent>();
-				actorCreated = true;
+				actor = m_ContextScene->CreateActor("Sprite");
+				actor.GetTransform().Translation = relativeToEditorCamera;
+				actor.GetTransform().Translation.z = 0.0f;
+				actor.AddComponent<SpriteRendererComponent>();
+				actor.AddComponent<RigidBody2DComponent>();
+				actor.AddComponent<BoxCollider2DComponent>();
 			}
 			separator();
 
 			if (Gui::MenuItem("Circle"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Circle"));
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				selected.GetTransform().Translation.z = 0.0f;
-				selected.AddComponent<CircleRendererComponent>();
-				selected.AddComponent<RigidBody2DComponent>();
-				selected.AddComponent<CircleCollider2DComponent>();
-				actorCreated = true;
+				actor = m_ContextScene->CreateActor("Circle");
+				actor.GetTransform().Translation = relativeToEditorCamera;
+				actor.GetTransform().Translation.z = 0.0f;
+				actor.AddComponent<CircleRendererComponent>();
+				actor.AddComponent<RigidBody2DComponent>();
+				actor.AddComponent<CircleCollider2DComponent>();
 			}
 
 			Gui::EndMenu();
@@ -227,21 +217,19 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Perspective"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Camera"));
-				CameraComponent& cameraComponent = selected.AddComponent<CameraComponent>();
+				actor = m_ContextScene->CreateActor("Camera");
+				CameraComponent& cameraComponent = actor.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Perspective);
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 			separator();
 
 			if (Gui::MenuItem("Orthographic"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Camera"));
-				CameraComponent& cameraComponent = selected.AddComponent<CameraComponent>();
+				actor = m_ContextScene->CreateActor("Camera");
+				CameraComponent& cameraComponent = actor.AddComponent<CameraComponent>();
 				cameraComponent.Camera.SetProjectionType(SceneCamera::ProjectionType::Orthographic);
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 
 			Gui::EndMenu();
@@ -254,31 +242,28 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Directional"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Directional Light"));
-				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
+				actor = m_ContextScene->CreateActor("Directional Light");
+				LightSourceComponent& lightSourceComponent = actor.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Directional;
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 			separator();
 
 			if (Gui::MenuItem("Point"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Point Light"));
-				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
+				actor = m_ContextScene->CreateActor("Point Light");
+				LightSourceComponent& lightSourceComponent = actor.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Point;
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 			separator();
 
 			if (Gui::MenuItem("Spot"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Spot Light"));
-				LightSourceComponent& lightSourceComponent = selected.AddComponent<LightSourceComponent>();
+				actor = m_ContextScene->CreateActor("Spot Light");
+				LightSourceComponent& lightSourceComponent = actor.AddComponent<LightSourceComponent>();
 				lightSourceComponent.Type = LightType::Spot;
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 
 			Gui::EndMenu();
@@ -291,94 +276,84 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Box Collider"))
 			{
-				CreateDefaultMesh("Box Collider", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
-				actorCreated = true;
+				actor = CreateDefaultMesh("Box Collider", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
 			}
 			separator();
 
 			if (Gui::MenuItem("Sphere Collider"))
 			{
-				CreateDefaultMesh("Sphere Collider", DefaultMesh::StaticMeshType::Sphere, m_ContextScene, editorCamera);
-				actorCreated = true;
+				actor = CreateDefaultMesh("Sphere Collider", DefaultMesh::StaticMeshType::Sphere, m_ContextScene, editorCamera);
 			}
 			separator();
 
 			if (Gui::MenuItem("Capsule Collider"))
 			{
-				CreateDefaultMesh("Capsule Collider", DefaultMesh::StaticMeshType::Capsule, m_ContextScene, editorCamera);
-				actorCreated = true;
+				actor = CreateDefaultMesh("Capsule Collider", DefaultMesh::StaticMeshType::Capsule, m_ContextScene, editorCamera);
 			}
 			separator();
 
 			if (Gui::MenuItem("Mesh Collider"))
 			{
-				CreateDefaultMesh("Mesh Collider", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
-				actorCreated = true;
+				actor = CreateDefaultMesh("Mesh Collider", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
 			}
 			separator();
 
 			if (Gui::MenuItem("Trigger Box"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Trigger Box"));
-				selected.AddComponent<RigidBodyComponent>();
-				BoxColliderComponent& boxCollider = selected.AddComponent<BoxColliderComponent>();
+				actor = m_ContextScene->CreateActor("Trigger Box");
+				actor.AddComponent<RigidBodyComponent>();
+				BoxColliderComponent& boxCollider = actor.AddComponent<BoxColliderComponent>();
 				boxCollider.Visible = true;
 				boxCollider.IsTrigger = true;
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 			separator();
 
 			if (Gui::MenuItem("Trigger Sphere"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Trigger Sphere"));
-				selected.AddComponent<RigidBodyComponent>();
-				SphereColliderComponent& sphereCollider = selected.AddComponent<SphereColliderComponent>();
+				actor = m_ContextScene->CreateActor("Trigger Sphere");
+				actor.AddComponent<RigidBodyComponent>();
+				SphereColliderComponent& sphereCollider = actor.AddComponent<SphereColliderComponent>();
 				sphereCollider.Visible = true;
 				sphereCollider.IsTrigger = true;
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 			separator();
 
 			if (Gui::MenuItem("Trigger Capsule"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Trigger Capsule"));
-				selected.AddComponent<RigidBodyComponent>();
-				CapsuleColliderComponent& capsuleCollider = selected.AddComponent<CapsuleColliderComponent>();
+				actor = m_ContextScene->CreateActor("Trigger Capsule");
+				actor.AddComponent<RigidBodyComponent>();
+				CapsuleColliderComponent& capsuleCollider = actor.AddComponent<CapsuleColliderComponent>();
 				capsuleCollider.Visible = true;
 				capsuleCollider.IsTrigger = true;
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 			separator();
 
 			if (Gui::MenuItem("Fixed Joint"))
 			{
-				CreateDefaultMesh("Fixed Joint", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
-				actorCreated = true;
+				actor = CreateDefaultMesh("Fixed Joint", DefaultMesh::StaticMeshType::Cube, m_ContextScene, editorCamera);
 			}
 			separator();
 
 			if (Gui::MenuItem("Box Collider 2D"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Box Collider2D"));
-				selected.AddComponent<SpriteRendererComponent>();
-				selected.AddComponent<RigidBody2DComponent>();
-				selected.AddComponent<BoxCollider2DComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor = m_ContextScene->CreateActor("Box Collider2D");
+				actor.AddComponent<SpriteRendererComponent>();
+				actor.AddComponent<RigidBody2DComponent>();
+				actor.AddComponent<BoxCollider2DComponent>();
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 			separator();
 
 			if (Gui::MenuItem("Circle Collider 2D"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Circle Collider2D"));
-				selected.AddComponent<CircleRendererComponent>();
-				selected.AddComponent<RigidBody2DComponent>();
-				selected.AddComponent<CircleCollider2DComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor = m_ContextScene->CreateActor("Circle Collider2D");
+				actor.AddComponent<CircleRendererComponent>();
+				actor.AddComponent<RigidBody2DComponent>();
+				actor.AddComponent<CircleCollider2DComponent>();
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 
 			Gui::EndMenu();
@@ -391,19 +366,17 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Source Actor"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Audio Source"));
-				selected.AddComponent<AudioSourceComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor = m_ContextScene->CreateActor("Audio Source");
+				actor.AddComponent<AudioSourceComponent>();
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 			separator();
 
 			if (Gui::MenuItem("Listener Actor"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Audio Listener"));
-				selected.AddComponent<AudioListenerComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor = m_ContextScene->CreateActor("Audio Listener");
+				actor.AddComponent<AudioListenerComponent>();
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 
 			Gui::EndMenu();
@@ -416,19 +389,17 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Text"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("UI Text"));
-				selected.AddComponent<TextMeshComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor = m_ContextScene->CreateActor("UI Text");
+				actor.AddComponent<TextMeshComponent>();
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 			separator();
 
 			if (Gui::MenuItem("Button"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("UI Button"));
-				selected.AddComponent<ButtonComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor = m_ContextScene->CreateActor("UI Button");
+				actor.AddComponent<ButtonComponent>();
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 
 			Gui::EndMenu();
@@ -441,17 +412,25 @@ namespace Vortex {
 		{
 			if (Gui::MenuItem("Particles"))
 			{
-				Actor selected = SelectionManager::SetSelectedActor(m_ContextScene->CreateActor("Particle Emitter"));
-				selected.AddComponent<ParticleEmitterComponent>();
-				selected.GetTransform().Translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-				actorCreated = true;
+				actor = m_ContextScene->CreateActor("Particle Emitter");
+				actor.AddComponent<ParticleEmitterComponent>();
+				actor.GetTransform().Translation = relativeToEditorCamera;
 			}
 
 			Gui::EndMenu();
 		}
 
-		if (actorCreated)
+		if (actor)
 		{
+			Actor parent = SelectionManager::GetSelectedActor();
+			if (parent)
+			{
+				m_ContextScene->ParentActor(actor, parent);
+				ImGuiID parentActorTreeNodeID = Gui::GetID((void*)(uint32_t)parent);
+				Gui::ActivateItem(parentActorTreeNodeID);
+			}
+
+			SelectionManager::SetSelectedActor(actor);
 			FocusOnActorName(true);
 		}
 	}
@@ -769,7 +748,7 @@ namespace Vortex {
 
 		if (actorMarker.empty())
 		{
-			tempBuffer.reserve(MAX_MARKER_SIZE);
+			tempBuffer.reserve(ACTOR_MAX_MARKER_SIZE);
 		}
 		else
 		{
@@ -810,18 +789,18 @@ namespace Vortex {
 			flags |= ImGuiTreeNodeFlags_Leaf;
 
 		const bool isPrefab = actor.HasComponent<PrefabComponent>();
-		const bool actorActive = actor.IsActive();
+		const bool actorInactive = !actor.IsActive();
 
 		if (isPrefab)
 			Gui::PushStyleColor(ImGuiCol_Text, ImVec4(0.32f, 0.7f, 0.87f, 1.0f));
-		if (!actorActive)
+		if (actorInactive)
 			Gui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
 
 		const bool opened = Gui::TreeNodeEx((void*)(uint32_t)actor, flags, tag.c_str());
 		
 		if (isPrefab)
 			Gui::PopStyleColor();
-		if (!actorActive)
+		if (actorInactive)
 			Gui::PopStyleColor();
 
 		// Allow dragging actors
@@ -836,38 +815,42 @@ namespace Vortex {
 		// Right-click on actor for utilities popup
 		if (Gui::BeginPopupContextItem())
 		{
+			auto separator = []() {
+				UI::Draw::Underline();
+				Gui::Spacing();
+			};
+
 			if (Gui::MenuItem("Rename", "F2"))
 			{
 				SelectionManager::SetSelectedActor(actor);
-				m_ActorShouldBeRenamed = true;
+				FocusOnActorName(true);
 				Gui::CloseCurrentPopup();
 			}
-			UI::Draw::Underline();
+			separator();
 
-			if (Gui::MenuItem("Add Empty Child"))
+			if (Gui::BeginMenu("Add Child Actor"))
 			{
-				Actor childActor = m_ContextScene->CreateActor("Empty Actor");
-				m_ContextScene->ParentActor(childActor, actor);
-				// Set child to origin of parent
-				childActor.GetTransform().Translation = Math::vec3(0.0f);
-				SelectionManager::SetSelectedActor(childActor);
-				Gui::CloseCurrentPopup();
+				DisplayCreateActorMenu(editorCamera);
+				Gui::EndMenu();
 			}
-			UI::Draw::Underline();
+			separator();
 
 			if (Gui::MenuItem("Unparent Actor"))
 			{
+				SelectionManager::SetSelectedActor(actor);
 				m_ContextScene->UnparentActor(actor);
 				Gui::CloseCurrentPopup();
 			}
-			UI::Draw::Underline();
+			separator();
 
 			if (Gui::MenuItem("Duplicate Actor", "Ctrl+D"))
 			{
-				m_ContextScene->DuplicateActor(actor);
+				Actor duplicate = m_ContextScene->DuplicateActor(actor);
+				SelectionManager::SetSelectedActor(duplicate);
+				FocusOnActorName(true);
 				Gui::CloseCurrentPopup();
 			}
-			UI::Draw::Underline();
+			separator();
 
 			if (Gui::MenuItem("Delete Actor", "Del") && SelectionManager::GetSelectedActor())
 			{
@@ -913,7 +896,6 @@ namespace Vortex {
 		// Destroy the actor if requested
 		if (m_ActorShouldBeDestroyed && SelectionManager::GetSelectedActor() == actor)
 		{
-			SelectionManager::DeselectActor();
 			m_ContextScene->SubmitToDestroyActor(actor);
 		}
 	}
@@ -1230,12 +1212,12 @@ namespace Vortex {
 	{
 		std::string& tag = component.Tag;
 
-		char buffer[256];
+		char buffer[ACTOR_TAG_BUF_SIZE];
 		memset(buffer, 0, sizeof(buffer));
 		strcpy_s(buffer, sizeof(buffer), tag.c_str());
 
 		const bool shouldRename = m_ActorShouldBeRenamed && SelectionManager::GetSelectedActor() == actor;
-		const ImGuiInputTextFlags flags = shouldRename ? ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue : 0;
+		const ImGuiInputTextFlags flags = shouldRename ? (ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue) : 0;
 
 		if (shouldRename)
 		{
@@ -1250,7 +1232,7 @@ namespace Vortex {
 			if (m_ActorShouldBeRenamed)
 				Gui::SetWindowFocus("Scene");
 
-			m_ActorShouldBeRenamed = false;
+			FocusOnActorName(false);
 			m_IsEditingActorName = false;
 		}
 
@@ -1281,7 +1263,7 @@ namespace Vortex {
 		UI::BeginPropertyGrid(100.0f);
 
 		bool active = component.IsActive;
-		if (UI::Property("Active", active))
+		if (UI::Property("Active", active, "enables or disables the actor from being processed by the engine systems"))
 		{
 			actor.SetActive(active);
 		}
@@ -1822,10 +1804,8 @@ namespace Vortex {
 	void SceneHierarchyPanel::SpriteRendererComponentOnGuiRender(SpriteRendererComponent& component, Actor actor)
 	{
 		UI::BeginPropertyGrid();
-
 		UI::Property("Visible", component.Visible);
-
-		ImVec4 tintColor = { component.SpriteColor.r, component.SpriteColor.g, component.SpriteColor.b, component.SpriteColor.a };
+		UI::EndPropertyGrid();
 
 		SharedReference<Texture2D> icon = EditorResources::CheckerboardIcon;
 
@@ -1834,59 +1814,59 @@ namespace Vortex {
 			icon = AssetManager::GetAsset<Texture2D>(component.Texture);
 		}
 
-		UI::PropertyAssetImageReferenceSettings settings;
-		settings.Label = "Texture";
-		using namespace std::string_literals;
-		std::string relativePath = ""s;
-		settings.Filepath = &relativePath;
-		settings.Handle = &component.Texture;
-		settings.OnAssetDroppedFn = nullptr;
-		settings.Registry = &Project::GetEditorAssetManager()->GetAssetRegistry();
-
-		UI::PropertyAssetImageReference<Texture2D>(settings);
-
-		if (UI::ImageButton("Texture", icon, { 64, 64 }, { 0, 0, 0, 0 }, tintColor))
-		{
-			component.Texture = 0;
-		}
-		else if (Gui::IsItemHovered())
-		{
-			Gui::BeginTooltip();
-			Gui::Text(Fs::Path(icon->GetPath()).stem().string().c_str());
-			Gui::EndTooltip();
-		}
-
-		UI::EndPropertyGrid();
-
-		// Accept a Texture from the content browser
-		if (Gui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		auto OnTextureDroppedFn = [&](const Fs::Path& filepath) {
+			// Make sure we are recieving an actual texture otherwise we will have trouble opening it
+			if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::TextureAsset)
 			{
-				const wchar_t* path = (const wchar_t*)payload->Data;
-				Fs::Path texturePath = Fs::Path(path);
-
-				// Make sure we are recieving an actual texture otherwise we will have trouble opening it
-				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(texturePath); type == AssetType::TextureAsset)
+				AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
+				if (AssetManager::IsHandleValid(textureHandle))
 				{
-					AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(texturePath);
-					if (AssetManager::IsHandleValid(textureHandle))
-					{
-						component.Texture = textureHandle;
-					}
-					else
-					{
-						VX_CONSOLE_LOG_WARN("Failed to load texture '{}'", texturePath.filename().string());
-					}
+					component.Texture = textureHandle;
 				}
 				else
 				{
-					VX_CONSOLE_LOG_WARN("Failed to load texture '{}'", texturePath.filename().string());
+					VX_CONSOLE_LOG_WARN("Failed to load texture '{}'", filepath.filename().string());
 				}
 			}
+			else
+			{
+				VX_CONSOLE_LOG_WARN("Failed to load texture '{}'", filepath.filename().string());
+			}
+		};
 
-			Gui::EndDragDropTarget();
+		UI::PropertyAssetImageReferenceSettings settings;
+		settings.Label = "Texture";
+		std::string relativePath = "";
+		settings.CurrentFilepath = &relativePath;
+		settings.CurrentHandle = &component.Texture;
+		settings.CurrentImage.Texture = icon;
+		settings.CurrentImage.Size = Math::vec2(64.0f, 64.0f);
+		settings.CurrentImage.TintColor = component.SpriteColor;
+		std::unordered_set<AssetHandle> textureHandles = Project::GetEditorAssetManager()->GetAllAssetsWithType(AssetType::TextureAsset);
+		std::vector<UI::UIImage> images;
+		for (AssetHandle handle : textureHandles)
+		{
+			if (!AssetManager::IsHandleValid(handle))
+				continue;
+
+			SharedReference<Texture2D> texture = AssetManager::GetAsset<Texture2D>(handle);
+			if (!texture)
+				continue;
+
+			UI::UIImage image;
+			image.Texture = texture;
+			image.Size = Math::vec2(64.0f, 64.0f);
+			image.TintColor = component.SpriteColor;
+
+			images.push_back(image);
 		}
+		settings.AvailableImages = images;
+		settings.OnAssetDroppedFn = OnTextureDroppedFn;
+		settings.Registry = &Project::GetEditorAssetManager()->GetAssetRegistry();
+
+		UI::BeginPropertyGrid();
+		UI::PropertyAssetImageReference<Texture2D>(settings);
+		UI::EndPropertyGrid();
 
 		UI::BeginPropertyGrid();
 
@@ -2582,7 +2562,7 @@ namespace Vortex {
 					component.LockFlags ^= (uint8_t)ActorLockFlag::TranslationX;
 					modified = true;
 				}
-
+				UI::DrawItemActivityOutline();
 				Gui::SameLine();
 
 				Gui::Text("Y");
@@ -2593,7 +2573,7 @@ namespace Vortex {
 					component.LockFlags ^= (uint8_t)ActorLockFlag::TranslationY;
 					modified = true;
 				}
-
+				UI::DrawItemActivityOutline();
 				Gui::SameLine();
 
 				Gui::Text("Z");
@@ -2604,6 +2584,7 @@ namespace Vortex {
 					component.LockFlags ^= (uint8_t)ActorLockFlag::TranslationZ;
 					modified = true;
 				}
+				UI::DrawItemActivityOutline();
 
 				Gui::PopItemWidth();
 				Gui::NextColumn();
@@ -2621,7 +2602,7 @@ namespace Vortex {
 					component.LockFlags ^= (uint8_t)ActorLockFlag::RotationX;
 					modified = true;
 				}
-
+				UI::DrawItemActivityOutline();
 				Gui::SameLine();
 
 				Gui::Text("Y");
@@ -2632,7 +2613,7 @@ namespace Vortex {
 					component.LockFlags ^= (uint8_t)ActorLockFlag::RotationY;
 					modified = true;
 				}
-
+				UI::DrawItemActivityOutline();
 				Gui::SameLine();
 
 				Gui::Text("Z");
@@ -2643,6 +2624,7 @@ namespace Vortex {
 					component.LockFlags ^= (uint8_t)ActorLockFlag::RotationZ;
 					modified = true;
 				}
+				UI::DrawItemActivityOutline();
 
 				Gui::PopItemWidth();
 				Gui::NextColumn();
