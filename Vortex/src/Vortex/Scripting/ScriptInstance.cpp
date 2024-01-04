@@ -25,6 +25,7 @@ namespace Vortex {
 		m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected] = m_ScriptClass->GetMethod("OnFixedJointDisconnected", 2);
 		m_ManagedMethods[ManagedMethod::OnEnable] = m_ScriptClass->GetMethod("OnEnabled", 0);
 		m_ManagedMethods[ManagedMethod::OnDisable] = m_ScriptClass->GetMethod("OnDisabled", 0);
+		m_ManagedMethods[ManagedMethod::OnDebugRender] = m_ScriptClass->GetMethod("OnDebugRender", 0);
 		m_ManagedMethods[ManagedMethod::OnGui] = m_ScriptClass->GetMethod("OnGui", 0);
 
 		SharedReference<ScriptClass> entityClass = ScriptEngine::GetCoreActorClass();
@@ -186,6 +187,18 @@ namespace Vortex {
 		MonoMethod* onDisabledMethod = m_ManagedMethods[method];
 		ScriptUtils::InvokeMethod(m_Instance, onDisabledMethod);
 	}
+
+    void ScriptInstance::InvokeOnDebugRender()
+    {
+		ManagedMethod method = ManagedMethod::OnDebugRender;
+		if (!MethodExists(method))
+		{
+			return;
+		}
+
+		MonoMethod* onDebugRenderMethod = m_ManagedMethods[method];
+		ScriptUtils::InvokeMethod(m_Instance, onDebugRenderMethod);
+    }
 
 	void ScriptInstance::InvokeOnGui()
 	{

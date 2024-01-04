@@ -73,58 +73,32 @@ namespace Vortex {
 		VX_FORCE_INLINE const std::string& GetName() const { return GetComponent<TagComponent>().Tag; }
 		VX_FORCE_INLINE const std::string& GetMarker() const { return GetComponent<TagComponent>().Marker; }
 		
-		VX_FORCE_INLINE void SetTransform(const Math::mat4& transform) { GetComponent<TransformComponent>().SetTransform(transform); }
-		VX_FORCE_INLINE TransformComponent& GetTransform() { return GetComponent<TransformComponent>(); }
+		VX_FORCE_INLINE void SetTransform(const Math::mat4& transform) const { GetComponent<TransformComponent>().SetTransform(transform); }
+		VX_FORCE_INLINE TransformComponent& GetTransform() const { return GetComponent<TransformComponent>(); }
 
 		VX_FORCE_INLINE bool IsActive() const { return GetComponent<TagComponent>().IsActive; }
-		void SetActive(bool active);
+		void SetActive(bool active) const;
 
 		VX_FORCE_INLINE Actor GetParent() const { return m_Scene->TryGetActorWithUUID(GetParentUUID()); }
 
 		VX_FORCE_INLINE UUID GetParentUUID() const { return GetComponent<HierarchyComponent>().ParentUUID; }
-		VX_FORCE_INLINE void SetParentUUID(UUID parentUUID) { GetComponent<HierarchyComponent>().ParentUUID = parentUUID; }
+		VX_FORCE_INLINE void SetParentUUID(UUID parentUUID) const { GetComponent<HierarchyComponent>().ParentUUID = parentUUID; }
 
 		VX_FORCE_INLINE std::vector<UUID>& Children() { return GetComponent<HierarchyComponent>().Children; }
 		VX_FORCE_INLINE const std::vector<UUID>& Children() const { return GetComponent<HierarchyComponent>().Children; }
-		VX_FORCE_INLINE void AddChild(UUID childUUID) { GetComponent<HierarchyComponent>().Children.push_back(childUUID); }
-		VX_FORCE_INLINE void RemoveChild(UUID childUUID)
-		{
-			auto& children = GetComponent<HierarchyComponent>().Children;
-			auto it = std::find(children.begin(), children.end(), childUUID);
-			VX_CORE_ASSERT(it != children.end(), "Child UUID was not found");
-			children.erase(it);
-		}
+		VX_FORCE_INLINE void AddChild(UUID childUUID) const { GetComponent<HierarchyComponent>().Children.push_back(childUUID); }
+		void RemoveChild(UUID childUUID) const;
 
-		VX_FORCE_INLINE bool HasParent() { return GetParentUUID() != 0; }
+		VX_FORCE_INLINE bool HasParent() const { return GetParentUUID() != 0; }
 
-		VX_FORCE_INLINE bool IsAncesterOf(Actor actor)
-		{
-			const std::vector<UUID>& children = GetComponent<HierarchyComponent>().Children;
+		bool IsAncesterOf(Actor actor) const;
 
-			if (children.size() == 0)
-				return false;
-
-			for (UUID child : children)
-			{
-				if (child == actor.GetUUID())
-					return true;
-			}
-
-			for (UUID child : children)
-			{
-				if (m_Scene->TryGetActorWithUUID(child).IsAncesterOf(actor))
-					return true;
-			}
-
-			return false;
-		}
-
-		VX_FORCE_INLINE bool IsDescendantOf(Actor actor)
+		VX_FORCE_INLINE bool IsDescendantOf(Actor actor) const
 		{
 			return actor.IsAncesterOf(*this);
 		}
 
-		bool CallMethod(ManagedMethod method);
+		bool CallMethod(ManagedMethod method) const;
 
 		VX_FORCE_INLINE bool operator==(const Actor& other) const
 		{
@@ -142,8 +116,8 @@ namespace Vortex {
 		VX_FORCE_INLINE operator entt::entity() const { return m_ActorID; }
 
 	private:
-		void OnEnable();
-		void OnDisable();
+		void OnEnabled() const;
+		void OnDisabled() const;
 
 	private:
 		entt::entity m_ActorID = entt::null;

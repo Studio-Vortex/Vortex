@@ -7,21 +7,55 @@
 
 namespace Vortex {
 
-	void Actor::SetActive(bool active)
+	void Actor::SetActive(bool active) const
 	{
 		VX_PROFILE_FUNCTION();
 
 		if (active)
 		{
-			OnEnable();
+			OnEnabled();
 		}
 		else
 		{
-			OnDisable();
+			OnDisabled();
 		}
 	}
 
-	bool Actor::CallMethod(ManagedMethod method)
+	void Actor::RemoveChild(UUID childUUID) const
+	{
+		std::vector<UUID>& children = GetComponent<HierarchyComponent>().Children;
+		auto it = std::find(children.begin(), children.end(), childUUID);
+		VX_CORE_ASSERT(it != children.end(), "Child UUID was not found");
+		if (it == children.end())
+		{
+			return;
+		}
+		children.erase(it);
+	}
+
+	bool Actor::IsAncesterOf(Actor actor) const
+	{
+		const std::vector<UUID>& children = GetComponent<HierarchyComponent>().Children;
+
+		if (children.size() == 0)
+			return false;
+
+		for (UUID child : children)
+		{
+			if (child == actor.GetUUID())
+				return true;
+		}
+
+		for (UUID child : children)
+		{
+			if (m_Scene->TryGetActorWithUUID(child).IsAncesterOf(actor))
+				return true;
+		}
+
+		return false;
+	}
+
+	bool Actor::CallMethod(ManagedMethod method) const
 	{
 		const Actor self = *this;
 
@@ -34,7 +68,7 @@ namespace Vortex {
 		return ScriptEngine::Invoke(method, self);
 	}
 
-	void Actor::OnEnable()
+	void Actor::OnEnabled() const
 	{
 		GetComponent<TagComponent>().IsActive = true;
 
@@ -60,7 +94,7 @@ namespace Vortex {
 		}
 	}
 
-	void Actor::OnDisable()
+	void Actor::OnDisabled() const
 	{
 		GetComponent<TagComponent>().IsActive = false;
 

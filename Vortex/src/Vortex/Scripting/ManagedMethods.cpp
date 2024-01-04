@@ -19,6 +19,7 @@ namespace Vortex {
 			if (str == "OnFixedJointDisconnected") return ManagedMethod::OnFixedJointDisconnected;
 			if (str == "OnEnable")                 return ManagedMethod::OnEnable;
 			if (str == "OnDisable")                return ManagedMethod::OnDisable;
+			if (str == "OnDebugRender")            return ManagedMethod::OnDebugRender;
 			if (str == "OnGui")                    return ManagedMethod::OnGui;
 
 			VX_CORE_ASSERT(false, "Unknown Managed Method!");
@@ -41,6 +42,7 @@ namespace Vortex {
 				case ManagedMethod::OnFixedJointDisconnected: return "OnFixedJointDisconnected";
 				case ManagedMethod::OnEnable:                 return "OnEnabled";
 				case ManagedMethod::OnDisable:                return "OnDisabled";
+				case ManagedMethod::OnDebugRender:            return "OnDebugRender";
 				case ManagedMethod::OnGui:                    return "OnGui";
 			}
 

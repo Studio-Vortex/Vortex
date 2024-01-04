@@ -20,6 +20,7 @@ namespace Vortex {
 		OnFixedJointDisconnected,
 		OnEnable,
 		OnDisable,
+		OnDebugRender,
 		OnGui,
 	};
 

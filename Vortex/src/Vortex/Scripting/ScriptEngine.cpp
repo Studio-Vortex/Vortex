@@ -627,6 +627,11 @@ namespace Vortex {
 				instance->InvokeOnDisable();
 				break;
 			}
+			case ManagedMethod::OnDebugRender:
+			{
+				instance->InvokeOnDebugRender();
+				break;
+			}
 			case ManagedMethod::OnGui:
 			{
 				instance->InvokeOnGui();

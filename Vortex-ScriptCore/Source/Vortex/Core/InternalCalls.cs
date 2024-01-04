@@ -65,12 +65,6 @@ namespace Vortex {
 		#region DebugRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void DebugRenderer_SetClearColor(ref Vector3 color);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void DebugRenderer_BeginScene();
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void DebugRenderer_DrawLine(ref Vector3 p1, ref Vector3 p2, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

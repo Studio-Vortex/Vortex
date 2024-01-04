@@ -41,6 +41,7 @@ namespace Vortex {
 		void InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque);
 		void InvokeOnEnable();
 		void InvokeOnDisable();
+		void InvokeOnDebugRender();
 		void InvokeOnGui();
 
 		bool MethodExists(ManagedMethod method) const;

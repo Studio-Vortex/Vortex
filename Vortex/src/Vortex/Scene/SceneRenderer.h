@@ -88,6 +88,9 @@ namespace Vortex {
 	private:
 		std::mutex m_GeometrySortMutex;
 		RendererAPI::TriangleCullMode m_LastCullMode;
+
+	private:
+		friend class Scene;
 	};
 
 }

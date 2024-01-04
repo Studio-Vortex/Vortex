@@ -59,6 +59,7 @@ namespace Vortex {
 		protected virtual void OnFixedJointDisconnected(Vector3 linearForce, Vector3 angularForce) { }
 		protected virtual void OnEnable() { }
 		protected virtual void OnDisable() { }
+		protected virtual void OnDebugRender() { }
 		protected virtual void OnGui() { }
 
 		public void Destroy(Actor actor, bool excludeChildren = false) => InternalCalls.Actor_Destroy(actor.ID, excludeChildren);

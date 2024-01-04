@@ -235,31 +235,6 @@ namespace Vortex {
 
 #pragma region DebugRenderer
 
-		void DebugRenderer_BeginScene()
-		{
-			Scene* contextScene = GetContextScene();
-			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
-
-			if (!primaryCameraActor)
-			{
-				VX_CONSOLE_LOG_WARN("[Scripting] Scene must include a primary camera to call debug render functions!");
-				return;
-			}
-
-			const SceneCamera& camera = primaryCameraActor.GetComponent<CameraComponent>().Camera;
-			const Math::mat4 transform = contextScene->GetWorldSpaceTransformMatrix(primaryCameraActor);
-			const Math::mat4 view = Math::Inverse(transform);
-
-			Renderer2D::BeginScene(camera, view);
-		}
-
-		void DebugRenderer_SetClearColor(Math::vec3* color)
-		{
-			Scene* contextScene = GetContextScene();
-
-			RenderCommand::SetClearColor(*color);
-		}
-
 		void DebugRenderer_DrawLine(Math::vec3* p1, Math::vec3* p2, Math::vec4* color)
 		{
 			Scene* contextScene = GetContextScene();
@@ -329,8 +304,22 @@ namespace Vortex {
 		void DebugRenderer_Flush()
 		{
 			Scene* contextScene = GetContextScene();
+			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
+
+			if (!primaryCameraActor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling DebugRenderer.Flush without a primary camera!");
+				return;
+			}
+
+			const CameraComponent& cameraComponent = primaryCameraActor.GetComponent<CameraComponent>();
+			const SceneCamera& camera = cameraComponent.Camera;
+
+			const Math::mat4 transform = contextScene->GetWorldSpaceTransformMatrix(primaryCameraActor);
+			const Math::mat4 view = Math::Inverse(transform);
 
 			Renderer2D::EndScene();
+			Renderer2D::BeginScene(camera, view);
 		}
 
 #pragma endregion
@@ -9118,8 +9107,6 @@ namespace Vortex {
 		VX_REGISTER_INTERNAL_CALL(SceneRenderer_GetGamma);
 		VX_REGISTER_INTERNAL_CALL(SceneRenderer_SetGamma);
 
-		VX_REGISTER_INTERNAL_CALL(DebugRenderer_BeginScene);
-		VX_REGISTER_INTERNAL_CALL(DebugRenderer_SetClearColor);
 		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawLine);
 		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawQuadBillboard);
 		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawCircleVec2);

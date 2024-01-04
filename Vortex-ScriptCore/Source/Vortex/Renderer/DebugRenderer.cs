@@ -1,17 +1,7 @@
-﻿namespace Vortex {
+﻿namespace Vortex.Renderer {
 
 	public static class DebugRenderer
 	{
-		public static void BeginScene()
-		{
-			InternalCalls.DebugRenderer_BeginScene();
-		}
-
-		public static void SetClearColor(Vector3 color)
-		{
-			InternalCalls.DebugRenderer_SetClearColor(ref color);
-		}
-
 		public static void DrawLine(Vector3 p1, Vector3 p2, Vector4 color)
 		{
 			InternalCalls.DebugRenderer_DrawLine(ref p1, ref p2, ref color);

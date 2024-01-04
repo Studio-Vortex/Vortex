@@ -546,6 +546,20 @@ namespace Vortex {
 				renderPacket.Scene = this;
 				renderPacket.EditorScene = false;
 				s_SceneRenderer.RenderScene(renderPacket);
+
+				// Invoke Actor.OnDebugRender
+				s_SceneRenderer.BeginScene2D(renderPacket);
+				auto view = GetAllActorsWith<ScriptComponent>();
+				for (const auto e : view)
+				{
+					Actor actor{ e, this };
+
+					if (!actor.IsActive())
+						continue;
+
+					actor.CallMethod(ManagedMethod::OnDebugRender);
+				}
+				s_SceneRenderer.EndScene2D();
 			}
 		}
 
