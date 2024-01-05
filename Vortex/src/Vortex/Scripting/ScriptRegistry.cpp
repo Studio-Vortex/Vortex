@@ -241,6 +241,20 @@ namespace Vortex {
 			Renderer2D::DrawLine(*startPoint, *endPoint, *color);
 		}
 
+		void DebugRenderer_SetLineWidth(float width)
+		{
+			Scene* contextScene = GetContextScene();
+			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
+
+			if (!primaryCameraActor)
+			{
+				VX_CONSOLE_LOG_WARN("[Scripting] Calling DebugRenderer.SetLineWidth without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				return;
+			}
+
+			Renderer2D::SetLineWidth(width);
+		}
+
 		void DebugRenderer_DrawQuadBillboard(const Math::vec3* translation, const Math::vec2* size, const Math::vec4* color)
 		{
 			Scene* contextScene = GetContextScene();

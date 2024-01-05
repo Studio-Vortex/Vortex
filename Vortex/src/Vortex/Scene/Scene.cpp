@@ -560,6 +560,11 @@ namespace Vortex {
 					actor.CallMethod(ManagedMethod::OnDebugRender);
 				}
 				s_SceneRenderer.EndScene2D();
+				
+				// we need to set the original line width incase a script set it to something else
+				SharedReference<Project> project = Project::GetActive();
+				const ProjectProperties& properties = project->GetProperties();
+				Renderer2D::SetLineWidth(properties.RendererProps.LineWidth);
 			}
 		}
 

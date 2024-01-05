@@ -81,6 +81,7 @@ namespace Vortex {
 #pragma region DebugRenderer
 		
 		void DebugRenderer_DrawLine(const Math::vec3* startPoint, const Math::vec3* endPoint, const Math::vec4* color);
+		void DebugRenderer_SetLineWidth(float width);
 		void DebugRenderer_DrawQuadBillboard(const Math::vec3* translation, const Math::vec2* size, const Math::vec4* color);
 		void DebugRenderer_DrawCircleVec2(const Math::vec2* translation, const Math::vec2* size, const Math::vec4* color, float thickness, float fade);
 		void DebugRenderer_DrawCircleVec3(const Math::vec3* translation, const Math::vec3* size, const Math::vec4* color, float thickness, float fade);

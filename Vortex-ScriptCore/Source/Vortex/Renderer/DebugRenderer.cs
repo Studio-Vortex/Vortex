@@ -7,6 +7,8 @@
 			InternalCalls.DebugRenderer_DrawLine(ref startPoint, ref endPoint, ref color);
 		}
 
+		public static void SetLineWidth(float width) => InternalCalls.DebugRenderer_SetLineWidth(width);
+
 		public static void DrawQuadBillboard(Vector3 translation, Vector2 size, Vector4 color)
 		{
 			InternalCalls.DebugRenderer_DrawQuadBillboard(ref translation, ref size, ref color);
