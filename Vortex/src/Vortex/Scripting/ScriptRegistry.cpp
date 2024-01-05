@@ -8830,7 +8830,6 @@ namespace Vortex {
 			s_Data.Serializer.WriteInt(keyString.String(), value);
 		}
 
-		// This function is extremly dangerous because if Serializer.ReadInt fails then value will be uninitialized memory
 		int32_t PlayerPrefs_ReadInt(MonoString* key)
 		{
 			ManagedString keyString(key);
@@ -8841,7 +8840,11 @@ namespace Vortex {
 			}
 
 			int32_t value;
-			s_Data.Serializer.ReadInt(keyString.String(), &value);
+			if (!s_Data.Serializer.ReadInt(keyString.String(), &value)) {
+				VX_CONSOLE_LOG_ERROR("[Player Prefs] Failed to read int with key '{}'", keyString.String());
+				return 0;
+			}
+
 			return value;
 		}
 
@@ -8875,11 +8878,16 @@ namespace Vortex {
 
 			if (!s_Data.Serializer.HasKey(keyString.String())) {
 				VX_CONSOLE_LOG_ERROR("[Player Prefs] Trying to read string with invalid key '{}'", keyString.String());
-				return 0;
+				ManagedString mstring("");
+				return mstring.GetAddressOf();
 			}
 
 			std::string value;
-			s_Data.Serializer.ReadString(keyString.String(), &value);
+			if (!s_Data.Serializer.ReadString(keyString.String(), &value)) {
+				VX_CONSOLE_LOG_ERROR("[Player Prefs] Failed to read string with key '{}'", keyString.String());
+				ManagedString mstring("");
+				return mstring.GetAddressOf();
+			}
 
 			ManagedString result(value);
 			return result.GetAddressOf();
