@@ -2115,11 +2115,11 @@ namespace Vortex {
 
 			UI::DrawVec3Controls("Translation", m_MeshImportPopupData.ModelImportOptions.MeshTransformation.Translation);
 			Math::vec3 rotationEuler = m_MeshImportPopupData.ModelImportOptions.MeshTransformation.GetRotationEuler();
-			UI::DrawVec3Controls("Rotation", rotationEuler, 0.0f, 100.0f, [&]()
+			UI::DrawVec3Controls("Rotation", rotationEuler, 0.0f, 100.0f, 0.0f, 0.0f, [&]()
 			{
 				m_MeshImportPopupData.ModelImportOptions.MeshTransformation.SetRotationEuler(rotationEuler);
 			});
-			UI::DrawVec3Controls("Scale", m_MeshImportPopupData.ModelImportOptions.MeshTransformation.Scale);
+			UI::DrawVec3Controls("Scale", m_MeshImportPopupData.ModelImportOptions.MeshTransformation.Scale, 1.0f, 100.0f, FLT_MIN);
 
 			UI::ShiftCursorY(20.0f);
 
@@ -3116,7 +3116,7 @@ namespace Vortex {
 		Actor primaryCamera = m_ActiveScene->GetPrimaryCameraActor();
 		if (!primaryCamera)
 		{
-			VX_CONSOLE_LOG_ERROR("[Scene Renderer] Scene cannot render without a camera! Attach a camera component to an actor and enable 'Primary'");
+			VX_CONSOLE_LOG_ERROR("[Scene Renderer] Scene cannot render without a primary camera! Attach a camera component to an actor and enable 'Primary'");
 		}
 
 		ScriptRegistry::SetSceneStartTime(Time::GetTime());
