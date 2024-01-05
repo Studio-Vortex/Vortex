@@ -22,6 +22,7 @@ namespace Vortex {
 		void RenderGizmoSettingsPanel();
 		void RenderNetworkSettingsPanel();
 		void RenderPhysicsSettingsPanel();
+		void RenderRendererSettingsPanel();
 		void RenderScriptingSettingsPanel();
 
 	private:

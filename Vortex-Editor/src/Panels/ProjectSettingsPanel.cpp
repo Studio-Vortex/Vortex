@@ -12,6 +12,7 @@ namespace Vortex {
 			VX_BIND_CALLBACK(ProjectSettingsPanel::RenderGizmoSettingsPanel),
 			VX_BIND_CALLBACK(ProjectSettingsPanel::RenderNetworkSettingsPanel),
 			VX_BIND_CALLBACK(ProjectSettingsPanel::RenderPhysicsSettingsPanel),
+			VX_BIND_CALLBACK(ProjectSettingsPanel::RenderRendererSettingsPanel),
 			VX_BIND_CALLBACK(ProjectSettingsPanel::RenderScriptingSettingsPanel),
 		};
 	}
@@ -27,7 +28,7 @@ namespace Vortex {
 		ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
 		Gui::BeginChild("Selections", { contentRegionAvail.x / 4.0f, contentRegionAvail.y }, true);
 
-		static const char* selections[] = { "General", "Editor", "Gizmo", "Network", "Physics", "Scripting" };
+		static const char* selections[] = { "General", "Editor", "Gizmo", "Network", "Physics", "Renderer", "Scripting" };
 		static auto count = VX_ARRAYSIZE(selections);
 		static uint32_t selection = 0;
 
@@ -205,11 +206,16 @@ namespace Vortex {
 		}
 	}
 
-	void ProjectSettingsPanel::RenderNetworkSettingsPanel()
+	void ProjectSettingsPanel::RenderRendererSettingsPanel()
 	{
 		UI::BeginPropertyGrid();
 
+		UI::EndPropertyGrid();
+	}
 
+	void ProjectSettingsPanel::RenderNetworkSettingsPanel()
+	{
+		UI::BeginPropertyGrid();
 
 		UI::EndPropertyGrid();
 	}
