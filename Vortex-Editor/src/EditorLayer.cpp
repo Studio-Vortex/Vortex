@@ -342,11 +342,12 @@ namespace Vortex {
 
 	void EditorLayer::OnEvent(Event& e)
 	{
-		if (m_AllowViewportCameraEvents)
+		// only one camera can process events at a time
+		if (!InPlaySceneState() && m_AllowViewportCameraEvents)
 		{
 			m_EditorCamera->OnEvent(e);
 		}
-		else if (m_AllowSecondViewportCameraEvents)
+		else if (m_SecondViewportPanelOpen && m_AllowSecondViewportCameraEvents)
 		{
 			m_SecondEditorCamera->OnEvent(e);
 		}
@@ -880,7 +881,7 @@ namespace Vortex {
 			Gui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, m_SceneViewportBorderSize);
 		}
 
-		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar;
+		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 		Gui::Begin("Scene", &m_SceneViewportPanelOpen, flags);
 
 		const ImVec2 viewportMinRegion = Gui::GetWindowContentRegionMin();
