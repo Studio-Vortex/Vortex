@@ -535,7 +535,7 @@ namespace Vortex::UI {
 		s_CheckboxCount = 0;
 	}
 
-	VORTEX_API inline static void DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f, std::function<void()> uiCallback = nullptr)
+	VORTEX_API inline static void DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f, float min = 0.0f, float max = 0.0f, std::function<void()> uiCallback = nullptr)
 	{
 		Gui::PushID(label.c_str());
 
@@ -566,7 +566,7 @@ namespace Vortex::UI {
 		};
 
 		auto drag = [&](auto label, auto index) {
-			if (Gui::DragFloat(label, &values[index], 0.1f, -FLT_MAX, FLT_MAX, "%.2f"))
+			if (Gui::DragFloat(label, &values[index], 0.1f, min > 0 ? min : -FLT_MAX, max > 0 ? max : FLT_MAX, "%.2f"))
 			{
 				if (uiCallback != nullptr)
 				{

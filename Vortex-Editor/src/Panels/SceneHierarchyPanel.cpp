@@ -1347,7 +1347,7 @@ namespace Vortex {
 		UI::BeginPropertyGrid();
 		UI::DrawVec3Controls("Translation", component.Translation);
 		Math::vec3 rotation = Math::Rad2Deg(component.GetRotationEuler());
-		UI::DrawVec3Controls("Rotation", rotation, 0.0f, 100.0f, [&]()
+		UI::DrawVec3Controls("Rotation", rotation, 0.0f, 100.0f, 0.0f, 0.0f, [&]()
 		{
 			if (rotation.x > 360.0f || rotation.x < -360.0f)
 				rotation.x = 0.0f;
@@ -1357,7 +1357,7 @@ namespace Vortex {
 				rotation.z = 0.0f;
 			component.SetRotationEuler(Math::Deg2Rad(rotation));
 		});
-		UI::DrawVec3Controls("Scale", component.Scale, 1.0f);
+		UI::DrawVec3Controls("Scale", component.Scale, 1.0f, 100.0f, FLT_MIN);
 		UI::EndPropertyGrid();
 	}
 
@@ -2306,19 +2306,19 @@ namespace Vortex {
 				UI::BeginPropertyGrid();
 
 				Math::vec3 position = Utils::FromWaveVector(device.GetSound().GetPosition());
-				UI::DrawVec3Controls("Position", position, 0.0f, 100.0f, [&]()
+				UI::DrawVec3Controls("Position", position, 0.0f, 100.0f, 0.0f, 0.0f, [&]()
 				{
 					device.GetSound().SetPosition(Utils::ToWaveVector(position));
 				});
 
 				Math::vec3 direction = Utils::FromWaveVector(device.GetSound().GetDirection());
-				UI::DrawVec3Controls("Direction", direction, 0.0f, 100.0f, [&]()
+				UI::DrawVec3Controls("Direction", direction, 0.0f, 100.0f, 0.0f, 0.0f, [&]()
 				{
 					device.GetSound().SetDirection(Utils::ToWaveVector(direction));
 				});
 
 				Math::vec3 velocity = Utils::FromWaveVector(device.GetSound().GetVelocity());
-				UI::DrawVec3Controls("Veloctiy", velocity, 0.0f, 100.0f, [&]()
+				UI::DrawVec3Controls("Veloctiy", velocity, 0.0f, 100.0f, 0.0f, 0.0f, [&]()
 				{
 					device.GetSound().SetVelocity(Utils::ToWaveVector(velocity));
 				});
