@@ -70,6 +70,22 @@ namespace Vortex {
 		return true;
 	}
 
+	void PlayerPrefsSerializer::WriteString(const std::string& key, const std::string& value)
+	{
+		m_StringData[key] = value;
+	}
+
+	bool PlayerPrefsSerializer::ReadString(const std::string& key, std::string* value)
+	{
+		if (!m_StringData.contains(key)) {
+			*value = std::string();
+			return false;
+		}
+
+		*value = m_StringData[key];
+		return true;
+	}
+
 	bool PlayerPrefsSerializer::Save(const std::string& filename) const
 	{
 		if (NoData()) { // we don't need to save
@@ -95,6 +111,20 @@ namespace Vortex {
 		}
 		out << YAML::EndSeq;
 		out << YAML::EndMap; // I32
+
+		out << YAML::BeginMap; // String
+		out << YAML::Key << "String" << YAML::BeginSeq;
+		for (const auto& [key, value] : m_StringData)
+		{
+			out << YAML::BeginMap;
+
+			VX_SERIALIZE_PROPERTY(Key, key, out);
+			VX_SERIALIZE_PROPERTY(Value, value, out);
+
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap; // String
 
 		out << YAML::EndMap; // Player Prefs
 
@@ -139,6 +169,13 @@ namespace Vortex {
 			const std::string key = entry["Key"].as<std::string>();
 			const int32_t value = entry["Value"].as<int32_t>();
 			m_I32Data[key] = value;
+		}
+
+		YAML::Node stringData = playerPrefsData["String"];
+		for (auto entry : stringData) {
+			const std::string key = entry["Key"].as<std::string>();
+			const std::string value = entry["Value"].as<std::string>();
+			m_StringData[key] = value;
 		}
 
 		return true;

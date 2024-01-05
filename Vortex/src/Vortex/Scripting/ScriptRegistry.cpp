@@ -529,7 +529,9 @@ namespace Vortex {
 		{
 			Actor actor = GetActor(actorUUID);
 
-			return mono_string_new(mono_domain_get(), actor.GetName().c_str());
+			ManagedString mstring(actor.GetName());
+
+			return mstring.GetAddressOf();
 		}
 
 		void Actor_SetTag(UUID actorUUID, MonoString* tag)
@@ -546,7 +548,9 @@ namespace Vortex {
 		{
 			Actor actor = GetActor(actorUUID);
 
-			return mono_string_new(mono_domain_get(), actor.GetMarker().c_str());
+			ManagedString mstring(actor.GetMarker());
+
+			return mstring.GetAddressOf();
 		}
 
 		void Actor_SetMarker(UUID actorUUID, MonoString* marker)
@@ -2106,11 +2110,15 @@ namespace Vortex {
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
 				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access TextMesh.Text without a Text Mesh!");
-				return mono_string_new(mono_domain_get(), "");
+				ManagedString mstring("");
+				return mstring.GetAddressOf();
 			}
 
 			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
-			return mono_string_new(mono_domain_get(), textMeshComponent.TextString.c_str());
+
+			ManagedString mstring(textMeshComponent.TextString);
+
+			return mstring.GetAddressOf();
 		}
 
 		void TextMeshComponent_SetTextString(UUID actorUUID, MonoString* textString)
@@ -5318,25 +5326,33 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioClip.Name without a Audio Source!");
-				return mono_string_new(mono_domain_get(), "");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioClip.Name without a Audio Source!");
+				ManagedString mstring("");
+				return mstring.GetAddressOf();
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioClip.Name with an invalid asset handle!");
-				return mono_string_new(mono_domain_get(), "");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioClip.Name with an invalid asset handle!");
+				ManagedString mstring("");
+				return mstring.GetAddressOf();
 			}
 
 			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
 			if (!audioSource)
-				return mono_string_new(mono_domain_get(), "");
+			{
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioClip.Name with an invalid Audio Source!");
+				ManagedString mstring("");
+				return mstring.GetAddressOf();
+			}
 
 			/*const AudioClip& audioClip = audioSource->GetAudioClip();
-			std::string clipName = audioClip.Name;
+			const std::string& clipName = audioClip.Name;
 
-			return mono_string_new(mono_domain_get(), clipName.c_str());*/
+			ManagedString mstring(clipName);
+
+			return mstring.GetManagedString();*/
 		}
 
 		float AudioClip_GetLength(UUID actorUUID)
@@ -8810,40 +8826,81 @@ namespace Vortex {
 
 		void PlayerPrefs_WriteInt(MonoString* key, int32_t value)
 		{
-			ManagedString mstring(key);
-			s_Data.Serializer.WriteInt(mstring.String(), value);
+			ManagedString keyString(key);
+			s_Data.Serializer.WriteInt(keyString.String(), value);
 		}
 
 		// This function is extremly dangerous because if Serializer.ReadInt fails then value will be uninitialized memory
 		int32_t PlayerPrefs_ReadInt(MonoString* key)
 		{
-			ManagedString mstring(key);
+			ManagedString keyString(key);
 
-			if (!s_Data.Serializer.HasKey(mstring.String())) {
-				VX_CONSOLE_LOG_ERROR("[Player Prefs] Trying to read int with invalid key '{}'", mstring.String());
+			if (!s_Data.Serializer.HasKey(keyString.String())) {
+				VX_CONSOLE_LOG_ERROR("[Player Prefs] Trying to read int with invalid key '{}'", keyString.String());
 				return 0;
 			}
 
 			int32_t value;
-			s_Data.Serializer.ReadInt(mstring.String(), &value);
+			s_Data.Serializer.ReadInt(keyString.String(), &value);
 			return value;
 		}
 
 		int32_t PlayerPrefs_ReadIntWithDefault(MonoString* key, int32_t defaultValue)
 		{
-			ManagedString mstring(key);
+			ManagedString keyString(key);
 
-			if (!s_Data.Serializer.HasKey(mstring.String())) {
-				VX_CONSOLE_LOG_ERROR("[Player Prefs] Trying to read int with invalid key '{}'", mstring.String());
+			if (!s_Data.Serializer.HasKey(keyString.String())) {
+				VX_CONSOLE_LOG_ERROR("[Player Prefs] Trying to read int with invalid key '{}'", keyString.String());
 				return defaultValue;
 			}
 
 			int32_t value;
-			const bool success = s_Data.Serializer.ReadInt(mstring.String(), &value);
+			const bool success = s_Data.Serializer.ReadInt(keyString.String(), &value);
 			if (!success)
 				return defaultValue;
 
 			return value;
+		}
+
+		void PlayerPrefs_WriteString(MonoString* key, MonoString* value)
+		{
+			ManagedString keyString(key);
+			ManagedString valueString(value);
+			s_Data.Serializer.WriteString(keyString.String(), valueString.String());
+		}
+
+		MonoString* PlayerPrefs_ReadString(MonoString* key)
+		{
+			ManagedString keyString(key);
+
+			if (!s_Data.Serializer.HasKey(keyString.String())) {
+				VX_CONSOLE_LOG_ERROR("[Player Prefs] Trying to read string with invalid key '{}'", keyString.String());
+				return 0;
+			}
+
+			std::string value;
+			s_Data.Serializer.ReadString(keyString.String(), &value);
+
+			ManagedString result(value);
+			return result.GetAddressOf();
+		}
+
+		MonoString* PlayerPrefs_ReadStringWithDefault(MonoString* key, MonoString* defaultValue)
+		{
+			ManagedString keyString(key);
+
+			if (!s_Data.Serializer.HasKey(keyString.String())) {
+				VX_CONSOLE_LOG_ERROR("[Player Prefs] Trying to read string with invalid key '{}'", keyString.String());
+				return defaultValue;
+			}
+
+			std::string value;
+			const bool success = s_Data.Serializer.ReadString(keyString.String(), &value);
+			if (!success)
+				return defaultValue;
+
+			ManagedString result(value);
+			return result.GetAddressOf();
 		}
 
 #pragma endregion
@@ -9642,6 +9699,9 @@ namespace Vortex {
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(PlayerPrefs_WriteInt);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(PlayerPrefs_ReadInt);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(PlayerPrefs_ReadIntWithDefault);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PlayerPrefs_WriteString);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PlayerPrefs_ReadString);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PlayerPrefs_ReadStringWithDefault);
 
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_Begin);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_End);

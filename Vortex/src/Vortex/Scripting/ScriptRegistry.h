@@ -806,6 +806,9 @@ namespace Vortex {
 		void PlayerPrefs_WriteInt(MonoString* key, int32_t value);
 		int32_t PlayerPrefs_ReadInt(MonoString* key);
 		int32_t PlayerPrefs_ReadIntWithDefault(MonoString* key, int32_t defaultValue);
+		void PlayerPrefs_WriteString(MonoString* key, MonoString* value);
+		MonoString* PlayerPrefs_ReadString(MonoString* key);
+		MonoString* PlayerPrefs_ReadStringWithDefault(MonoString* key, MonoString* defaultValue);
 
 #pragma endregion
 

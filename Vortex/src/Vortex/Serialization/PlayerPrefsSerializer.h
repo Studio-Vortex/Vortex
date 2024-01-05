@@ -24,8 +24,10 @@ namespace Vortex {
 		bool Remove(const std::string& key);
 
 		void WriteInt(const std::string& key, int32_t value);
-
 		bool ReadInt(const std::string& key, int32_t* value);
+
+		void WriteString(const std::string& key, const std::string& value);
+		bool ReadString(const std::string& key, std::string* value);
 
 		bool Save(const std::string& filename) const;
 		bool Load(const std::string& filename);

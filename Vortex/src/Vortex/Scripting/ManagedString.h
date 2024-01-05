@@ -10,11 +10,14 @@ namespace Vortex {
 	{
 	public:
 		ManagedString(MonoString* managedString);
+		ManagedString(const std::string& data);
 
 		const std::string& String() const;
+		MonoString* GetAddressOf() const;
 
 	private:
 		std::string m_String;
+		mutable MonoString* m_ManagedString = nullptr;
 	};
 
 }

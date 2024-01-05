@@ -1,6 +1,8 @@
 #include "vxpch.h"
 #include "ManagedString.h"
 
+#include <mono/jit/jit.h>
+
 namespace Vortex {
 	
 	ManagedString::ManagedString(MonoString* managedString)
@@ -10,9 +12,19 @@ namespace Vortex {
 		mono_free(data);
 	}
 
+	ManagedString::ManagedString(const std::string& data)
+	{
+		m_ManagedString = mono_string_new_len(mono_domain_get(), data.c_str(), data.size());
+	}
+
 	const std::string& ManagedString::String() const
 	{
 		return m_String;
+	}
+
+	MonoString* ManagedString::GetAddressOf() const
+	{
+		return m_ManagedString;
 	}
 
 }
