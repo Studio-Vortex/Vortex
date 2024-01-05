@@ -100,21 +100,22 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			float lineWidth = Renderer2D::GetLineWidth();
-			if (UI::Property("Line Width", lineWidth, 0.01f, FLT_MIN, 4.0f))
-				Renderer2D::SetLineWidth(lineWidth);
+			SharedReference<Project> project = Project::GetActive();
+			ProjectProperties& properties = project->GetProperties();
+
+			if (UI::Property("Line Width", properties.RendererProps.LineWidth, 0.01f, FLT_MIN, 4.0f))
+			{
+				Renderer2D::SetLineWidth(properties.RendererProps.LineWidth);
+			}
 
 			static const char* cullModes[4] = { "None", "Front", "Back", "Front And Back" };
 			int32_t currentCullMode = (int32_t)Renderer::GetCullMode();
-
-			SharedReference<Project> activeProject = Project::GetActive();
-			ProjectProperties& projectProps = activeProject->GetProperties();
 
 			if (UI::PropertyDropdown("Cull Mode", cullModes, VX_ARRAYSIZE(cullModes), currentCullMode))
 			{
 				RendererAPI::TriangleCullMode newCullMode = (RendererAPI::TriangleCullMode)currentCullMode;
 				Renderer::SetCullMode(newCullMode);
-				projectProps.RendererProps.TriangleCullMode = Utils::TriangleCullModeToString(newCullMode);
+				properties.RendererProps.TriangleCullMode = Utils::TriangleCullModeToString(newCullMode);
 			}
 
 			auto RecreateEnvironmentMapFunc = [&]()
