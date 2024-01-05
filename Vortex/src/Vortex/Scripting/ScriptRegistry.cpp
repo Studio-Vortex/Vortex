@@ -237,6 +237,13 @@ namespace Vortex {
 		void DebugRenderer_DrawLine(const Math::vec3* startPoint, const Math::vec3* endPoint, const Math::vec4* color)
 		{
 			Scene* contextScene = GetContextScene();
+			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
+
+			if (!primaryCameraActor)
+			{
+				VX_CONSOLE_LOG_WARN("[Scripting] Calling DebugRenderer.DrawLine without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				return;
+			}
 
 			Renderer2D::DrawLine(*startPoint, *endPoint, *color);
 		}
@@ -262,7 +269,7 @@ namespace Vortex {
 
 			if (!primaryCameraActor)
 			{
-				VX_CONSOLE_LOG_WARN("[Scripting] Scene must include a primary camera to call debug render functions!");
+				VX_CONSOLE_LOG_WARN("[Scripting] Calling DebugRenderer.DrawQuadBillboard without a primary camera! Attach a camera component to an actor and enable 'Primary'");
 				return;
 			}
 
@@ -275,6 +282,13 @@ namespace Vortex {
 		void DebugRenderer_DrawCircleVec2(const Math::vec2* translation, const Math::vec2* size, const Math::vec4* color, float thickness, float fade)
 		{
 			Scene* contextScene = GetContextScene();
+			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
+
+			if (!primaryCameraActor)
+			{
+				VX_CONSOLE_LOG_WARN("[Scripting] Calling DebugRenderer.DrawCircle without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				return;
+			}
 
 			Renderer2D::DrawCircle(*translation, *size, 0.0f, *color, thickness, fade);
 		}
@@ -282,6 +296,13 @@ namespace Vortex {
 		void DebugRenderer_DrawCircleVec3(const Math::vec3* translation, const Math::vec3* size, const Math::vec4* color, float thickness, float fade)
 		{
 			Scene* contextScene = GetContextScene();
+			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
+
+			if (!primaryCameraActor)
+			{
+				VX_CONSOLE_LOG_WARN("[Scripting] Calling DebugRenderer.DrawCircle without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				return;
+			}
 
 			Renderer2D::DrawCircle(*translation, *size, 0.0f, *color, thickness, fade);
 		}
@@ -289,6 +310,13 @@ namespace Vortex {
 		void DebugRenderer_DrawBoundingBox(const Math::vec3* worldPosition, const Math::vec3* size, const Math::vec4* color)
 		{
 			Scene* contextScene = GetContextScene();
+			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
+
+			if (!primaryCameraActor)
+			{
+				VX_CONSOLE_LOG_WARN("[Scripting] Calling DebugRenderer.DrawBoundingBox without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				return;
+			}
 
 			const Math::AABB aabb{
 				-Math::vec3(0.5f),
@@ -302,6 +330,14 @@ namespace Vortex {
 		void DebugRenderer_DrawBoundingBoxFromTransform(UUID actorUUID, const Math::vec4* color)
 		{
 			Scene* contextScene = GetContextScene();
+			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
+
+			if (!primaryCameraActor)
+			{
+				VX_CONSOLE_LOG_WARN("[Scripting] Calling DebugRenderer.DrawBoundingBox without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				return;
+			}
+
 			Actor actor = GetActor(actorUUID);
 
 			const Math::AABB aabb{
@@ -321,7 +357,7 @@ namespace Vortex {
 
 			if (!primaryCameraActor)
 			{
-				VX_CONSOLE_LOG_ERROR("[Scripting] Calling DebugRenderer.Flush without a primary camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling DebugRenderer.Flush without a primary camera! Attach a camera component to an actor and enable 'Primary'");
 				return;
 			}
 
@@ -9168,6 +9204,7 @@ namespace Vortex {
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_SetGamma);
 
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawLine);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_SetLineWidth);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawQuadBillboard);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawCircleVec2);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawCircleVec3);
