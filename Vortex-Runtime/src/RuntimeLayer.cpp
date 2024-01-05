@@ -1,7 +1,5 @@
 #include "RuntimeLayer.h"
 
-#include <Vortex/Scene/Scene.h>
-
 #include <Vortex/Project/ProjectLoader.h>
 
 #include <Vortex/Serialization/SceneSerializer.h>
@@ -86,22 +84,6 @@ namespace Vortex {
 		// Update Scene
 		m_RuntimeScene->OnUpdateRuntime(delta);
 
-		// Scene Viewport Entity Selection
-		{
-			auto [mx, my] = Gui::GetMousePos();
-			my = m_ViewportSize.y - my;
-
-			const int mouseX = (int)mx;
-			const int mouseY = (int)my;
-
-			if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)m_ViewportSize.x && mouseY < (int)m_ViewportSize.y)
-			{
-				const int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-				m_HoveredActor = pixelData == -1 ? Actor() : Actor{ (entt::entity)pixelData, m_RuntimeScene.Raw() };
-				ScriptRegistry::SetHoveredActor(m_HoveredActor);
-			}
-		}
-
 		m_Framebuffer->Unbind();
 		
 		// Bloom pass
@@ -153,7 +135,7 @@ namespace Vortex {
 		Gui::End();
 
 		// Render Application Gui
-		m_RuntimeScene->OnRenderActorGui();
+		m_RuntimeScene->InvokeActorOnGuiRender();
 	}
 
 	void RuntimeLayer::OnEvent(Event& e)

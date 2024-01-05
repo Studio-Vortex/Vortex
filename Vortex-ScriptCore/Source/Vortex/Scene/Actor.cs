@@ -39,11 +39,20 @@ namespace Vortex {
 
 		public Actor[] Children => InternalCalls.Actor_GetChildren(ID);
 
+		public bool ActiveInHierarchy => InternalCalls.Actor_IsActive(ID);
+		public void SetActive(bool active) => InternalCalls.Actor_SetActive(ID, active);
+
 		protected Actor() { ID = 0; }
 
 		internal Actor(ulong id)
 		{
 			ID = id;
+			transform = GetComponent<Transform>();
+		}
+
+		public Actor(string name = "")
+		{
+			ID = InternalCalls.Scene_CreateActor(name);
 			transform = GetComponent<Transform>();
 		}
 
@@ -60,7 +69,7 @@ namespace Vortex {
 		protected virtual void OnEnable() { }
 		protected virtual void OnDisable() { }
 		protected virtual void OnDebugRender() { }
-		protected virtual void OnGui() { }
+		protected virtual void OnGuiRender() { }
 
 		public void Destroy(Actor actor, bool excludeChildren = false) => InternalCalls.Actor_Destroy(actor.ID, excludeChildren);
 		public void Destroy(Actor actor, float delay, bool excludeChildren = false) => InternalCalls.Actor_DestroyWithDelay(actor.ID, delay, excludeChildren);
@@ -79,6 +88,8 @@ namespace Vortex {
 
 			return new Actor(actorID);
 		}
+
+		public Actor Instantiate(Actor actor) => Scene.Instantiate(actor);
 
 		public bool HasComponent<T>()
 			where T : Component, new()
@@ -162,7 +173,14 @@ namespace Vortex {
 			return instance as T;
 		}
 
-		public void SetActive(bool active) => InternalCalls.Actor_SetActive(ID, active);
+		public bool CompareTag(string tag)
+		{
+			if (Tag.Length != tag.Length) {
+				return false;
+			}
+
+			return Tag.Equals(tag);
+		}
 
 		public override bool Equals(object obj) => obj is Actor other && Equals(other);
 
@@ -179,7 +197,7 @@ namespace Vortex {
 
 		public override int GetHashCode() => (int)ID;
 
-		public static bool operator ==(Actor actorA, Actor actorB) => actorA is null ? actorB is null : actorA.Equals(actorB);
+		public static bool operator ==(Actor actorA, Actor actorB) => !actorA ? !actorB : actorA.Equals(actorB);
 		public static bool operator !=(Actor actorA, Actor actorB) => !(actorA == actorB);
 		public static implicit operator bool(Actor actor) => InternalCalls.Actor_IsValid(actor.ID);
 	}

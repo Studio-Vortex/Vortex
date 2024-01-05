@@ -78,7 +78,7 @@ namespace Vortex {
 
 	public:
 
-		void OnRenderActorGui();
+		void InvokeActorOnGuiRender();
 
 		VX_FORCE_INLINE SharedReference<Framebuffer> GetTargetFramebuffer() const { return m_TargetFramebuffer; }
 		VX_FORCE_INLINE void SetTargetFramebuffer(SharedReference<Framebuffer> target) { m_TargetFramebuffer = target; }

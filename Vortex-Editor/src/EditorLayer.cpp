@@ -246,7 +246,6 @@ namespace Vortex {
 			{
 				const int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 				m_HoveredActor = pixelData == -1 ? Actor() : Actor{ (entt::entity)pixelData, m_ActiveScene.Raw() };
-				ScriptRegistry::SetHoveredActor(m_HoveredActor);
 			}
 		}
 
@@ -314,7 +313,6 @@ namespace Vortex {
 				{
 					const int pixelData = m_SecondViewportFramebuffer->ReadPixel(1, mouseX, mouseY);
 					m_HoveredActor = pixelData == -1 ? Actor() : Actor{ (entt::entity)pixelData, m_ActiveScene.Raw() };
-					ScriptRegistry::SetHoveredActor(m_HoveredActor);
 				}
 			}
 
@@ -462,7 +460,7 @@ namespace Vortex {
 		m_PanelManager->OnGuiRender<PerformancePanel>();
 
 		// Render C# Actor.OnGui()
-		m_ActiveScene->OnRenderActorGui();
+		m_ActiveScene->InvokeActorOnGuiRender();
 
 		if (m_SceneViewportPanelOpen)
 		{

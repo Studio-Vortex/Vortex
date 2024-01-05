@@ -2,9 +2,9 @@
 
 	public static class DebugRenderer
 	{
-		public static void DrawLine(Vector3 p1, Vector3 p2, Vector4 color)
+		public static void DrawLine(Vector3 startPoint, Vector3 endPoint, Vector4 color)
 		{
-			InternalCalls.DebugRenderer_DrawLine(ref p1, ref p2, ref color);
+			InternalCalls.DebugRenderer_DrawLine(ref startPoint, ref endPoint, ref color);
 		}
 
 		public static void DrawQuadBillboard(Vector3 translation, Vector2 size, Vector4 color)
@@ -32,10 +32,7 @@
 			InternalCalls.DebugRenderer_DrawBoundingBoxFromTransform(actor.ID, ref color);
 		}
 
-		public static void Flush()
-		{
-			InternalCalls.DebugRenderer_Flush();
-		}
+		public static void Flush() => InternalCalls.DebugRenderer_Flush();
 	}
 
 }

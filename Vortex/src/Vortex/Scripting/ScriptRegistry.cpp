@@ -69,7 +69,8 @@ namespace Vortex {
 
 #define VX_SCRIPT_CORE_NAMESPACE "Vortex"
 #define VX_DEFAULT_INTERNAL_CALL_CLASSNAME "InternalCalls"
-#define VX_REGISTER_INTERNAL_CALL(icall) mono_add_internal_call(fmt::format("{}.{}::{}", VX_SCRIPT_CORE_NAMESPACE, VX_DEFAULT_INTERNAL_CALL_CLASSNAME, VX_STRINGIFY(icall)).c_str(), InternalCalls::icall)
+#define VX_REGISTER_INTERNAL_CALL(coreNamespace, icClassname, bindFnName, bindFn) mono_add_internal_call(fmt::format("{}.{}::{}", (coreNamespace), (icClassname), (bindFnName)).c_str(), bindFn)
+#define VX_REGISTER_DEFAULT_INTERNAL_CALL(icall) VX_REGISTER_INTERNAL_CALL(VX_SCRIPT_CORE_NAMESPACE, VX_DEFAULT_INTERNAL_CALL_CLASSNAME, VX_STRINGIFY(icall), InternalCalls::icall)
 
 	struct ScriptRegistryInternalData
 	{
@@ -77,12 +78,10 @@ namespace Vortex {
 		std::unordered_map<MonoType*, std::function<bool(Actor)>> ActorHasComponentFuncs;
 		std::unordered_map<MonoType*, std::function<void(Actor)>> ActorRemoveComponentFuncs;
 
-		Actor HoveredActor = Actor{};
-
 		float SceneStartTime = 0.0f;
 
 		PlayerPrefsSerializer Serializer;
-		const std::string PlayerPrefsFilename = "PlayerPrefs.prefs";
+		const Fs::Path PlayerPrefsFilename = "PlayerPrefs.prefs";
 	};
 
 	static ScriptRegistryInternalData s_Data;
@@ -235,14 +234,14 @@ namespace Vortex {
 
 #pragma region DebugRenderer
 
-		void DebugRenderer_DrawLine(Math::vec3* p1, Math::vec3* p2, Math::vec4* color)
+		void DebugRenderer_DrawLine(const Math::vec3* startPoint, const Math::vec3* endPoint, const Math::vec4* color)
 		{
 			Scene* contextScene = GetContextScene();
 
-			Renderer2D::DrawLine(*p1, *p2, *color);
+			Renderer2D::DrawLine(*startPoint, *endPoint, *color);
 		}
 
-		void DebugRenderer_DrawQuadBillboard(Math::vec3* translation, Math::vec2* size, Math::vec4* color)
+		void DebugRenderer_DrawQuadBillboard(const Math::vec3* translation, const Math::vec2* size, const Math::vec4* color)
 		{
 			Scene* contextScene = GetContextScene();
 			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
@@ -259,21 +258,21 @@ namespace Vortex {
 			Renderer2D::DrawQuadBillboard(view, *translation, *size, *color);
 		}
 
-		void DebugRenderer_DrawCircleVec2(Math::vec2* translation, Math::vec2* size, Math::vec4* color, float thickness, float fade)
+		void DebugRenderer_DrawCircleVec2(const Math::vec2* translation, const Math::vec2* size, const Math::vec4* color, float thickness, float fade)
 		{
 			Scene* contextScene = GetContextScene();
 
 			Renderer2D::DrawCircle(*translation, *size, 0.0f, *color, thickness, fade);
 		}
 
-		void DebugRenderer_DrawCircleVec3(Math::vec3* translation, Math::vec3* size, Math::vec4* color, float thickness, float fade)
+		void DebugRenderer_DrawCircleVec3(const Math::vec3* translation, const Math::vec3* size, const Math::vec4* color, float thickness, float fade)
 		{
 			Scene* contextScene = GetContextScene();
 
 			Renderer2D::DrawCircle(*translation, *size, 0.0f, *color, thickness, fade);
 		}
 
-		void DebugRenderer_DrawBoundingBox(Math::vec3* worldPosition, Math::vec3* size, Math::vec4* color)
+		void DebugRenderer_DrawBoundingBox(const Math::vec3* worldPosition, const Math::vec3* size, const Math::vec4* color)
 		{
 			Scene* contextScene = GetContextScene();
 
@@ -286,7 +285,7 @@ namespace Vortex {
 			Renderer2D::DrawAABB(aabb, transform, *color);
 		}
 
-		void DebugRenderer_DrawBoundingBoxFromTransform(UUID actorUUID, Math::vec4* color)
+		void DebugRenderer_DrawBoundingBoxFromTransform(UUID actorUUID, const Math::vec4* color)
 		{
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
@@ -446,16 +445,6 @@ namespace Vortex {
 			contextScene->SetPaused(false);
 		}
 
-		uint64_t Scene_GetHoveredActor()
-		{
-			Scene* contextScene = GetContextScene();
-
-			if (!s_Data.HoveredActor)
-				return 0;
-
-			return s_Data.HoveredActor.GetUUID();
-		}
-
 #pragma endregion
 
 #pragma region SceneManager
@@ -613,7 +602,7 @@ namespace Vortex {
 
 			if (!actor)
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Actor.Destroy with invalid actor!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Actor.Destroy with invalid actor!");
 				return;
 			}
 
@@ -641,7 +630,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ScriptComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Actor.Invoke without a script component!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Actor.Invoke without a script component!");
 				return;
 			}
 
@@ -650,7 +639,7 @@ namespace Vortex {
 
 			if (!ScriptEngine::ActorClassExists(className))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Actor.Invoke with an invalid script class!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Actor.Invoke with an invalid script class!");
 				return;
 			}
 
@@ -663,14 +652,14 @@ namespace Vortex {
 
 			if (method == nullptr)
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Actor.Invoke with an invalid method name '{}'", mstring.String());
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Actor.Invoke with an invalid method name '{}'", mstring.String());
 				return;
 			}
 
 			SharedReference<ScriptInstance> instance = ScriptEngine::GetActorScriptInstance(actor.GetUUID());
 			if (instance == nullptr)
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Actor.Invoke with invalid script instance!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Actor.Invoke with invalid script instance!");
 				return;
 			}
 
@@ -695,9 +684,28 @@ namespace Vortex {
 			scene->AddOrReplaceTimer(actor, std::move(timer));
 		}
 
+		bool Actor_IsActive(UUID actorUUID)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access Actor.ActiveInHierarchy with invalid actor!");
+				return false;
+			}
+
+			return actor.IsActive();
+		}
+
 		void Actor_SetActive(UUID actorUUID, bool isActive)
 		{
 			Actor actor = GetActor(actorUUID);
+
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Actor.SetActive with invalid actor!");
+				return;
+			}
 
 			actor.SetActive(isActive);
 		}
@@ -746,7 +754,7 @@ namespace Vortex {
 			if (timer.GetName().empty())
 			{
 				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), mstring.String());
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access invalid timer '{}' - '{}'", actor.GetName(), mstring.String());
 				return 0.0f;
 			}
 
@@ -765,7 +773,7 @@ namespace Vortex {
 			if (timer.GetName().empty())
 			{
 				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), mstring.String());
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access invalid timer '{}' - '{}'", actor.GetName(), mstring.String());
 				return false;
 			}
 
@@ -784,7 +792,7 @@ namespace Vortex {
 			if (timer.GetName().empty())
 			{
 				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), mstring.String());
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access invalid timer '{}' - '{}'", actor.GetName(), mstring.String());
 				return false;
 			}
 
@@ -803,7 +811,7 @@ namespace Vortex {
 			if (timer.GetName().empty())
 			{
 				// invalid timer
-				VX_CONSOLE_LOG_ERROR("Trying to access invalid timer '{}' - '{}'", actor.GetName(), mstring.String());
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access invalid timer '{}' - '{}'", actor.GetName(), mstring.String());
 			}
 
 			timer.Start();
@@ -1234,13 +1242,14 @@ namespace Vortex {
 		uint64_t TransformComponent_GetParent(UUID actorUUID)
 		{
 			Actor child = GetActor(actorUUID);
-			Actor parent = GetActor(child.GetParentUUID());
 
-			if (!parent)
+			if (!child.HasParent())
 			{
-				VX_CONSOLE_LOG_WARN("Invalid Parent UUID!");
+				VX_CONSOLE_LOG_WARN("[Scripting] Trying to access Transform.Parent with invalid actor!");
 				return 0;
 			}
+
+			Actor parent = GetActor(child.GetParentUUID());
 
 			return parent.GetUUID();
 		}
@@ -1290,7 +1299,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Camera.ProjectionType without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access Camera.ProjectionType without a Camera!");
 				return SceneCamera::ProjectionType::Perspective;
 			}
 
@@ -1307,7 +1316,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Camera.ProjectionType without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set Camera.ProjectionType without a Camera!");
 				return;
 			}
 
@@ -1330,7 +1339,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Camera.IsPrimary without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access Camera.IsPrimary without a Camera!");
 				return;
 			}
 
@@ -1345,7 +1354,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Camera.IsPrimary without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set Camera.IsPrimary without a Camera!");
 				return;
 			}
 
@@ -1360,7 +1369,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Camera.FieldOfView without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access Camera.FieldOfView without a Camera!");
 				return 0.0f;
 			}
 
@@ -1376,7 +1385,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Camera.FieldOfView without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set Camera.FieldOfView without a Camera!");
 				return;
 			}
 
@@ -1396,7 +1405,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Camera.NearClip without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access Camera.NearClip without a Camera!");
 				return 0.0f;
 			}
 
@@ -1413,7 +1422,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Camera.NearClip without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set Camera.NearClip without a Camera!");
 				return;
 			}
 
@@ -1431,7 +1440,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Camera.FarClip without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access Camera.FarClip without a Camera!");
 				return 0.0f;
 			}
 
@@ -1448,7 +1457,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Camera.FarClip without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set Camera.FarClip without a Camera!");
 				return;
 			}
 
@@ -1466,7 +1475,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Camera.OrthographicSize without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access Camera.OrthographicSize without a Camera!");
 				return 0.0f;
 			}
 
@@ -1483,7 +1492,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Camera.OrthographicSize without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set Camera.OrthographicSize without a Camera!");
 				return;
 			}
 
@@ -1501,7 +1510,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Camera.OrthographicNear without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access Camera.OrthographicNear without a Camera!");
 				return 0.0f;
 			}
 
@@ -1518,7 +1527,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Camera.OrthographicNear without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set Camera.OrthographicNear without a Camera!");
 				return;
 			}
 
@@ -1536,7 +1545,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Camera.OrthographicFar without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access Camera.OrthographicFar without a Camera!");
 				return 0.0f;
 			}
 
@@ -1553,7 +1562,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Camera.OrthographicFar without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set Camera.OrthographicFar without a Camera!");
 				return;
 			}
 
@@ -1571,7 +1580,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Camera.IsFixedAspectRatio without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access Camera.IsFixedAspectRatio without a Camera!");
 				return;
 			}
 
@@ -1586,7 +1595,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Camera.IsFixedAspectRatio without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set Camera.IsFixedAspectRatio without a Camera!");
 				return;
 			}
 
@@ -1601,7 +1610,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Camera.ClearColor without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access Camera.ClearColor without a Camera!");
 				return;
 			}
 
@@ -1616,7 +1625,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set Camera.ClearColor without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set Camera.ClearColor without a Camera!");
 				return;
 			}
 
@@ -1632,7 +1641,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Camera.CastRay without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Camera.CastRay without a Camera!");
 				return;
 			}
 
@@ -1652,7 +1661,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Camera.ScreenToWorldPoint without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Camera.ScreenToWorldPoint without a Camera!");
 				return;
 			}
 
@@ -1672,7 +1681,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Camera.ScreenToViewportPoint without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Camera.ScreenToViewportPoint without a Camera!");
 				return;
 			}
 
@@ -1686,27 +1695,27 @@ namespace Vortex {
 
 #pragma region PostProcessInfo
 
-        bool PostProcessInfo_GetEnabled(UUID actorUUID)
-        {
+		bool PostProcessInfo_GetEnabled(UUID actorUUID)
+		{
 			Actor actor = GetActor(actorUUID);
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access PostProcessInfo.Enabled without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access PostProcessInfo.Enabled without a Camera!");
 				return false;
 			}
 
 			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
-            return cameraComponent.PostProcessing.Enabled;
-        }
+			return cameraComponent.PostProcessing.Enabled;
+		}
 
-        void PostProcessInfo_SetEnabled(UUID actorUUID, bool enabled)
-        {
+		void PostProcessInfo_SetEnabled(UUID actorUUID, bool enabled)
+		{
 			Actor actor = GetActor(actorUUID);
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set PostProcessInfo.Enabled without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set PostProcessInfo.Enabled without a Camera!");
 				return;
 			}
 
@@ -1724,7 +1733,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BloomInfo.Threshold without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access BloomInfo.Threshold without a Camera!");
 				return 0.0f;
 			}
 
@@ -1738,7 +1747,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BloomInfo.Threshold without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set BloomInfo.Threshold without a Camera!");
 				return;
 			}
 
@@ -1752,7 +1761,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BloomInfo.Knee without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access BloomInfo.Knee without a Camera!");
 				return 0.0f;
 			}
 
@@ -1766,7 +1775,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BloomInfo.Knee without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set BloomInfo.Knee without a Camera!");
 				return;
 			}
 
@@ -1780,7 +1789,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BloomInfo.Intensity without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access BloomInfo.Intensity without a Camera!");
 				return 0.0f;
 			}
 
@@ -1794,7 +1803,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BloomInfo.Intensity without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set BloomInfo.Intensity without a Camera!");
 				return;
 			}
 
@@ -1808,7 +1817,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BloomInfo.Enabled without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access BloomInfo.Enabled without a Camera!");
 				return false;
 			}
 
@@ -1822,7 +1831,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BloomInfo.Enabled without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set BloomInfo.Enabled without a Camera!");
 				return;
 			}
 
@@ -1840,7 +1849,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.LightType without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access LightSource.LightType without a Light Source!");
 				return LightType::Directional;
 			}
 
@@ -1854,7 +1863,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.LightType without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set LightSource.LightType without a Light Source!");
 				return;
 			}
 
@@ -1868,7 +1877,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.Radiance without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access LightSource.Radiance without a Light Source!");
 				return;
 			}
 
@@ -1882,7 +1891,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.Radiance without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set LightSource.Radiance without a Light Source!");
 				return;
 			}
 
@@ -1896,7 +1905,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.Intensity without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access LightSource.Intensity without a Light Source!");
 				return 0.0f;
 			}
 
@@ -1910,7 +1919,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.Intensity without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set LightSource.Intensity without a Light Source!");
 				return;
 			}
 
@@ -1924,7 +1933,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.Cutoff without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access LightSource.Cutoff without a Light Source!");
 				return 0.0f;
 			}
 
@@ -1938,7 +1947,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.Cutoff without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set LightSource.Cutoff without a Light Source!");
 				return;
 			}
 
@@ -1952,7 +1961,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.OuterCutoff without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access LightSource.OuterCutoff without a Light Source!");
 				return 0.0f;
 			}
 
@@ -1966,7 +1975,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.OuterCutoff without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set LightSource.OuterCutoff without a Light Source!");
 				return;
 			}
 
@@ -1980,7 +1989,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.ShadowBias without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access LightSource.ShadowBias without a Light Source!");
 				return 0.0f;
 			}
 
@@ -1994,7 +2003,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.ShadowBias without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set LightSource.ShadowBias without a Light Source!");
 				return;
 			}
 
@@ -2008,7 +2017,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.CastShadows without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access LightSource.CastShadows without a Light Source!");
 				return false;
 			}
 
@@ -2022,7 +2031,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.CastShadows without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set LightSource.CastShadows without a Light Source!");
 				return;
 			}
 
@@ -2036,7 +2045,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.UseSoftShadows without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access LightSource.UseSoftShadows without a Light Source!");
 				return false;
 			}
 
@@ -2050,7 +2059,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.UseSoftShadows without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set LightSource.UseSoftShadows without a Light Source!");
 				return;
 			}
 
@@ -2064,7 +2073,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access LightSource.Visible without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access LightSource.Visible without a Light Source!");
 				return false;
 			}
 
@@ -2078,7 +2087,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set LightSource.Visible without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set LightSource.Visible without a Light Source!");
 				return;
 			}
 
@@ -2096,7 +2105,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.Text without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access TextMesh.Text without a Text Mesh!");
 				return mono_string_new(mono_domain_get(), "");
 			}
 
@@ -2110,7 +2119,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.Text without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set TextMesh.Text without a Text Mesh!");
 				return;
 			}
 
@@ -2127,7 +2136,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.Color without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access TextMesh.Color without a Text Mesh!");
 				return;
 			}
 
@@ -2141,7 +2150,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.Color without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set TextMesh.Color without a Text Mesh!");
 				return;
 			}
 
@@ -2155,7 +2164,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.OutlineColor without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access TextMesh.OutlineColor without a Text Mesh!");
 				return;
 			}
 
@@ -2169,7 +2178,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.OutlineColor without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set TextMesh.OutlineColor without a Text Mesh!");
 				return;
 			}
 
@@ -2183,7 +2192,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.LineSpacing without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access TextMesh.LineSpacing without a Text Mesh!");
 				return 0.0f;
 			}
 
@@ -2197,7 +2206,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.LineSpacing without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set TextMesh.LineSpacing without a Text Mesh!");
 				return;
 			}
 
@@ -2211,7 +2220,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.Kerning without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access TextMesh.Kerning without a Text Mesh!");
 				return 0.0f;
 			}
 
@@ -2225,7 +2234,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.Kerning without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set TextMesh.Kerning without a Text Mesh!");
 				return;
 			}
 
@@ -2239,7 +2248,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.MaxWidth without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access TextMesh.MaxWidth without a Text Mesh!");
 				return 0.0f;
 			}
 
@@ -2253,7 +2262,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.MaxWidth without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set TextMesh.MaxWidth without a Text Mesh!");
 				return;
 			}
 
@@ -2267,7 +2276,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access TextMesh.Visible without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access TextMesh.Visible without a Text Mesh!");
 				return false;
 			}
 
@@ -2281,7 +2290,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set TextMesh.Visible without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set TextMesh.Visible without a Text Mesh!");
 				return;
 			}
 
@@ -2299,7 +2308,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AnimatorComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Animator.IsPlaying without a Animator!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access Animator.IsPlaying without a Animator!");
 				return false;
 			}
 
@@ -2314,7 +2323,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AnimatorComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Animator.Play without a Animator!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Animator.Play without a Animator!");
 				return;
 			}
 
@@ -2323,7 +2332,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AnimationComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Animator.Play without an Animation!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Animator.Play without an Animation!");
 				return;
 			}
 
@@ -2332,7 +2341,7 @@ namespace Vortex {
 
 			if (!animation)
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Animator.Play with Invalid Animator!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Animator.Play with Invalid Animator!");
 				return;
 			}
 
@@ -2345,7 +2354,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AnimatorComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Animator.Stop without a Animator!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Animator.Stop without a Animator!");
 				return;
 			}
 
@@ -2354,7 +2363,7 @@ namespace Vortex {
 
 			if (!animator)
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Animator.Stop with Invalid Animator!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling Animator.Stop with Invalid Animator!");
 				return;
 			}
 
@@ -2377,7 +2386,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<MeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access MeshRenderer.Visible without a Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access MeshRenderer.Visible without a Mesh Renderer!");
 				return false;
 			}
 
@@ -2391,7 +2400,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<MeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set MeshRenderer.Visible without a Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set MeshRenderer.Visible without a Mesh Renderer!");
 				return;
 			}
 
@@ -2409,7 +2418,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access StaticMeshRenderer.MeshType without a Static Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access StaticMeshRenderer.MeshType without a Static Mesh Renderer!");
 				return MeshType::Cube;
 			}
 
@@ -2424,7 +2433,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set StaticMeshRenderer.MeshType without a Static Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set StaticMeshRenderer.MeshType without a Static Mesh Renderer!");
 				return;
 			}
 
@@ -2444,7 +2453,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*materialHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set material handle with invalid material!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set material handle with invalid material!");
 				return;
 			}
 
@@ -2452,19 +2461,19 @@ namespace Vortex {
 			StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
 			if (!AssetManager::IsHandleValid(staticMeshRendererComponent.StaticMesh))
 			{
-				VX_CONSOLE_LOG_ERROR("Cannot set material of invalid mesh asset!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Cannot set material of invalid mesh asset!");
 				return;
 			}
 
 			SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRendererComponent.StaticMesh);
 			if (!staticMesh)
 			{
-				VX_CONSOLE_LOG_ERROR("Cannot set material of invalid mesh asset!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Cannot set material of invalid mesh asset!");
 			}
 
 			if (!staticMesh->HasSubmesh(submeshIndex))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set submesh material with out of bounds index!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set submesh material with out of bounds index!");
 				return;
 			}
 
@@ -2479,7 +2488,7 @@ namespace Vortex {
 			
 			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access StaticMeshRenderer.Visible without a Static Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access StaticMeshRenderer.Visible without a Static Mesh Renderer!");
 				return false;
 			}
 
@@ -2493,7 +2502,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set StaticMeshRenderer.Visible without a Static Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set StaticMeshRenderer.Visible without a Static Mesh Renderer!");
 				return;
 			}
 
@@ -2507,7 +2516,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling StaticMeshRenderer.GetMaterialHandle without a Static Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling StaticMeshRenderer.GetMaterialHandle without a Static Mesh Renderer!");
 				return false;
 			}
 
@@ -3050,7 +3059,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Texture without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access SpriteRenderer.Texture without a Sprite Renderer!");
 				return false;
 			}
 
@@ -3070,7 +3079,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set SpriteRenderer.Texture without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set SpriteRenderer.Texture without a Sprite Renderer!");
 				return;
 			}
 
@@ -3088,7 +3097,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Color without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access SpriteRenderer.Color without a Sprite Renderer!");
 				return;
 			}
 
@@ -3102,7 +3111,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set SpriteRenderer.Color without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set SpriteRenderer.Color without a Sprite Renderer!");
 				return;
 			}
 
@@ -3116,7 +3125,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Scale without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access SpriteRenderer.Scale without a Sprite Renderer!");
 				return;
 			}
 
@@ -3130,7 +3139,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set SpriteRenderer.Scale without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set SpriteRenderer.Scale without a Sprite Renderer!");
 				return;
 			}
 
@@ -3144,7 +3153,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access SpriteRenderer.Visible without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access SpriteRenderer.Visible without a Sprite Renderer!");
 				return false;
 			}
 
@@ -3158,7 +3167,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set SpriteRenderer.Visible without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set SpriteRenderer.Visible without a Sprite Renderer!");
 				return;
 			}
 
@@ -3176,7 +3185,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CircleRenderer.Color without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access CircleRenderer.Color without a Circle Renderer!");
 				return;
 			}
 
@@ -3190,7 +3199,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CircleRenderer.Color without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set CircleRenderer.Color without a Circle Renderer!");
 				return;
 			}
 
@@ -3204,7 +3213,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CircleRenderer.Thickness without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access CircleRenderer.Thickness without a Circle Renderer!");
 				return;
 			}
 
@@ -3218,7 +3227,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CircleRenderer.Thickness without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set CircleRenderer.Thickness without a Circle Renderer!");
 				return;
 			}
 
@@ -3232,7 +3241,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CircleRenderer.Fade without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access CircleRenderer.Fade without a Circle Renderer!");
 				return;
 			}
 
@@ -3246,7 +3255,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CircleRenderer.Fade without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set CircleRenderer.Fade without a Circle Renderer!");
 				return;
 			}
 
@@ -3260,7 +3269,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CircleRenderer.Visible without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access CircleRenderer.Visible without a Circle Renderer!");
 				return false;
 			}
 
@@ -3274,7 +3283,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CircleRenderer.Visible without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set CircleRenderer.Visible without a Circle Renderer!");
 				return;
 			}
 
@@ -3292,14 +3301,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Velocity without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.Velocity without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Velocity with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.Velocity with an invalid asset handle!");
 				return;
 			}
 			
@@ -3316,14 +3325,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Velocity without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.Velocity without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Velocity with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.Velocity with an invalid asset handle!");
 				return;
 			}
 			
@@ -3340,14 +3349,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.VelocityVariation without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.VelocityVariation without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.VelocityVariation with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.VelocityVariation with invalid asset handle!");
 				return;
 			}
 
@@ -3364,14 +3373,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.VelocityVariation without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.VelocityVariation without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Velocity with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.Velocity with an invalid asset handle!");
 				return;
 			}
 
@@ -3388,14 +3397,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Offset without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.Offset without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Velocity with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.Velocity with an invalid asset handle!");
 				return;
 			}
 
@@ -3412,14 +3421,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Offset without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.Offset without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Velocity with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.Velocity with an invalid asset handle!");
 				return;
 			}
 
@@ -3436,14 +3445,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeBegin without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.SizeBegin without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeBegin with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.SizeBegin with an invalid asset handle!");
 				return;
 			}
 
@@ -3460,14 +3469,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeBegin without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.SizeBegin without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeBegin with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.SizeBegin with an invalid asset handle!");
 				return;
 			}
 
@@ -3484,14 +3493,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeEnd without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.SizeEnd without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeEnd with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.SizeEnd with an invalid asset handle!");
 				return;
 			}
 
@@ -3508,14 +3517,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeEnd without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.SizeEnd without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeEnd with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.SizeEnd with an invalid asset handle!");
 				return;
 			}
 
@@ -3532,14 +3541,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeVariation without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.SizeVariation without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.SizeVariation with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.SizeVariation with an invalid asset handle!");
 				return;
 			}
 
@@ -3556,14 +3565,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeVariation without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.SizeVariation without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.SizeVariation with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.SizeVariation with an invalid asset handle!");
 				return;
 			}
 
@@ -3580,14 +3589,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.ColorBegin without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.ColorBegin without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.ColorBegin with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.ColorBegin with an invalid asset handle!");
 				return;
 			}
 
@@ -3604,14 +3613,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.ColorBegin without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.ColorBegin without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.ColorBegin with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.ColorBegin with an invalid asset handle!");
 				return;
 			}
 
@@ -3628,14 +3637,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.ColorEnd without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.ColorEnd without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.ColorEnd with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.ColorEnd with an invalid asset handle!");
 				return;
 			}
 
@@ -3652,14 +3661,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.ColorEnd without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.ColorEnd without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.ColorEnd with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.ColorEnd with an invalid asset handle!");
 				return;
 			}
 
@@ -3676,14 +3685,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Rotation without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.Rotation without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.Rotation with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.Rotation with an invalid asset handle!");
 				return;
 			}
 
@@ -3700,14 +3709,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Rotation without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.Rotation without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.Rotation with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.Rotation with an invalid asset handle!");
 				return;
 			}
 
@@ -3724,14 +3733,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.LifeTime without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.LifeTime without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.LifeTime with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.LifeTime with an invalid asset handle!");
 				return;
 			}
 
@@ -3748,14 +3757,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.LifeTime without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.LifeTime without a Particle Emitter!");
 				return;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set ParticleEmitter.LifeTime with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set ParticleEmitter.LifeTime with an invalid asset handle!");
 				return;
 			}
 
@@ -3772,14 +3781,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling ParticleEmitter.Start without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling ParticleEmitter.Start without a Particle Emitter!");
 				return;
 			}
 
 			ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling ParticleEmitter.Start with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling ParticleEmitter.Start with an invalid asset handle!");
 				return;
 			}
 
@@ -3792,14 +3801,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling ParticleEmitter.Stop without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling ParticleEmitter.Stop without a Particle Emitter!");
 				return;
 			}
 
 			ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling ParticleEmitter.Stop with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Calling ParticleEmitter.Stop with an invalid asset handle!");
 				return;
 			}
 
@@ -3812,14 +3821,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.IsActive without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.IsActive without a Particle Emitter!");
 				return false;
 			}
 
 			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access ParticleEmitter.IsActive with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access ParticleEmitter.IsActive with an invalid asset handle!");
 				return false;
 			}
 
@@ -3836,14 +3845,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Position without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.Position without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Position with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.Position with an invalid asset handle!");
 				return;
 			}
 
@@ -3860,14 +3869,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Position without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.Position without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Position with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.Position with an invalid asset handle!");
 				return;
 			}
 
@@ -3884,14 +3893,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Direction without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.Direction without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Direction with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.Direction with an invalid asset handle!");
 				return;
 			}
 
@@ -3908,14 +3917,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Direction without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.Direction without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Direction with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.Direction with an invalid asset handle!");
 				return;
 			}
 
@@ -3932,14 +3941,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Velocity without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.Velocity without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Velocity with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.Velocity with an invalid asset handle!");
 				return;
 			}
 
@@ -3956,14 +3965,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Velocity without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.Velocity without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Velocity with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.Velocity with an invalid asset handle!");
 				return;
 			}
 
@@ -3974,20 +3983,20 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetVelocity(Utils::ToWaveVector(*velocity));
 		}
 
-        float AudioSourceComponent_GetMinGain(UUID actorUUID)
-        {
+		float AudioSourceComponent_GetMinGain(UUID actorUUID)
+		{
 			Actor actor = GetActor(actorUUID);
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MinGain without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.MinGain without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MinGain with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.MinGain with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -3996,22 +4005,22 @@ namespace Vortex {
 				return 0.0f;
 
 			return audioSource->GetPlaybackDevice().GetSound().GetMinGain();
-        }
+		}
 
-        void AudioSourceComponent_SetMinGain(UUID actorUUID, float minGain)
-        {
+		void AudioSourceComponent_SetMinGain(UUID actorUUID, float minGain)
+		{
 			Actor actor = GetActor(actorUUID);
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MinGain without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.MinGain without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MinGain with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.MinGain with an invalid asset handle!");
 				return;
 			}
 
@@ -4020,22 +4029,22 @@ namespace Vortex {
 				return;
 
 			audioSource->GetPlaybackDevice().GetSound().SetMinGain(minGain);
-        }
+		}
 
-        float AudioSourceComponent_GetMaxGain(UUID actorUUID)
-        {
+		float AudioSourceComponent_GetMaxGain(UUID actorUUID)
+		{
 			Actor actor = GetActor(actorUUID);
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MaxGain without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.MaxGain without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MaxGain with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.MaxGain with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -4044,22 +4053,22 @@ namespace Vortex {
 				return 0.0f;
 
 			return audioSource->GetPlaybackDevice().GetSound().GetMaxGain();
-        }
+		}
 
-        void AudioSourceComponent_SetMaxGain(UUID actorUUID, float maxGain)
-        {
+		void AudioSourceComponent_SetMaxGain(UUID actorUUID, float maxGain)
+		{
 			Actor actor = GetActor(actorUUID);
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MaxGain without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.MaxGain without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MaxGain with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.MaxGain with an invalid asset handle!");
 				return;
 			}
 
@@ -4068,7 +4077,7 @@ namespace Vortex {
 				return;
 
 			audioSource->GetPlaybackDevice().GetSound().SetMaxGain(maxGain);
-        }
+		}
 
 		float AudioSourceComponent_GetDirectionalAttenuationFactor(UUID actorUUID)
 		{
@@ -4076,14 +4085,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.DirectionalAttenuationFactor without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.DirectionalAttenuationFactor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.DirectionalAttenuationFactor with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.DirectionalAttenuationFactor with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -4100,14 +4109,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.DirectionalAttenuationFactor without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.DirectionalAttenuationFactor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.DirectionalAttenuationFactor with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.DirectionalAttenuationFactor with an invalid asset handle!");
 				return;
 			}
 
@@ -4118,20 +4127,20 @@ namespace Vortex {
 			audioSource->GetPlaybackDevice().GetSound().SetDirectionalAttenuationFactor(factor);
 		}
 
-        AttenuationModel AudioSourceComponent_GetAttenuationModel(UUID actorUUID)
-        {
+		AttenuationModel AudioSourceComponent_GetAttenuationModel(UUID actorUUID)
+		{
 			Actor actor = GetActor(actorUUID);
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.AttenuationModel without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.AttenuationModel without a Audio Source!");
 				return AttenuationModel::None;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.AttenuationModel with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.AttenuationModel with an invalid asset handle!");
 				return AttenuationModel::None;
 			}
 
@@ -4148,14 +4157,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.AttenuationModel without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.AttenuationModel without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.AttenuationModel with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.AttenuationModel with an invalid asset handle!");
 				return;
 			}
 
@@ -4164,7 +4173,7 @@ namespace Vortex {
 				return;
 
 			audioSource->GetPlaybackDevice().GetSound().SetAttenuationModel(Utils::ToWaveAttenuationModel(model));
-        }
+		}
 
 		float AudioSourceComponent_GetPan(UUID actorUUID)
 		{
@@ -4172,14 +4181,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Pan without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.Pan without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Pan with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to access AudioSource.Pan with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -4196,14 +4205,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Pan without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.Pan without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Pan with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Scripting] Trying to set AudioSource.Pan with an invalid asset handle!");
 				return;
 			}
 
@@ -8841,47 +8850,15 @@ namespace Vortex {
 
 #pragma region Gui
 
-		static void BeginWindow(const char* text, uint32_t flags = 0)
+		void Gui_Begin(MonoString* label)
 		{
-			Gui::Begin(text, nullptr, flags);
-			UI::BeginPropertyGrid();
-		}
+			ManagedString mstring(label);
 
-		void Gui_Begin(MonoString* text)
-		{
-			ManagedString mstring(text);
-
-			BeginWindow(mstring.String().c_str());
-		}
-
-		void Gui_BeginWithPosition(MonoString* text, Math::vec2* position)
-		{
-			ManagedString mstring(text);
-
-			Gui::SetNextWindowPos({ position->x, position->y });
-			BeginWindow(mstring.String().c_str(), ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize);
-		}
-
-		void Gui_BeginWithSize(MonoString* text, float width, float height)
-		{
-			ManagedString mstring(text);
-
-			Gui::SetNextWindowSize({ width, height });
-			BeginWindow(mstring.String().c_str(), ImGuiWindowFlags_NoResize);
-		}
-
-		void Gui_BeginWithPositionAndSize(MonoString* text, Math::vec2* position, Math::vec2* size)
-		{
-			ManagedString mstring(text);
-
-			Gui::SetNextWindowPos({ position->x, position->y });
-			Gui::SetNextWindowSize({ size->x, size->y });
-			BeginWindow(mstring.String().c_str(), ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+			Gui::Begin(mstring.String().c_str());
 		}
 
 		void Gui_End()
 		{
-			UI::EndPropertyGrid();
 			Gui::End();
 		}
 
@@ -8905,103 +8882,110 @@ namespace Vortex {
 			Gui::Text(mstring.String().c_str());
 		}
 
-		bool Gui_Button(MonoString* text)
-		{
-			ManagedString mstring(text);
-
-			const bool result = Gui::Button(mstring.String().c_str());
-
-			return result;
-		}
-
-		bool Gui_PropertyBool(MonoString* label, bool* value)
+		bool Gui_Button(MonoString* label)
 		{
 			ManagedString mstring(label);
 
-			const bool modified = UI::Property(mstring.String().c_str(), *value);
-
-			return modified;
+			return Gui::Button(mstring.String().c_str());
 		}
 
-		bool Gui_PropertyInt(MonoString* label, int* value)
+		bool Gui_ButtonWithSize(MonoString* label, const Math::vec2* size)
 		{
 			ManagedString mstring(label);
 
-			const bool modified = UI::Property(mstring.String().c_str(), *value);
-
-			return modified;
+			return Gui::Button(mstring.String().c_str(), *(ImVec2*)size);
 		}
 
-		bool Gui_PropertyULong(MonoString* label, unsigned int* value)
+		void Gui_BeginPropertyGrid()
+		{
+			UI::BeginPropertyGrid();
+		}
+
+		void Gui_EndPropertyGrid()
+		{
+			UI::EndPropertyGrid();
+		}
+
+		bool Gui_PropertyGridHeader(MonoString* label, bool defaultOpen)
 		{
 			ManagedString mstring(label);
 
-			const bool modified = UI::Property(mstring.String().c_str(), *value);
-
-			return modified;
+			return UI::PropertyGridHeader(mstring.String().c_str(), defaultOpen);
 		}
 
-		bool Gui_PropertyFloat(MonoString* label, float* value)
+		void Gui_EndGridHeader()
+		{
+			UI::EndTreeNode();
+		}
+
+		bool Gui_PropertyBool(MonoString* label, bool* outValue)
 		{
 			ManagedString mstring(label);
 
-			const bool modified = UI::Property(mstring.String().c_str(), *value);
-
-			return modified;
+			return UI::Property(mstring.String().c_str(), *outValue);
 		}
 
-		bool Gui_PropertyDouble(MonoString* label, double* value)
+		bool Gui_PropertyInt(MonoString* label, int* outValue)
 		{
 			ManagedString mstring(label);
 
-			const bool modified = UI::Property(mstring.String().c_str(), *value);
-
-			return modified;
+			return UI::Property(mstring.String().c_str(), *outValue);
 		}
 
-		bool Gui_PropertyVec2(MonoString* label, Math::vec2* value)
+		bool Gui_PropertyULong(MonoString* label, unsigned int* outValue)
 		{
 			ManagedString mstring(label);
 
-			const bool modified = UI::Property(mstring.String().c_str(), *value);
-
-			return modified;
+			return UI::Property(mstring.String().c_str(), *outValue);
 		}
 
-		bool Gui_PropertyVec3(MonoString* label, Math::vec3* value)
+		bool Gui_PropertyFloat(MonoString* label, float* outValue)
 		{
 			ManagedString mstring(label);
 
-			const bool modified = UI::Property(mstring.String().c_str(), *value);
-
-			return modified;
+			return UI::Property(mstring.String().c_str(), *outValue);
 		}
 
-		bool Gui_PropertyVec4(MonoString* label, Math::vec4* value)
+		bool Gui_PropertyDouble(MonoString* label, double* outValue)
 		{
 			ManagedString mstring(label);
 
-			const bool modified = UI::Property(mstring.String().c_str(), *value);
-
-			return modified;
+			return UI::Property(mstring.String().c_str(), *outValue);
 		}
 
-		bool Gui_PropertyColor3(MonoString* label, Math::vec3* value)
+		bool Gui_PropertyVec2(MonoString* label, Math::vec2* outValue)
 		{
 			ManagedString mstring(label);
 
-			const bool modified = UI::Property(mstring.String().c_str(), value);
-
-			return modified;
+			return UI::Property(mstring.String().c_str(), *outValue);
 		}
 
-		bool Gui_PropertyColor4(MonoString* label, Math::vec4* value)
+		bool Gui_PropertyVec3(MonoString* label, Math::vec3* outValue)
 		{
 			ManagedString mstring(label);
 
-			const bool modified = UI::Property(mstring.String().c_str(), value);
+			return UI::Property(mstring.String().c_str(), *outValue);
+		}
 
-			return modified;
+		bool Gui_PropertyVec4(MonoString* label, Math::vec4* outValue)
+		{
+			ManagedString mstring(label);
+
+			return UI::Property(mstring.String().c_str(), *outValue);
+		}
+
+		bool Gui_PropertyColor3(MonoString* label, Math::vec3* outValue)
+		{
+			ManagedString mstring(label);
+
+			return UI::Property(mstring.String().c_str(), outValue);
+		}
+
+		bool Gui_PropertyColor4(MonoString* label, Math::vec4* outValue)
+		{
+			ManagedString mstring(label);
+
+			return UI::Property(mstring.String().c_str(), outValue);
 		}
 
 #pragma endregion
@@ -9042,7 +9026,9 @@ namespace Vortex {
 
 			if (!managedType)
 			{
-				VX_CORE_ERROR_TAG("Scripting", "Could not find Component type {}", managedTypename);
+#ifdef VX_DEBUG
+				VX_CONSOLE_LOG_ERROR("[Scripting] Could not find Component type {}", managedTypename);
+#endif
 				return;
 			}
 
@@ -9067,622 +9053,619 @@ namespace Vortex {
 		RegisterComponent(AllComponents{});
 	}
 
-	void ScriptRegistry::SetHoveredActor(Actor actor)
+	void ScriptRegistry::SetSceneStartTime(float currentTime)
 	{
-		s_Data.HoveredActor = actor;
-	}
-
-	void ScriptRegistry::SetSceneStartTime(float startTime)
-	{
-		s_Data.SceneStartTime = startTime;
+		s_Data.SceneStartTime = currentTime;
 	}
 
     bool ScriptRegistry::SavePlayerPrefs()
     {
-		return s_Data.Serializer.Save(s_Data.PlayerPrefsFilename);
+		return s_Data.Serializer.Save(s_Data.PlayerPrefsFilename.string());
     }
 
     bool ScriptRegistry::LoadPlayerPrefs()
     {
-		return s_Data.Serializer.Load(s_Data.PlayerPrefsFilename);
+		return s_Data.Serializer.Load(s_Data.PlayerPrefsFilename.string());
     }
 
-	void ScriptRegistry::RegisterMethods()
+	void ScriptRegistry::RegisterInternalCalls()
 	{
-		VX_REGISTER_INTERNAL_CALL(Application_Quit);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Application_Quit);
 
-		VX_REGISTER_INTERNAL_CALL(Window_GetSize);
-		VX_REGISTER_INTERNAL_CALL(Window_GetPosition);
-		VX_REGISTER_INTERNAL_CALL(Window_IsMaximized);
-		VX_REGISTER_INTERNAL_CALL(Window_SetMaximized);
-		VX_REGISTER_INTERNAL_CALL(Window_IsResizeable);
-		VX_REGISTER_INTERNAL_CALL(Window_SetResizeable);
-		VX_REGISTER_INTERNAL_CALL(Window_IsDecorated);
-		VX_REGISTER_INTERNAL_CALL(Window_SetDecorated);
-		VX_REGISTER_INTERNAL_CALL(Window_IsVSyncEnabled);
-		VX_REGISTER_INTERNAL_CALL(Window_SetVSync);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Window_GetSize);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Window_GetPosition);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Window_IsMaximized);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Window_SetMaximized);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Window_IsResizeable);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Window_SetResizeable);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Window_IsDecorated);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Window_SetDecorated);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Window_IsVSyncEnabled);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Window_SetVSync);
 
-		VX_REGISTER_INTERNAL_CALL(SceneRenderer_GetExposure);
-		VX_REGISTER_INTERNAL_CALL(SceneRenderer_SetExposure);
-		VX_REGISTER_INTERNAL_CALL(SceneRenderer_GetGamma);
-		VX_REGISTER_INTERNAL_CALL(SceneRenderer_SetGamma);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_GetExposure);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_SetExposure);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_GetGamma);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_SetGamma);
 
-		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawLine);
-		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawQuadBillboard);
-		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawCircleVec2);
-		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawCircleVec3);
-		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawBoundingBox);
-		VX_REGISTER_INTERNAL_CALL(DebugRenderer_DrawBoundingBoxFromTransform);
-		VX_REGISTER_INTERNAL_CALL(DebugRenderer_Flush);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawLine);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawQuadBillboard);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawCircleVec2);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawCircleVec3);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawBoundingBox);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawBoundingBoxFromTransform);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_Flush);
 
-		VX_REGISTER_INTERNAL_CALL(Scene_GetPrimaryCamera);
-		VX_REGISTER_INTERNAL_CALL(Scene_FindActorByID);
-		VX_REGISTER_INTERNAL_CALL(Scene_FindActorByName);
-		VX_REGISTER_INTERNAL_CALL(Scene_FindChildByName);
-		VX_REGISTER_INTERNAL_CALL(Scene_CreateActor);
-		VX_REGISTER_INTERNAL_CALL(Scene_Instantiate);
-		VX_REGISTER_INTERNAL_CALL(Scene_InstantiateAsChild);
-		VX_REGISTER_INTERNAL_CALL(Scene_IsPaused);
-		VX_REGISTER_INTERNAL_CALL(Scene_Pause);
-		VX_REGISTER_INTERNAL_CALL(Scene_Resume);
-		VX_REGISTER_INTERNAL_CALL(Scene_GetHoveredActor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_GetPrimaryCamera);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_FindActorByID);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_FindActorByName);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_FindChildByName);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_CreateActor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_Instantiate);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_InstantiateAsChild);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_IsPaused);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_Pause);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_Resume);
 
-		VX_REGISTER_INTERNAL_CALL(SceneManager_LoadScene);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneManager_LoadScene);
 
-		VX_REGISTER_INTERNAL_CALL(Actor_AddComponent);
-		VX_REGISTER_INTERNAL_CALL(Actor_HasComponent);
-		VX_REGISTER_INTERNAL_CALL(Actor_RemoveComponent);
-		VX_REGISTER_INTERNAL_CALL(Actor_GetChildren);
-		VX_REGISTER_INTERNAL_CALL(Actor_GetChild);
-		VX_REGISTER_INTERNAL_CALL(Actor_GetTag);
-		VX_REGISTER_INTERNAL_CALL(Actor_SetTag);
-		VX_REGISTER_INTERNAL_CALL(Actor_GetMarker);
-		VX_REGISTER_INTERNAL_CALL(Actor_SetMarker);
-		VX_REGISTER_INTERNAL_CALL(Actor_AddChild);
-		VX_REGISTER_INTERNAL_CALL(Actor_RemoveChild);
-		VX_REGISTER_INTERNAL_CALL(Actor_GetScriptInstance);
-		VX_REGISTER_INTERNAL_CALL(Actor_Destroy);
-		VX_REGISTER_INTERNAL_CALL(Actor_DestroyWithDelay);
-		VX_REGISTER_INTERNAL_CALL(Actor_Invoke);
-		VX_REGISTER_INTERNAL_CALL(Actor_InvokeWithDelay);
-		VX_REGISTER_INTERNAL_CALL(Actor_SetActive);
-		VX_REGISTER_INTERNAL_CALL(Actor_AddTimer);
-		VX_REGISTER_INTERNAL_CALL(Actor_IsValid);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_AddComponent);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_HasComponent);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_RemoveComponent);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetChildren);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetChild);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetTag);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_SetTag);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetMarker);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_SetMarker);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_AddChild);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_RemoveChild);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetScriptInstance);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_Destroy);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_DestroyWithDelay);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_Invoke);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_InvokeWithDelay);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_IsActive);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_SetActive);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_AddTimer);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_IsValid);
 
-		VX_REGISTER_INTERNAL_CALL(AssetHandle_IsValid);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AssetHandle_IsValid);
 
-		VX_REGISTER_INTERNAL_CALL(Timer_GetTimeLeft);
-		VX_REGISTER_INTERNAL_CALL(Timer_IsStarted);
-		VX_REGISTER_INTERNAL_CALL(Timer_IsFinished);
-		VX_REGISTER_INTERNAL_CALL(Timer_Start);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Timer_GetTimeLeft);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Timer_IsStarted);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Timer_IsFinished);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Timer_Start);
 
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetTranslation);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetTranslation);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetRotation);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetRotation);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetEulerAngles);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetEulerAngles);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_Rotate);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_RotateAround);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetTranslationAndRotation);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetScale);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetScale);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetWorldSpaceTransform);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetTransformMatrix);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetTransformMatrix);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetForwardDirection);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetBackwardDirection);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetUpDirection);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetDownDirection);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetRightDirection);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetLeftDirection);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_LookAt);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_GetParent);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_SetParent);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_Unparent);
-		VX_REGISTER_INTERNAL_CALL(TransformComponent_Multiply);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetTranslation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_SetTranslation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetRotation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_SetRotation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetEulerAngles);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_SetEulerAngles);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_Rotate);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_RotateAround);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_SetTranslationAndRotation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetScale);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_SetScale);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetWorldSpaceTransform);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetTransformMatrix);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_SetTransformMatrix);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetForwardDirection);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetBackwardDirection);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetUpDirection);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetDownDirection);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetRightDirection);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetLeftDirection);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_LookAt);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_GetParent);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_SetParent);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_Unparent);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TransformComponent_Multiply);
 
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_GetProjectionType);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetProjectionType);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_GetPrimary);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetPrimary);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_GetPerspectiveVerticalFOV);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetPerspectiveVerticalFOV);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_GetNearClip);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetNearClip);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_GetFarClip);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetFarClip);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_GetOrthographicSize);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetOrthographicSize);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_GetOrthographicNear);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetOrthographicNear);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_GetOrthographicFar);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetOrthographicFar);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_GetClearColor);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_SetClearColor);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_Raycast);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_ScreenToWorldPoint);
-		VX_REGISTER_INTERNAL_CALL(CameraComponent_ScreenToViewportPoint);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_GetProjectionType);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_SetProjectionType);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_GetPrimary);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_SetPrimary);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_GetPerspectiveVerticalFOV);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_SetPerspectiveVerticalFOV);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_GetNearClip);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_SetNearClip);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_GetFarClip);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_SetFarClip);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_GetOrthographicSize);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_SetOrthographicSize);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_GetOrthographicNear);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_SetOrthographicNear);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_GetOrthographicFar);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_SetOrthographicFar);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_GetFixedAspectRatio);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_SetFixedAspectRatio);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_GetClearColor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_SetClearColor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_Raycast);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_ScreenToWorldPoint);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CameraComponent_ScreenToViewportPoint);
 
-		VX_REGISTER_INTERNAL_CALL(PostProcessInfo_GetEnabled);
-		VX_REGISTER_INTERNAL_CALL(PostProcessInfo_SetEnabled);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PostProcessInfo_GetEnabled);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PostProcessInfo_SetEnabled);
 
-		VX_REGISTER_INTERNAL_CALL(BloomInfo_GetThreshold);
-		VX_REGISTER_INTERNAL_CALL(BloomInfo_SetThreshold);
-		VX_REGISTER_INTERNAL_CALL(BloomInfo_GetKnee);
-		VX_REGISTER_INTERNAL_CALL(BloomInfo_SetKnee);
-		VX_REGISTER_INTERNAL_CALL(BloomInfo_GetIntensity);
-		VX_REGISTER_INTERNAL_CALL(BloomInfo_SetIntensity);
-		VX_REGISTER_INTERNAL_CALL(BloomInfo_GetEnabled);
-		VX_REGISTER_INTERNAL_CALL(BloomInfo_SetEnabled);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BloomInfo_GetThreshold);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BloomInfo_SetThreshold);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BloomInfo_GetKnee);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BloomInfo_SetKnee);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BloomInfo_GetIntensity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BloomInfo_SetIntensity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BloomInfo_GetEnabled);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BloomInfo_SetEnabled);
 
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_GetLightType);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetLightType);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_GetRadiance);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetRadiance);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_GetIntensity);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetIntensity);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_GetCutoff);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetCutoff);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_GetOuterCutoff);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetOuterCutoff);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_GetShadowBias);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetShadowBias);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_GetCastShadows);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetCastShadows);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_GetSoftShadows);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetSoftShadows);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_IsVisible);
-		VX_REGISTER_INTERNAL_CALL(LightSourceComponent_SetVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_GetLightType);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_SetLightType);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_GetRadiance);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_SetRadiance);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_GetIntensity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_SetIntensity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_GetCutoff);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_SetCutoff);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_GetOuterCutoff);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_SetOuterCutoff);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_GetShadowBias);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_SetShadowBias);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_GetCastShadows);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_SetCastShadows);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_GetSoftShadows);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_SetSoftShadows);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_IsVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(LightSourceComponent_SetVisible);
 
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetTextString);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetTextString);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetColor);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetColor);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetOutlineColor);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetOutlineColor);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetLineSpacing);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetLineSpacing);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetKerning);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetKerning);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_GetMaxWidth);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetMaxWidth);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_IsVisible);
-		VX_REGISTER_INTERNAL_CALL(TextMeshComponent_SetVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_GetTextString);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_SetTextString);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_GetColor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_SetColor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_GetOutlineColor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_SetOutlineColor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_GetLineSpacing);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_SetLineSpacing);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_GetKerning);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_SetKerning);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_GetMaxWidth);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_SetMaxWidth);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_IsVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_SetVisible);
 
-		VX_REGISTER_INTERNAL_CALL(AnimatorComponent_IsPlaying);
-		VX_REGISTER_INTERNAL_CALL(AnimatorComponent_Play);
-		VX_REGISTER_INTERNAL_CALL(AnimatorComponent_Stop);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AnimatorComponent_IsPlaying);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AnimatorComponent_Play);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AnimatorComponent_Stop);
 
-		VX_REGISTER_INTERNAL_CALL(MeshRendererComponent_GetMaterialHandle);
-		VX_REGISTER_INTERNAL_CALL(MeshRendererComponent_IsVisible);
-		VX_REGISTER_INTERNAL_CALL(MeshRendererComponent_SetVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshRendererComponent_GetMaterialHandle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshRendererComponent_IsVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshRendererComponent_SetVisible);
 
-		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_GetMeshType);
-		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_SetMeshType);
-		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_SetMaterialHandle);
-		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_IsVisible);
-		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_SetVisible);
-		VX_REGISTER_INTERNAL_CALL(StaticMeshRendererComponent_GetMaterialHandle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_GetMeshType);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_SetMeshType);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_SetMaterialHandle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_IsVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_SetVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_GetMaterialHandle);
 
-		VX_REGISTER_INTERNAL_CALL(Material_GetAlbedo);
-		VX_REGISTER_INTERNAL_CALL(Material_SetAlbedo);
-		VX_REGISTER_INTERNAL_CALL(Material_GetAlbedoMap);
-		VX_REGISTER_INTERNAL_CALL(Material_SetAlbedoMap);
-		VX_REGISTER_INTERNAL_CALL(Material_GetNormalMap);
-		VX_REGISTER_INTERNAL_CALL(Material_SetNormalMap);
-		VX_REGISTER_INTERNAL_CALL(Material_GetMetallic);
-		VX_REGISTER_INTERNAL_CALL(Material_SetMetallic);
-		VX_REGISTER_INTERNAL_CALL(Material_GetMetallicMap);
-		VX_REGISTER_INTERNAL_CALL(Material_SetMetallicMap);
-		VX_REGISTER_INTERNAL_CALL(Material_GetRoughness);
-		VX_REGISTER_INTERNAL_CALL(Material_SetRoughness);
-		VX_REGISTER_INTERNAL_CALL(Material_GetRoughnessMap);
-		VX_REGISTER_INTERNAL_CALL(Material_SetRoughnessMap);
-		VX_REGISTER_INTERNAL_CALL(Material_GetEmission);
-		VX_REGISTER_INTERNAL_CALL(Material_SetEmission);
-		VX_REGISTER_INTERNAL_CALL(Material_GetEmissionMap);
-		VX_REGISTER_INTERNAL_CALL(Material_SetEmissionMap);
-		VX_REGISTER_INTERNAL_CALL(Material_GetAmbientOcclusionMap);
-		VX_REGISTER_INTERNAL_CALL(Material_SetAmbientOcclusionMap);
-		VX_REGISTER_INTERNAL_CALL(Material_GetUV);
-		VX_REGISTER_INTERNAL_CALL(Material_SetUV);
-		VX_REGISTER_INTERNAL_CALL(Material_GetOpacity);
-		VX_REGISTER_INTERNAL_CALL(Material_SetOpacity);
-		VX_REGISTER_INTERNAL_CALL(Material_IsFlagSet);
-		VX_REGISTER_INTERNAL_CALL(Material_SetFlag);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetAlbedo);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetAlbedo);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetAlbedoMap);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetAlbedoMap);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetNormalMap);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetNormalMap);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetMetallic);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetMetallic);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetMetallicMap);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetMetallicMap);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetRoughness);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetRoughness);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetRoughnessMap);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetRoughnessMap);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetEmission);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetEmission);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetEmissionMap);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetEmissionMap);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetAmbientOcclusionMap);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetAmbientOcclusionMap);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetUV);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetUV);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetOpacity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetOpacity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_IsFlagSet);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_SetFlag);
 
-		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_GetTextureHandle);
-		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetTextureHandle);
-		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_GetColor);
-		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetColor);
-		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_GetUV);
-		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetUV);
-		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_IsVisible);
-		VX_REGISTER_INTERNAL_CALL(SpriteRendererComponent_SetVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SpriteRendererComponent_GetTextureHandle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SpriteRendererComponent_SetTextureHandle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SpriteRendererComponent_GetColor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SpriteRendererComponent_SetColor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SpriteRendererComponent_GetUV);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SpriteRendererComponent_SetUV);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SpriteRendererComponent_IsVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SpriteRendererComponent_SetVisible);
 
-		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_GetColor);
-		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_SetColor);
-		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_GetThickness);
-		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_SetThickness);
-		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_GetFade);
-		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_SetFade);
-		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_IsVisible);
-		VX_REGISTER_INTERNAL_CALL(CircleRendererComponent_SetVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleRendererComponent_GetColor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleRendererComponent_SetColor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleRendererComponent_GetThickness);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleRendererComponent_SetThickness);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleRendererComponent_GetFade);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleRendererComponent_SetFade);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleRendererComponent_IsVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleRendererComponent_SetVisible);
 
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPosition);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPosition);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetDirection);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetDirection);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetVelocity);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetVelocity);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetMinGain);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetMinGain);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetMaxGain);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetMaxGain);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetDirectionalAttenuationFactor);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetDirectionalAttenuationFactor);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetAttenuationModel);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetAttenuationModel);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPan);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPan);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPanMode);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPanMode);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPositioningMode);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPositioningMode);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetFalloff);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetFalloff);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetMinDistance);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetMinDistance);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetMaxDistance);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetMaxDistance);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPitch);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPitch);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetDopplerFactor);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetDopplerFactor);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetVolume);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetVolume);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetDirectionToListener);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPlayOnStart);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPlayOnStart);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetIsSpacialized);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetIsSpacialized);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetIsLooping);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetIsLooping);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetIsPlaying);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetIsPaused);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetCursorInMilliseconds);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetPinnedListenerIndex);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetPinnedListenerIndex);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_Play);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetStartTimeInMilliseconds);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetStartTimeInPCMFrames);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetFadeInMilliseconds);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetFadeStartInMilliseconds);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetFadeInPCMFrames);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetFadeStartInPCMFrames);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_GetCurrentFadeVolume);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_PlayOneShot);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_Pause);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_Restart);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_Stop);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetStopTimeInMilliseconds);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetStopTimeInPCMFrames);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetStopTimeWithFadeInMilliseconds);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SetStopTimeWithFadeInPCMFrames);
-		VX_REGISTER_INTERNAL_CALL(AudioSourceComponent_SeekToPCMFrame);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetPosition);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetPosition);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetDirection);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetDirection);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetMinGain);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetMinGain);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetMaxGain);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetMaxGain);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetDirectionalAttenuationFactor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetDirectionalAttenuationFactor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetAttenuationModel);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetAttenuationModel);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetPan);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetPan);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetPanMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetPanMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetPositioningMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetPositioningMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetFalloff);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetFalloff);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetMinDistance);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetMinDistance);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetMaxDistance);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetMaxDistance);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetPitch);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetPitch);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetDopplerFactor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetDopplerFactor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetVolume);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetVolume);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetDirectionToListener);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetPlayOnStart);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetPlayOnStart);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetIsSpacialized);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetIsSpacialized);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetIsLooping);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetIsLooping);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetIsPlaying);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetIsPaused);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetCursorInMilliseconds);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetPinnedListenerIndex);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetPinnedListenerIndex);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_Play);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetStartTimeInMilliseconds);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetStartTimeInPCMFrames);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetFadeInMilliseconds);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetFadeStartInMilliseconds);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetFadeInPCMFrames);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetFadeStartInPCMFrames);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_GetCurrentFadeVolume);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_PlayOneShot);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_Pause);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_Restart);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_Stop);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetStopTimeInMilliseconds);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetStopTimeInPCMFrames);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetStopTimeWithFadeInMilliseconds);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SetStopTimeWithFadeInPCMFrames);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioSourceComponent_SeekToPCMFrame);
 
-		VX_REGISTER_INTERNAL_CALL(AudioClip_GetName);
-		VX_REGISTER_INTERNAL_CALL(AudioClip_GetLength);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioClip_GetName);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioClip_GetLength);
 
-		VX_REGISTER_INTERNAL_CALL(AudioCone_GetInnerAngle);
-		VX_REGISTER_INTERNAL_CALL(AudioCone_SetInnerAngle);
-		VX_REGISTER_INTERNAL_CALL(AudioCone_GetOuterAngle);
-		VX_REGISTER_INTERNAL_CALL(AudioCone_SetOuterAngle);
-		VX_REGISTER_INTERNAL_CALL(AudioCone_GetOuterGain);
-		VX_REGISTER_INTERNAL_CALL(AudioCone_SetOuterGain);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioCone_GetInnerAngle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioCone_SetInnerAngle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioCone_GetOuterAngle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioCone_SetOuterAngle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioCone_GetOuterGain);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(AudioCone_SetOuterGain);
 		
-		VX_REGISTER_INTERNAL_CALL(Physics_Raycast);
-		VX_REGISTER_INTERNAL_CALL(Physics_GetSceneGravity);
-		VX_REGISTER_INTERNAL_CALL(Physics_SetSceneGravity);
-		VX_REGISTER_INTERNAL_CALL(Physics_GetScenePositionIterations);
-		VX_REGISTER_INTERNAL_CALL(Physics_SetScenePositionIterations);
-		VX_REGISTER_INTERNAL_CALL(Physics_GetSceneVelocityIterations);
-		VX_REGISTER_INTERNAL_CALL(Physics_SetSceneVelocityIterations);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics_Raycast);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics_GetSceneGravity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics_SetSceneGravity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics_GetScenePositionIterations);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics_SetScenePositionIterations);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics_GetSceneVelocityIterations);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics_SetSceneVelocityIterations);
 
-		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_GetStaticFriction);
-		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_SetStaticFriction);
-		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_GetDynamicFriction);
-		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_SetDynamicFriction);
-		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_GetBounciness);
-		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_SetBounciness);
-		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_GetFrictionCombineMode);
-		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_SetFrictionCombineMode);
-		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_GetBouncinessCombineMode);
-		VX_REGISTER_INTERNAL_CALL(PhysicsMaterial_SetBouncinessCombineMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PhysicsMaterial_GetStaticFriction);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PhysicsMaterial_SetStaticFriction);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PhysicsMaterial_GetDynamicFriction);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PhysicsMaterial_SetDynamicFriction);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PhysicsMaterial_GetBounciness);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PhysicsMaterial_SetBounciness);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PhysicsMaterial_GetFrictionCombineMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PhysicsMaterial_SetFrictionCombineMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PhysicsMaterial_GetBouncinessCombineMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PhysicsMaterial_SetBouncinessCombineMode);
 
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetBodyType);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetBodyType);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetCollisionDetectionType);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetCollisionDetectionType);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetMass);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetMass);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetLinearVelocity);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetLinearVelocity);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetMaxLinearVelocity);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetMaxLinearVelocity);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetLinearDrag);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetLinearDrag);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetAngularVelocity);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetAngularVelocity);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetMaxAngularVelocity);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetMaxAngularVelocity);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetAngularDrag);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetAngularDrag);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetDisableGravity);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetDisableGravity);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetIsKinematic);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetIsKinematic);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetKinematicTargetTranslation);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetKinematicTargetTranslation);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetKinematicTargetRotation);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetKinematicTargetRotation);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_GetLockFlags);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_SetLockFlag);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_IsLockFlagSet);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_IsSleeping);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_WakeUp);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_AddForce);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_AddForceAtPosition);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_AddTorque);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_ClearTorque);
-		VX_REGISTER_INTERNAL_CALL(RigidBodyComponent_ClearForce);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetBodyType);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetBodyType);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetCollisionDetectionType);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetCollisionDetectionType);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetMass);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetMass);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetLinearVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetLinearVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetMaxLinearVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetMaxLinearVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetLinearDrag);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetLinearDrag);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetAngularVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetAngularVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetMaxAngularVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetMaxAngularVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetAngularDrag);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetAngularDrag);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetDisableGravity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetDisableGravity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetIsKinematic);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetIsKinematic);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetKinematicTargetTranslation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetKinematicTargetTranslation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetKinematicTargetRotation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetKinematicTargetRotation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_GetLockFlags);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_SetLockFlag);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_IsLockFlagSet);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_IsSleeping);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_WakeUp);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_AddForce);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_AddForceAtPosition);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_AddTorque);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_ClearTorque);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBodyComponent_ClearForce);
 
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_Move);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_Jump); 
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_IsGrounded);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_GetFootPosition);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_GetSpeedDown);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_GetSlopeLimit);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_SetSlopeLimit);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_GetStepOffset);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_SetStepOffset);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_GetContactOffset);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_SetContactOffset);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_GetNonWalkableMode);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_SetNonWalkableMode);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_GetClimbMode);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_SetClimbMode);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_GetDisableGravity);
-		VX_REGISTER_INTERNAL_CALL(CharacterControllerComponent_SetDisableGravity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_Move);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_Jump); 
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_IsGrounded);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_GetFootPosition);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_GetSpeedDown);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_GetSlopeLimit);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_SetSlopeLimit);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_GetStepOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_SetStepOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_GetContactOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_SetContactOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_GetNonWalkableMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_SetNonWalkableMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_GetClimbMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_SetClimbMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_GetDisableGravity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CharacterControllerComponent_SetDisableGravity);
 
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_GetConnectedActor);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_SetConnectedActor);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_GetBreakForce);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_SetBreakForce);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_GetBreakTorque);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_SetBreakTorque);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_SetBreakForceAndTorque);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_GetEnableCollision);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_SetCollisionEnabled);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_GetPreProcessingEnabled);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_SetPreProcessingEnabled);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_IsBroken);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_GetIsBreakable);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_SetIsBreakable);
-		VX_REGISTER_INTERNAL_CALL(FixedJointComponent_Break);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_GetConnectedActor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_SetConnectedActor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_GetBreakForce);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_SetBreakForce);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_GetBreakTorque);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_SetBreakTorque);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_SetBreakForceAndTorque);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_GetEnableCollision);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_SetCollisionEnabled);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_GetPreProcessingEnabled);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_SetPreProcessingEnabled);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_IsBroken);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_GetIsBreakable);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_SetIsBreakable);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(FixedJointComponent_Break);
 
-		VX_REGISTER_INTERNAL_CALL(BoxColliderComponent_GetHalfSize);
-		VX_REGISTER_INTERNAL_CALL(BoxColliderComponent_SetHalfSize);
-		VX_REGISTER_INTERNAL_CALL(BoxColliderComponent_GetOffset);
-		VX_REGISTER_INTERNAL_CALL(BoxColliderComponent_SetOffset);
-		VX_REGISTER_INTERNAL_CALL(BoxColliderComponent_GetIsTrigger);
-		VX_REGISTER_INTERNAL_CALL(BoxColliderComponent_SetIsTrigger);
-		VX_REGISTER_INTERNAL_CALL(BoxColliderComponent_GetMaterialHandle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxColliderComponent_GetHalfSize);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxColliderComponent_SetHalfSize);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxColliderComponent_GetOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxColliderComponent_SetOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxColliderComponent_GetIsTrigger);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxColliderComponent_SetIsTrigger);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxColliderComponent_GetMaterialHandle);
 
-		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_GetRadius);
-		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_SetRadius);
-		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_GetOffset);
-		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_SetOffset);
-		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_GetIsTrigger);
-		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_SetIsTrigger);
-		VX_REGISTER_INTERNAL_CALL(SphereColliderComponent_GetMaterialHandle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SphereColliderComponent_GetRadius);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SphereColliderComponent_SetRadius);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SphereColliderComponent_GetOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SphereColliderComponent_SetOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SphereColliderComponent_GetIsTrigger);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SphereColliderComponent_SetIsTrigger);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SphereColliderComponent_GetMaterialHandle);
 
-		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_GetRadius);
-		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_SetRadius);
-		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_GetHeight);
-		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_SetHeight);
-		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_GetOffset);
-		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_SetOffset);
-		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_GetIsTrigger);
-		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_SetIsTrigger);
-		VX_REGISTER_INTERNAL_CALL(CapsuleColliderComponent_GetMaterialHandle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CapsuleColliderComponent_GetRadius);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CapsuleColliderComponent_SetRadius);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CapsuleColliderComponent_GetHeight);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CapsuleColliderComponent_SetHeight);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CapsuleColliderComponent_GetOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CapsuleColliderComponent_SetOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CapsuleColliderComponent_GetIsTrigger);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CapsuleColliderComponent_SetIsTrigger);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CapsuleColliderComponent_GetMaterialHandle);
 
-		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_IsStaticMesh);
-		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_IsColliderMeshValid);
-		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_GetColliderMesh);
-		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_SetColliderMesh);
-		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_GetIsTrigger);
-		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_SetIsTrigger);
-		VX_REGISTER_INTERNAL_CALL(MeshColliderComponent_GetMaterialHandle);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshColliderComponent_IsStaticMesh);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshColliderComponent_IsColliderMeshValid);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshColliderComponent_GetColliderMesh);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshColliderComponent_SetColliderMesh);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshColliderComponent_GetIsTrigger);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshColliderComponent_SetIsTrigger);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshColliderComponent_GetMaterialHandle);
 
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetVelocity);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetVelocity);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetDrag);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetDrag);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetAngularVelocity);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetAngularVelocity);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetAngularDrag);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetAngularDrag);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetFixedRotation);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetFixedRotation);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_GetGravityScale);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_SetGravityScale);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_ApplyForce);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_ApplyForceToCenter);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
-		VX_REGISTER_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulseToCenter);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_GetBodyType);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_SetBodyType);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_GetVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_SetVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_GetDrag);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_SetDrag);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_GetAngularVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_SetAngularVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_GetAngularDrag);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_SetAngularDrag);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_GetFixedRotation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_SetFixedRotation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_GetGravityScale);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_SetGravityScale);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_ApplyForce);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_ApplyForceToCenter);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulse);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(RigidBody2DComponent_ApplyLinearImpulseToCenter);
 
-		VX_REGISTER_INTERNAL_CALL(Physics2D_Raycast);
-		VX_REGISTER_INTERNAL_CALL(Physics2D_GetWorldGravity);
-		VX_REGISTER_INTERNAL_CALL(Physics2D_SetWorldGravity);
-		VX_REGISTER_INTERNAL_CALL(Physics2D_GetWorldPositionIterations);
-		VX_REGISTER_INTERNAL_CALL(Physics2D_SetWorldPositionIterations);
-		VX_REGISTER_INTERNAL_CALL(Physics2D_GetWorldVelocityIterations);
-		VX_REGISTER_INTERNAL_CALL(Physics2D_SetWorldVelocityIterations);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics2D_Raycast);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics2D_GetWorldGravity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics2D_SetWorldGravity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics2D_GetWorldPositionIterations);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics2D_SetWorldPositionIterations);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics2D_GetWorldVelocityIterations);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Physics2D_SetWorldVelocityIterations);
 
-		VX_REGISTER_INTERNAL_CALL(BoxCollider2DComponent_GetOffset);
-		VX_REGISTER_INTERNAL_CALL(BoxCollider2DComponent_SetOffset);
-		VX_REGISTER_INTERNAL_CALL(BoxCollider2DComponent_GetSize);
-		VX_REGISTER_INTERNAL_CALL(BoxCollider2DComponent_SetSize);
-		VX_REGISTER_INTERNAL_CALL(BoxCollider2DComponent_GetDensity);
-		VX_REGISTER_INTERNAL_CALL(BoxCollider2DComponent_SetDensity);
-		VX_REGISTER_INTERNAL_CALL(BoxCollider2DComponent_GetFriction);
-		VX_REGISTER_INTERNAL_CALL(BoxCollider2DComponent_SetFriction);
-		VX_REGISTER_INTERNAL_CALL(BoxCollider2DComponent_GetRestitution);
-		VX_REGISTER_INTERNAL_CALL(BoxCollider2DComponent_SetRestitution);
-		VX_REGISTER_INTERNAL_CALL(BoxCollider2DComponent_GetRestitutionThreshold);
-		VX_REGISTER_INTERNAL_CALL(BoxCollider2DComponent_SetRestitutionThreshold);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxCollider2DComponent_GetOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxCollider2DComponent_SetOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxCollider2DComponent_GetSize);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxCollider2DComponent_SetSize);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxCollider2DComponent_GetDensity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxCollider2DComponent_SetDensity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxCollider2DComponent_GetFriction);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxCollider2DComponent_SetFriction);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxCollider2DComponent_GetRestitution);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxCollider2DComponent_SetRestitution);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxCollider2DComponent_GetRestitutionThreshold);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(BoxCollider2DComponent_SetRestitutionThreshold);
 
-		VX_REGISTER_INTERNAL_CALL(CircleCollider2DComponent_GetOffset);
-		VX_REGISTER_INTERNAL_CALL(CircleCollider2DComponent_SetOffset);
-		VX_REGISTER_INTERNAL_CALL(CircleCollider2DComponent_GetRadius);
-		VX_REGISTER_INTERNAL_CALL(CircleCollider2DComponent_SetRadius);
-		VX_REGISTER_INTERNAL_CALL(CircleCollider2DComponent_GetDensity);
-		VX_REGISTER_INTERNAL_CALL(CircleCollider2DComponent_SetDensity);
-		VX_REGISTER_INTERNAL_CALL(CircleCollider2DComponent_GetFriction);
-		VX_REGISTER_INTERNAL_CALL(CircleCollider2DComponent_SetFriction);
-		VX_REGISTER_INTERNAL_CALL(CircleCollider2DComponent_GetRestitution);
-		VX_REGISTER_INTERNAL_CALL(CircleCollider2DComponent_SetRestitution);
-		VX_REGISTER_INTERNAL_CALL(CircleCollider2DComponent_GetRestitutionThreshold);
-		VX_REGISTER_INTERNAL_CALL(CircleCollider2DComponent_SetRestitutionThreshold);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleCollider2DComponent_GetOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleCollider2DComponent_SetOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleCollider2DComponent_GetRadius);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleCollider2DComponent_SetRadius);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleCollider2DComponent_GetDensity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleCollider2DComponent_SetDensity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleCollider2DComponent_GetFriction);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleCollider2DComponent_SetFriction);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleCollider2DComponent_GetRestitution);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleCollider2DComponent_SetRestitution);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleCollider2DComponent_GetRestitutionThreshold);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(CircleCollider2DComponent_SetRestitutionThreshold);
 
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_GetVelocity);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_SetVelocity);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_GetVelocityVariation);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_SetVelocityVariation);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_GetOffset);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_SetOffset);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_GetSizeBegin);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_SetSizeBegin);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_GetSizeEnd);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_SetSizeEnd);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_GetSizeVariation);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_SetSizeVariation);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_GetColorBegin);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_SetColorBegin);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_GetColorEnd);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_SetColorEnd);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_GetRotation);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_SetRotation);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_GetLifeTime);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_SetLifeTime);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_Start);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_Stop);
-		VX_REGISTER_INTERNAL_CALL(ParticleEmitterComponent_IsActive);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_GetVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_SetVelocity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_GetVelocityVariation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_SetVelocityVariation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_GetOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_SetOffset);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_GetSizeBegin);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_SetSizeBegin);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_GetSizeEnd);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_SetSizeEnd);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_GetSizeVariation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_SetSizeVariation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_GetColorBegin);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_SetColorBegin);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_GetColorEnd);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_SetColorEnd);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_GetRotation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_SetRotation);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_GetLifeTime);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_SetLifeTime);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_Start);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_Stop);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(ParticleEmitterComponent_IsActive);
 
-		VX_REGISTER_INTERNAL_CALL(Texture2D_LoadFromPath);
-		VX_REGISTER_INTERNAL_CALL(Texture2D_Constructor);
-		VX_REGISTER_INTERNAL_CALL(Texture2D_GetWidth);
-		VX_REGISTER_INTERNAL_CALL(Texture2D_GetHeight);
-		VX_REGISTER_INTERNAL_CALL(Texture2D_SetPixel);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Texture2D_LoadFromPath);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Texture2D_Constructor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Texture2D_GetWidth);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Texture2D_GetHeight);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Texture2D_SetPixel);
 
-		VX_REGISTER_INTERNAL_CALL(Random_RangedInt32);
-		VX_REGISTER_INTERNAL_CALL(Random_RangedFloat);
-		VX_REGISTER_INTERNAL_CALL(Random_Float);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Random_RangedInt32);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Random_RangedFloat);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Random_Float);
 
-		VX_REGISTER_INTERNAL_CALL(Quaternion_Inverse);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Quaternion_Inverse);
 
-		VX_REGISTER_INTERNAL_CALL(Matrix4_Rotate);
-		VX_REGISTER_INTERNAL_CALL(Matrix4_LookAt);
-		VX_REGISTER_INTERNAL_CALL(Matrix4_Multiply);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Matrix4_Rotate);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Matrix4_LookAt);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Matrix4_Multiply);
 
-		VX_REGISTER_INTERNAL_CALL(Mathf_GetPI);
-		VX_REGISTER_INTERNAL_CALL(Mathf_GetPI_D);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Round);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Abs);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Sqrt);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Pow);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Sin);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Cos);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Acos);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Tan);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Max);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Max);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Deg2Rad);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Rad2Deg);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Deg2RadVector3);
-		VX_REGISTER_INTERNAL_CALL(Mathf_Rad2DegVector3);
-		VX_REGISTER_INTERNAL_CALL(Mathf_LookAt);
-		VX_REGISTER_INTERNAL_CALL(Mathf_InverseQuat);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_GetPI);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_GetPI_D);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Round);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Abs);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Sqrt);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Pow);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Sin);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Cos);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Acos);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Tan);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Max);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Max);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Deg2Rad);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Rad2Deg);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Deg2RadVector3);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Rad2DegVector3);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_LookAt);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_InverseQuat);
 
-		VX_REGISTER_INTERNAL_CALL(Noise_Constructor);
-		VX_REGISTER_INTERNAL_CALL(Noise_Destructor);
-		VX_REGISTER_INTERNAL_CALL(Noise_GetFrequency);
-		VX_REGISTER_INTERNAL_CALL(Noise_SetFrequency);
-		VX_REGISTER_INTERNAL_CALL(Noise_GetFractalOctaves);
-		VX_REGISTER_INTERNAL_CALL(Noise_SetFractalOctaves);
-		VX_REGISTER_INTERNAL_CALL(Noise_GetFractalLacunarity);
-		VX_REGISTER_INTERNAL_CALL(Noise_SetFractalLacunarity);
-		VX_REGISTER_INTERNAL_CALL(Noise_GetFractalGain);
-		VX_REGISTER_INTERNAL_CALL(Noise_SetFractalGain);
-		VX_REGISTER_INTERNAL_CALL(Noise_GetVec2);
-		VX_REGISTER_INTERNAL_CALL(Noise_GetVec3);
-		VX_REGISTER_INTERNAL_CALL(Noise_SetSeed);
-		VX_REGISTER_INTERNAL_CALL(Noise_PerlinNoiseVec2);
-		VX_REGISTER_INTERNAL_CALL(Noise_PerlinNoiseVec3);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_Constructor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_Destructor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_GetFrequency);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_SetFrequency);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_GetFractalOctaves);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_SetFractalOctaves);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_GetFractalLacunarity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_SetFractalLacunarity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_GetFractalGain);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_SetFractalGain);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_GetVec2);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_GetVec3);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_SetSeed);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_PerlinNoiseVec2);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Noise_PerlinNoiseVec3);
 
-		VX_REGISTER_INTERNAL_CALL(Time_GetElapsed);
-		VX_REGISTER_INTERNAL_CALL(Time_GetDeltaTime);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Time_GetElapsed);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Time_GetDeltaTime);
 
-		VX_REGISTER_INTERNAL_CALL(Input_IsKeyPressed);
-		VX_REGISTER_INTERNAL_CALL(Input_IsKeyReleased);
-		VX_REGISTER_INTERNAL_CALL(Input_IsKeyDown);
-		VX_REGISTER_INTERNAL_CALL(Input_IsKeyUp);
-		VX_REGISTER_INTERNAL_CALL(Input_IsMouseButtonPressed);
-		VX_REGISTER_INTERNAL_CALL(Input_IsMouseButtonReleased);
-		VX_REGISTER_INTERNAL_CALL(Input_IsMouseButtonDown);
-		VX_REGISTER_INTERNAL_CALL(Input_IsMouseButtonUp);
-		VX_REGISTER_INTERNAL_CALL(Input_GetMousePosition);
-		VX_REGISTER_INTERNAL_CALL(Input_SetMousePosition);
-		VX_REGISTER_INTERNAL_CALL(Input_GetMouseWheelMovement);
-		VX_REGISTER_INTERNAL_CALL(Input_IsGamepadButtonDown);
-		VX_REGISTER_INTERNAL_CALL(Input_IsGamepadButtonUp);
-		VX_REGISTER_INTERNAL_CALL(Input_GetGamepadAxis);
-		VX_REGISTER_INTERNAL_CALL(Input_GetCursorMode);
-		VX_REGISTER_INTERNAL_CALL(Input_SetCursorMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_IsKeyPressed);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_IsKeyReleased);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_IsKeyDown);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_IsKeyUp);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_IsMouseButtonPressed);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_IsMouseButtonReleased);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_IsMouseButtonDown);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_IsMouseButtonUp);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_GetMousePosition);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_SetMousePosition);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_GetMouseWheelMovement);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_IsGamepadButtonDown);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_IsGamepadButtonUp);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_GetGamepadAxis);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_GetCursorMode);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Input_SetCursorMode);
 
-		VX_REGISTER_INTERNAL_CALL(PlayerPrefs_HasKey);
-		VX_REGISTER_INTERNAL_CALL(PlayerPrefs_RemoveKey);
-		VX_REGISTER_INTERNAL_CALL(PlayerPrefs_WriteInt);
-		VX_REGISTER_INTERNAL_CALL(PlayerPrefs_ReadInt);
-		VX_REGISTER_INTERNAL_CALL(PlayerPrefs_ReadIntWithDefault);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PlayerPrefs_HasKey);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PlayerPrefs_RemoveKey);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PlayerPrefs_WriteInt);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PlayerPrefs_ReadInt);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(PlayerPrefs_ReadIntWithDefault);
 
-		VX_REGISTER_INTERNAL_CALL(Gui_Begin);
-		VX_REGISTER_INTERNAL_CALL(Gui_BeginWithPosition);
-		VX_REGISTER_INTERNAL_CALL(Gui_BeginWithSize);
-		VX_REGISTER_INTERNAL_CALL(Gui_BeginWithPositionAndSize);
-		VX_REGISTER_INTERNAL_CALL(Gui_End);
-		VX_REGISTER_INTERNAL_CALL(Gui_Underline);
-		VX_REGISTER_INTERNAL_CALL(Gui_Spacing);
-		VX_REGISTER_INTERNAL_CALL(Gui_Text);
-		VX_REGISTER_INTERNAL_CALL(Gui_Button);
-		VX_REGISTER_INTERNAL_CALL(Gui_PropertyBool);
-		VX_REGISTER_INTERNAL_CALL(Gui_PropertyInt);
-		VX_REGISTER_INTERNAL_CALL(Gui_PropertyULong);
-		VX_REGISTER_INTERNAL_CALL(Gui_PropertyFloat);
-		VX_REGISTER_INTERNAL_CALL(Gui_PropertyDouble);
-		VX_REGISTER_INTERNAL_CALL(Gui_PropertyVec2);
-		VX_REGISTER_INTERNAL_CALL(Gui_PropertyVec3);
-		VX_REGISTER_INTERNAL_CALL(Gui_PropertyVec4);
-		VX_REGISTER_INTERNAL_CALL(Gui_PropertyColor3);
-		VX_REGISTER_INTERNAL_CALL(Gui_PropertyColor4);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_Begin);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_End);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_Underline);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_Spacing);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_Text);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_Button);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_ButtonWithSize);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_BeginPropertyGrid);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_EndPropertyGrid);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_PropertyGridHeader);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_EndGridHeader);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_PropertyBool);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_PropertyInt);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_PropertyULong);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_PropertyFloat);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_PropertyDouble);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_PropertyVec2);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_PropertyVec3);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_PropertyVec4);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_PropertyColor3);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Gui_PropertyColor4);
 
-		VX_REGISTER_INTERNAL_CALL(Log_Message);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Log_Message);
 	}
 
 }

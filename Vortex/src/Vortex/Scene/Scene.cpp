@@ -702,7 +702,7 @@ namespace Vortex {
 		SystemManager::GetSystem<UISystem>()->OnUpdateRuntime(this);
 	}
 
-	void Scene::OnRenderActorGui()
+	void Scene::InvokeActorOnGuiRender()
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -711,7 +711,7 @@ namespace Vortex {
 
 		auto view = GetAllActorsWith<ScriptComponent>();
 
-		// Invoke Actor.OnGui
+		// Invoke Actor.OnGuiRender
 		for (const auto e : view)
 		{
 			Actor actor{ e, this };
@@ -719,7 +719,7 @@ namespace Vortex {
 			if (!actor.IsActive())
 				continue;
 
-			actor.CallMethod(ManagedMethod::OnGui);
+			actor.CallMethod(ManagedMethod::OnGuiRender);
 		}
 	}
 

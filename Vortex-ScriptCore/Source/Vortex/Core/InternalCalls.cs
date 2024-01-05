@@ -65,7 +65,7 @@ namespace Vortex {
 		#region DebugRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void DebugRenderer_DrawLine(ref Vector3 p1, ref Vector3 p2, ref Vector4 color);
+		internal extern static void DebugRenderer_DrawLine(ref Vector3 startPoint, ref Vector3 endPoint, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void DebugRenderer_DrawQuadBillboard(ref Vector3 translation, ref Vector2 size, ref Vector4 color);
@@ -118,9 +118,6 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Scene_Resume();
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Scene_GetHoveredActor();
 
 		#endregion
 
@@ -183,6 +180,9 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Actor_InvokeWithDelay(ulong actorID, string method, float delay);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Actor_IsActive(ulong actorID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Actor_SetActive(ulong actorID, bool isActive);
@@ -1784,15 +1784,6 @@ namespace Vortex {
 		internal extern static void Gui_Begin(string name);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Gui_BeginWithPosition(string name, ref Vector2 position);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Gui_BeginWithSize(string name, float width, float height);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Gui_BeginWithPositionAndSize(string name, ref Vector2 position, ref Vector2 size);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Gui_End();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -1808,34 +1799,49 @@ namespace Vortex {
 		internal extern static bool Gui_Button(string text);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Gui_PropertyBool(string label, out bool value);
-		
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Gui_PropertyInt(string label, out int value);
+		internal extern static bool Gui_ButtonWithSize(string text, ref Vector2 size);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Gui_PropertyULong(string label, out ulong value);
+		internal extern static void Gui_BeginPropertyGrid();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Gui_PropertyFloat(string label, out float value);
-		
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Gui_PropertyDouble(string label, out double value);
-		
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Gui_PropertyVec2(string label, out Vector2 value);
-		
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Gui_PropertyVec3(string label, out Vector3 value);
-		
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Gui_PropertyVec4(string label, out Vector4 value);
-		
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Gui_PropertyColor3(string label, out Color3 value);
+		internal extern static void Gui_EndPropertyGrid();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static bool Gui_PropertyColor4(string label, out Color4 value);
+		internal extern static bool Gui_PropertyGridHeader(string label, bool defaultOpen);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void Gui_EndGridHeader();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyBool(string label, ref bool value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyInt(string label, ref int value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyULong(string label, ref ulong value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyFloat(string label, ref float value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyDouble(string label, ref double value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyVec2(string label, ref Vector2 value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyVec3(string label, ref Vector3 value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyVec4(string label, ref Vector4 value);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyColor3(string label, ref Color3 value);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Gui_PropertyColor4(string label, ref Color4 value);
 
 		#endregion
 

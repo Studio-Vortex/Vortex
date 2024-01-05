@@ -13,8 +13,8 @@ namespace Vortex {
 
 	namespace Utils {
 
-		ProjectType ProjectTypeFromString(const char* type);
-		const char* ProjectTypeToString(ProjectType type);
+		VORTEX_API ProjectType ProjectTypeFromString(const char* type);
+		VORTEX_API const char* ProjectTypeToString(ProjectType type);
 
 	}
 

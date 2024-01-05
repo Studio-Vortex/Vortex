@@ -29,8 +29,8 @@ namespace Vortex {
 
 	namespace Utils {
 
-		AssetType AssetTypeFromString(const std::string& type);
-		std::string StringFromAssetType(AssetType type);
+		VORTEX_API AssetType AssetTypeFromString(const std::string& type);
+		VORTEX_API std::string StringFromAssetType(AssetType type);
 
 	}
 

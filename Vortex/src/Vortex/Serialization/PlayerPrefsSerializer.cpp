@@ -138,7 +138,6 @@ namespace Vortex {
 		for (auto entry : i32Data) {
 			const std::string key = entry["Key"].as<std::string>();
 			const int32_t value = entry["Value"].as<int32_t>();
-			VX_CORE_ASSERT(!m_I32Data.contains(key), "key already exists");
 			m_I32Data[key] = value;
 		}
 

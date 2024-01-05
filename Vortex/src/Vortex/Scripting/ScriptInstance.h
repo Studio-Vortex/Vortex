@@ -42,7 +42,7 @@ namespace Vortex {
 		void InvokeOnEnable();
 		void InvokeOnDisable();
 		void InvokeOnDebugRender();
-		void InvokeOnGui();
+		void InvokeOnGuiRender();
 
 		bool MethodExists(ManagedMethod method) const;
 

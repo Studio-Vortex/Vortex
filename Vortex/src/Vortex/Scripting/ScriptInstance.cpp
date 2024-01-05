@@ -13,20 +13,20 @@ namespace Vortex {
 	{
 		m_Instance = m_ScriptClass->Instantiate();
 
-		m_ManagedMethods[ManagedMethod::OnAwake] = m_ScriptClass->GetMethod("OnAwake", 0);
-		m_ManagedMethods[ManagedMethod::OnCreate] = m_ScriptClass->GetMethod("OnCreate", 0);
-		m_ManagedMethods[ManagedMethod::OnUpdateDelta] = m_ScriptClass->GetMethod("OnUpdate", 1);
-		m_ManagedMethods[ManagedMethod::OnUpdate] = m_ScriptClass->GetMethod("OnUpdate", 0);
-		m_ManagedMethods[ManagedMethod::OnDestroy] = m_ScriptClass->GetMethod("OnDestroy", 0);
-		m_ManagedMethods[ManagedMethod::OnCollisionEnter] = m_ScriptClass->GetMethod("OnCollisionEnter", 1);
-		m_ManagedMethods[ManagedMethod::OnCollisionExit] = m_ScriptClass->GetMethod("OnCollisionExit", 1);
-		m_ManagedMethods[ManagedMethod::OnTriggerEnter] = m_ScriptClass->GetMethod("OnTriggerEnter", 1);
-		m_ManagedMethods[ManagedMethod::OnTriggerExit] = m_ScriptClass->GetMethod("OnTriggerExit", 1);
-		m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected] = m_ScriptClass->GetMethod("OnFixedJointDisconnected", 2);
-		m_ManagedMethods[ManagedMethod::OnEnable] = m_ScriptClass->GetMethod("OnEnabled", 0);
-		m_ManagedMethods[ManagedMethod::OnDisable] = m_ScriptClass->GetMethod("OnDisabled", 0);
-		m_ManagedMethods[ManagedMethod::OnDebugRender] = m_ScriptClass->GetMethod("OnDebugRender", 0);
-		m_ManagedMethods[ManagedMethod::OnGui] = m_ScriptClass->GetMethod("OnGui", 0);
+		m_ManagedMethods[ManagedMethod::OnAwake] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnAwake), 0);
+		m_ManagedMethods[ManagedMethod::OnCreate] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnCreate), 0);
+		m_ManagedMethods[ManagedMethod::OnUpdateDelta] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnUpdate), 1);
+		m_ManagedMethods[ManagedMethod::OnUpdate] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnUpdate), 0);
+		m_ManagedMethods[ManagedMethod::OnDestroy] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnDestroy), 0);
+		m_ManagedMethods[ManagedMethod::OnCollisionEnter] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnCollisionEnter), 1);
+		m_ManagedMethods[ManagedMethod::OnCollisionExit] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnCollisionExit), 1);
+		m_ManagedMethods[ManagedMethod::OnTriggerEnter] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnTriggerEnter), 1);
+		m_ManagedMethods[ManagedMethod::OnTriggerExit] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnTriggerExit), 1);
+		m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnFixedJointDisconnected), 2);
+		m_ManagedMethods[ManagedMethod::OnEnable] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnEnable), 0);
+		m_ManagedMethods[ManagedMethod::OnDisable] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnDisable), 0);
+		m_ManagedMethods[ManagedMethod::OnDebugRender] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnDebugRender), 0);
+		m_ManagedMethods[ManagedMethod::OnGuiRender] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnGuiRender), 0);
 
 		SharedReference<ScriptClass> entityClass = ScriptEngine::GetCoreActorClass();
 		m_ActorConstructor = entityClass->GetMethod(".ctor", 1);
@@ -200,9 +200,9 @@ namespace Vortex {
 		ScriptUtils::InvokeMethod(m_Instance, onDebugRenderMethod);
     }
 
-	void ScriptInstance::InvokeOnGui()
+	void ScriptInstance::InvokeOnGuiRender()
 	{
-		ManagedMethod method = ManagedMethod::OnGui;
+		ManagedMethod method = ManagedMethod::OnGuiRender;
 		if (!MethodExists(method))
 		{
 			return;

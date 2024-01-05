@@ -46,11 +46,11 @@
 			if (actorID == 0)
 				return null;
 
-			Actor e = new Actor(actorID);
+			Actor clone = new Actor(actorID);
 
-			actor.transform.Translation = worldPosition;
+			clone.transform.Translation = worldPosition;
 
-			return e;
+			return clone;
 		}
 
 		public static Actor Instantiate(Actor actor, Vector3 worldPosition, Quaternion orientation)
@@ -60,12 +60,12 @@
 			if (actorID == 0)
 				return null;
 
-			Actor e = new Actor(actorID);
+			Actor clone = new Actor(actorID);
 
-			actor.transform.Translation = worldPosition;
-			actor.transform.Rotation = orientation;
+			clone.transform.Translation = worldPosition;
+			clone.transform.Rotation = orientation;
 
-			return e;
+			return clone;
 		}
 
 		public static Actor Instantiate(Actor actor, Actor parent)
@@ -85,11 +85,11 @@
 			if (actorID == 0)
 				return null;
 
-			Actor e = new Actor(actorID);
+			Actor clone = new Actor(actorID);
 
-			actor.transform.Translation = worldPosition;
+			clone.transform.Translation = worldPosition;
 
-			return e;
+			return clone;
 		}
 
 		public static Actor Instantiate(Actor actor, Actor parent, Vector3 worldPosition, Quaternion orientation)
@@ -99,38 +99,19 @@
 			if (actorID == 0)
 				return null;
 
-			Actor e = new Actor(actorID);
+			Actor clone = new Actor(actorID);
 
-			actor.transform.Translation = worldPosition;
-			actor.transform.Rotation = orientation;
+			clone.transform.Translation = worldPosition;
+			clone.transform.Rotation = orientation;
 
-			return e;
+			return clone;
 		}
 
-		public static bool IsPaused()
-		{
-			return InternalCalls.Scene_IsPaused();
-		}
+		public static bool IsPaused() => InternalCalls.Scene_IsPaused();
 
-		public static void Pause()
-		{
-			InternalCalls.Scene_Pause();
-		}
+		public static void Pause() => InternalCalls.Scene_Pause();
 
-		public static void Resume()
-		{
-			InternalCalls.Scene_Resume();
-		}
-
-		public static Actor GetHoveredActor()
-		{
-			ulong actorID = InternalCalls.Scene_GetHoveredActor();
-
-			if (actorID == 0)
-				return null;
-
-			return new Actor(actorID);
-		}
+		public static void Resume() => InternalCalls.Scene_Resume();
 	}
 
 }

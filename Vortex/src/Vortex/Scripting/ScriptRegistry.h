@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include "Vortex/Core/UUID.h"
 
 #include "Vortex/Math/Math.h"
@@ -34,13 +36,12 @@ namespace Vortex {
 	class Noise;
 	enum class NoiseType;
 
-	class ScriptRegistry
+	class VORTEX_API ScriptRegistry
 	{
 	public:
-		static void RegisterMethods();
+		static void RegisterInternalCalls();
 		static void RegisterComponents();
-		static void SetHoveredActor(Actor actor);
-		static void SetSceneStartTime(float startTime);
+		static void SetSceneStartTime(float currentTime);
 		static bool SavePlayerPrefs();
 		static bool LoadPlayerPrefs();
 	};
@@ -79,12 +80,12 @@ namespace Vortex {
 
 #pragma region DebugRenderer
 		
-		void DebugRenderer_DrawLine(Math::vec3* p1, Math::vec3* p2, Math::vec4* color);
-		void DebugRenderer_DrawQuadBillboard(Math::vec3* translation, Math::vec2* size, Math::vec4* color);
-		void DebugRenderer_DrawCircleVec2(Math::vec2* translation, Math::vec2* size, Math::vec4* color, float thickness, float fade);
-		void DebugRenderer_DrawCircleVec3(Math::vec3* translation, Math::vec3* size, Math::vec4* color, float thickness, float fade);
-		void DebugRenderer_DrawBoundingBox(Math::vec3* worldPosition, Math::vec3* size, Math::vec4* color);
-		void DebugRenderer_DrawBoundingBoxFromTransform(UUID actorUUID, Math::vec4* color);
+		void DebugRenderer_DrawLine(const Math::vec3* startPoint, const Math::vec3* endPoint, const Math::vec4* color);
+		void DebugRenderer_DrawQuadBillboard(const Math::vec3* translation, const Math::vec2* size, const Math::vec4* color);
+		void DebugRenderer_DrawCircleVec2(const Math::vec2* translation, const Math::vec2* size, const Math::vec4* color, float thickness, float fade);
+		void DebugRenderer_DrawCircleVec3(const Math::vec3* translation, const Math::vec3* size, const Math::vec4* color, float thickness, float fade);
+		void DebugRenderer_DrawBoundingBox(const Math::vec3* worldPosition, const Math::vec3* size, const Math::vec4* color);
+		void DebugRenderer_DrawBoundingBoxFromTransform(UUID actorUUID, const Math::vec4* color);
 		void DebugRenderer_Flush();
 
 #pragma endregion
@@ -101,7 +102,6 @@ namespace Vortex {
 		bool Scene_IsPaused();
 		void Scene_Pause();
 		void Scene_Resume();
-		uint64_t Scene_GetHoveredActor();
 
 #pragma endregion
 
@@ -129,6 +129,7 @@ namespace Vortex {
 		void Actor_DestroyWithDelay(UUID actorUUID, float delay, bool excludeChildren);
 		void Actor_Invoke(UUID actorUUID, MonoString* methodName);
 		void Actor_InvokeWithDelay(UUID actorUUID, MonoString* methodName, float delay);
+		bool Actor_IsActive(UUID actorUUID);
 		void Actor_SetActive(UUID actorUUID, bool isActive);
 		void Actor_AddTimer(UUID actorUUID, MonoString* name, float delay);
 		bool Actor_IsValid(UUID actorUUID);
@@ -810,25 +811,27 @@ namespace Vortex {
 
 #pragma region Gui
 
-		void Gui_Begin(MonoString* text);
-		void Gui_BeginWithPosition(MonoString* text, Math::vec2* position);
-		void Gui_BeginWithSize(MonoString* text, float width, float height);
-		void Gui_BeginWithPositionAndSize(MonoString* text, Math::vec2* position, Math::vec2* size);
+		void Gui_Begin(MonoString* label);
 		void Gui_End();
 		void Gui_Underline();
 		void Gui_Spacing(unsigned int count);
 		void Gui_Text(MonoString* text);
-		bool Gui_Button(MonoString* text);
-		bool Gui_PropertyBool(MonoString* label, bool* value);
-		bool Gui_PropertyInt(MonoString* label, int* value);
-		bool Gui_PropertyULong(MonoString* label, unsigned int* value);
-		bool Gui_PropertyFloat(MonoString* label, float* value);
-		bool Gui_PropertyDouble(MonoString* label, double* value);
-		bool Gui_PropertyVec2(MonoString* label, Math::vec2* value);
-		bool Gui_PropertyVec3(MonoString* label, Math::vec3* value);
-		bool Gui_PropertyVec4(MonoString* label, Math::vec4* value);
-		bool Gui_PropertyColor3(MonoString* label, Math::vec3* value);
-		bool Gui_PropertyColor4(MonoString* label, Math::vec4* value);
+		bool Gui_Button(MonoString* label);
+		bool Gui_ButtonWithSize(MonoString* label, const Math::vec2* size);
+		void Gui_BeginPropertyGrid();
+		void Gui_EndPropertyGrid();
+		bool Gui_PropertyGridHeader(MonoString* label, bool defaultOpen);
+		void Gui_EndGridHeader();
+		bool Gui_PropertyBool(MonoString* label, bool* outValue);
+		bool Gui_PropertyInt(MonoString* label, int* outValue);
+		bool Gui_PropertyULong(MonoString* label, unsigned int* outValue);
+		bool Gui_PropertyFloat(MonoString* label, float* outValue);
+		bool Gui_PropertyDouble(MonoString* label, double* outValue);
+		bool Gui_PropertyVec2(MonoString* label, Math::vec2* outValue);
+		bool Gui_PropertyVec3(MonoString* label, Math::vec3* outValue);
+		bool Gui_PropertyVec4(MonoString* label, Math::vec4* outValue);
+		bool Gui_PropertyColor3(MonoString* label, Math::vec3* outValue);
+		bool Gui_PropertyColor4(MonoString* label, Math::vec4* outValue);
 
 #pragma endregion
 

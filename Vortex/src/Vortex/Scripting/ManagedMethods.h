@@ -21,7 +21,7 @@ namespace Vortex {
 		OnEnable,
 		OnDisable,
 		OnDebugRender,
-		OnGui,
+		OnGuiRender,
 	};
 
 	namespace Utils {

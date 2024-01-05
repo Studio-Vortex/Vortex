@@ -105,14 +105,14 @@ namespace Vortex {
 		s_Data->DebuggingEnabled = projectProps.ScriptingProps.EnableMonoDebugging;
 
 		InitMono();
-		ScriptRegistry::RegisterMethods();
+		ScriptRegistry::RegisterInternalCalls();
 
 		const Fs::Path coreAssemblyPath = "Resources/Scripts/Vortex-ScriptCore.dll";
 		bool assemblyLoaded = LoadAssembly(coreAssemblyPath);
 
 		if (!assemblyLoaded)
 		{
-			VX_CONSOLE_LOG_ERROR("Failed to load Vortex-ScriptCore '{}'", coreAssemblyPath);
+			VX_CONSOLE_LOG_ERROR("[Scripting] Failed to load Vortex-ScriptCore '{}'", coreAssemblyPath);
 			return;
 		}
 
@@ -126,9 +126,10 @@ namespace Vortex {
 			return;
 		}
 
-		LoadAssemblyClasses();
-
 		ScriptRegistry::RegisterComponents();
+
+		LoadAssemblyClasses();
+		
 		ScriptRegistry::LoadPlayerPrefs();
 
 		// Define the Actor class in the Mono runtime
@@ -273,7 +274,7 @@ namespace Vortex {
 
 		mono_domain_unload(s_Data->AppDomain);
 
-		ScriptRegistry::RegisterMethods();
+		ScriptRegistry::RegisterInternalCalls();
 
 		bool assemblyLoaded = LoadAssembly(s_Data->CoreAssemblyFilepath);
 
@@ -291,9 +292,9 @@ namespace Vortex {
 			return;
 		}
 
-		LoadAssemblyClasses();
-
 		ScriptRegistry::RegisterComponents();
+
+		LoadAssemblyClasses();
 
 		s_Data->ActorClass = SharedReference<ScriptClass>::Create("Vortex", "Actor", true);
 
@@ -632,9 +633,9 @@ namespace Vortex {
 				instance->InvokeOnDebugRender();
 				break;
 			}
-			case ManagedMethod::OnGui:
+			case ManagedMethod::OnGuiRender:
 			{
-				instance->InvokeOnGui();
+				instance->InvokeOnGuiRender();
 				break;
 			}
 		}
