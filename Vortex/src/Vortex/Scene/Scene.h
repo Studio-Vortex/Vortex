@@ -101,7 +101,7 @@ namespace Vortex {
 
 		const Timer& TryGetTimerByName(Actor actor, const std::string& name);
 		Timer& TryGetMutableTimerByName(Actor actor, const std::string& name);
-		void AddOrReplaceTimer(Actor actor, Timer&& timer);
+		void EmplaceOrReplaceTimer(Actor actor, Timer&& timer);
 
 		void ParentActor(Actor actor, Actor parent);
 		void UnparentActor(Actor actor, bool convertToWorldSpace = true);
@@ -174,7 +174,7 @@ namespace Vortex {
 		void OnAudioListenerConstruct(entt::registry& registry, entt::entity e);
 		void OnAudioListenerDestruct(entt::registry& registry, entt::entity e);
 
-		void SetSceneCameraViewportSize();
+		void ResizePrimaryCamera();
 
 		void StopAnimatorsRuntime();
 

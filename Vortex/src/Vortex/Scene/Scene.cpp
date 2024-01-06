@@ -188,11 +188,11 @@ namespace Vortex {
 		actor.AddComponent<IDComponent>(uuid);
 		actor.AddComponent<TransformComponent>();
 
-		auto& tag = actor.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Actor" : name;
-		tag.Marker = marker.empty() ? "Untagged" : marker;
+		TagComponent& tagComponent = actor.AddComponent<TagComponent>();
+		tagComponent.Tag = name.empty() ? "Actor" : name;
+		tagComponent.Marker = marker.empty() ? "Untagged" : marker;
 
-		actor.AddComponent<HierarchyComponent>();
+		const HierarchyComponent& hierarchyComponent = actor.AddComponent<HierarchyComponent>();
 
 		// Store the actor's UUID and the entt handle in our Actor map
 		// actor here will be implicitly converted to an entt handle
@@ -337,7 +337,7 @@ namespace Vortex {
 
 		m_IsRunning = true;
 
-		SetSceneCameraViewportSize();
+		ResizePrimaryCamera();
 
 		OnPhysicsSimulationStart();
 
@@ -351,12 +351,20 @@ namespace Vortex {
 
 			auto view = GetAllActorsWith<ScriptComponent>();
 
+			// TODO we need to create the script instance if the actor wasn't active during OnRuntimeStart
+
 			// Create all script instances
 			for (const auto e : view)
 			{
 				Actor actor{ e, this };
 
-				if (!ScriptEngine::HasValidScriptClass(actor))
+				if (!actor.IsActive())
+					continue;
+
+				if (!ScriptEngine::IsScriptClassValid(actor))
+					continue;
+
+				if (!ScriptEngine::IsScriptComponentEnabled(actor))
 					continue;
 
 				ScriptEngine::RT_CreateActorScriptInstance(actor);
@@ -367,6 +375,9 @@ namespace Vortex {
 			{
 				Actor actor{ e, this };
 
+				if (!actor.IsActive())
+					continue;
+
 				actor.CallMethod(ManagedMethod::OnAwake);
 			}
 
@@ -374,6 +385,9 @@ namespace Vortex {
 			for (const auto e : view)
 			{
 				Actor actor{ e, this };
+
+				if (!actor.IsActive())
+					continue;
 
 				actor.CallMethod(ManagedMethod::OnCreate);
 			}
@@ -483,7 +497,10 @@ namespace Vortex {
 				if (!actor.IsActive())
 					continue;
 
-				if (!ScriptEngine::HasValidScriptClass(actor))
+				if (!ScriptEngine::IsScriptClassValid(actor))
+					continue;
+
+				if (!ScriptEngine::IsScriptComponentEnabled(actor))
 					continue;
 
 				if (!ScriptEngine::ScriptInstanceHasMethod(actor, ManagedMethod::OnUpdate))
@@ -804,7 +821,7 @@ namespace Vortex {
 		return s_NullTimer;
 	}
 
-	void Scene::AddOrReplaceTimer(Actor actor, Timer&& timer)
+	void Scene::EmplaceOrReplaceTimer(Actor actor, Timer&& timer)
 	{
 		if (Timer& existing = TryGetMutableTimerByName(actor, timer.GetName()); existing != s_NullTimer)
 		{
@@ -1252,14 +1269,17 @@ namespace Vortex {
 		});
 	}
 
-	void Scene::SetSceneCameraViewportSize()
+	void Scene::ResizePrimaryCamera()
 	{
-		if (Actor primaryCamera = GetPrimaryCameraActor())
+		Actor primaryCameraActor = GetPrimaryCameraActor();
+		if (!primaryCameraActor)
 		{
-			CameraComponent& cameraComponent = primaryCamera.GetComponent<CameraComponent>();
-			SceneCamera& sceneCamera = cameraComponent.Camera;
-			sceneCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+			return;
 		}
+
+		CameraComponent& cameraComponent = primaryCameraActor.GetComponent<CameraComponent>();
+		SceneCamera& sceneCamera = cameraComponent.Camera;
+		sceneCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}
 
 	void Scene::StopAnimatorsRuntime()
