@@ -3,7 +3,8 @@
 #include "Vortex/Core/Base.h"
 
 #include "Vortex/Scripting/ScriptFieldTypes.h"
-#include "Vortex/Scripting/MonoAssemblyTypeInfo.h"
+#include "Vortex/Scripting/RT_ScriptInvokeResult.h"
+#include "Vortex/Scripting/ScriptAssemblyTypedefInfo.h"
 
 #include <cstdint>
 #include <string>
@@ -19,12 +20,15 @@ namespace Vortex {
 	{
 	public:
 		static MonoMethod* GetManagedMethodFromName(MonoClass* klass, const std::string& name, uint32_t parameterCount);
-		static MonoObject* InstantiateClass(MonoClass* klass);
-		static MonoObject* InvokeMethod(MonoObject* instance, MonoMethod* method, void** params = nullptr);
+		static MonoObject* InstantiateManagedClass(MonoClass* klass);
+		static RT_ScriptInvokeResult InvokeMethod(MonoObject* instance, MonoMethod* method, void** params = nullptr);
 
 		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& filepath, bool loadPdb = false);
+		
 		static void PrintAssemblyTypes(MonoAssembly* assembly);
-		static std::vector<MonoAssemblyTypeInfo> GetAssemblyTypeInfo(MonoAssembly* assembly);
+		static std::vector<ScriptAssemblyTypedefInfo> GetAssemblyTypeInfo(MonoAssembly* assembly);
+
+		static MonoClass* GetClassFromAssemblyImageByName(MonoImage* assemblyImage, const std::string& classNamespace, const std::string& className);
 
 		static ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType);
 		static const char* ScriptFieldTypeToString(ScriptFieldType type);

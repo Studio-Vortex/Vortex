@@ -20,6 +20,7 @@
 #include "Vortex/Scripting/ScriptInstance.h"
 #include "Vortex/Scripting/ScriptFieldInstance.h"
 #include "Vortex/Scripting/RuntimeMethodArgument.h"
+#include "Vortex/Scripting/ManagedString.h"
 
 #include "Vortex/Physics/3D/Physics.h"
 
@@ -66,6 +67,7 @@ namespace Vortex {
 
 		// Runtime
 		Scene* ContextScene = nullptr;
+		ScriptFieldMap NullScriptFieldMap;
 
 		// Other
 		SubModule Module;
@@ -140,6 +142,8 @@ namespace Vortex {
 		s_Data->AppAssemblyReloadSound = AudioSource::Create(APP_ASSEMBLY_RELOAD_SOUND_PATH);
 		PlaybackDevice audioDevice = s_Data->AppAssemblyReloadSound->GetPlaybackDevice();
 		audioDevice.GetSound().SetSpacialized(false); // we don't need spacialization
+
+		s_Data->NullScriptFieldMap.clear();
 
 		SubModuleProperties moduleProps;
 		moduleProps.ModuleName = "Script-Engine";
@@ -308,9 +312,9 @@ namespace Vortex {
 		}
 	}
 
-	void ScriptEngine::OnRuntimeStart(Scene* contextScene)
+	void ScriptEngine::OnRuntimeStart(Scene* context)
 	{
-		s_Data->ContextScene = contextScene;
+		s_Data->ContextScene = context;
 	}
 
 	void ScriptEngine::OnRuntimeStop()
@@ -319,13 +323,15 @@ namespace Vortex {
 		s_Data->ActorInstances.clear();
 	}
 
-	bool ScriptEngine::ActorClassExists(const std::string& fullyQualifiedClassName)
+	bool ScriptEngine::ScriptClassExists(const std::string& className)
 	{
-		return s_Data->ActorClasses.contains(fullyQualifiedClassName);
+		return s_Data->ActorClasses.contains(className);
 	}
 
-	bool ScriptEngine::HasValidScriptClass(Actor actor)
+	bool ScriptEngine::IsScriptClassValid(Actor actor)
 	{
+		VX_PROFILE_FUNCTION();
+
 		if (!actor.HasComponent<ScriptComponent>())
 		{
 			return false;
@@ -339,10 +345,23 @@ namespace Vortex {
 			return false;
 		}
 
-		return ActorClassExists(className);
+		return ScriptClassExists(className);
 	}
 
-	bool ScriptEngine::ActorInstanceExists(UUID actorUUID)
+	bool ScriptEngine::IsScriptComponentEnabled(Actor actor)
+	{
+		VX_PROFILE_FUNCTION();
+
+		if (!actor.HasComponent<ScriptComponent>())
+		{
+			return false;
+		}
+
+		const ScriptComponent& scriptComponent = actor.GetComponent<ScriptComponent>();
+		return scriptComponent.Enabled;
+	}
+
+	bool ScriptEngine::ScriptInstanceExists(UUID actorUUID)
 	{
 		return s_Data->ActorInstances.contains(actorUUID);
 	}
@@ -356,12 +375,12 @@ namespace Vortex {
 		}
 
 		UUID actorUUID = actor.GetUUID();
-		if (!ActorInstanceExists(actorUUID))
+		if (!ScriptInstanceExists(actorUUID))
 		{
 			return false;
 		}
 
-		SharedReference<ScriptInstance> instance = GetActorScriptInstance(actorUUID);
+		SharedReference<ScriptInstance> instance = GetScriptInstance(actorUUID);
 		if (instance == nullptr)
 		{
 			return false;
@@ -374,21 +393,27 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		Scene* contextScene = GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Invalid scene");
+		Scene* context = GetContextScene();
+		VX_CORE_ASSERT(context && context->IsRunning(), "scene must be running!");
 
-		MonoMethod* actorConstructor = s_Data->ActorClass->GetMethod(".ctor", 1);
+		MonoMethod* constructor = s_Data->ActorClass->GetMethod(".ctor", 1);
 
 		void* param = (void*)&actorUUID;
-		ScriptUtils::InvokeMethod(instance, actorConstructor, &param);
+		const RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(instance, constructor, &param);
+		if (result.Exception)
+		{
+			MonoString* err = (MonoString*)result.Exception;
+			ManagedString mstring(err);
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Failed to invoke Actor constructor on actor with uuid: {}", actorUUID);
+		}
 	}
 
 	void ScriptEngine::RT_CreateActorScriptInstance(Actor actor)
 	{
 		VX_PROFILE_FUNCTION();
 
-		Scene* contextScene = GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Invalid scene");
+		Scene* context = GetContextScene();
+		VX_CORE_ASSERT(context, "Invalid scene");
 
 		const UUID actorUUID = actor.GetUUID();
 
@@ -401,14 +426,14 @@ namespace Vortex {
 			return;
 		}
 
-		VX_CORE_ASSERT(!ActorInstanceExists(actorUUID), "Instance was already found with UUID!");
-		VX_CORE_ASSERT(ActorClassExists(className), "Actor Class was not found in Actor Classes Map!");
+		VX_CORE_ASSERT(!ScriptInstanceExists(actorUUID), "Instance was already found with UUID!");
+		VX_CORE_ASSERT(ScriptClassExists(className), "Actor Class was not found in Actor Classes Map!");
 
-		SharedReference<ScriptClass> scriptClass = GetActorClass(className);
+		SharedReference<ScriptClass> scriptClass = GetScriptClass(className);
 		SharedReference<ScriptInstance> instance = SharedReference<ScriptInstance>::Create(scriptClass);
 		
 		// Invoke C# Actor class constructor
-		instance->InvokeConstructor(actorUUID);
+		RT_ActorConstructor(actorUUID, instance->GetManagedObject());
 
 		s_Data->ActorInstances[actorUUID] = instance;
 
@@ -431,8 +456,8 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		Scene* contextScene = GetContextScene();
-		VX_CORE_ASSERT(contextScene, "Invalid scene");
+		Scene* context = GetContextScene();
+		VX_CORE_ASSERT(context, "Invalid scene");
 
 		if (!actor)
 		{
@@ -446,13 +471,13 @@ namespace Vortex {
 			return;
 		}
 
-		if (!contextScene->IsRunning())
+		if (!context->IsRunning())
 		{
 			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate Actor '{}' while scene is stopped!", actor.GetName());
 			return;
 		}
 
-		if (!HasValidScriptClass(actor))
+		if (!IsScriptClassValid(actor))
 		{
 			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate Actor '{}' with no script class!", actor.GetName());
 			return;
@@ -460,7 +485,7 @@ namespace Vortex {
 
 		// Create the script instance
 		RT_CreateActorScriptInstance(actor);
-		VX_CORE_ASSERT(ActorInstanceExists(actor), "Actor script instance not instantiated properly!");
+		VX_CORE_ASSERT(ScriptInstanceExists(actor), "Actor script instance not instantiated properly!");
 
 		// Invoke Actor.OnAwake, Actor.OnCreate
 		ManagedMethod methods[] = { ManagedMethod::OnAwake, ManagedMethod::OnCreate };
@@ -500,16 +525,16 @@ namespace Vortex {
 		const UUID actorUUID = actor.GetUUID();
 		const ScriptComponent& scriptComponent = actor.GetComponent<ScriptComponent>();
 
-		VX_CORE_ASSERT(ActorClassExists(scriptComponent.ClassName), "Class was not found in Actor Class Map!");
-		VX_CORE_ASSERT(ActorInstanceExists(actorUUID), "Actor was not instantiated properly!");
+		VX_CORE_ASSERT(ScriptClassExists(scriptComponent.ClassName), "Class was not found in Actor Class Map!");
+		VX_CORE_ASSERT(ScriptInstanceExists(actorUUID), "Actor was not instantiated properly!");
 
-		if (!ActorInstanceExists(actorUUID))
+		if (!ScriptInstanceExists(actorUUID))
 		{
 			VX_CONSOLE_LOG_ERROR("[Script Engine] Failed to find ScriptInstance for Actor with Tag: {}", actor.GetName());
 			return false;
 		}
 
-		SharedReference<ScriptInstance> instance = GetActorScriptInstance(actorUUID);
+		SharedReference<ScriptInstance> instance = GetScriptInstance(actorUUID);
 		VX_CORE_ASSERT(instance, "Invalid script instance!");
 
 		if (instance == nullptr)
@@ -648,31 +673,31 @@ namespace Vortex {
 		return s_Data->ActorClass;
 	}
 
-	SharedReference<ScriptInstance> ScriptEngine::GetActorScriptInstance(UUID uuid)
+	SharedReference<ScriptInstance> ScriptEngine::GetScriptInstance(UUID uuid)
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (ActorInstanceExists(uuid))
+		if (!ScriptInstanceExists(uuid))
 		{
-			return s_Data->ActorInstances[uuid];
+			return nullptr;
 		}
 
-		return nullptr;
+		return s_Data->ActorInstances[uuid];
 	}
 
-	SharedReference<ScriptClass> ScriptEngine::GetActorClass(const std::string& name)
+	SharedReference<ScriptClass> ScriptEngine::GetScriptClass(const std::string& className)
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (ActorClassExists(name))
+		if (!ScriptClassExists(className))
 		{
-			return s_Data->ActorClasses[name];
+			return nullptr;
 		}
 
-		return nullptr;
+		return s_Data->ActorClasses[className];
 	}
 
-	std::unordered_map<std::string, SharedReference<ScriptClass>> ScriptEngine::GetClasses()
+	std::unordered_map<std::string, SharedReference<ScriptClass>> ScriptEngine::GetScriptClasses()
 	{
 		return s_Data->ActorClasses;
 	}
@@ -683,6 +708,12 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(actor, "Actor was invalid!");
 		VX_CORE_ASSERT(s_Data->ActorScriptFields.contains(actor.GetUUID()), "Actor was not found in script field map!");
+
+		if (!IsScriptClassValid(actor))
+		{
+			VX_CORE_ASSERT(false, "invalid script class");
+			return s_Data->NullScriptFieldMap;
+		}
 
 		return s_Data->ActorScriptFields[actor.GetUUID()];
 	}
@@ -696,15 +727,28 @@ namespace Vortex {
 		return s_Data->ActorScriptFields[actor.GetUUID()];
 	}
 
-	MonoObject* ScriptEngine::GetManagedInstance(UUID uuid)
+	MonoObject* ScriptEngine::TryGetManagedInstance(UUID uuid)
 	{
 		VX_PROFILE_FUNCTION();
 
-		SharedReference<ScriptInstance> instance = GetActorScriptInstance(uuid);
+		Scene* context = GetContextScene();
+		VX_CORE_ASSERT(context && context->IsRunning(), "scene must be running!");
+
+		if (!ScriptInstanceExists(uuid))
+		{
+			return nullptr;
+		}
+
+		SharedReference<ScriptInstance> instance = GetScriptInstance(uuid);
+		if (!instance)
+		{
+			return nullptr;
+		}
+
 		return instance->GetManagedObject();
 	}
 
-	std::vector<MonoAssemblyTypeInfo> ScriptEngine::GetCoreAssemblyTypeInfo()
+	std::vector<ScriptAssemblyTypedefInfo> ScriptEngine::GetCoreAssemblyTypeInfo()
 	{
 		return ScriptUtils::GetAssemblyTypeInfo(s_Data->CoreAssembly);
 	}
@@ -719,7 +763,7 @@ namespace Vortex {
 		return s_Data->ContextScene;
 	}
 
-	MonoImage* ScriptEngine::GetCoreAssemblyImage()
+	MonoImage* ScriptEngine::GetScriptCoreAssemblyImage()
 	{
 		return s_Data->CoreAssemblyImage;
 	}

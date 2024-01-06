@@ -6,7 +6,7 @@
 
 namespace Vortex {
 
-	struct VORTEX_API MonoAssemblyTypeInfo
+	struct VORTEX_API ScriptAssemblyTypedefInfo
 	{
 		const char* Namespace = "";
 		const char* Name = "";

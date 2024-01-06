@@ -24,7 +24,7 @@ namespace Vortex {
 
 	void ManagedArray::SetValue(uintptr_t index, MonoClass* elementKlass, UUID value)
 	{
-		MonoObject* boxed = ScriptUtils::InstantiateClass(elementKlass);
+		MonoObject* boxed = ScriptUtils::InstantiateManagedClass(elementKlass);
 		ScriptEngine::RT_ActorConstructor(value, boxed);
 		SetValueInternal(index, boxed);
 	}

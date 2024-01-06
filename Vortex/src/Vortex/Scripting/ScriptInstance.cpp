@@ -3,7 +3,6 @@
 
 #include "Vortex/Scene/Actor.h"
 
-#include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Scripting/ScriptUtils.h"
 
 namespace Vortex {
@@ -27,42 +26,35 @@ namespace Vortex {
 		m_ManagedMethods[ManagedMethod::OnDisable] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnDisable), 0);
 		m_ManagedMethods[ManagedMethod::OnDebugRender] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnDebugRender), 0);
 		m_ManagedMethods[ManagedMethod::OnGuiRender] = m_ScriptClass->GetMethod(Utils::StringFromManagedMethod(ManagedMethod::OnGuiRender), 0);
-
-		SharedReference<ScriptClass> entityClass = ScriptEngine::GetCoreActorClass();
-		m_ActorConstructor = entityClass->GetMethod(".ctor", 1);
 	}
 
-	void ScriptInstance::InvokeConstructor(UUID entityUUID)
-	{
-		void* param = (void*)&entityUUID;
-		ScriptUtils::InvokeMethod(m_Instance, m_ActorConstructor, &param);
-	}
-
-	void ScriptInstance::InvokeOnAwake()
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnAwake()
 	{
 		ManagedMethod method = ManagedMethod::OnAwake;
 		if (!MethodExists(method))
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
 		MonoMethod* onAwakeMethod = m_ManagedMethods[method];
-		ScriptUtils::InvokeMethod(m_Instance, onAwakeMethod);
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onAwakeMethod);
+		return vxstd::make_option(result);
 	}
 
-	void ScriptInstance::InvokeOnCreate()
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCreate()
 	{
 		ManagedMethod method = ManagedMethod::OnCreate;
 		if (!MethodExists(method))
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
 		MonoMethod* onCreateMethod = m_ManagedMethods[method];
-		ScriptUtils::InvokeMethod(m_Instance, onCreateMethod);
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onCreateMethod);
+		return vxstd::make_option(result);
 	}
 
-	void ScriptInstance::InvokeOnUpdate(TimeStep delta)
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnUpdate(TimeStep delta)
 	{
 		MonoMethod* onUpdateMethod = nullptr;
 		void* param = nullptr;
@@ -81,135 +73,146 @@ namespace Vortex {
 		// No OnUpdate method was found so just leave
 		if (onUpdateMethod == nullptr)
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
-		ScriptUtils::InvokeMethod(m_Instance, onUpdateMethod, &param);
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onUpdateMethod, &param);
+		return vxstd::make_option(result);
 	}
 
-	void ScriptInstance::InvokeOnDestroy()
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDestroy()
 	{
 		ManagedMethod method = ManagedMethod::OnDestroy;
 		if (!MethodExists(method))
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
 		MonoMethod* onDestroyMethod = m_ManagedMethods[method];
-		ScriptUtils::InvokeMethod(m_Instance, onDestroyMethod);
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onDestroyMethod);
+		return vxstd::make_option(result);
 	}
 
-	void ScriptInstance::InvokeOnCollisionEnter(const Collision& collision)
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCollisionEnter(const Collision& collision)
 	{
 		ManagedMethod method = ManagedMethod::OnCollisionEnter;
 		if (!MethodExists(method))
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
 		void* param = (void*)&collision;
 		MonoMethod* onCollisionEnterMethod = m_ManagedMethods[method];
-		ScriptUtils::InvokeMethod(m_Instance, onCollisionEnterMethod, &param);
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onCollisionEnterMethod, &param);
+		return vxstd::make_option(result);
 	}
 
-	void ScriptInstance::InvokeOnCollisionExit(const Collision& collision)
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCollisionExit(const Collision& collision)
 	{
 		ManagedMethod method = ManagedMethod::OnCollisionExit;
 		if (!MethodExists(method))
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
 		void* param = (void*)&collision;
 		MonoMethod* onCollisionExitMethod = m_ManagedMethods[method];
-		ScriptUtils::InvokeMethod(m_Instance, onCollisionExitMethod, &param);
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onCollisionExitMethod, &param);
+		return vxstd::make_option(result);
 	}
 
-	void ScriptInstance::InvokeOnTriggerEnter(const Collision& collision)
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnTriggerEnter(const Collision& collision)
 	{
 		ManagedMethod method = ManagedMethod::OnTriggerEnter;
 		if (!MethodExists(method))
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
 		void* param = (void*)&collision;
 		MonoMethod* onTriggerEnterMethod = m_ManagedMethods[method];
-		ScriptUtils::InvokeMethod(m_Instance, onTriggerEnterMethod, &param);
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onTriggerEnterMethod, &param);
+		return vxstd::make_option(result);
 	}
 
-	void ScriptInstance::InvokeOnTriggerExit(const Collision& collision)
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnTriggerExit(const Collision& collision)
 	{
 		ManagedMethod method = ManagedMethod::OnTriggerExit;
 		if (!MethodExists(method))
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
 		void* param = (void*)&collision;
 		MonoMethod* onTriggerExitMethod = m_ManagedMethods[method];
-		ScriptUtils::InvokeMethod(m_Instance, onTriggerExitMethod, &param);
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onTriggerExitMethod, &param);
+		return vxstd::make_option(result);
 	}
 
-	void ScriptInstance::InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
 	{
 		ManagedMethod method = ManagedMethod::OnFixedJointDisconnected;
 		if (!MethodExists(method))
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
 		void* params[] = { (void*)&forceAndTorque.first, (void*)&forceAndTorque.second };
 		MonoMethod* onFixedJointDisconnectedMethod = m_ManagedMethods[method];
-		ScriptUtils::InvokeMethod(m_Instance, onFixedJointDisconnectedMethod, params);
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onFixedJointDisconnectedMethod, params);
+		return vxstd::make_option(result);
 	}
 
-	void ScriptInstance::InvokeOnEnable()
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnEnable()
 	{
 		ManagedMethod method = ManagedMethod::OnEnable;
 		if (!MethodExists(method))
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
 		MonoMethod* onEnabledMethod = m_ManagedMethods[method];
-		ScriptUtils::InvokeMethod(m_Instance, onEnabledMethod);
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onEnabledMethod);
+		return vxstd::make_option(result);
 	}
 
-	void ScriptInstance::InvokeOnDisable()
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDisable()
 	{
 		ManagedMethod method = ManagedMethod::OnDisable;
 		if (!MethodExists(method))
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
 		MonoMethod* onDisabledMethod = m_ManagedMethods[method];
-		ScriptUtils::InvokeMethod(m_Instance, onDisabledMethod);
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onDisabledMethod);
+		return vxstd::make_option(result);
 	}
 
-    void ScriptInstance::InvokeOnDebugRender()
-    {
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDebugRender()
+	{
 		ManagedMethod method = ManagedMethod::OnDebugRender;
 		if (!MethodExists(method))
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
 		MonoMethod* onDebugRenderMethod = m_ManagedMethods[method];
-		ScriptUtils::InvokeMethod(m_Instance, onDebugRenderMethod);
-    }
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onDebugRenderMethod);
+		return vxstd::make_option(result);
+	}
 
-	void ScriptInstance::InvokeOnGuiRender()
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnGuiRender()
 	{
 		ManagedMethod method = ManagedMethod::OnGuiRender;
 		if (!MethodExists(method))
 		{
-			return;
+			return vxstd::make_option<RT_ScriptInvokeResult>();
 		}
 
 		MonoMethod* onGuiMethod = m_ManagedMethods[method];
-		ScriptUtils::InvokeMethod(m_Instance, onGuiMethod);
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(m_Instance, onGuiMethod);
+		return vxstd::make_option(result);
 	}
 
 	bool ScriptInstance::MethodExists(ManagedMethod method) const

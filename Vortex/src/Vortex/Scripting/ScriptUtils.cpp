@@ -17,23 +17,23 @@ namespace Vortex {
 		return method;
 	}
 
-	MonoObject* ScriptUtils::InstantiateClass(MonoClass* klass)
+	MonoObject* ScriptUtils::InstantiateManagedClass(MonoClass* klass)
 	{
 		MonoObject* object = mono_object_new(ScriptEngine::GetAppDomain(), klass);
 		mono_runtime_object_init(object);
 		return object;
 	}
 
-	MonoObject* ScriptUtils::InvokeMethod(MonoObject* instance, MonoMethod* method, void** params)
+	RT_ScriptInvokeResult ScriptUtils::InvokeMethod(MonoObject* instance, MonoMethod* method, void** params)
 	{
-		MonoObject* exception = nullptr;
-		return mono_runtime_invoke(method, instance, params, &exception);
+		RT_ScriptInvokeResult result;
+		result.ReturnValue = mono_runtime_invoke(method, instance, params, &result.Exception);
+		return result;
 	}
 
 	MonoAssembly* ScriptUtils::LoadMonoAssembly(const std::filesystem::path& filepath, bool loadPdb)
 	{
 		UniqueBuffer fileData = FileSystem::ReadBinary(filepath);
-
 		if (!fileData)
 		{
 			return nullptr;
@@ -43,7 +43,6 @@ namespace Vortex {
 		//       because this image doesn't have a reference to the assembly
 		MonoImageOpenStatus status;
 		MonoImage* image = mono_image_open_from_data_full(fileData.As<char>(), fileData.Size(), 1, &status, 0);
-
 		if (status != MONO_IMAGE_OK)
 		{
 			const char* errorMessage = mono_image_strerror(status);
@@ -59,9 +58,7 @@ namespace Vortex {
 			if (FileSystem::Exists(pdbPath))
 			{
 				UniqueBuffer pdbFileData = FileSystem::ReadBinary(pdbPath);
-
 				mono_debug_open_image_from_memory(image, pdbFileData.As<const mono_byte>(), pdbFileData.Size());
-
 				VX_CONSOLE_LOG_INFO("PDB Loaded : {}", pdbPath);
 			}
 		}
@@ -77,7 +74,7 @@ namespace Vortex {
 	{
 		MonoImage* image = mono_assembly_get_image(assembly);
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
-		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+		const int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
 
 		for (int32_t i = 0; i < numTypes; i++)
 		{
@@ -90,9 +87,9 @@ namespace Vortex {
 		}
 	}
 
-	std::vector<MonoAssemblyTypeInfo> ScriptUtils::GetAssemblyTypeInfo(MonoAssembly* assembly)
+	std::vector<ScriptAssemblyTypedefInfo> ScriptUtils::GetAssemblyTypeInfo(MonoAssembly* assembly)
 	{
-		std::vector<MonoAssemblyTypeInfo> result;
+		std::vector<ScriptAssemblyTypedefInfo> result;
 
 		MonoImage* image = mono_assembly_get_image(assembly);
 		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
@@ -117,6 +114,11 @@ namespace Vortex {
 		}
 
 		return result;
+	}
+
+	MonoClass* ScriptUtils::GetClassFromAssemblyImageByName(MonoImage* assemblyImage, const std::string& classNamespace, const std::string& className)
+	{
+		return mono_class_from_name(assemblyImage, classNamespace.c_str(), className.c_str());
 	}
 
 	ScriptFieldType ScriptUtils::MonoTypeToScriptFieldType(MonoType* monoType)

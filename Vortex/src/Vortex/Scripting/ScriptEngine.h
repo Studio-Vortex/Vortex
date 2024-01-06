@@ -7,7 +7,7 @@
 #include "Vortex/Scene/Scene.h"
 
 #include "Vortex/Scripting/RuntimeMethodArgument.h"
-#include "Vortex/Scripting/MonoAssemblyTypeInfo.h"
+#include "Vortex/Scripting/ScriptAssemblyTypedefInfo.h"
 #include "Vortex/Scripting/ScriptFieldInstance.h"
 #include "Vortex/Scripting/ScriptFieldTypes.h"
 #include "Vortex/Scripting/ManagedMethods.h"
@@ -33,7 +33,7 @@ namespace Vortex {
 	class ScriptClass;
 	class ScriptInstance;
 
-	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
+	using VORTEX_API ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
 
 	class VORTEX_API ScriptEngine
 	{
@@ -48,12 +48,14 @@ namespace Vortex {
 		static bool LoadAppAssembly(const std::filesystem::path& filepath);
 		static void ReloadAssembly();
 
-		static void OnRuntimeStart(Scene* contextScene);
+		static void OnRuntimeStart(Scene* context);
 		static void OnRuntimeStop();
 
-		static bool ActorClassExists(const std::string& fullyQualifiedClassName);
-		static bool HasValidScriptClass(Actor actor);
-		static bool ActorInstanceExists(UUID actorUUID);
+		static bool ScriptClassExists(const std::string& className);
+		static bool IsScriptClassValid(Actor actor);
+		static bool IsScriptComponentEnabled(Actor actor);
+
+		static bool ScriptInstanceExists(UUID actorUUID);
 		static bool ScriptInstanceHasMethod(Actor actor, ManagedMethod method);
 
 		static void RT_ActorConstructor(UUID actorUUID, MonoObject* instance);
@@ -66,20 +68,20 @@ namespace Vortex {
 		static SharedReference<ScriptClass> GetCoreActorClass();
 
 		static Scene* GetContextScene();
-		static MonoImage* GetCoreAssemblyImage();
+		static MonoImage* GetScriptCoreAssemblyImage();
 		static MonoDomain* GetAppDomain();
 		static MonoImage* GetAppAssemblyImage();
 
-		static SharedReference<ScriptInstance> GetActorScriptInstance(UUID uuid);
+		static SharedReference<ScriptInstance> GetScriptInstance(UUID uuid);
 
-		static SharedReference<ScriptClass> GetActorClass(const std::string& name);
-		static std::unordered_map<std::string, SharedReference<ScriptClass>> GetClasses();
+		static SharedReference<ScriptClass> GetScriptClass(const std::string& className);
+		static std::unordered_map<std::string, SharedReference<ScriptClass>> GetScriptClasses();
 		static const ScriptFieldMap& GetScriptFieldMap(Actor actor);
 		static ScriptFieldMap& GetMutableScriptFieldMap(Actor actor);
 
-		static MonoObject* GetManagedInstance(UUID uuid);
+		static MonoObject* TryGetManagedInstance(UUID uuid);
 
-		static std::vector<MonoAssemblyTypeInfo> GetCoreAssemblyTypeInfo();
+		static std::vector<ScriptAssemblyTypedefInfo> GetCoreAssemblyTypeInfo();
 
 		static size_t GetScriptInstanceCount();
 

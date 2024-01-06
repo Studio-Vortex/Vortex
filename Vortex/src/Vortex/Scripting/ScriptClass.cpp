@@ -11,13 +11,13 @@ namespace Vortex {
 	ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore)
 		: m_ClassNamespace(classNamespace), m_ClassName(className)
 	{
-		MonoImage* assemblyImage = isCore ? ScriptEngine::GetCoreAssemblyImage() : ScriptEngine::GetAppAssemblyImage();
-		m_MonoClass = mono_class_from_name(assemblyImage, classNamespace.c_str(), className.c_str());
+		MonoImage* assemblyImage = isCore ? ScriptEngine::GetScriptCoreAssemblyImage() : ScriptEngine::GetAppAssemblyImage();
+		m_MonoClass = ScriptUtils::GetClassFromAssemblyImageByName(assemblyImage, classNamespace, className);
 	}
 
 	MonoObject* ScriptClass::Instantiate()
 	{
-		return ScriptUtils::InstantiateClass(m_MonoClass);
+		return ScriptUtils::InstantiateManagedClass(m_MonoClass);
 	}
 
 	MonoMethod* ScriptClass::GetMethod(const std::string& name, uint32_t parameterCount)
