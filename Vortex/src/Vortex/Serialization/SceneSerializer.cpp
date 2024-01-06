@@ -103,22 +103,21 @@ namespace Vortex {
 		}
 
 		if (!data["Scene"])
+		{
 			return false;
+		}
 
 		const std::string sceneName = data["Scene"].as<std::string>();
-		VX_CONSOLE_LOG_TRACE("Deserializing Scene '{}'", sceneName);
+		VX_CONSOLE_LOG_INFO("[Scene Serializer] Deserializing Scene '{}'", sceneName);
 
-		auto actors = data["Actors"];
-		if (actors)
+		// (NOTE):                                                  for backwards compatability
+		const YAML::Node actors = data["Actors"] ? data["Actors"] : data["Entities"];
+		if (!actors)
 		{
-			DeserializeActors(actors, m_Scene);
+			return false;
 		}
-		else
-		{
-			// for backwards compatability
-			actors = data["Entities"];
-			DeserializeActors(actors, m_Scene);
-		}
+
+		DeserializeActors(actors, m_Scene);
 
 		return true;
 	}
@@ -142,12 +141,12 @@ namespace Vortex {
 
 		if (actor.HasComponent<HierarchyComponent>())
 		{
-			const auto& hierarchyComponent = actor.GetComponent<HierarchyComponent>();
+			const HierarchyComponent& hierarchyComponent = actor.GetComponent<HierarchyComponent>();
 			VX_SERIALIZE_PROPERTY(Parent, hierarchyComponent.ParentUUID, out);
 
 			out << YAML::Key << "Children" << YAML::Value << YAML::BeginSeq;
 
-			for (const auto& child : hierarchyComponent.Children)
+			for (const UUID& child : hierarchyComponent.Children)
 			{
 				out << YAML::BeginMap;
 				VX_SERIALIZE_PROPERTY(Handle, child, out);
@@ -161,7 +160,7 @@ namespace Vortex {
 		{
 			out << YAML::Key << "TagComponent" << YAML::Value << YAML::BeginMap; // TagComponent
 
-			const auto& tagComponent = actor.GetComponent<TagComponent>();
+			const TagComponent& tagComponent = actor.GetComponent<TagComponent>();
 
 			VX_SERIALIZE_PROPERTY(Tag, tagComponent.Tag, out);
 			VX_SERIALIZE_PROPERTY(Marker, tagComponent.Marker, out);
@@ -173,11 +172,11 @@ namespace Vortex {
 		{
 			out << YAML::Key << "TransformComponent" << YAML::Value << YAML::BeginMap; // TransformComponent
 
-			const auto& transform = actor.GetComponent<TransformComponent>();
+			const TransformComponent& transformComponent = actor.GetComponent<TransformComponent>();
 
-			VX_SERIALIZE_PROPERTY(Translation, transform.Translation, out);
-			VX_SERIALIZE_PROPERTY(Rotation, transform.GetRotationEuler(), out);
-			VX_SERIALIZE_PROPERTY(Scale, transform.Scale, out);
+			VX_SERIALIZE_PROPERTY(Translation, transformComponent.Translation, out);
+			VX_SERIALIZE_PROPERTY(Rotation, transformComponent.GetRotationEuler(), out);
+			VX_SERIALIZE_PROPERTY(Scale, transformComponent.Scale, out);
 
 			out << YAML::EndMap; // TransformComponent
 		}
@@ -186,8 +185,8 @@ namespace Vortex {
 		{
 			out << YAML::Key << "CameraComponent" << YAML::BeginMap; // CameraComponent
 
-			const auto& cameraComponent = actor.GetComponent<CameraComponent>();
-			const auto& camera = cameraComponent.Camera;
+			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
+			const SceneCamera& camera = cameraComponent.Camera;
 
 			out << YAML::Key << "Camera" << YAML::Value;
 
@@ -228,7 +227,7 @@ namespace Vortex {
 
 		if (actor.HasComponent<SkyboxComponent>())
 		{
-			const auto& skyboxComponent = actor.GetComponent<SkyboxComponent>();
+			const SkyboxComponent& skyboxComponent = actor.GetComponent<SkyboxComponent>();
 			AssetHandle environmentHandle = skyboxComponent.Skybox;
 			
 			out << YAML::Key << "SkyboxComponent" << YAML::BeginMap; // SkyboxComponent
@@ -245,14 +244,14 @@ namespace Vortex {
 			out << YAML::Key << "LightSourceComponent";
 			out << YAML::BeginMap; // LightSourceComponent
 
-			const auto& lightComponent = actor.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lightSourceComponent = actor.GetComponent<LightSourceComponent>();
 
-			VX_SERIALIZE_PROPERTY(Visible, lightComponent.Visible, out);
-			VX_SERIALIZE_PROPERTY(LightType, Utils::LightTypeToString(lightComponent.Type), out);
+			VX_SERIALIZE_PROPERTY(Visible, lightSourceComponent.Visible, out);
+			VX_SERIALIZE_PROPERTY(LightType, Utils::LightTypeToString(lightSourceComponent.Type), out);
 
-			VX_SERIALIZE_PROPERTY(Radiance, lightComponent.Radiance, out);
+			VX_SERIALIZE_PROPERTY(Radiance, lightSourceComponent.Radiance, out);
 
-			switch (lightComponent.Type)
+			switch (lightSourceComponent.Type)
 			{
 				case LightType::Directional:
 				{
@@ -264,25 +263,26 @@ namespace Vortex {
 				}
 				case LightType::Spot:
 				{
-					VX_SERIALIZE_PROPERTY(CutOff, lightComponent.Cutoff,  out);
-					VX_SERIALIZE_PROPERTY(OuterCutOff, lightComponent.OuterCutoff, out);
+					VX_SERIALIZE_PROPERTY(CutOff, lightSourceComponent.Cutoff,  out);
+					VX_SERIALIZE_PROPERTY(OuterCutOff, lightSourceComponent.OuterCutoff, out);
 
 					break;
 				}
 			}
 
-			VX_SERIALIZE_PROPERTY(Intensity, lightComponent.Intensity, out);
-			VX_SERIALIZE_PROPERTY(ShadowBias, lightComponent.ShadowBias, out);
-			VX_SERIALIZE_PROPERTY(CastShadows, lightComponent.CastShadows, out);
-			VX_SERIALIZE_PROPERTY(SoftShadows, lightComponent.SoftShadows, out);
+			VX_SERIALIZE_PROPERTY(Intensity, lightSourceComponent.Intensity, out);
+			VX_SERIALIZE_PROPERTY(ShadowBias, lightSourceComponent.ShadowBias, out);
+			VX_SERIALIZE_PROPERTY(CastShadows, lightSourceComponent.CastShadows, out);
+			VX_SERIALIZE_PROPERTY(SoftShadows, lightSourceComponent.SoftShadows, out);
 
 			out << YAML::EndMap; // LightSourceComponent
 		}
 
 		if (actor.HasComponent<MeshRendererComponent>())
 		{
-			const auto& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
+			const MeshRendererComponent& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
 			AssetHandle meshHandle = meshRendererComponent.Mesh;
+
 			if (AssetManager::IsHandleValid(meshHandle))
 			{
 				SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
@@ -306,7 +306,7 @@ namespace Vortex {
 					}
 
 					{
-						const auto& submesh = mesh->GetSubmesh();
+						const Submesh& submesh = mesh->GetSubmesh();
 
 						out << YAML::BeginMap; // Submesh
 
@@ -327,8 +327,8 @@ namespace Vortex {
 
 		if (actor.HasComponent<StaticMeshRendererComponent>())
 		{
-			const auto& staticMeshRenderer = actor.GetComponent<StaticMeshRendererComponent>();
-			AssetHandle staticMeshHandle = staticMeshRenderer.StaticMesh;
+			const StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
+			AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
 			
 			if (AssetManager::IsHandleValid(staticMeshHandle))
 			{
@@ -339,11 +339,11 @@ namespace Vortex {
 					out << YAML::Key << "StaticMeshRendererComponent" << YAML::Value << YAML::BeginMap; // StaticMeshRendererComponent
 
 					VX_SERIALIZE_PROPERTY(MeshHandle, staticMeshHandle, out);
-					VX_SERIALIZE_PROPERTY(MeshType, Utils::MeshTypeToString(staticMeshRenderer.Type), out);
-					VX_SERIALIZE_PROPERTY(Visible, staticMeshRenderer.Visible, out);
+					VX_SERIALIZE_PROPERTY(MeshType, Utils::MeshTypeToString(staticMeshRendererComponent.Type), out);
+					VX_SERIALIZE_PROPERTY(Visible, staticMeshRendererComponent.Visible, out);
 					VX_SERIALIZE_PROPERTY(CastShadows, staticMeshRendererComponent.CastShadows, out);
 
-					if (MeshImportOptions importOptions = staticMesh->GetImportOptions(); importOptions != MeshImportOptions{})
+					if (const MeshImportOptions& importOptions = staticMesh->GetImportOptions(); importOptions != MeshImportOptions{})
 					{
 						out << YAML::Key << "MeshImportOptions" << YAML::Value << YAML::BeginMap; // MeshImportOptions
 
@@ -356,11 +356,12 @@ namespace Vortex {
 
 					out << YAML::Key << "Submeshes" << YAML::Value << YAML::BeginSeq;
 					{
-						const auto& submeshes = staticMesh->GetSubmeshes();
+						const std::unordered_map<uint32_t, StaticSubmesh>& submeshes = staticMesh->GetSubmeshes();
 
 						for (const auto& [submeshIndex, submesh] : submeshes)
 						{
-							AssetHandle materialHandle = staticMeshRenderer.Materials->GetMaterial(submeshIndex);
+							SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
+							AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex);
 							if (!AssetManager::IsHandleValid(materialHandle))
 								continue;
 
@@ -387,16 +388,16 @@ namespace Vortex {
 
 		if (actor.HasComponent<SpriteRendererComponent>())
 		{
-			const auto& spriteComponent = actor.GetComponent<SpriteRendererComponent>();
+			const SpriteRendererComponent& spriteRendererComponent = actor.GetComponent<SpriteRendererComponent>();
 
 			out << YAML::Key << "SpriteRendererComponent" << YAML::Value << YAML::BeginMap; // SpriteRendererComponent
 
-			AssetHandle spriteHandle = spriteComponent.Texture;
+			AssetHandle spriteHandle = spriteRendererComponent.Texture;
 			VX_SERIALIZE_PROPERTY(TextureHandle, spriteHandle, out);
-			VX_SERIALIZE_PROPERTY(Visible, spriteComponent.Visible, out);
+			VX_SERIALIZE_PROPERTY(Visible, spriteRendererComponent.Visible, out);
 
-			VX_SERIALIZE_PROPERTY(Color, spriteComponent.SpriteColor, out);
-			VX_SERIALIZE_PROPERTY(TextureUV, spriteComponent.TextureUV, out);
+			VX_SERIALIZE_PROPERTY(Color, spriteRendererComponent.SpriteColor, out);
+			VX_SERIALIZE_PROPERTY(TextureUV, spriteRendererComponent.TextureUV, out);
 
 			out << YAML::EndMap; // SpriteRendererComponent
 		}
@@ -405,20 +406,20 @@ namespace Vortex {
 		{
 			out << YAML::Key << "CircleRendererComponent" << YAML::Value << YAML::BeginMap; // CircleRendererComponent
 
-			const auto& circleComponent = actor.GetComponent<CircleRendererComponent>();
+			const CircleRendererComponent& circleRendererComponent = actor.GetComponent<CircleRendererComponent>();
 
-			VX_SERIALIZE_PROPERTY(Visible, circleComponent.Visible, out);
-			VX_SERIALIZE_PROPERTY(Color, circleComponent.Color, out);
-			VX_SERIALIZE_PROPERTY(Thickness, circleComponent.Thickness, out);
-			VX_SERIALIZE_PROPERTY(Fade, circleComponent.Fade, out);
+			VX_SERIALIZE_PROPERTY(Visible, circleRendererComponent.Visible, out);
+			VX_SERIALIZE_PROPERTY(Color, circleRendererComponent.Color, out);
+			VX_SERIALIZE_PROPERTY(Thickness, circleRendererComponent.Thickness, out);
+			VX_SERIALIZE_PROPERTY(Fade, circleRendererComponent.Fade, out);
 
 			out << YAML::EndMap; // CircleRendererComponent
 		}
 
 		if (actor.HasComponent<ParticleEmitterComponent>())
 		{
-			const auto& pmc = actor.GetComponent<ParticleEmitterComponent>();
-			AssetHandle emitterHandle = pmc.EmitterHandle;
+			const ParticleEmitterComponent& particleEmitterComponent = actor.GetComponent<ParticleEmitterComponent>();
+			AssetHandle emitterHandle = particleEmitterComponent.EmitterHandle;
 
 			out << YAML::Key << "ParticleEmitterComponent" << YAML::Value << YAML::BeginMap; // ParticleEmitterComponent
 
@@ -434,14 +435,14 @@ namespace Vortex {
 				}
 			}
 
-			VX_SERIALIZE_PROPERTY(IsActive, pmc.IsActive, out);
+			VX_SERIALIZE_PROPERTY(IsActive, particleEmitterComponent.IsActive, out);
 
 			out << YAML::EndMap; // ParticleEmitterComponent
 		}
 
 		if (actor.HasComponent<TextMeshComponent>())
 		{
-			const auto& textMeshComponent = actor.GetComponent<TextMeshComponent>();
+			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
 
 			out << YAML::Key << "TextMeshComponent" << YAML::Value << YAML::BeginMap; // TextMeshComponent
 
@@ -484,23 +485,23 @@ namespace Vortex {
 
 		if (actor.HasComponent<AudioSourceComponent>())
 		{
-			const auto& asc = actor.GetComponent<AudioSourceComponent>();
+			const AudioSourceComponent& audioSourceComponent = actor.GetComponent<AudioSourceComponent>();
 
 			out << YAML::Key << "AudioSourceComponent" << YAML::Value << YAML::BeginMap; //AudioSourceComponent
-			if (AssetManager::IsHandleValid(asc.AudioHandle))
+			if (AssetManager::IsHandleValid(audioSourceComponent.AudioHandle))
 			{
-				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
+				SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(audioSourceComponent.AudioHandle);
 				
 				if (audioSource)
 				{
 					AssetImporter::Serialize(audioSource);
 
-					VX_SERIALIZE_PROPERTY(AudioHandle, asc.AudioHandle, out);
+					VX_SERIALIZE_PROPERTY(AudioHandle, audioSourceComponent.AudioHandle, out);
 				}
 			}
 
-			VX_SERIALIZE_PROPERTY(PlayOnStart, asc.PlayOnStart, out);
-			VX_SERIALIZE_PROPERTY(PlayOneShot, asc.PlayOneShot, out);
+			VX_SERIALIZE_PROPERTY(PlayOnStart, audioSourceComponent.PlayOnStart, out);
+			VX_SERIALIZE_PROPERTY(PlayOneShot, audioSourceComponent.PlayOneShot, out);
 
 			out << YAML::EndMap; // AudioSourceComponent
 		}
@@ -514,19 +515,19 @@ namespace Vortex {
 		{
 			out << YAML::Key << "RigidbodyComponent" << YAML::BeginMap; // RigidbodyComponent
 
-			const auto& rigidbodyComponent = actor.GetComponent<RigidBodyComponent>();
-			VX_SERIALIZE_PROPERTY(Mass, rigidbodyComponent.Mass, out);
-			VX_SERIALIZE_PROPERTY(BodyType, Utils::RigidBodyTypeToString(rigidbodyComponent.Type), out);
-			VX_SERIALIZE_PROPERTY(AngularDrag, rigidbodyComponent.AngularDrag, out);
-			VX_SERIALIZE_PROPERTY(MaxAngularVelocity, rigidbodyComponent.MaxAngularVelocity, out);
-			VX_SERIALIZE_PROPERTY(AngularVelocity, rigidbodyComponent.AngularVelocity, out);
-			VX_SERIALIZE_PROPERTY(DisableGravity, rigidbodyComponent.DisableGravity, out);
-			VX_SERIALIZE_PROPERTY(IsKinematic, rigidbodyComponent.IsKinematic, out);
-			VX_SERIALIZE_PROPERTY(LinearDrag, rigidbodyComponent.LinearDrag, out);
-			VX_SERIALIZE_PROPERTY(MaxLinearVelocity, rigidbodyComponent.MaxLinearVelocity, out);
-			VX_SERIALIZE_PROPERTY(LinearVelocity, rigidbodyComponent.LinearVelocity, out);
-			VX_SERIALIZE_PROPERTY(CollisionDetectionType, Utils::CollisionDetectionTypeToString(rigidbodyComponent.CollisionDetection), out);
-			VX_SERIALIZE_PROPERTY(ActorLockFlags, (uint32_t)rigidbodyComponent.LockFlags, out);
+			const RigidBodyComponent& rigidBodyComponent = actor.GetComponent<RigidBodyComponent>();
+			VX_SERIALIZE_PROPERTY(Mass, rigidBodyComponent.Mass, out);
+			VX_SERIALIZE_PROPERTY(BodyType, Utils::RigidBodyTypeToString(rigidBodyComponent.Type), out);
+			VX_SERIALIZE_PROPERTY(AngularDrag, rigidBodyComponent.AngularDrag, out);
+			VX_SERIALIZE_PROPERTY(MaxAngularVelocity, rigidBodyComponent.MaxAngularVelocity, out);
+			VX_SERIALIZE_PROPERTY(AngularVelocity, rigidBodyComponent.AngularVelocity, out);
+			VX_SERIALIZE_PROPERTY(DisableGravity, rigidBodyComponent.DisableGravity, out);
+			VX_SERIALIZE_PROPERTY(IsKinematic, rigidBodyComponent.IsKinematic, out);
+			VX_SERIALIZE_PROPERTY(LinearDrag, rigidBodyComponent.LinearDrag, out);
+			VX_SERIALIZE_PROPERTY(MaxLinearVelocity, rigidBodyComponent.MaxLinearVelocity, out);
+			VX_SERIALIZE_PROPERTY(LinearVelocity, rigidBodyComponent.LinearVelocity, out);
+			VX_SERIALIZE_PROPERTY(CollisionDetectionType, Utils::CollisionDetectionTypeToString(rigidBodyComponent.CollisionDetection), out);
+			VX_SERIALIZE_PROPERTY(ActorLockFlags, (uint32_t)rigidBodyComponent.LockFlags, out);
 
 			out << YAML::EndMap; // RigidbodyComponent
 		}
@@ -535,14 +536,14 @@ namespace Vortex {
 		{
 			out << YAML::Key << "CharacterControllerComponent" << YAML::BeginMap; // CharacterControllerComponent
 
-			const auto& characterController = actor.GetComponent<CharacterControllerComponent>();
-			VX_SERIALIZE_PROPERTY(NonWalkableMode, Utils::NonWalkableModeToString(characterController.NonWalkMode), out);
-			VX_SERIALIZE_PROPERTY(CapsuleClimbMode, Utils::CapsuleClimbModeToString(characterController.ClimbMode), out);
-			VX_SERIALIZE_PROPERTY(DisableGravity, characterController.DisableGravity, out);
-			VX_SERIALIZE_PROPERTY(LayerID, characterController.LayerID, out);
-			VX_SERIALIZE_PROPERTY(SlopeLimitDegrees, characterController.SlopeLimitDegrees, out);
-			VX_SERIALIZE_PROPERTY(StepOffset, characterController.StepOffset, out);
-			VX_SERIALIZE_PROPERTY(ContactOffset, characterController.ContactOffset, out);
+			const CharacterControllerComponent& characterControllerComponent = actor.GetComponent<CharacterControllerComponent>();
+			VX_SERIALIZE_PROPERTY(NonWalkableMode, Utils::NonWalkableModeToString(characterControllerComponent.NonWalkMode), out);
+			VX_SERIALIZE_PROPERTY(CapsuleClimbMode, Utils::CapsuleClimbModeToString(characterControllerComponent.ClimbMode), out);
+			VX_SERIALIZE_PROPERTY(DisableGravity, characterControllerComponent.DisableGravity, out);
+			VX_SERIALIZE_PROPERTY(LayerID, characterControllerComponent.LayerID, out);
+			VX_SERIALIZE_PROPERTY(SlopeLimitDegrees, characterControllerComponent.SlopeLimitDegrees, out);
+			VX_SERIALIZE_PROPERTY(StepOffset, characterControllerComponent.StepOffset, out);
+			VX_SERIALIZE_PROPERTY(ContactOffset, characterControllerComponent.ContactOffset, out);
 
 			out << YAML::EndMap; // CharacterControllerComponent
 		}
@@ -551,7 +552,7 @@ namespace Vortex {
 		{
 			out << YAML::Key << "FixedJointComponent" << YAML::BeginMap; // FixedJointComponent
 
-			const auto& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
+			const FixedJointComponent& fixedJointComponent = actor.GetComponent<FixedJointComponent>();
 			VX_SERIALIZE_PROPERTY(ConnectedActor, fixedJointComponent.ConnectedActor, out);
 			VX_SERIALIZE_PROPERTY(BreakForce, fixedJointComponent.BreakForce, out);
 			VX_SERIALIZE_PROPERTY(BreakTorque, fixedJointComponent.BreakTorque, out);
@@ -561,12 +562,25 @@ namespace Vortex {
 
 			out << YAML::EndMap; // FixedJointComponent
 		}
+
+		auto SerializePhysicsMaterialFn = [&](auto handle) {
+			out << YAML::Key << "PhysicsMaterial" << YAML::BeginMap; // PhysicsMaterial
+
+			SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(handle);
+			VX_SERIALIZE_PROPERTY(StaticFriction, physicsMaterial->StaticFriction, out);
+			VX_SERIALIZE_PROPERTY(DynamicFriction, physicsMaterial->DynamicFriction, out);
+			VX_SERIALIZE_PROPERTY(Bounciness, physicsMaterial->Bounciness, out);
+			VX_SERIALIZE_PROPERTY(FrictionCombineMode, Utils::CombineModeToString(physicsMaterial->FrictionCombineMode), out);
+			VX_SERIALIZE_PROPERTY(BouncinessCombineMode, Utils::CombineModeToString(physicsMaterial->BouncinessCombineMode), out);
+
+			out << YAML::EndMap; // PhysicsMaterial
+		};
 		
 		if (actor.HasComponent<BoxColliderComponent>())
 		{
 			out << YAML::Key << "BoxColliderComponent" << YAML::BeginMap; // BoxColliderComponent
 
-			const auto& boxColliderComponent = actor.GetComponent<BoxColliderComponent>();
+			const BoxColliderComponent& boxColliderComponent = actor.GetComponent<BoxColliderComponent>();
 			VX_SERIALIZE_PROPERTY(HalfSize, boxColliderComponent.HalfSize, out);
 			VX_SERIALIZE_PROPERTY(Offset, boxColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, boxColliderComponent.IsTrigger, out);
@@ -574,16 +588,7 @@ namespace Vortex {
 
 			if (AssetManager::IsHandleValid(boxColliderComponent.Material))
 			{
-				out << YAML::Key << "PhysicsMaterial" << YAML::BeginMap; // PhysicsMaterial
-
-				SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(boxColliderComponent.Material);
-				VX_SERIALIZE_PROPERTY(StaticFriction, physicsMaterial->StaticFriction, out);
-				VX_SERIALIZE_PROPERTY(DynamicFriction, physicsMaterial->DynamicFriction, out);
-				VX_SERIALIZE_PROPERTY(Bounciness, physicsMaterial->Bounciness, out);
-				VX_SERIALIZE_PROPERTY(FrictionCombineMode, Utils::CombineModeToString(physicsMaterial->FrictionCombineMode), out);
-				VX_SERIALIZE_PROPERTY(BouncinessCombineMode, Utils::CombineModeToString(physicsMaterial->BouncinessCombineMode), out);
-				
-				out << YAML::EndMap; // PhysicsMaterial
+				SerializePhysicsMaterialFn(boxColliderComponent.Material);
 			}
 
 			out << YAML::EndMap; // BoxColliderComponent
@@ -593,7 +598,7 @@ namespace Vortex {
 		{
 			out << YAML::Key << "SphereColliderComponent" << YAML::BeginMap; // SphereColliderComponent
 
-			const auto& sphereColliderComponent = actor.GetComponent<SphereColliderComponent>();
+			const SphereColliderComponent& sphereColliderComponent = actor.GetComponent<SphereColliderComponent>();
 			VX_SERIALIZE_PROPERTY(Radius, sphereColliderComponent.Radius, out);
 			VX_SERIALIZE_PROPERTY(Offset, sphereColliderComponent.Offset, out);
 			VX_SERIALIZE_PROPERTY(IsTrigger, sphereColliderComponent.IsTrigger, out);
@@ -601,16 +606,7 @@ namespace Vortex {
 
 			if (AssetManager::IsHandleValid(sphereColliderComponent.Material))
 			{
-				out << YAML::Key << "PhysicsMaterial" << YAML::BeginMap; // PhysicsMaterial
-
-				SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(sphereColliderComponent.Material);
-				VX_SERIALIZE_PROPERTY(StaticFriction, physicsMaterial->StaticFriction, out);
-				VX_SERIALIZE_PROPERTY(DynamicFriction, physicsMaterial->DynamicFriction, out);
-				VX_SERIALIZE_PROPERTY(Bounciness, physicsMaterial->Bounciness, out);
-				VX_SERIALIZE_PROPERTY(FrictionCombineMode, Utils::CombineModeToString(physicsMaterial->FrictionCombineMode), out);
-				VX_SERIALIZE_PROPERTY(BouncinessCombineMode, Utils::CombineModeToString(physicsMaterial->BouncinessCombineMode), out);
-
-				out << YAML::EndMap; // PhysicsMaterial
+				SerializePhysicsMaterialFn(sphereColliderComponent.Material);
 			}
 
 			out << YAML::EndMap; // SphereColliderComponent
@@ -620,7 +616,7 @@ namespace Vortex {
 		{
 			out << YAML::Key << "CapsuleColliderComponent" << YAML::BeginMap; // CapsuleColliderComponent
 
-			const auto& capsuleColliderComponent = actor.GetComponent<CapsuleColliderComponent>();
+			const CapsuleColliderComponent& capsuleColliderComponent = actor.GetComponent<CapsuleColliderComponent>();
 			VX_SERIALIZE_PROPERTY(Radius, capsuleColliderComponent.Radius, out);
 			VX_SERIALIZE_PROPERTY(Height, capsuleColliderComponent.Height, out);
 			VX_SERIALIZE_PROPERTY(Offset, capsuleColliderComponent.Offset, out);
@@ -629,16 +625,7 @@ namespace Vortex {
 
 			if (AssetManager::IsHandleValid(capsuleColliderComponent.Material))
 			{
-				out << YAML::Key << "PhysicsMaterial" << YAML::BeginMap; // PhysicsMaterial
-
-				SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(capsuleColliderComponent.Material);
-				VX_SERIALIZE_PROPERTY(StaticFriction, physicsMaterial->StaticFriction, out);
-				VX_SERIALIZE_PROPERTY(DynamicFriction, physicsMaterial->DynamicFriction, out);
-				VX_SERIALIZE_PROPERTY(Bounciness, physicsMaterial->Bounciness, out);
-				VX_SERIALIZE_PROPERTY(FrictionCombineMode, Utils::CombineModeToString(physicsMaterial->FrictionCombineMode), out);
-				VX_SERIALIZE_PROPERTY(BouncinessCombineMode, Utils::CombineModeToString(physicsMaterial->BouncinessCombineMode), out);
-
-				out << YAML::EndMap; // PhysicsMaterial
+				SerializePhysicsMaterialFn(capsuleColliderComponent.Material);
 			}
 
 			out << YAML::EndMap; // CapsuleColliderComponent
@@ -653,14 +640,14 @@ namespace Vortex {
 		{
 			out << YAML::Key << "Rigidbody2DComponent" << YAML::BeginMap; // Rigidbody2DComponent
 
-			const auto& rb2dComponent = actor.GetComponent<RigidBody2DComponent>();
-			VX_SERIALIZE_PROPERTY(BodyType, Utils::RigidBody2DBodyTypeToString(rb2dComponent.Type), out);
-			VX_SERIALIZE_PROPERTY(Velocity, rb2dComponent.Velocity, out);
-			VX_SERIALIZE_PROPERTY(Drag, rb2dComponent.Drag, out);
-			VX_SERIALIZE_PROPERTY(AngularVelocity, rb2dComponent.AngularVelocity, out);
-			VX_SERIALIZE_PROPERTY(AngularDrag, rb2dComponent.AngularDrag, out);
-			VX_SERIALIZE_PROPERTY(GravityScale, rb2dComponent.GravityScale, out);
-			VX_SERIALIZE_PROPERTY(FreezeRotation, rb2dComponent.FixedRotation, out);
+			const RigidBody2DComponent& rigidBodyComponent = actor.GetComponent<RigidBody2DComponent>();
+			VX_SERIALIZE_PROPERTY(BodyType, Utils::RigidBody2DBodyTypeToString(rigidBodyComponent.Type), out);
+			VX_SERIALIZE_PROPERTY(Velocity, rigidBodyComponent.Velocity, out);
+			VX_SERIALIZE_PROPERTY(Drag, rigidBodyComponent.Drag, out);
+			VX_SERIALIZE_PROPERTY(AngularVelocity, rigidBodyComponent.AngularVelocity, out);
+			VX_SERIALIZE_PROPERTY(AngularDrag, rigidBodyComponent.AngularDrag, out);
+			VX_SERIALIZE_PROPERTY(GravityScale, rigidBodyComponent.GravityScale, out);
+			VX_SERIALIZE_PROPERTY(FreezeRotation, rigidBodyComponent.FixedRotation, out);
 
 			out << YAML::EndMap; // Rigidbody2DComponent
 		}
@@ -669,14 +656,14 @@ namespace Vortex {
 		{
 			out << YAML::Key << "BoxCollider2DComponent" << YAML::BeginMap; // BoxCollider2DComponent
 
-			const auto& bc2dComponent = actor.GetComponent<BoxCollider2DComponent>();
-			VX_SERIALIZE_PROPERTY(Offset, bc2dComponent.Offset, out);
-			VX_SERIALIZE_PROPERTY(Size, bc2dComponent.Size, out);
-			VX_SERIALIZE_PROPERTY(Density, bc2dComponent.Density, out);
-			VX_SERIALIZE_PROPERTY(Friction, bc2dComponent.Friction, out);
-			VX_SERIALIZE_PROPERTY(Restitution, bc2dComponent.Restitution, out);
-			VX_SERIALIZE_PROPERTY(RestitutionThreshold, bc2dComponent.RestitutionThreshold, out);
-			VX_SERIALIZE_PROPERTY(IsTrigger, bc2dComponent.IsTrigger, out);
+			const BoxCollider2DComponent& boxColliderComponent = actor.GetComponent<BoxCollider2DComponent>();
+			VX_SERIALIZE_PROPERTY(Offset, boxColliderComponent.Offset, out);
+			VX_SERIALIZE_PROPERTY(Size, boxColliderComponent.Size, out);
+			VX_SERIALIZE_PROPERTY(Density, boxColliderComponent.Density, out);
+			VX_SERIALIZE_PROPERTY(Friction, boxColliderComponent.Friction, out);
+			VX_SERIALIZE_PROPERTY(Restitution, boxColliderComponent.Restitution, out);
+			VX_SERIALIZE_PROPERTY(RestitutionThreshold, boxColliderComponent.RestitutionThreshold, out);
+			VX_SERIALIZE_PROPERTY(IsTrigger, boxColliderComponent.IsTrigger, out);
 
 			out << YAML::EndMap; // BoxCollider2DComponent
 		}
@@ -685,13 +672,13 @@ namespace Vortex {
 		{
 			out << YAML::Key << "CircleCollider2DComponent" << YAML::BeginMap; // CircleCollider2DComponent
 
-			const auto& cc2dComponent = actor.GetComponent<CircleCollider2DComponent>();
-			VX_SERIALIZE_PROPERTY(Offset, cc2dComponent.Offset, out);
-			VX_SERIALIZE_PROPERTY(Radius, cc2dComponent.Radius, out);
-			VX_SERIALIZE_PROPERTY(Density, cc2dComponent.Density, out);
-			VX_SERIALIZE_PROPERTY(Friction, cc2dComponent.Friction, out);
-			VX_SERIALIZE_PROPERTY(Restitution, cc2dComponent.Restitution, out);
-			VX_SERIALIZE_PROPERTY(RestitutionThreshold, cc2dComponent.RestitutionThreshold, out);
+			const CircleCollider2DComponent& circleColliderComponent = actor.GetComponent<CircleCollider2DComponent>();
+			VX_SERIALIZE_PROPERTY(Offset, circleColliderComponent.Offset, out);
+			VX_SERIALIZE_PROPERTY(Radius, circleColliderComponent.Radius, out);
+			VX_SERIALIZE_PROPERTY(Density, circleColliderComponent.Density, out);
+			VX_SERIALIZE_PROPERTY(Friction, circleColliderComponent.Friction, out);
+			VX_SERIALIZE_PROPERTY(Restitution, circleColliderComponent.Restitution, out);
+			VX_SERIALIZE_PROPERTY(RestitutionThreshold, circleColliderComponent.RestitutionThreshold, out);
 
 			out << YAML::EndMap; // CircleCollider2DComponent
 		}
@@ -700,74 +687,69 @@ namespace Vortex {
 		{
 			out << YAML::Key << "NavMeshAgentComponent" << YAML::BeginMap; // NavMeshAgentComponent
 
-			const auto& navMeshComponent = actor.GetComponent<NavMeshAgentComponent>();
+			const NavMeshAgentComponent& navMeshAgentComponent = actor.GetComponent<NavMeshAgentComponent>();
 
 			out << YAML::EndMap; // NavMeshAgentComponent
 		}
 
-		if (actor.HasComponent<ScriptComponent>() && !actor.GetComponent<ScriptComponent>().ClassName.empty())
+		if (actor.HasComponent<ScriptComponent>() && ScriptEngine::IsScriptClassValid(actor))
 		{
 			const ScriptComponent& scriptComponent = actor.GetComponent<ScriptComponent>();
 
 			// Script Class Fields
-			if (ScriptEngine::ActorClassExists(scriptComponent.ClassName))
-			{
-				out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
-				VX_SERIALIZE_PROPERTY(ClassName, scriptComponent.ClassName, out);
 			out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
 			VX_SERIALIZE_PROPERTY(ClassName, scriptComponent.ClassName, out);
 			VX_SERIALIZE_PROPERTY(Enabled, scriptComponent.Enabled, out);
 
-				SharedReference<ScriptClass> actorClass = ScriptEngine::GetActorClass(scriptComponent.ClassName);
-				const auto& fields = actorClass->GetFields();
+			SharedReference<ScriptClass> scriptClass = ScriptEngine::GetScriptClass(scriptComponent.ClassName);
+			const std::map<std::string, ScriptField>& scriptFields = scriptClass->GetFields();
 
-				if (fields.size() > 0)
+			if (scriptFields.size() > 0)
+			{
+				const ScriptFieldMap& actorScriptFields = ScriptEngine::GetScriptFieldMap(actor);
+
+				out << YAML::Key << "ScriptFields" << YAML::Value;
+				out << YAML::BeginSeq;
+
+				for (const auto& [name, field] : scriptFields)
 				{
-					const ScriptFieldMap& actorScriptFields = ScriptEngine::GetScriptFieldMap(actor);
+					if (actorScriptFields.find(name) == actorScriptFields.end())
+						continue;
 
-					out << YAML::Key << "ScriptFields" << YAML::Value;
-					out << YAML::BeginSeq;
+					out << YAML::BeginMap; // ScriptFields
 
-					for (const auto& [name, field] : fields)
+					VX_SERIALIZE_PROPERTY(Name, name, out);
+					VX_SERIALIZE_PROPERTY(Type, ScriptUtils::ScriptFieldTypeToString(field.Type), out);
+					out << YAML::Key << "Data" << YAML::Value;
+
+					const ScriptFieldInstance& scriptField = actorScriptFields.at(name);
+
+					switch (field.Type)
 					{
-						if (actorScriptFields.find(name) == actorScriptFields.end())
-							continue;
-
-						out << YAML::BeginMap; // ScriptFields
-
-						VX_SERIALIZE_PROPERTY(Name, name, out);
-						VX_SERIALIZE_PROPERTY(Type, ScriptUtils::ScriptFieldTypeToString(field.Type), out);
-						out << YAML::Key << "Data" << YAML::Value;
-
-						const ScriptFieldInstance& scriptField = actorScriptFields.at(name);
-						
-						switch (field.Type)
-						{
-							WRITE_SCRIPT_FIELD(Float, float)
-							WRITE_SCRIPT_FIELD(Double, double)
-							WRITE_SCRIPT_FIELD(Bool, bool)
-							WRITE_SCRIPT_FIELD(Char, int8_t)
-							WRITE_SCRIPT_FIELD(Short, int16_t)
-							WRITE_SCRIPT_FIELD(Int, int32_t)
-							WRITE_SCRIPT_FIELD(Long, int64_t)
-							WRITE_SCRIPT_FIELD(Byte, uint8_t)
-							WRITE_SCRIPT_FIELD(UShort, uint16_t)
-							WRITE_SCRIPT_FIELD(UInt, uint32_t)
-							WRITE_SCRIPT_FIELD(ULong, uint64_t)
-							WRITE_SCRIPT_FIELD(Vector2, Math::vec2)
-							WRITE_SCRIPT_FIELD(Vector3, Math::vec3)
-							WRITE_SCRIPT_FIELD(Vector4, Math::vec4)
-							WRITE_SCRIPT_FIELD(Color3, Math::vec3)
-							WRITE_SCRIPT_FIELD(Color4, Math::vec4)
-							WRITE_SCRIPT_FIELD(Actor, UUID)
-							WRITE_SCRIPT_FIELD(AssetHandle, UUID)
-						}
-
-						out << YAML::EndMap; // ScriptFields
+						WRITE_SCRIPT_FIELD(Float, float)
+						WRITE_SCRIPT_FIELD(Double, double)
+						WRITE_SCRIPT_FIELD(Bool, bool)
+						WRITE_SCRIPT_FIELD(Char, int8_t)
+						WRITE_SCRIPT_FIELD(Short, int16_t)
+						WRITE_SCRIPT_FIELD(Int, int32_t)
+						WRITE_SCRIPT_FIELD(Long, int64_t)
+						WRITE_SCRIPT_FIELD(Byte, uint8_t)
+						WRITE_SCRIPT_FIELD(UShort, uint16_t)
+						WRITE_SCRIPT_FIELD(UInt, uint32_t)
+						WRITE_SCRIPT_FIELD(ULong, uint64_t)
+						WRITE_SCRIPT_FIELD(Vector2, Math::vec2)
+						WRITE_SCRIPT_FIELD(Vector3, Math::vec3)
+						WRITE_SCRIPT_FIELD(Vector4, Math::vec4)
+						WRITE_SCRIPT_FIELD(Color3, Math::vec3)
+						WRITE_SCRIPT_FIELD(Color4, Math::vec4)
+						WRITE_SCRIPT_FIELD(Actor, UUID)
+						WRITE_SCRIPT_FIELD(AssetHandle, UUID)
 					}
 
-					out << YAML::EndSeq;
+					out << YAML::EndMap; // ScriptFields
 				}
+
+				out << YAML::EndSeq;
 			}
 
 			out << YAML::EndMap; // ScriptComponent
@@ -776,9 +758,9 @@ namespace Vortex {
 		out << YAML::EndMap; // Actor
 	}
 
-	void SceneSerializer::DeserializeActors(YAML::Node& actorsNode, SharedReference<Scene>& scene)
+	void SceneSerializer::DeserializeActors(const YAML::Node& actorsNode, SharedReference<Scene>& scene)
 	{
-		for (auto actor : actorsNode)
+		for (const YAML::Node& actor : actorsNode)
 		{
 			uint64_t uuid;
 
@@ -799,7 +781,7 @@ namespace Vortex {
 			std::string name;
 			std::string marker;
 
-			auto tagComponent = actor["TagComponent"];
+			const YAML::Node tagComponent = actor["TagComponent"];
 
 			if (tagComponent)
 			{
@@ -815,99 +797,99 @@ namespace Vortex {
 			uint64_t parentHandle = actor["Parent"] ? actor["Parent"].as<uint64_t>() : 0;
 			deserializedActor.SetParentUUID(static_cast<UUID>(parentHandle));
 
-			const auto children = actor["Children"];
+			const YAML::Node children = actor["Children"];
 
 			if (children)
 			{
-				for (auto& child : children)
+				for (const YAML::Node& child : children)
 				{
 					uint64_t childHandle = child["Handle"].as<uint64_t>();
 					deserializedActor.AddChild(static_cast<UUID>(childHandle));
 				}
 			}
 
-			auto transformComponent = actor["TransformComponent"];
-			if (transformComponent)
+			const YAML::Node transformComponentData = actor["TransformComponent"];
+			if (transformComponentData)
 			{
 				// All Entities have a transform
-				auto& transform = deserializedActor.GetComponent<TransformComponent>();
-				transform.Translation = transformComponent["Translation"].as<Math::vec3>();
-				transform.SetRotationEuler(transformComponent["Rotation"].as<Math::vec3>());
-				transform.Scale = transformComponent["Scale"].as<Math::vec3>();
+				TransformComponent& transformComponent = deserializedActor.GetComponent<TransformComponent>();
+				transformComponent.Translation = transformComponentData["Translation"].as<Math::vec3>();
+				transformComponent.SetRotationEuler(transformComponentData["Rotation"].as<Math::vec3>());
+				transformComponent.Scale = transformComponentData["Scale"].as<Math::vec3>();
 			}
 
-			auto cameraComponent = actor["CameraComponent"];
-			if (cameraComponent)
+			const YAML::Node cameraComponentData = actor["CameraComponent"];
+			if (cameraComponentData)
 			{
-				auto& cc = deserializedActor.AddComponent<CameraComponent>();
+				CameraComponent& cameraComponent = deserializedActor.AddComponent<CameraComponent>();
 
-				auto cameraProps = cameraComponent["Camera"];
-				cc.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
+				const YAML::Node cameraProps = cameraComponentData["Camera"];
+				cameraComponent.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
 
-				cc.Camera.SetPerspectiveVerticalFOVRad(cameraProps["PerspectiveFOV"].as<float>());
-				cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
-				cc.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
+				cameraComponent.Camera.SetPerspectiveVerticalFOVRad(cameraProps["PerspectiveFOV"].as<float>());
+				cameraComponent.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
+				cameraComponent.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
 
-				cc.Camera.SetOrthographicSize(cameraProps["OrthographicSize"].as<float>());
-				cc.Camera.SetOrthographicNearClip(cameraProps["OrthographicNear"].as<float>());
-				cc.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
+				cameraComponent.Camera.SetOrthographicSize(cameraProps["OrthographicSize"].as<float>());
+				cameraComponent.Camera.SetOrthographicNearClip(cameraProps["OrthographicNear"].as<float>());
+				cameraComponent.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
 
-				if (cameraComponent["ClearColor"])
-					cc.ClearColor = cameraComponent["ClearColor"].as<Math::vec3>();
-				cc.Primary = cameraComponent["Primary"].as<bool>();
-				cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
-				if (cameraComponent["PostProcessingEnabled"])
-					cc.PostProcessing.Enabled = cameraComponent["PostProcessingEnabled"].as<bool>();
+				if (cameraComponentData["ClearColor"])
+					cameraComponent.ClearColor = cameraComponentData["ClearColor"].as<Math::vec3>();
+				cameraComponent.Primary = cameraComponentData["Primary"].as<bool>();
+				cameraComponent.FixedAspectRatio = cameraComponentData["FixedAspectRatio"].as<bool>();
+				if (cameraComponentData["PostProcessingEnabled"])
+					cameraComponent.PostProcessing.Enabled = cameraComponentData["PostProcessingEnabled"].as<bool>();
 
-				if (cc.PostProcessing.Enabled)
+				if (cameraComponent.PostProcessing.Enabled)
 				{
-					auto postProcessData = cameraComponent["PostProcessing"];
+					const YAML::Node postProcessData = cameraComponentData["PostProcessing"];
 					
 					{
-						auto bloomData = postProcessData["Bloom"];
-						cc.PostProcessing.Bloom.Threshold = bloomData["Threshold"].as<float>();
-						cc.PostProcessing.Bloom.Knee = bloomData["Knee"].as<float>();
-						cc.PostProcessing.Bloom.Intensity = bloomData["Intensity"].as<float>();
-						cc.PostProcessing.Bloom.Enabled = bloomData["Enabled"].as<float>();
+						const YAML::Node bloomData = postProcessData["Bloom"];
+						cameraComponent.PostProcessing.Bloom.Threshold = bloomData["Threshold"].as<float>();
+						cameraComponent.PostProcessing.Bloom.Knee = bloomData["Knee"].as<float>();
+						cameraComponent.PostProcessing.Bloom.Intensity = bloomData["Intensity"].as<float>();
+						cameraComponent.PostProcessing.Bloom.Enabled = bloomData["Enabled"].as<float>();
 					}
 				}
 			}
 
-			auto skyboxComponent = actor["SkyboxComponent"];
-			if (skyboxComponent)
+			const YAML::Node skyboxComponentData = actor["SkyboxComponent"];
+			if (skyboxComponentData)
 			{
-				auto& skybox = deserializedActor.AddComponent<SkyboxComponent>();
+				SkyboxComponent& skyboxComponent = deserializedActor.AddComponent<SkyboxComponent>();
 
-				if (skyboxComponent["Skybox"])
+				if (skyboxComponentData["Skybox"])
 				{
-					AssetHandle environmentHandle = skyboxComponent["Skybox"].as<uint64_t>();
+					AssetHandle environmentHandle = skyboxComponentData["Skybox"].as<uint64_t>();
 					if (AssetManager::IsHandleValid(environmentHandle))
 					{
-						skybox.Skybox = environmentHandle;
+						skyboxComponent.Skybox = environmentHandle;
 					}
 				}
 
-				if (skyboxComponent["Rotation"])
-					skybox.Rotation = skyboxComponent["Rotation"].as<float>();
+				if (skyboxComponentData["Rotation"])
+					skyboxComponent.Rotation = skyboxComponentData["Rotation"].as<float>();
 
-				if (skyboxComponent["Intensity"])
-					skybox.Intensity = skyboxComponent["Intensity"].as<float>();
+				if (skyboxComponentData["Intensity"])
+					skyboxComponent.Intensity = skyboxComponentData["Intensity"].as<float>();
 			}
 
-			auto lightSourceComponent = actor["LightSourceComponent"];
-			if (lightSourceComponent)
+			const YAML::Node lightSourceComponentData = actor["LightSourceComponent"];
+			if (lightSourceComponentData)
 			{
-				auto& lightComponent = deserializedActor.AddComponent<LightSourceComponent>();
+				LightSourceComponent& lightSourceComponent = deserializedActor.AddComponent<LightSourceComponent>();
 				
-				if (lightSourceComponent["Visible"])
-					lightComponent.Visible = lightSourceComponent["Visible"].as<bool>();
+				if (lightSourceComponentData["Visible"])
+					lightSourceComponent.Visible = lightSourceComponentData["Visible"].as<bool>();
 
-				lightComponent.Type = Utils::LightTypeFromString(lightSourceComponent["LightType"].as<std::string>());
+				lightSourceComponent.Type = Utils::LightTypeFromString(lightSourceComponentData["LightType"].as<std::string>());
 
-				if (lightSourceComponent["Radiance"])
-					lightComponent.Radiance = lightSourceComponent["Radiance"].as<Math::vec3>();
+				if (lightSourceComponentData["Radiance"])
+					lightSourceComponent.Radiance = lightSourceComponentData["Radiance"].as<Math::vec3>();
 
-				switch (lightComponent.Type)
+				switch (lightSourceComponent.Type)
 				{
 					case LightType::Directional:
 					{
@@ -919,35 +901,35 @@ namespace Vortex {
 					}
 					case LightType::Spot:
 					{
-						if (lightSourceComponent["CutOff"])
-							lightComponent.Cutoff = lightSourceComponent["CutOff"].as<float>();
-						if (lightSourceComponent["OuterCutOff"])
-							lightComponent.OuterCutoff = lightSourceComponent["OuterCutOff"].as<float>();
+						if (lightSourceComponentData["CutOff"])
+							lightSourceComponent.Cutoff = lightSourceComponentData["CutOff"].as<float>();
+						if (lightSourceComponentData["OuterCutOff"])
+							lightSourceComponent.OuterCutoff = lightSourceComponentData["OuterCutOff"].as<float>();
 
 						break;
 					}
 				}
 
-				if (lightSourceComponent["Intensity"])
-					lightComponent.Intensity = lightSourceComponent["Intensity"].as<float>();
+				if (lightSourceComponentData["Intensity"])
+					lightSourceComponent.Intensity = lightSourceComponentData["Intensity"].as<float>();
 
-				if (lightSourceComponent["ShadowBias"])
-					lightComponent.ShadowBias = lightSourceComponent["ShadowBias"].as<float>();
+				if (lightSourceComponentData["ShadowBias"])
+					lightSourceComponent.ShadowBias = lightSourceComponentData["ShadowBias"].as<float>();
 
-				if (lightSourceComponent["CastShadows"])
-					lightComponent.CastShadows = lightSourceComponent["CastShadows"].as<bool>();
+				if (lightSourceComponentData["CastShadows"])
+					lightSourceComponent.CastShadows = lightSourceComponentData["CastShadows"].as<bool>();
 
-				if (lightSourceComponent["SoftShadows"])
-					lightComponent.SoftShadows = lightSourceComponent["SoftShadows"].as<bool>();
+				if (lightSourceComponentData["SoftShadows"])
+					lightSourceComponent.SoftShadows = lightSourceComponentData["SoftShadows"].as<bool>();
 			}
 
-			auto meshComponent = actor["MeshRendererComponent"];
-			if (meshComponent)
+			const YAML::Node meshRendererComponentData = actor["MeshRendererComponent"];
+			if (meshRendererComponentData)
 			{
-				if (meshComponent["MeshHandle"])
+				if (meshRendererComponentData["MeshHandle"])
 				{
-					auto& meshRendererComponent = deserializedActor.AddComponent<MeshRendererComponent>();
-					AssetHandle meshHandle = meshComponent["MeshHandle"].as<uint64_t>();
+					MeshRendererComponent& meshRendererComponent = deserializedActor.AddComponent<MeshRendererComponent>();
+					AssetHandle meshHandle = meshRendererComponentData["MeshHandle"].as<uint64_t>();
 					if (AssetManager::IsHandleValid(meshHandle))
 					{
 						meshRendererComponent.Mesh = meshHandle;
@@ -956,25 +938,25 @@ namespace Vortex {
 						/*MeshImportOptions importOptions = MeshImportOptions();
 						if (meshComponent["MeshImportOptions"])
 						{
-							auto modelImportOptions = meshComponent["ModelImportOptions"];
+							ModelImportOptions modelImportOptions = meshComponent["ModelImportOptions"];
 							importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
 							importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
 							importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
 						}*/
 
-						if (meshComponent["Visible"])
-							meshRendererComponent.Visible = meshComponent["Visible"].as<bool>();
+						if (meshRendererComponentData["Visible"])
+							meshRendererComponent.Visible = meshRendererComponentData["Visible"].as<bool>();
 						if (meshRendererComponentData["CastShadows"])
 							meshRendererComponent.CastShadows = meshRendererComponentData["CastShadows"].as<bool>();
 					}
 				}
 			}
 
-			auto staticMeshComponent = actor["StaticMeshRendererComponent"];
-			if (staticMeshComponent)
+			const YAML::Node staticMeshRendererComponentData = actor["StaticMeshRendererComponent"];
+			if (staticMeshRendererComponentData)
 			{
-				auto& staticMeshRendererComponent = deserializedActor.AddComponent<StaticMeshRendererComponent>();
-				staticMeshRendererComponent.Type = Utils::MeshTypeFromString(staticMeshComponent["MeshType"].as<std::string>());
+				StaticMeshRendererComponent& staticMeshRendererComponent = deserializedActor.AddComponent<StaticMeshRendererComponent>();
+				staticMeshRendererComponent.Type = Utils::MeshTypeFromString(staticMeshRendererComponentData["MeshType"].as<std::string>());
 
 				if (staticMeshRendererComponent.Type != MeshType::Custom)
 				{
@@ -983,9 +965,9 @@ namespace Vortex {
 				}
 				else
 				{
-					if (staticMeshComponent["MeshHandle"])
+					if (staticMeshRendererComponentData["MeshHandle"])
 					{
-						AssetHandle staticMeshHandle = staticMeshComponent["MeshHandle"].as<uint64_t>();
+						AssetHandle staticMeshHandle = staticMeshRendererComponentData["MeshHandle"].as<uint64_t>();
 
 						if (AssetManager::IsHandleValid(staticMeshHandle))
 						{
@@ -993,16 +975,16 @@ namespace Vortex {
 
 							// Move this to asset serializer
 							/*MeshImportOptions importOptions = MeshImportOptions();
-							if (staticMeshComponent["MeshImportOptions"])
+							if (staticMeshComponentData["MeshImportOptions"])
 							{
-								auto modelImportOptions = staticMeshComponent["MeshImportOptions"];
+								ModelImportOptions modelImportOptions = staticMeshComponent["MeshImportOptions"];
 								importOptions.MeshTransformation.Translation = modelImportOptions["Translation"].as<Math::vec3>();
 								importOptions.MeshTransformation.SetRotationEuler(modelImportOptions["Rotation"].as<Math::vec3>());
 								importOptions.MeshTransformation.Scale = modelImportOptions["Scale"].as<Math::vec3>();
 							}*/
 
-							if (staticMeshComponent["Visible"])
-								staticMeshRendererComponent.Visible = staticMeshComponent["Visible"].as<bool>();
+							if (staticMeshRendererComponentData["Visible"])
+								staticMeshRendererComponent.Visible = staticMeshRendererComponentData["Visible"].as<bool>();
 							if (staticMeshRendererComponentData["CastShadows"])
 								staticMeshRendererComponent.CastShadows = staticMeshRendererComponentData["CastShadows"].as<bool>();
 						}
@@ -1013,7 +995,7 @@ namespace Vortex {
 				if (AssetManager::IsHandleValid(staticMeshRendererComponent.StaticMesh))
 				{
 					// Do this in Asset Serializer
-					auto submeshesData = staticMeshComponent["Submeshes"];
+					const YAML::Node submeshesData = staticMeshRendererComponentData["Submeshes"];
 					if (submeshesData)
 					{
 						SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRendererComponent.StaticMesh);
@@ -1023,7 +1005,7 @@ namespace Vortex {
 							SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
 
 							uint32_t submeshIndex = 0;
-							for (auto submeshData : submeshesData)
+							for (const YAML::Node& submeshData : submeshesData)
 							{
 								if (!submeshData["MaterialHandle"])
 								{
@@ -1039,13 +1021,15 @@ namespace Vortex {
 								}
 
 								// Load material textures so it is ready to go for rendering
-								auto material = AssetManager::GetAsset<Material>(materialHandle);
-								AssetManager::GetAsset<Texture2D>(material->GetAlbedoMap());
+								SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+
+								// Do we really need to do this? won't the renderer grab them anyway?
+								/*AssetManager::GetAsset<Texture2D>(material->GetAlbedoMap());
 								AssetManager::GetAsset<Texture2D>(material->GetNormalMap());
 								AssetManager::GetAsset<Texture2D>(material->GetMetallicMap());
 								AssetManager::GetAsset<Texture2D>(material->GetRoughnessMap());
 								AssetManager::GetAsset<Texture2D>(material->GetEmissionMap());
-								AssetManager::GetAsset<Texture2D>(material->GetAmbientOcclusionMap());
+								AssetManager::GetAsset<Texture2D>(material->GetAmbientOcclusionMap());*/
 
 								materialTable->SetMaterial(submeshIndex++, materialHandle);
 							}
@@ -1054,93 +1038,93 @@ namespace Vortex {
 				}
 			}
 
-			auto spriteComponent = actor["SpriteRendererComponent"];
-			if (spriteComponent)
+			const YAML::Node spriteRendererComponentData = actor["SpriteRendererComponent"];
+			if (spriteRendererComponentData)
 			{
-				auto& spriteRendererComponent = deserializedActor.AddComponent<SpriteRendererComponent>();
-				spriteRendererComponent.SpriteColor = spriteComponent["Color"].as<Math::vec4>();
+				SpriteRendererComponent& spriteRendererComponent = deserializedActor.AddComponent<SpriteRendererComponent>();
+				spriteRendererComponent.SpriteColor = spriteRendererComponentData["Color"].as<Math::vec4>();
 
-				if (spriteComponent["Visible"])
-					spriteRendererComponent.Visible = spriteComponent["Visible"].as<bool>();
+				if (spriteRendererComponentData["Visible"])
+					spriteRendererComponent.Visible = spriteRendererComponentData["Visible"].as<bool>();
 
-				if (spriteComponent["TextureHandle"])
+				if (spriteRendererComponentData["TextureHandle"])
 				{
-					AssetHandle assetHandle = spriteComponent["TextureHandle"].as<uint64_t>();
+					AssetHandle assetHandle = spriteRendererComponentData["TextureHandle"].as<uint64_t>();
 					if (AssetManager::IsHandleValid(assetHandle))
 					{
 						spriteRendererComponent.Texture = assetHandle;
 					}
 
-					if (spriteComponent["TextureScale"])
-						spriteRendererComponent.TextureUV = spriteComponent["TextureScale"].as<Math::vec2>();
+					if (spriteRendererComponentData["TextureScale"])
+						spriteRendererComponent.TextureUV = spriteRendererComponentData["TextureScale"].as<Math::vec2>();
 				}
 			}
 
-			auto circleComponent = actor["CircleRendererComponent"];
-			if (circleComponent)
+			const YAML::Node circleRendererComponentData = actor["CircleRendererComponent"];
+			if (circleRendererComponentData)
 			{
-				auto& circleRendererComponent = deserializedActor.AddComponent<CircleRendererComponent>();
+				CircleRendererComponent& circleRendererComponent = deserializedActor.AddComponent<CircleRendererComponent>();
 
-				if (circleComponent["Visible"])
-					circleRendererComponent.Visible = circleComponent["Visible"].as<bool>();
+				if (circleRendererComponentData["Visible"])
+					circleRendererComponent.Visible = circleRendererComponentData["Visible"].as<bool>();
 
-				circleRendererComponent.Color = circleComponent["Color"].as<Math::vec4>();
-				circleRendererComponent.Thickness = circleComponent["Thickness"].as<float>();
-				circleRendererComponent.Fade = circleComponent["Fade"].as<float>();
+				circleRendererComponent.Color = circleRendererComponentData["Color"].as<Math::vec4>();
+				circleRendererComponent.Thickness = circleRendererComponentData["Thickness"].as<float>();
+				circleRendererComponent.Fade = circleRendererComponentData["Fade"].as<float>();
 			}
 
-			auto particleEmitterComponent = actor["ParticleEmitterComponent"];
-			if (particleEmitterComponent)
+			const YAML::Node particleEmitterComponentData = actor["ParticleEmitterComponent"];
+			if (particleEmitterComponentData)
 			{
-				auto& pmc = deserializedActor.AddComponent<ParticleEmitterComponent>();
+				ParticleEmitterComponent& particleEmitterComponent = deserializedActor.AddComponent<ParticleEmitterComponent>();
 
-				if (particleEmitterComponent["EmitterHandle"])
+				if (particleEmitterComponentData["EmitterHandle"])
 				{
-					AssetHandle emitterHandle = particleEmitterComponent["EmitterHandle"].as<uint64_t>();
+					AssetHandle emitterHandle = particleEmitterComponentData["EmitterHandle"].as<uint64_t>();
 					if (AssetManager::IsHandleValid(emitterHandle))
 					{
-						pmc.EmitterHandle = emitterHandle;
+						particleEmitterComponent.EmitterHandle = emitterHandle;
 					}
 				}
 
-				if (particleEmitterComponent["IsActive"])
+				if (particleEmitterComponentData["IsActive"])
 				{
-					pmc.IsActive = particleEmitterComponent["IsActive"].as<bool>();
+					particleEmitterComponent.IsActive = particleEmitterComponentData["IsActive"].as<bool>();
 				}
 				else
 				{
-					pmc.IsActive = false;
+					particleEmitterComponent.IsActive = false;
 				}
 			}
 
-			auto textMeshComponent = actor["TextMeshComponent"];
-			if (textMeshComponent)
+			const YAML::Node textMeshComponentData = actor["TextMeshComponent"];
+			if (textMeshComponentData)
 			{
-				auto& tmc = deserializedActor.AddComponent<TextMeshComponent>();
+				TextMeshComponent& textMeshComponent = deserializedActor.AddComponent<TextMeshComponent>();
 
-				if (textMeshComponent["Visible"])
-					tmc.Visible = textMeshComponent["Visible"].as<bool>();
+				if (textMeshComponentData["Visible"])
+					textMeshComponent.Visible = textMeshComponentData["Visible"].as<bool>();
 
-				if (textMeshComponent["FontHandle"])
+				if (textMeshComponentData["FontHandle"])
 				{
-					AssetHandle fontHandle = textMeshComponent["FontHandle"].as<uint64_t>();
+					AssetHandle fontHandle = textMeshComponentData["FontHandle"].as<uint64_t>();
 					if (AssetManager::IsHandleValid(fontHandle))
 					{
-						tmc.FontAsset = fontHandle;
+						textMeshComponent.FontAsset = fontHandle;
 					}
 				}
 
-				tmc.Color = textMeshComponent["Color"].as<Math::vec4>();
-				if (textMeshComponent["BackgroundColor"])
-					tmc.BackgroundColor = textMeshComponent["BackgroundColor"].as<Math::vec4>();
-				tmc.Kerning = textMeshComponent["Kerning"].as<float>();
-				tmc.LineSpacing = textMeshComponent["LineSpacing"].as<float>();
-				tmc.MaxWidth = textMeshComponent["MaxWidth"].as<float>();
-				tmc.TextHash = textMeshComponent["TextHash"].as<size_t>();
-				tmc.TextString = textMeshComponent["TextString"].as<std::string>();
+				textMeshComponent.Color = textMeshComponentData["Color"].as<Math::vec4>();
+				if (textMeshComponentData["BackgroundColor"])
+					textMeshComponent.BackgroundColor = textMeshComponentData["BackgroundColor"].as<Math::vec4>();
+				textMeshComponent.Kerning = textMeshComponentData["Kerning"].as<float>();
+				textMeshComponent.LineSpacing = textMeshComponentData["LineSpacing"].as<float>();
+				textMeshComponent.MaxWidth = textMeshComponentData["MaxWidth"].as<float>();
+				textMeshComponent.TextHash = textMeshComponentData["TextHash"].as<size_t>();
+				textMeshComponent.TextString = textMeshComponentData["TextString"].as<std::string>();
 			}
 
-			auto animationComponent = actor["AnimationComponent"];
+			const YAML::Node animationComponent = actor["AnimationComponent"];
 			if (animationComponent)
 			{
 				if (!deserializedActor.HasComponent<MeshRendererComponent>())
@@ -1150,14 +1134,14 @@ namespace Vortex {
 				}
 
 				// TODO fix animations to take in mesh asset handle
-				/*auto& animation = deserializedActor.AddComponent<AnimationComponent>();
+				/*AnimationComponent& animationComponent = deserializedActor.AddComponent<AnimationComponent>();
 				SharedRef<Mesh> mesh = deserializedActor.GetComponent<MeshRendererComponent>().Mesh;
 				std::string filepath = mesh->GetPath();
-				animation.Animation = Animation::Create(filepath, mesh);*/
+				animationComponent.Animation = Animation::Create(filepath, mesh);*/
 			}
 
-			auto animatorComponent = actor["AnimatorComponent"];
-			if (animatorComponent)
+			const YAML::Node animatorComponentData = actor["AnimatorComponent"];
+			if (animatorComponentData)
 			{
 				if (!deserializedActor.HasComponent<AnimationComponent>())
 				{
@@ -1165,256 +1149,238 @@ namespace Vortex {
 					return;
 				}
 
-				auto& animator = deserializedActor.AddComponent<AnimatorComponent>();
-				animator.Animator = Animator::Create(deserializedActor.GetComponent<AnimationComponent>().Animation);
+				AnimatorComponent& animatorComponent = deserializedActor.AddComponent<AnimatorComponent>();
+				animatorComponent.Animator = Animator::Create(deserializedActor.GetComponent<AnimationComponent>().Animation);
 			}
 
-			auto audioSourceComponent = actor["AudioSourceComponent"];
-			if (audioSourceComponent)
+			const YAML::Node audioSourceComponentData = actor["AudioSourceComponent"];
+			if (audioSourceComponentData)
 			{
-				auto& asc = deserializedActor.AddComponent<AudioSourceComponent>();
+				AudioSourceComponent& audioSourceComponent = deserializedActor.AddComponent<AudioSourceComponent>();
 
-				AssetHandle audioHandle = audioSourceComponent["AudioHandle"].as<uint64_t>();
+				AssetHandle audioHandle = audioSourceComponentData["AudioHandle"].as<uint64_t>();
 				if (AssetManager::IsHandleValid(audioHandle))
 				{
-					asc.AudioHandle = audioHandle;
+					audioSourceComponent.AudioHandle = audioHandle;
 				}
 
-				if (audioSourceComponent["PlayOnStart"])
+				if (audioSourceComponentData["PlayOnStart"])
 				{
-					asc.PlayOnStart = audioSourceComponent["PlayOnStart"].as<bool>();
+					audioSourceComponent.PlayOnStart = audioSourceComponentData["PlayOnStart"].as<bool>();
 				}
 				else
 				{
-					asc.PlayOnStart = false;
+					audioSourceComponent.PlayOnStart = false;
 				}
 
-				if (audioSourceComponent["PlayOneShot"])
+				if (audioSourceComponentData["PlayOneShot"])
 				{
-					asc.PlayOneShot = audioSourceComponent["PlayOneShot"].as<bool>();
+					audioSourceComponent.PlayOneShot = audioSourceComponentData["PlayOneShot"].as<bool>();
 				}
 				else
 				{
-					asc.PlayOneShot = false;
+					audioSourceComponent.PlayOneShot = false;
 				}
 			}
 
-			auto audioListenerComponent = actor["AudioListenerComponent"];
-			if (audioListenerComponent)
+			const YAML::Node audioListenerComponentData = actor["AudioListenerComponent"];
+			if (audioListenerComponentData)
 			{
 				// TODO
 			}
 
-			auto rigidbodyComponent = actor["RigidbodyComponent"];
-			if (rigidbodyComponent)
+			const YAML::Node rigidbodyComponentData = actor["RigidbodyComponent"];
+			if (rigidbodyComponentData)
 			{
-				auto& rigidbody = deserializedActor.AddComponent<RigidBodyComponent>();
+				RigidBodyComponent& rigidbodyComponent = deserializedActor.AddComponent<RigidBodyComponent>();
 
-				rigidbody.Type = Utils::RigidBodyTypeFromString(rigidbodyComponent["BodyType"].as<std::string>());
-				if (rigidbodyComponent["Mass"])
-					rigidbody.Mass = rigidbodyComponent["Mass"].as<float>();
-				if (rigidbodyComponent["AngularDrag"])
-					rigidbody.AngularDrag = rigidbodyComponent["AngularDrag"].as<float>();
-				if (rigidbodyComponent["MaxAngularVelocity"])
-					rigidbody.MaxAngularVelocity = rigidbodyComponent["MaxAngularVelocity"].as<float>();
-				if (rigidbodyComponent["AngularVelocity"])
-					rigidbody.AngularVelocity = rigidbodyComponent["AngularVelocity"].as<Math::vec3>();
-				if (rigidbodyComponent["DisableGravity"])
-					rigidbody.DisableGravity = rigidbodyComponent["DisableGravity"].as<bool>();
-				if (rigidbodyComponent["IsKinematic"])
-					rigidbody.IsKinematic = rigidbodyComponent["IsKinematic"].as<bool>();
-				if (rigidbodyComponent["LinearDrag"])
-					rigidbody.LinearDrag = rigidbodyComponent["LinearDrag"].as<float>();
-				if (rigidbodyComponent["MaxLinearVelocity"])
-					rigidbody.MaxLinearVelocity = rigidbodyComponent["MaxLinearVelocity"].as<float>();
-				if (rigidbodyComponent["LinearVelocity"])
-					rigidbody.LinearVelocity = rigidbodyComponent["LinearVelocity"].as<Math::vec3>();
-				if (rigidbodyComponent["CollisionDetectionType"])
-					rigidbody.CollisionDetection = Utils::CollisionDetectionTypeFromString(rigidbodyComponent["CollisionDetectionType"].as<std::string>());
-				if (rigidbodyComponent["ActorLockFlags"])
-					rigidbody.LockFlags = rigidbodyComponent["ActorLockFlags"].as<uint32_t>(0);
+				rigidbodyComponent.Type = Utils::RigidBodyTypeFromString(rigidbodyComponentData["BodyType"].as<std::string>());
+				if (rigidbodyComponentData["Mass"])
+					rigidbodyComponent.Mass = rigidbodyComponentData["Mass"].as<float>();
+				if (rigidbodyComponentData["AngularDrag"])
+					rigidbodyComponent.AngularDrag = rigidbodyComponentData["AngularDrag"].as<float>();
+				if (rigidbodyComponentData["MaxAngularVelocity"])
+					rigidbodyComponent.MaxAngularVelocity = rigidbodyComponentData["MaxAngularVelocity"].as<float>();
+				if (rigidbodyComponentData["AngularVelocity"])
+					rigidbodyComponent.AngularVelocity = rigidbodyComponentData["AngularVelocity"].as<Math::vec3>();
+				if (rigidbodyComponentData["DisableGravity"])
+					rigidbodyComponent.DisableGravity = rigidbodyComponentData["DisableGravity"].as<bool>();
+				if (rigidbodyComponentData["IsKinematic"])
+					rigidbodyComponent.IsKinematic = rigidbodyComponentData["IsKinematic"].as<bool>();
+				if (rigidbodyComponentData["LinearDrag"])
+					rigidbodyComponent.LinearDrag = rigidbodyComponentData["LinearDrag"].as<float>();
+				if (rigidbodyComponentData["MaxLinearVelocity"])
+					rigidbodyComponent.MaxLinearVelocity = rigidbodyComponentData["MaxLinearVelocity"].as<float>();
+				if (rigidbodyComponentData["LinearVelocity"])
+					rigidbodyComponent.LinearVelocity = rigidbodyComponentData["LinearVelocity"].as<Math::vec3>();
+				if (rigidbodyComponentData["CollisionDetectionType"])
+					rigidbodyComponent.CollisionDetection = Utils::CollisionDetectionTypeFromString(rigidbodyComponentData["CollisionDetectionType"].as<std::string>());
+				if (rigidbodyComponentData["ActorLockFlags"])
+					rigidbodyComponent.LockFlags = rigidbodyComponentData["ActorLockFlags"].as<uint32_t>(0);
 			}
 
-			auto characterControllerComponent = actor["CharacterControllerComponent"];
-			if (characterControllerComponent)
+			const YAML::Node characterControllerComponentData = actor["CharacterControllerComponent"];
+			if (characterControllerComponentData)
 			{
-				auto& characterController = deserializedActor.AddComponent<CharacterControllerComponent>();
+				CharacterControllerComponent& characterControllerComponent = deserializedActor.AddComponent<CharacterControllerComponent>();
 
-				if (characterControllerComponent["NonWalkableMode"])
-					characterController.NonWalkMode = Utils::NonWalkableModeFromString(characterControllerComponent["NonWalkableMode"].as<std::string>());
-				if (characterControllerComponent["CapsuleClimbMode"])
-					characterController.ClimbMode = Utils::CapsuleClimbModeFromString(characterControllerComponent["CapsuleClimbMode"].as<std::string>());
-				characterController.DisableGravity = characterControllerComponent["DisableGravity"].as<bool>();
-				characterController.LayerID = characterControllerComponent["LayerID"].as<uint32_t>();
-				characterController.SlopeLimitDegrees = characterControllerComponent["SlopeLimitDegrees"].as<float>();
-				characterController.StepOffset = characterControllerComponent["StepOffset"].as<float>();
-				if (characterControllerComponent["ContactOffset"])
-					characterController.ContactOffset = characterControllerComponent["ContactOffset"].as<float>();
+				if (characterControllerComponentData["NonWalkableMode"])
+					characterControllerComponent.NonWalkMode = Utils::NonWalkableModeFromString(characterControllerComponentData["NonWalkableMode"].as<std::string>());
+				if (characterControllerComponentData["CapsuleClimbMode"])
+					characterControllerComponent.ClimbMode = Utils::CapsuleClimbModeFromString(characterControllerComponentData["CapsuleClimbMode"].as<std::string>());
+				characterControllerComponent.DisableGravity = characterControllerComponentData["DisableGravity"].as<bool>();
+				characterControllerComponent.LayerID = characterControllerComponentData["LayerID"].as<uint32_t>();
+				characterControllerComponent.SlopeLimitDegrees = characterControllerComponentData["SlopeLimitDegrees"].as<float>();
+				characterControllerComponent.StepOffset = characterControllerComponentData["StepOffset"].as<float>();
+				if (characterControllerComponentData["ContactOffset"])
+					characterControllerComponent.ContactOffset = characterControllerComponentData["ContactOffset"].as<float>();
 			}
 
-			auto fixedJointComponent = actor["FixedJointComponent"];
-			if (fixedJointComponent)
+			const YAML::Node fixedJointComponentData = actor["FixedJointComponent"];
+			if (fixedJointComponentData)
 			{
-				auto& fixedJoint = deserializedActor.AddComponent<FixedJointComponent>();
+				FixedJointComponent& fixedJointComponent = deserializedActor.AddComponent<FixedJointComponent>();
 
-				VX_DESERIALIZE_PROPERTY(ConnectedActor, uint64_t, fixedJoint.ConnectedActor, fixedJointComponent);
-				VX_DESERIALIZE_PROPERTY(BreakForce, float, fixedJoint.BreakForce, fixedJointComponent);
-				VX_DESERIALIZE_PROPERTY(BreakTorque, float, fixedJoint.BreakTorque, fixedJointComponent);
-				VX_DESERIALIZE_PROPERTY(EnableCollision, bool, fixedJoint.EnableCollision, fixedJointComponent);
-				VX_DESERIALIZE_PROPERTY(EnablePreProcessing, bool, fixedJoint.EnablePreProcessing, fixedJointComponent);
-				VX_DESERIALIZE_PROPERTY(IsBreakable, bool, fixedJoint.IsBreakable, fixedJointComponent);
+				VX_DESERIALIZE_PROPERTY(ConnectedActor, uint64_t, fixedJointComponent.ConnectedActor, fixedJointComponentData);
+				VX_DESERIALIZE_PROPERTY(BreakForce, float, fixedJointComponent.BreakForce, fixedJointComponentData);
+				VX_DESERIALIZE_PROPERTY(BreakTorque, float, fixedJointComponent.BreakTorque, fixedJointComponentData);
+				VX_DESERIALIZE_PROPERTY(EnableCollision, bool, fixedJointComponent.EnableCollision, fixedJointComponentData);
+				VX_DESERIALIZE_PROPERTY(EnablePreProcessing, bool, fixedJointComponent.EnablePreProcessing, fixedJointComponentData);
+				VX_DESERIALIZE_PROPERTY(IsBreakable, bool, fixedJointComponent.IsBreakable, fixedJointComponentData);
 			}
 
-			auto boxColliderComponent = actor["BoxColliderComponent"];
-			if (boxColliderComponent)
+			auto DeserializePhysicsMaterialFn = [](auto physicsMaterialData) {
+				AssetHandle materialHandle = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>();
+				SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(materialHandle);
+
+				physicsMaterial->StaticFriction = physicsMaterialData["StaticFriction"].as<float>();
+				physicsMaterial->DynamicFriction = physicsMaterialData["DynamicFriction"].as<float>();
+				physicsMaterial->Bounciness = physicsMaterialData["Bounciness"].as<float>();
+
+				if (physicsMaterialData["FrictionCombineMode"])
+					physicsMaterial->FrictionCombineMode = Utils::CombineModeFromString(physicsMaterialData["FrictionCombineMode"].as<std::string>());
+				if (physicsMaterialData["BouncinessCombineMode"])
+					physicsMaterial->BouncinessCombineMode = Utils::CombineModeFromString(physicsMaterialData["BouncinessCombineMode"].as<std::string>());
+			};
+
+			const YAML::Node boxColliderComponentData = actor["BoxColliderComponent"];
+			if (boxColliderComponentData)
 			{
-				auto& boxCollider = deserializedActor.AddComponent<BoxColliderComponent>();
+				BoxColliderComponent& boxColliderComponent = deserializedActor.AddComponent<BoxColliderComponent>();
 
-				boxCollider.HalfSize = boxColliderComponent["HalfSize"].as<glm::vec3>();
-				boxCollider.Offset = boxColliderComponent["Offset"].as<glm::vec3>();
-				if (boxColliderComponent["IsTrigger"])
-					boxCollider.IsTrigger = boxColliderComponent["IsTrigger"].as<bool>();
-				if (boxColliderComponent["Visible"])
-					boxCollider.Visible = boxColliderComponent["Visible"].as<bool>();
+				boxColliderComponent.HalfSize = boxColliderComponentData["HalfSize"].as<glm::vec3>();
+				boxColliderComponent.Offset = boxColliderComponentData["Offset"].as<glm::vec3>();
+				if (boxColliderComponentData["IsTrigger"])
+					boxColliderComponent.IsTrigger = boxColliderComponentData["IsTrigger"].as<bool>();
+				if (boxColliderComponentData["Visible"])
+					boxColliderComponent.Visible = boxColliderComponentData["Visible"].as<bool>();
 
-				auto physicsMaterialData = boxColliderComponent["PhysicsMaterial"];
+				const YAML::Node physicsMaterialData = boxColliderComponentData["PhysicsMaterial"];
 
 				if (physicsMaterialData)
 				{
-					AssetHandle materialHandle = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>();
-					SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(materialHandle);
-
-					physicsMaterial->StaticFriction = physicsMaterialData["StaticFriction"].as<float>();
-					physicsMaterial->DynamicFriction = physicsMaterialData["DynamicFriction"].as<float>();
-					physicsMaterial->Bounciness = physicsMaterialData["Bounciness"].as<float>();
-
-					if (physicsMaterialData["FrictionCombineMode"])
-						physicsMaterial->FrictionCombineMode = Utils::CombineModeFromString(physicsMaterialData["FrictionCombineMode"].as<std::string>());
-					if (physicsMaterialData["BouncinessCombineMode"])
-						physicsMaterial->BouncinessCombineMode = Utils::CombineModeFromString(physicsMaterialData["BouncinessCombineMode"].as<std::string>());
+					DeserializePhysicsMaterialFn(physicsMaterialData);
 				}
 			}
 
-			auto sphereColliderComponent = actor["SphereColliderComponent"];
-			if (sphereColliderComponent)
+			const YAML::Node sphereColliderComponentData = actor["SphereColliderComponent"];
+			if (sphereColliderComponentData)
 			{
-				auto& sphereCollider = deserializedActor.AddComponent<SphereColliderComponent>();
+				SphereColliderComponent& sphereColliderComponent = deserializedActor.AddComponent<SphereColliderComponent>();
 
-				sphereCollider.Radius = sphereColliderComponent["Radius"].as<float>();
-				sphereCollider.Offset = sphereColliderComponent["Offset"].as<Math::vec3>();
-				sphereCollider.IsTrigger = sphereColliderComponent["IsTrigger"].as<bool>();
-				if (sphereColliderComponent["Visible"])
-					sphereCollider.Visible = sphereColliderComponent["Visible"].as<bool>();
+				sphereColliderComponent.Radius = sphereColliderComponentData["Radius"].as<float>();
+				sphereColliderComponent.Offset = sphereColliderComponentData["Offset"].as<Math::vec3>();
+				sphereColliderComponent.IsTrigger = sphereColliderComponentData["IsTrigger"].as<bool>();
+				if (sphereColliderComponentData["Visible"])
+					sphereColliderComponent.Visible = sphereColliderComponentData["Visible"].as<bool>();
 
-				auto physicsMaterialData = boxColliderComponent["PhysicsMaterial"];
+				const YAML::Node physicsMaterialData = sphereColliderComponentData["PhysicsMaterial"];
 
 				if (physicsMaterialData)
 				{
-					AssetHandle materialHandle = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>();
-					SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(materialHandle);
-
-					physicsMaterial->StaticFriction = physicsMaterialData["StaticFriction"].as<float>();
-					physicsMaterial->DynamicFriction = physicsMaterialData["DynamicFriction"].as<float>();
-					physicsMaterial->Bounciness = physicsMaterialData["Bounciness"].as<float>();
-
-					if (physicsMaterialData["FrictionCombineMode"])
-						physicsMaterial->FrictionCombineMode = Utils::CombineModeFromString(physicsMaterialData["FrictionCombineMode"].as<std::string>());
-					if (physicsMaterialData["BouncinessCombineMode"])
-						physicsMaterial->BouncinessCombineMode = Utils::CombineModeFromString(physicsMaterialData["BouncinessCombineMode"].as<std::string>());
+					DeserializePhysicsMaterialFn(physicsMaterialData);
 				}
 			}
 
-			auto capsuleColliderComponent = actor["CapsuleColliderComponent"];
-			if (capsuleColliderComponent)
+			const YAML::Node capsuleColliderComponentData = actor["CapsuleColliderComponent"];
+			if (capsuleColliderComponentData)
 			{
-				auto& capsuleCollider = deserializedActor.AddComponent<CapsuleColliderComponent>();
+				CapsuleColliderComponent& capsuleColliderComponent = deserializedActor.AddComponent<CapsuleColliderComponent>();
 
-				capsuleCollider.Radius = capsuleColliderComponent["Radius"].as<float>();
-				capsuleCollider.Height = capsuleColliderComponent["Height"].as<float>();
-				capsuleCollider.Offset = capsuleColliderComponent["Offset"].as<Math::vec3>();
-				capsuleCollider.IsTrigger = capsuleColliderComponent["IsTrigger"].as<bool>();
-				if (capsuleColliderComponent["Visible"])
-					capsuleCollider.Visible = capsuleColliderComponent["Visible"].as<bool>();
+				capsuleColliderComponent.Radius = capsuleColliderComponentData["Radius"].as<float>();
+				capsuleColliderComponent.Height = capsuleColliderComponentData["Height"].as<float>();
+				capsuleColliderComponent.Offset = capsuleColliderComponentData["Offset"].as<Math::vec3>();
+				capsuleColliderComponent.IsTrigger = capsuleColliderComponentData["IsTrigger"].as<bool>();
+				if (capsuleColliderComponentData["Visible"])
+					capsuleColliderComponent.Visible = capsuleColliderComponentData["Visible"].as<bool>();
 
-				auto physicsMaterialData = boxColliderComponent["PhysicsMaterial"];
+				const YAML::Node physicsMaterialData = boxColliderComponentData["PhysicsMaterial"];
 
 				if (physicsMaterialData)
 				{
-					AssetHandle materialHandle = AssetManager::CreateMemoryOnlyAsset<PhysicsMaterial>();
-					SharedReference<PhysicsMaterial> physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(materialHandle);
-
-					physicsMaterial->StaticFriction = physicsMaterialData["StaticFriction"].as<float>();
-					physicsMaterial->DynamicFriction = physicsMaterialData["DynamicFriction"].as<float>();
-					physicsMaterial->Bounciness = physicsMaterialData["Bounciness"].as<float>();
-
-					if (physicsMaterialData["FrictionCombineMode"])
-						physicsMaterial->FrictionCombineMode = Utils::CombineModeFromString(physicsMaterialData["FrictionCombineMode"].as<std::string>());
-					if (physicsMaterialData["BouncinessCombineMode"])
-						physicsMaterial->BouncinessCombineMode = Utils::CombineModeFromString(physicsMaterialData["BouncinessCombineMode"].as<std::string>());
+					DeserializePhysicsMaterialFn(physicsMaterialData);
 				}
 			}
 
-			auto meshColliderComponent = actor["MeshColliderComponent"];
-			if (meshColliderComponent)
+			const YAML::Node meshColliderComponentData = actor["MeshColliderComponent"];
+			if (meshColliderComponentData)
 			{
-				auto& meshCollider = deserializedActor.AddComponent<MeshColliderComponent>();
+				MeshColliderComponent& meshColliderComponent = deserializedActor.AddComponent<MeshColliderComponent>();
 
 				// TODO
 			}
 
-			auto rigidbody2DComponent = actor["Rigidbody2DComponent"];
-			if (rigidbody2DComponent)
+			const YAML::Node rigidBody2DComponentData = actor["Rigidbody2DComponent"];
+			if (rigidBody2DComponentData)
 			{
-				auto& rb2d = deserializedActor.AddComponent<RigidBody2DComponent>();
+				RigidBody2DComponent& rigidBodyComponent = deserializedActor.AddComponent<RigidBody2DComponent>();
 
-				rb2d.Type = Utils::RigidBody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
-				if (rigidbody2DComponent["Velocity"])
-					rb2d.Velocity = rigidbody2DComponent["Velocity"].as<Math::vec2>();
-				if (rigidbody2DComponent["Drag"])
-					rb2d.Drag = rigidbody2DComponent["Drag"].as<float>();
-				if (rigidbody2DComponent["AngularVelocity"])
-					rb2d.AngularVelocity = rigidbody2DComponent["AngularVelocity"].as<float>();
-				if (rigidbody2DComponent["AngularDrag"])
-					rb2d.AngularDrag = rigidbody2DComponent["AngularDrag"].as<float>();
-				if (rigidbody2DComponent["GravityScale"])
-					rb2d.GravityScale = rigidbody2DComponent["GravityScale"].as<float>();
-				if (rigidbody2DComponent["FreezeRotation"])
-					rb2d.FixedRotation = rigidbody2DComponent["FreezeRotation"].as<bool>();
+				rigidBodyComponent.Type = Utils::RigidBody2DBodyTypeFromString(rigidBody2DComponentData["BodyType"].as<std::string>());
+				if (rigidBody2DComponentData["Velocity"])
+					rigidBodyComponent.Velocity = rigidBody2DComponentData["Velocity"].as<Math::vec2>();
+				if (rigidBody2DComponentData["Drag"])
+					rigidBodyComponent.Drag = rigidBody2DComponentData["Drag"].as<float>();
+				if (rigidBody2DComponentData["AngularVelocity"])
+					rigidBodyComponent.AngularVelocity = rigidBody2DComponentData["AngularVelocity"].as<float>();
+				if (rigidBody2DComponentData["AngularDrag"])
+					rigidBodyComponent.AngularDrag = rigidBody2DComponentData["AngularDrag"].as<float>();
+				if (rigidBody2DComponentData["GravityScale"])
+					rigidBodyComponent.GravityScale = rigidBody2DComponentData["GravityScale"].as<float>();
+				if (rigidBody2DComponentData["FreezeRotation"])
+					rigidBodyComponent.FixedRotation = rigidBody2DComponentData["FreezeRotation"].as<bool>();
 			}
 
-			auto boxCollider2DComponent = actor["BoxCollider2DComponent"];
-			if (boxCollider2DComponent)
+			const YAML::Node boxCollider2DComponentData = actor["BoxCollider2DComponent"];
+			if (boxCollider2DComponentData)
 			{
-				auto& bc2d = deserializedActor.AddComponent<BoxCollider2DComponent>();
+				BoxCollider2DComponent& boxColliderComponent = deserializedActor.AddComponent<BoxCollider2DComponent>();
 
-				bc2d.Offset = boxCollider2DComponent["Offset"].as<glm::vec2>();
-				bc2d.Size = boxCollider2DComponent["Size"].as<glm::vec2>();
-				bc2d.Density = boxCollider2DComponent["Density"].as<float>();
-				bc2d.Friction = boxCollider2DComponent["Friction"].as<float>();
-				bc2d.Restitution = boxCollider2DComponent["Restitution"].as<float>();
-				bc2d.RestitutionThreshold = boxCollider2DComponent["RestitutionThreshold"].as<float>();
-				if (boxCollider2DComponent["IsTrigger"])
-					bc2d.IsTrigger = boxCollider2DComponent["IsTrigger"].as<bool>();
+				boxColliderComponent.Offset = boxCollider2DComponentData["Offset"].as<glm::vec2>();
+				boxColliderComponent.Size = boxCollider2DComponentData["Size"].as<glm::vec2>();
+				boxColliderComponent.Density = boxCollider2DComponentData["Density"].as<float>();
+				boxColliderComponent.Friction = boxCollider2DComponentData["Friction"].as<float>();
+				boxColliderComponent.Restitution = boxCollider2DComponentData["Restitution"].as<float>();
+				boxColliderComponent.RestitutionThreshold = boxCollider2DComponentData["RestitutionThreshold"].as<float>();
+				if (boxCollider2DComponentData["IsTrigger"])
+					boxColliderComponent.IsTrigger = boxCollider2DComponentData["IsTrigger"].as<bool>();
 			}
 
-			auto circleCollider2DComponent = actor["CircleCollider2DComponent"];
-			if (circleCollider2DComponent)
+			const YAML::Node circleCollider2DComponentData = actor["CircleCollider2DComponent"];
+			if (circleCollider2DComponentData)
 			{
-				auto& cc2d = deserializedActor.AddComponent<CircleCollider2DComponent>();
+				CircleCollider2DComponent& circleColliderComponent = deserializedActor.AddComponent<CircleCollider2DComponent>();
 
-				cc2d.Offset = circleCollider2DComponent["Offset"].as<glm::vec2>();
-				cc2d.Radius = circleCollider2DComponent["Radius"].as<float>();
-				cc2d.Density = circleCollider2DComponent["Density"].as<float>();
-				cc2d.Friction = circleCollider2DComponent["Friction"].as<float>();
-				cc2d.Restitution = circleCollider2DComponent["Restitution"].as<float>();
-				cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
+				circleColliderComponent.Offset = circleCollider2DComponentData["Offset"].as<glm::vec2>();
+				circleColliderComponent.Radius = circleCollider2DComponentData["Radius"].as<float>();
+				circleColliderComponent.Density = circleCollider2DComponentData["Density"].as<float>();
+				circleColliderComponent.Friction = circleCollider2DComponentData["Friction"].as<float>();
+				circleColliderComponent.Restitution = circleCollider2DComponentData["Restitution"].as<float>();
+				circleColliderComponent.RestitutionThreshold = circleCollider2DComponentData["RestitutionThreshold"].as<float>();
 			}
 
-			auto scriptComponent = actor["ScriptComponent"];
-			if (scriptComponent)
+			const YAML::Node scriptComponentData = actor["ScriptComponent"];
+			if (scriptComponentData)
 			{
-				auto& sc = deserializedActor.AddComponent<ScriptComponent>();
-				sc.ClassName = scriptComponent["ClassName"].as<std::string>();
 				ScriptComponent& scriptComponent = deserializedActor.AddComponent<ScriptComponent>();
 				scriptComponent.ClassName = scriptComponentData["ClassName"].as<std::string>();
 				if (scriptComponentData["Enabled"])
@@ -1422,57 +1388,54 @@ namespace Vortex {
 				else
 					scriptComponent.Enabled = true;
 
-				if (ScriptEngine::ActorClassExists(sc.ClassName))
+				if (ScriptEngine::ScriptClassExists(scriptComponent.ClassName))
 				{
-					auto scriptFields = scriptComponent["ScriptFields"];
+					const YAML::Node scriptFieldData = scriptComponentData["ScriptFields"];
 
-					if (scriptFields)
+					if (scriptFieldData)
 					{
-						SharedReference<ScriptClass> actorClass = ScriptEngine::GetActorClass(sc.ClassName);
+						SharedReference<ScriptClass> scriptClass = ScriptEngine::GetScriptClass(scriptComponent.ClassName);
 
-						if (actorClass)
+						const std::map<std::string, ScriptField>& classFields = scriptClass->GetFields();
+						ScriptFieldMap& scriptFields = ScriptEngine::GetMutableScriptFieldMap(deserializedActor);
+
+						for (const YAML::Node& scriptField : scriptFieldData)
 						{
-							const auto& fields = actorClass->GetFields();
-							ScriptFieldMap& actorScriptFields = ScriptEngine::GetMutableScriptFieldMap(deserializedActor);
+							const std::string fieldName = scriptField["Name"].as<std::string>();
 
-							for (auto scriptField : scriptFields)
+							ScriptFieldInstance& fieldInstance = scriptFields[fieldName];
+
+							if (classFields.find(fieldName) == classFields.end())
 							{
-								std::string name = scriptField["Name"].as<std::string>();
+								VX_CONSOLE_LOG_WARN("Script Field '{}' was not found in Field Map!", fieldName);
+								continue;
+							}
 
-								ScriptFieldInstance& fieldInstance = actorScriptFields[name];
+							fieldInstance.Field = classFields.at(fieldName);
 
-								if (fields.find(name) == fields.end())
-								{
-									VX_CONSOLE_LOG_WARN("Script Field '{}' was not found in Field Map!", name);
-									continue;
-								}
+							const std::string typeString = scriptField["Type"].as<std::string>();
+							ScriptFieldType type = ScriptUtils::StringToScriptFieldType(typeString);
 
-								fieldInstance.Field = fields.at(name);
-
-								std::string typeString = scriptField["Type"].as<std::string>();
-								ScriptFieldType type = ScriptUtils::StringToScriptFieldType(typeString);
-
-								switch (type)
-								{
-									READ_SCRIPT_FIELD(Float, float)
-									READ_SCRIPT_FIELD(Double, double)
-									READ_SCRIPT_FIELD(Bool, bool)
-									READ_SCRIPT_FIELD(Char, int8_t)
-									READ_SCRIPT_FIELD(Short, int16_t)
-									READ_SCRIPT_FIELD(Int, int32_t)
-									READ_SCRIPT_FIELD(Long, int64_t)
-									READ_SCRIPT_FIELD(Byte, uint8_t)
-									READ_SCRIPT_FIELD(UShort, uint16_t)
-									READ_SCRIPT_FIELD(UInt, uint32_t)
-									READ_SCRIPT_FIELD(ULong, uint64_t)
-									READ_SCRIPT_FIELD(Vector2, Math::vec2)
-									READ_SCRIPT_FIELD(Vector3, Math::vec3)
-									READ_SCRIPT_FIELD(Vector4, Math::vec4)
-									READ_SCRIPT_FIELD(Color3, Math::vec3)
-									READ_SCRIPT_FIELD(Color4, Math::vec4)
-									READ_SCRIPT_FIELD(Actor, UUID)
-									READ_SCRIPT_FIELD(AssetHandle, UUID)
-								}
+							switch (type)
+							{
+								READ_SCRIPT_FIELD(Float, float)
+								READ_SCRIPT_FIELD(Double, double)
+								READ_SCRIPT_FIELD(Bool, bool)
+								READ_SCRIPT_FIELD(Char, int8_t)
+								READ_SCRIPT_FIELD(Short, int16_t)
+								READ_SCRIPT_FIELD(Int, int32_t)
+								READ_SCRIPT_FIELD(Long, int64_t)
+								READ_SCRIPT_FIELD(Byte, uint8_t)
+								READ_SCRIPT_FIELD(UShort, uint16_t)
+								READ_SCRIPT_FIELD(UInt, uint32_t)
+								READ_SCRIPT_FIELD(ULong, uint64_t)
+								READ_SCRIPT_FIELD(Vector2, Math::vec2)
+								READ_SCRIPT_FIELD(Vector3, Math::vec3)
+								READ_SCRIPT_FIELD(Vector4, Math::vec4)
+								READ_SCRIPT_FIELD(Color3, Math::vec3)
+								READ_SCRIPT_FIELD(Color4, Math::vec4)
+								READ_SCRIPT_FIELD(Actor, UUID)
+								READ_SCRIPT_FIELD(AssetHandle, UUID)
 							}
 						}
 					}	
