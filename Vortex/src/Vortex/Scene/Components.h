@@ -590,6 +590,7 @@ namespace Vortex {
 	struct VORTEX_API ScriptComponent
 	{
 		std::string ClassName;
+		bool Enabled = true;
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;

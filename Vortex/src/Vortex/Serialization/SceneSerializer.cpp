@@ -705,13 +705,16 @@ namespace Vortex {
 
 		if (actor.HasComponent<ScriptComponent>() && !actor.GetComponent<ScriptComponent>().ClassName.empty())
 		{
-			const auto& scriptComponent = actor.GetComponent<ScriptComponent>();
+			const ScriptComponent& scriptComponent = actor.GetComponent<ScriptComponent>();
 
 			// Script Class Fields
 			if (ScriptEngine::ActorClassExists(scriptComponent.ClassName))
 			{
 				out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
 				VX_SERIALIZE_PROPERTY(ClassName, scriptComponent.ClassName, out);
+			out << YAML::Key << "ScriptComponent" << YAML::BeginMap; // ScriptComponent
+			VX_SERIALIZE_PROPERTY(ClassName, scriptComponent.ClassName, out);
+			VX_SERIALIZE_PROPERTY(Enabled, scriptComponent.Enabled, out);
 
 				SharedReference<ScriptClass> actorClass = ScriptEngine::GetActorClass(scriptComponent.ClassName);
 				const auto& fields = actorClass->GetFields();
@@ -1406,6 +1409,12 @@ namespace Vortex {
 			{
 				auto& sc = deserializedActor.AddComponent<ScriptComponent>();
 				sc.ClassName = scriptComponent["ClassName"].as<std::string>();
+				ScriptComponent& scriptComponent = deserializedActor.AddComponent<ScriptComponent>();
+				scriptComponent.ClassName = scriptComponentData["ClassName"].as<std::string>();
+				if (scriptComponentData["Enabled"])
+					scriptComponent.Enabled = scriptComponentData["Enabled"].as<bool>();
+				else
+					scriptComponent.Enabled = true;
 
 				if (ScriptEngine::ActorClassExists(sc.ClassName))
 				{

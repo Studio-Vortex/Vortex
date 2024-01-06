@@ -66,6 +66,8 @@ namespace Vortex {
 			return false;
 
 		return ScriptEngine::Invoke(method, self);
+		if (!ScriptEngine::IsScriptComponentEnabled(self))
+			return false;
 	}
 
 	void Actor::OnEnabled() const
