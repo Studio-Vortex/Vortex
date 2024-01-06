@@ -292,6 +292,7 @@ namespace Vortex {
 
 					VX_SERIALIZE_PROPERTY(MeshHandle, meshHandle, out);
 					VX_SERIALIZE_PROPERTY(Visible, meshRendererComponent.Visible, out);
+					VX_SERIALIZE_PROPERTY(CastShadows, meshRendererComponent.CastShadows, out);
 
 					if (MeshImportOptions importOptions = mesh->GetImportOptions(); importOptions != MeshImportOptions{})
 					{
@@ -340,6 +341,7 @@ namespace Vortex {
 					VX_SERIALIZE_PROPERTY(MeshHandle, staticMeshHandle, out);
 					VX_SERIALIZE_PROPERTY(MeshType, Utils::MeshTypeToString(staticMeshRenderer.Type), out);
 					VX_SERIALIZE_PROPERTY(Visible, staticMeshRenderer.Visible, out);
+					VX_SERIALIZE_PROPERTY(CastShadows, staticMeshRendererComponent.CastShadows, out);
 
 					if (MeshImportOptions importOptions = staticMesh->GetImportOptions(); importOptions != MeshImportOptions{})
 					{
@@ -962,6 +964,8 @@ namespace Vortex {
 
 						if (meshComponent["Visible"])
 							meshRendererComponent.Visible = meshComponent["Visible"].as<bool>();
+						if (meshRendererComponentData["CastShadows"])
+							meshRendererComponent.CastShadows = meshRendererComponentData["CastShadows"].as<bool>();
 					}
 				}
 			}
@@ -999,6 +1003,8 @@ namespace Vortex {
 
 							if (staticMeshComponent["Visible"])
 								staticMeshRendererComponent.Visible = staticMeshComponent["Visible"].as<bool>();
+							if (staticMeshRendererComponentData["CastShadows"])
+								staticMeshRendererComponent.CastShadows = staticMeshRendererComponentData["CastShadows"].as<bool>();
 						}
 					}
 				}

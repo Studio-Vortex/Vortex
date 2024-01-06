@@ -1180,6 +1180,9 @@ namespace Vortex {
 			if (!meshRendererComponent.Visible)
 				continue;
 
+			if (!meshRendererComponent.CastShadows)
+				continue;
+
 			AssetHandle meshHandle = meshRendererComponent.Mesh;
 			if (!AssetManager::IsHandleValid(meshHandle))
 				continue;
@@ -1208,6 +1211,9 @@ namespace Vortex {
 				continue;
 
 			if (!staticMeshRendererComponent.Visible)
+				continue;
+
+			if (!staticMeshRendererComponent.CastShadows)
 				continue;
 
 			AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
