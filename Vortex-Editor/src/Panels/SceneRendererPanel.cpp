@@ -76,7 +76,7 @@ namespace Vortex {
 
 			UI::Table("Loaded Shaders", columns, VX_ARRAYSIZE(columns), Gui::GetContentRegionAvail(), [&]()
 			{
-				for (auto& shader : m_Shaders)
+				for (SharedReference<Shader>& shader : m_Shaders)
 				{
 					Gui::TableNextColumn();
 					const std::string& shaderName = shader->GetName();
@@ -84,7 +84,7 @@ namespace Vortex {
 					UI::Draw::Underline();
 
 					Gui::TableNextColumn();
-					std::string buttonName = "Reload##" + shaderName;
+					const std::string buttonName = "Reload##" + shaderName;
 
 					if (Gui::Button(buttonName.c_str()))
 					{
