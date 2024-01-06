@@ -55,19 +55,20 @@ namespace Vortex {
 		return false;
 	}
 
-	bool Actor::CallMethod(ManagedMethod method) const
+	bool Actor::CallMethod(ManagedMethod method, const std::vector<RuntimeMethodArgument>& argumentList) const
 	{
 		const Actor self = *this;
 
-		if (!ScriptEngine::HasValidScriptClass(self))
+		if (!ScriptEngine::IsScriptClassValid(self))
 			return false;
 
 		if (!ScriptEngine::ScriptInstanceHasMethod(self, method))
 			return false;
 
-		return ScriptEngine::Invoke(method, self);
 		if (!ScriptEngine::IsScriptComponentEnabled(self))
 			return false;
+
+		return ScriptEngine::Invoke(method, self, argumentList);
 	}
 
 	void Actor::OnEnabled() const

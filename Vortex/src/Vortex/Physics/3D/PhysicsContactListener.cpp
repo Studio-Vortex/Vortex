@@ -8,21 +8,6 @@
 
 namespace Vortex {
 
-	namespace Utils {
-
-		void CallMethod(Actor actor, ManagedMethod method, const std::vector<RuntimeMethodArgument>& argumentList = {})
-		{
-			if (!ScriptEngine::HasValidScriptClass(actor))
-				return;
-
-			if (!ScriptEngine::ScriptInstanceHasMethod(actor, method))
-				return;
-
-			ScriptEngine::Invoke(method, actor, argumentList);
-		}
-
-	}
-
 	void PhysicsContactListener::onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count)
 	{
 		Scene* contextScene = ScriptEngine::GetContextScene();
@@ -72,8 +57,8 @@ namespace Vortex {
 
 				RuntimeMethodArgument arg0(forceAndTorque);
 
-				Utils::CallMethod(actor, method, { arg0 });
-				Utils::CallMethod(connectedActor, method, { arg0 });
+				actor.CallMethod(method, { arg0 });
+				connectedActor.CallMethod(method, { arg0 });
 			}
 		}
 	}
@@ -135,11 +120,11 @@ namespace Vortex {
 
 			collision.ActorID = actorB.GetUUID();
 			RuntimeMethodArgument arg0(collision);
-			Utils::CallMethod(actorA, method, { arg0 });
+			actorA.CallMethod(method, { arg0 });
 
 			collision.ActorID = actorA.GetUUID();
 			RuntimeMethodArgument arg1(collision);
-			Utils::CallMethod(actorB, method, { arg1 });
+			actorB.CallMethod(method, { arg1 });
 		}
 		else if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_LOST_TOUCH)
 		{
@@ -148,11 +133,11 @@ namespace Vortex {
 
 			collision.ActorID = actorB.GetUUID();
 			RuntimeMethodArgument arg0(collision);
-			Utils::CallMethod(actorA, method, { arg0 });
+			actorA.CallMethod(method, { arg0 });
 
 			collision.ActorID = actorA.GetUUID();
 			RuntimeMethodArgument arg1(collision);
-			Utils::CallMethod(actorB, method, { arg1 });
+			actorB.CallMethod(method, { arg1 });
 		}
 	}
 
@@ -224,11 +209,11 @@ namespace Vortex {
 
 				collision.ActorID = otherActor.GetUUID();
 				RuntimeMethodArgument arg0(collision);
-				Utils::CallMethod(triggerActor, method, { arg0 });
+				triggerActor.CallMethod(method, { arg0 });
 
 				collision.ActorID = triggerActor.GetUUID();
 				RuntimeMethodArgument arg1(collision);
-				Utils::CallMethod(otherActor, method, { arg1 });
+				otherActor.CallMethod(method, { arg1 });
 			}
 			else if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
@@ -237,11 +222,11 @@ namespace Vortex {
 
 				collision.ActorID = otherActor.GetUUID();
 				RuntimeMethodArgument arg0(collision);
-				Utils::CallMethod(triggerActor, method, { arg0 });
+				triggerActor.CallMethod(method, { arg0 });
 
 				collision.ActorID = triggerActor.GetUUID();
 				RuntimeMethodArgument arg1(collision);
-				Utils::CallMethod(otherActor, method, { arg1 });
+				otherActor.CallMethod(method, { arg1 });
 			}
 		}
 	}
