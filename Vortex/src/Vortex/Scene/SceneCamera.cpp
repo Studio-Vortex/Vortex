@@ -29,6 +29,11 @@ namespace Vortex {
 			return;
 		}
 
+		if (Math::vec2(width, height) == m_ViewportSize)
+		{
+			return;
+		}
+
 		m_AspectRatio = (float)width / (float)height;
 		m_ViewportSize = { (float)width, (float)height };
 
