@@ -2,8 +2,8 @@
 
 #include "Vortex/Core/PlatformDetection.h"
 
-#include <vector>
 #include <memory>
+#include <cstdint>
 
 // DLL support
 #ifdef VX_PLATFORM_WINDOWS
@@ -49,7 +49,7 @@
 #endif // VX_64
 
 #define VX_VERIFY(x) { if(!(x)) { VX_ERROR("Verify Failed: {} {}", __FILE__, __LINE__); } }
-#define VX_CORE_VERIFY(x) { if (!(x)) { VX_ERROR("Verify Failed: {} {}", __FILE__, __LINE__); } }
+#define VX_CORE_VERIFY(x) { if (!(x)) { VX_CONSOLE_LOG_ERROR("Verify Failed: {} {}", __FILE__, __LINE__); } }
 
 #define VX_FORCE_INLINE inline
 
@@ -94,5 +94,26 @@ namespace Vortex {
 	{
 		return WeakRef<T>(ptr);
 	}
+
+	// --- TYPEDEFS -----------------------------------------------------
+	
+	typedef int8_t i8;
+	typedef int16_t i16;
+	typedef int32_t i32;
+	typedef int64_t i64;
+
+	typedef uint8_t u8;
+	typedef uint16_t u16;
+	typedef uint32_t u32;
+	typedef uint64_t u64;
+
+	typedef float f32;
+	typedef double f64;
+
+	typedef uint8_t byte;
+
+	// ------------------------------------------------------------------
+
+
 
 }
