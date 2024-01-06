@@ -997,7 +997,7 @@ namespace Vortex {
 							break;
 
 						ScriptComponent& scriptComponent = m_HoveredActor.AddOrReplaceComponent<ScriptComponent>();
-						const std::unordered_map<std::string, SharedReference<ScriptClass>> scriptClasses = ScriptEngine::GetClasses();
+						const std::unordered_map<std::string, SharedReference<ScriptClass>> scriptClasses = ScriptEngine::GetScriptClasses();
 
 						const std::string droppedClassName = Project::GetEditorAssetManager()->GetRelativePath(filepath).string();
 

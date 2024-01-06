@@ -432,6 +432,7 @@ namespace Vortex {
 
 			SelectionManager::SetSelectedActor(actor);
 			FocusOnActorName(true);
+			Gui::SetWindowFocus("Inspector");
 		}
 	}
 
@@ -1735,70 +1736,88 @@ namespace Vortex {
 			}
 		}
 
+		UI::EndPropertyGrid();
+
 		if (AssetManager::IsHandleValid(component.StaticMesh))
 		{
-			SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
+			if (UI::PropertyGridHeader("Materials"))
+			{
+				UI::BeginPropertyGrid();
 
-			SharedReference<MaterialTable>& materialTable = component.Materials;
+				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(component.StaticMesh);
 
-			uint32_t submeshIndex = 0;
+				SharedReference<MaterialTable>& materialTable = component.Materials;
 
-			auto OnMaterialDroppedFn = [&](const Fs::Path& filepath) {
-				// Make sure we are recieving an actual material otherwise we will have trouble opening it
-				if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::MaterialAsset)
-				{
-					AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
+				uint32_t submeshIndex = 0;
 
-					if (AssetManager::IsHandleValid(materialHandle))
+				auto OnMaterialDroppedFn = [&](const Fs::Path& filepath) {
+					// Make sure we are recieving an actual material otherwise we will have trouble opening it
+					if (AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath); type == AssetType::MaterialAsset)
 					{
-						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-						if (material)
+						AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
+
+						if (AssetManager::IsHandleValid(materialHandle))
 						{
-							materialTable->SetMaterial(submeshIndex, material->Handle);
-							material->SetName(FileSystem::RemoveFileExtension(filepath));
+							SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+							if (material)
+							{
+								materialTable->SetMaterial(submeshIndex, material->Handle);
+								material->SetName(FileSystem::RemoveFileExtension(filepath));
+							}
+						}
+						else
+						{
+							VX_CONSOLE_LOG_WARN("Failed to load material '{}'", filepath.filename().string());
 						}
 					}
 					else
 					{
 						VX_CONSOLE_LOG_WARN("Failed to load material '{}'", filepath.filename().string());
 					}
-				}
-				else
+				};
+
+				for (;;)
 				{
-					VX_CONSOLE_LOG_WARN("Failed to load material '{}'", filepath.filename().string());
-				}
-			};
-			
-			for (;;)
-			{
-				if (!materialTable->HasMaterial(submeshIndex))
-				{
-					if (materialTable->GetMaterialCount() == 0)
+					if (!materialTable->HasMaterial(submeshIndex))
 					{
-						if (!AssetManager::IsHandleValid(Renderer::GetWhiteMaterial()->Handle))
+						if (materialTable->GetMaterialCount() == 0)
 						{
-							Renderer::GetWhiteMaterial()->Handle = AssetHandle();
-							Project::GetEditorAssetManager()->AddMemoryOnlyAsset(Renderer::GetWhiteMaterial());
+							if (!AssetManager::IsHandleValid(Renderer::GetWhiteMaterial()->Handle))
+							{
+								Renderer::GetWhiteMaterial()->Handle = AssetHandle();
+								Project::GetEditorAssetManager()->AddMemoryOnlyAsset(Renderer::GetWhiteMaterial());
+							}
+
+							materialTable->SetMaterial(submeshIndex, Renderer::GetWhiteMaterial()->Handle);
 						}
 
-						materialTable->SetMaterial(submeshIndex, Renderer::GetWhiteMaterial()->Handle);
+						break;
 					}
 
-					break;
+					AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex);
+					std::string relativePath = Project::GetEditorAssetManager()->GetMetadata(materialHandle).Filepath.stem().string();
+					if (UI::PropertyAssetReference<Material>("Material", relativePath, materialHandle, OnMaterialDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry()))
+					{
+						materialTable->SetMaterial(submeshIndex, materialHandle);
+					}
+
+					submeshIndex++;
 				}
 
-				AssetHandle materialHandle = materialTable->GetMaterial(submeshIndex);
-				std::string relativePath = Project::GetEditorAssetManager()->GetMetadata(materialHandle).Filepath.stem().string();
-				if (UI::PropertyAssetReference<Material>("Material", relativePath, materialHandle, OnMaterialDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry()))
-				{
-					materialTable->SetMaterial(submeshIndex, materialHandle);
-				}
+				UI::EndPropertyGrid();
+				UI::EndTreeNode();
+			}
 
-				submeshIndex++;
+			if (UI::PropertyGridHeader("Rendering"))
+			{
+				UI::BeginPropertyGrid();
+
+				UI::Property("Cast Shadows", component.CastShadows);
+
+				UI::EndPropertyGrid();
+				UI::EndTreeNode();
 			}
 		}
-
-		UI::EndPropertyGrid();
 	}
 
 	void SceneHierarchyPanel::SpriteRendererComponentOnGuiRender(SpriteRendererComponent& component, Actor actor)
@@ -2836,21 +2855,19 @@ namespace Vortex {
 	{
 		UI::BeginPropertyGrid();
 
-		std::vector<const char*> actorClassNameStrings;
-		const bool scriptClassExists = ScriptEngine::ActorClassExists(component.ClassName);
+		UI::Property("Enabled", component.Enabled);
 
-		std::unordered_map<std::string, SharedReference<ScriptClass>> actorClasses = ScriptEngine::GetClasses();
+		std::vector<const char*> actorClassNameStrings;
+		const bool scriptClassExists = ScriptEngine::ScriptClassExists(component.ClassName);
+
+		std::unordered_map<std::string, SharedReference<ScriptClass>> actorClasses = ScriptEngine::GetScriptClasses();
 
 		for (auto& [className, actorScriptClass] : actorClasses)
 		{
 			actorClassNameStrings.push_back(className.c_str());
 		}
 
-		std::string currentClassName = "(null)";
-		if (!component.ClassName.empty())
-		{
-			currentClassName = component.ClassName;
-		}
+		std::string currentClassName = component.ClassName.empty() ? "(null)" : component.ClassName;
 
 		bool renderFields = true;
 
@@ -2865,17 +2882,19 @@ namespace Vortex {
 			component.ClassName = currentClassName;
 		}
 
-		if (renderFields == false) { // We can't render fields for some reason
+		if (renderFields == false) { // We can't render fields the class name was cleared
 			UI::EndPropertyGrid(); // cleanup
 			return;
 		}
 
 		const bool sceneRunning = m_ContextScene->IsRunning();
 
+		Gui::BeginDisabled(!component.Enabled);
+
 		// Fields
 		if (sceneRunning)
 		{
-			SharedReference<ScriptInstance> scriptInstance = ScriptEngine::GetActorScriptInstance(actor.GetUUID());
+			SharedReference<ScriptInstance> scriptInstance = ScriptEngine::GetScriptInstance(actor.GetUUID());
 
 			if (scriptInstance)
 			{
@@ -3059,7 +3078,7 @@ namespace Vortex {
 		{
 			if (scriptClassExists)
 			{
-				SharedReference<ScriptClass> actorClass = ScriptEngine::GetActorClass(component.ClassName);
+				SharedReference<ScriptClass> actorClass = ScriptEngine::GetScriptClass(component.ClassName);
 				const std::map<std::string, ScriptField>& fields = actorClass->GetFields();
 
 				ScriptFieldMap& actorScriptFields = ScriptEngine::GetMutableScriptFieldMap(actor);
@@ -3440,6 +3459,8 @@ namespace Vortex {
 				}
 			}
 		}
+
+		Gui::EndDisabled();
 
 		UI::EndPropertyGrid();
 	}
