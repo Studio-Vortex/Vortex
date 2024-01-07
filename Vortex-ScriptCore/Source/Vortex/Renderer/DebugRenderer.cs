@@ -1,4 +1,4 @@
-﻿namespace Vortex.Renderer {
+﻿namespace Vortex {
 
 	public static class DebugRenderer
 	{
