@@ -65,10 +65,13 @@ namespace Vortex {
 		#region DebugRenderer
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void DebugRenderer_DrawLine(ref Vector3 startPoint, ref Vector3 endPoint, ref Vector4 color);
+		internal extern static float DebugRenderer_GetLineWidth();
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void DebugRenderer_SetLineWidth(float width);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DebugRenderer_DrawLine(ref Vector3 startPoint, ref Vector3 endPoint, ref Vector4 color);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void DebugRenderer_DrawQuadBillboard(ref Vector3 translation, ref Vector2 size, ref Vector4 color);

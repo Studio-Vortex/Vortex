@@ -234,18 +234,18 @@ namespace Vortex {
 
 #pragma region DebugRenderer
 
-		void DebugRenderer_DrawLine(const Math::vec3* startPoint, const Math::vec3* endPoint, const Math::vec4* color)
+		float DebugRenderer_GetLineWidth()
 		{
 			Scene* contextScene = GetContextScene();
 			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
 
 			if (!primaryCameraActor)
 			{
-				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawLine without a primary camera! Attach a camera component to an actor and enable 'Primary'");
-				return;
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.SetLineWidth without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				return 0.0f;
 			}
 
-			Renderer2D::DrawLine(*startPoint, *endPoint, *color);
+			return Renderer2D::GetLineWidth();
 		}
 
 		void DebugRenderer_SetLineWidth(float width)
@@ -260,6 +260,20 @@ namespace Vortex {
 			}
 
 			Renderer2D::SetLineWidth(width);
+		}
+
+		void DebugRenderer_DrawLine(const Math::vec3* startPoint, const Math::vec3* endPoint, const Math::vec4* color)
+		{
+			Scene* contextScene = GetContextScene();
+			Actor primaryCameraActor = contextScene->GetPrimaryCameraActor();
+
+			if (!primaryCameraActor)
+			{
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawLine without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				return;
+			}
+
+			Renderer2D::DrawLine(*startPoint, *endPoint, *color);
 		}
 
 		void DebugRenderer_DrawQuadBillboard(const Math::vec3* translation, const Math::vec2* size, const Math::vec4* color)
@@ -9259,8 +9273,9 @@ namespace Vortex {
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_GetGamma);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_SetGamma);
 
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawLine);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_GetLineWidth);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_SetLineWidth);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawLine);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawQuadBillboard);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawCircleVec2);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_DrawCircleVec3);

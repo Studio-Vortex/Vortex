@@ -2,12 +2,16 @@
 
 	public static class DebugRenderer
 	{
+		public static float LineWidth
+		{
+			get => InternalCalls.DebugRenderer_GetLineWidth();
+			set => InternalCalls.DebugRenderer_SetLineWidth(value);
+		}
+
 		public static void DrawLine(Vector3 startPoint, Vector3 endPoint, Vector4 color)
 		{
 			InternalCalls.DebugRenderer_DrawLine(ref startPoint, ref endPoint, ref color);
 		}
-
-		public static void SetLineWidth(float width) => InternalCalls.DebugRenderer_SetLineWidth(width);
 
 		public static void DrawQuadBillboard(Vector3 translation, Vector2 size, Vector4 color)
 		{
