@@ -2784,7 +2784,13 @@ namespace Vortex {
 			{
 				if (selectedActor)
 				{
-					m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnActorName(true);
+					SharedReference<SceneHierarchyPanel> sceneHierarchyPanel = m_PanelManager->GetPanel<SceneHierarchyPanel>();
+					sceneHierarchyPanel->FocusOnActorName(true);
+					bool& inspectorOpen = sceneHierarchyPanel->IsInspectorOpen();
+					if (!inspectorOpen)
+					{
+						inspectorOpen = true;
+					}
 				}
 
 				break;
