@@ -294,7 +294,7 @@ namespace Vortex {
 			renderPacket.PrimaryCameraProjectionMatrix = m_SecondEditorCamera->GetProjectionMatrix();
 			renderPacket.TargetFramebuffer = m_SecondViewportFramebuffer;
 			renderPacket.Scene = m_ActiveScene.Raw();
-			renderPacket.EditorScene = true;
+			renderPacket.IsEditorScene = true;
 			m_SecondViewportRenderer.RenderScene(renderPacket);
 
 			// Scene Viewport Actor Selection
