@@ -547,12 +547,16 @@ namespace Vortex {
 		{
 			case ScriptMethod::OnAwake:
 			{
-				instance->InvokeOnAwake();
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnAwake();
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				break;
 			}
 			case ScriptMethod::OnCreate:
 			{
-				instance->InvokeOnCreate();
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnCreate();
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				break;
 			}
 			case ScriptMethod::OnUpdateDelta: // fallthrough
@@ -566,12 +570,16 @@ namespace Vortex {
 
 				const RuntimeMethodArgument& arg0 = argumentList.front();
 				VX_CORE_ASSERT(arg0.Is(RuntimeArgumentType::TimeStep), "unexpected argument type!");
-				instance->InvokeOnUpdate(arg0.AsTimeStep());
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnUpdate(arg0.AsTimeStep());
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				break;
 			}
 			case ScriptMethod::OnDestroy:
 			{
-				instance->InvokeOnDestroy();
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnDestroy();
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				
 				// Remove the instance from the script instance map
 				s_Data->ActorInstances.erase(actorUUID);
@@ -588,7 +596,9 @@ namespace Vortex {
 
 				const RuntimeMethodArgument& arg0 = argumentList.front();
 				VX_CORE_ASSERT(arg0.Is(RuntimeArgumentType::Collision), "unexpected argument type!");
-				instance->InvokeOnCollisionEnter(arg0.AsCollision());
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnCollisionEnter(arg0.AsCollision());
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				break;
 			}
 			case ScriptMethod::OnCollisionExit:
@@ -601,7 +611,9 @@ namespace Vortex {
 
 				const RuntimeMethodArgument& arg0 = argumentList.front();
 				VX_CORE_ASSERT(arg0.Is(RuntimeArgumentType::Collision), "unexpected argument type!");
-				instance->InvokeOnCollisionExit(arg0.AsCollision());
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnCollisionExit(arg0.AsCollision());
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				break;
 			}
 			case ScriptMethod::OnTriggerEnter:
@@ -614,7 +626,9 @@ namespace Vortex {
 
 				const RuntimeMethodArgument& arg0 = argumentList.front();
 				VX_CORE_ASSERT(arg0.Is(RuntimeArgumentType::Collision), "unexpected argument type!");
-				instance->InvokeOnTriggerEnter(arg0.AsCollision());
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnTriggerEnter(arg0.AsCollision());
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				break;
 			}
 			case ScriptMethod::OnTriggerExit:
@@ -627,7 +641,9 @@ namespace Vortex {
 
 				const RuntimeMethodArgument& arg0 = argumentList.front();
 				VX_CORE_ASSERT(arg0.Is(RuntimeArgumentType::Collision), "unexpected argument type!");
-				instance->InvokeOnTriggerExit(arg0.AsCollision());
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnTriggerExit(arg0.AsCollision());
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				break;
 			}
 			case ScriptMethod::OnFixedJointDisconnected:
@@ -640,27 +656,37 @@ namespace Vortex {
 
 				const RuntimeMethodArgument& arg0 = argumentList.front();
 				VX_CORE_ASSERT(arg0.Is(RuntimeArgumentType::ForceAndTorque), "unexpected argument type!");
-				instance->InvokeOnFixedJointDisconnected(arg0.AsForceAndTorque());
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnFixedJointDisconnected(arg0.AsForceAndTorque());
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				break;
 			}
 			case ScriptMethod::OnEnable:
 			{
-				instance->InvokeOnEnable();
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnEnable();
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				break;
 			}
 			case ScriptMethod::OnDisable:
 			{
-				instance->InvokeOnDisable();
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnDisable();
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				break;
 			}
 			case ScriptMethod::OnDebugRender:
 			{
-				instance->InvokeOnDebugRender();
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnDebugRender();
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				break;
 			}
 			case ScriptMethod::OnGuiRender:
 			{
-				instance->InvokeOnGuiRender();
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnGuiRender();
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
 				break;
 			}
 		}
