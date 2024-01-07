@@ -2784,13 +2784,7 @@ namespace Vortex {
 			{
 				if (selectedActor)
 				{
-					SharedReference<SceneHierarchyPanel> sceneHierarchyPanel = m_PanelManager->GetPanel<SceneHierarchyPanel>();
-					sceneHierarchyPanel->FocusOnActorName(true);
-					bool& inspectorOpen = sceneHierarchyPanel->IsInspectorOpen();
-					if (!inspectorOpen)
-					{
-						inspectorOpen = true;
-					}
+					m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnActorName(true);
 				}
 
 				break;
@@ -2865,11 +2859,13 @@ namespace Vortex {
 				CircleRendererComponent,
 				ParticleEmitterComponent,
 				TextMeshComponent,
+				ButtonComponent,
 				CameraComponent,
 				LightSourceComponent,
 				AudioSourceComponent>())
 			{
 				SelectionManager::SetSelectedActor(m_HoveredActor);
+				m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnActorName(false);
 				return false;
 			}
 		}

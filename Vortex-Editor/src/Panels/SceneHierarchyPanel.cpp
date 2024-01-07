@@ -18,6 +18,8 @@ namespace Vortex {
 #define ACTOR_MAX_MARKER_SIZE 64
 #define ACTOR_MAX_CHILD_ACTOR_SEARCH_DEPTH 10
 
+#define INSPECTOR_PANEL_NAME "Inspector"
+
 	SceneHierarchyPanel::SceneHierarchyPanel(const SharedReference<Scene>& context)
 	{
 		SetSceneContext(context);
@@ -115,7 +117,23 @@ namespace Vortex {
 		return actor;
 	}
 
-	void SceneHierarchyPanel::DisplayCreateActorMenu(const EditorCamera* editorCamera)
+    void SceneHierarchyPanel::FocusOnActorName(bool shouldFocus)
+    {
+		m_ActorShouldBeRenamed = shouldFocus;
+
+		if (!m_ActorShouldBeRenamed)
+		{
+			return;
+		}
+
+		if (!IsInspectorOpen())
+		{
+			s_ShowInspectorPanel = true;
+		}
+		Gui::SetWindowFocus(INSPECTOR_PANEL_NAME);
+    }
+
+    void SceneHierarchyPanel::DisplayCreateActorMenu(const EditorCamera* editorCamera, Actor parent)
 	{
 		Actor actor;
 
@@ -420,20 +438,24 @@ namespace Vortex {
 			Gui::EndMenu();
 		}
 
-		if (actor)
+		if (!actor)
 		{
-			Actor parent = SelectionManager::GetSelectedActor();
-			if (parent)
-			{
-				m_ContextScene->ParentActor(actor, parent);
-				ImGuiID parentActorTreeNodeID = Gui::GetID((void*)(uint32_t)parent);
-				Gui::ActivateItem(parentActorTreeNodeID);
-			}
-
-			SelectionManager::SetSelectedActor(actor);
-			FocusOnActorName(true);
-			Gui::SetWindowFocus("Inspector");
+			return;
 		}
+
+		// Parent the child
+		if (parent)
+		{
+			Actor child = actor;
+			m_ContextScene->ParentActor(child, parent);
+
+			// activate parent tree node
+			const ImGuiID parentActorTreeNodeID = Gui::GetID((void*)(uint32_t)parent);
+			Gui::ActivateItem(parentActorTreeNodeID);
+		}
+
+		SelectionManager::SetSelectedActor(actor);
+		FocusOnActorName(true);
 	}
 
 	void SceneHierarchyPanel::RenderSceneHierarchy(Actor hoveredActor, const EditorCamera* editorCamera)
@@ -558,7 +580,7 @@ namespace Vortex {
 	{
 		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
 
-		if (Gui::Begin("Inspector", &s_ShowInspectorPanel, flags))
+		if (Gui::Begin(INSPECTOR_PANEL_NAME, &s_ShowInspectorPanel, flags))
 		{
 			if (Actor selected = SelectionManager::GetSelectedActor())
 			{
@@ -831,7 +853,8 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Add Child Actor"))
 			{
-				DisplayCreateActorMenu(editorCamera);
+				Actor parent = SelectionManager::GetSelectedActor();
+				DisplayCreateActorMenu(editorCamera, parent);
 				Gui::EndMenu();
 			}
 			separator();

@@ -19,9 +19,9 @@ namespace Vortex {
 		void SetSceneContext(SharedReference<Scene> scene) override;
 
 		inline bool IsFocusedOnActorName() const { return m_IsEditingActorName; }
-		inline void FocusOnActorName(bool shouldFocus) { m_ActorShouldBeRenamed = shouldFocus; }
+		void FocusOnActorName(bool shouldFocus);
 
-		void DisplayCreateActorMenu(const EditorCamera* editorCamera);
+		void DisplayCreateActorMenu(const EditorCamera* editorCamera, Actor parent = {});
 
 		inline bool& IsInspectorOpen() { return s_ShowInspectorPanel; }
 
