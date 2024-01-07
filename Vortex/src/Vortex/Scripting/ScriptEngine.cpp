@@ -552,6 +552,13 @@ namespace Vortex {
 					return false;
 				break;
 			}
+			case ScriptMethod::OnEnable:
+			{
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnEnable();
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
+				break;
+			}
 			case ScriptMethod::OnCreate:
 			{
 				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnCreate();
@@ -559,31 +566,11 @@ namespace Vortex {
 					return false;
 				break;
 			}
-			case ScriptMethod::OnUpdateDelta: // fallthrough
 			case ScriptMethod::OnUpdate:
 			{
-				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
-				if (argumentList.size() < 1)
-				{
-					return false;
-				}
-
-				const RuntimeMethodArgument& arg0 = argumentList.front();
-				VX_CORE_ASSERT(arg0.Is(RuntimeArgumentType::TimeStep), "unexpected argument type!");
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnUpdate(arg0.AsTimeStep());
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnUpdate();
 				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
 					return false;
-				break;
-			}
-			case ScriptMethod::OnDestroy:
-			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnDestroy();
-				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
-					return false;
-				
-				// Remove the instance from the script instance map
-				s_Data->ActorInstances.erase(actorUUID);
-
 				break;
 			}
 			case ScriptMethod::OnCollisionEnter:
@@ -661,18 +648,22 @@ namespace Vortex {
 					return false;
 				break;
 			}
-			case ScriptMethod::OnEnable:
-			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnEnable();
-				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
-					return false;
-				break;
-			}
 			case ScriptMethod::OnDisable:
 			{
 				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnDisable();
 				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
 					return false;
+				break;
+			}
+			case ScriptMethod::OnDestroy:
+			{
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnDestroy();
+				if (!result.some() || ScriptUtils::RT_HandleInvokeResult(result.value()))
+					return false;
+
+				// Remove the instance from the script instance map
+				s_Data->ActorInstances.erase(actorUUID);
+
 				break;
 			}
 			case ScriptMethod::OnDebugRender:

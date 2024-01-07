@@ -32,16 +32,16 @@ namespace Vortex {
 		~ScriptInstance() = default;
 
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnAwake();
+		vxstd::option<RT_ScriptInvokeResult> InvokeOnEnable();
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnCreate();
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnUpdate(TimeStep delta);
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnDestroy();
+		vxstd::option<RT_ScriptInvokeResult> InvokeOnUpdate();
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnCollisionEnter(const Collision& collision);
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnCollisionExit(const Collision& collision);
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnTriggerEnter(const Collision& collision);
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnTriggerExit(const Collision& collision);
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque);
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnEnable();
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnDisable();
+		vxstd::option<RT_ScriptInvokeResult> InvokeOnDestroy();
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnDebugRender();
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnGuiRender();
 

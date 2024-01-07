@@ -2829,11 +2829,6 @@ namespace Vortex {
 			return false;
 		}
 
-		if (m_SceneViewportHovered && !InEditSceneState())
-		{
-			return false;
-		}
-
 		if (m_GizmoType != -1 && ImGuizmo::IsOver())
 		{
 			return false;

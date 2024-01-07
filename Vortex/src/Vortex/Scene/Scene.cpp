@@ -497,11 +497,7 @@ namespace Vortex {
 				if (!actor.IsActive())
 					continue;
 
-				if (!actor.CallMethod(ScriptMethod::OnUpdate))
-				{
-					RuntimeMethodArgument arg0(delta);
-					actor.CallMethod(ScriptMethod::OnUpdateDelta, { arg0 });
-				}
+				actor.CallMethod(ScriptMethod::OnUpdate);
 			}
 
 #ifndef VX_DIST

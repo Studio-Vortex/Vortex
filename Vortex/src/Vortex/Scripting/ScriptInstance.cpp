@@ -14,7 +14,6 @@ namespace Vortex {
 
 		m_ScriptMethods[ScriptMethod::OnAwake] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnAwake), 0);
 		m_ScriptMethods[ScriptMethod::OnCreate] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnCreate), 0);
-		m_ScriptMethods[ScriptMethod::OnUpdateDelta] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnUpdate), 1);
 		m_ScriptMethods[ScriptMethod::OnUpdate] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnUpdate), 0);
 		m_ScriptMethods[ScriptMethod::OnDestroy] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnDestroy), 0);
 		m_ScriptMethods[ScriptMethod::OnCollisionEnter] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnCollisionEnter), 1);
@@ -34,41 +33,21 @@ namespace Vortex {
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnEnable()
+	{
+		ScriptMethod method = ScriptMethod::OnEnable;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
 	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCreate()
 	{
 		ScriptMethod method = ScriptMethod::OnCreate;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnUpdate(TimeStep delta)
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnUpdate()
 	{
-		MonoMethod* onUpdateMethod = nullptr;
-		void* param = nullptr;
-
-		if (ScriptMethodExists(ScriptMethod::OnUpdateDelta))
-		{
-			float dt = delta.GetDeltaTime();
-			param = &dt;
-			onUpdateMethod = m_ScriptMethods[ScriptMethod::OnUpdateDelta];
-		}
-		else if (ScriptMethodExists(ScriptMethod::OnUpdate))
-		{
-			onUpdateMethod = m_ScriptMethods[ScriptMethod::OnUpdate];
-		}
-
-		// No OnUpdate method was found so just leave
-		if (onUpdateMethod == nullptr)
-		{
-			return vxstd::make_option<RT_ScriptInvokeResult>();
-		}
-
-		RT_ScriptInvokeResult result = ScriptUtils::InvokeManagedMethod(m_Instance, onUpdateMethod, &param);
-		return vxstd::make_option(result);
-	}
-
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDestroy()
-	{
-		ScriptMethod method = ScriptMethod::OnDestroy;
+		ScriptMethod method = ScriptMethod::OnUpdate;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
@@ -107,15 +86,15 @@ namespace Vortex {
 		return InvokeParameteredMethodInternal(method, params);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnEnable()
-	{
-		ScriptMethod method = ScriptMethod::OnEnable;
-		return InvokeParameteredMethodInternal(method, nullptr);
-	}
-
 	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDisable()
 	{
 		ScriptMethod method = ScriptMethod::OnDisable;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDestroy()
+	{
+		ScriptMethod method = ScriptMethod::OnDestroy;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 

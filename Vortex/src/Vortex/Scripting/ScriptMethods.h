@@ -5,22 +5,32 @@
 #include <string>
 
 namespace Vortex {
-
+	
 	enum class VORTEX_API ScriptMethod
 	{
+		// Initialization
 		OnAwake,
+		OnEnable,
 		OnCreate,
-		OnUpdateDelta,
+
+		// Game-Logic
 		OnUpdate,
-		OnDestroy,
+
+		// Physics
 		OnCollisionEnter,
 		OnCollisionExit,
 		OnTriggerEnter,
 		OnTriggerExit,
 		OnFixedJointDisconnected,
-		OnEnable,
+
+		// Decommissioning
 		OnDisable,
+		OnDestroy,
+		
+		// Rendering
 		OnDebugRender,
+
+		// Gui
 		OnGuiRender,
 	};
 
