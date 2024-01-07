@@ -146,15 +146,6 @@ namespace Vortex {
 		internal extern static void Actor_RemoveComponent(ulong actorID, Type componentType);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Actor_FindChildByName(ulong actorID, string name);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static Actor[] Actor_GetChildren(ulong actorID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Actor_GetChild(ulong actorID, uint index);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static string Actor_GetTag(ulong actorID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
@@ -167,13 +158,19 @@ namespace Vortex {
 		internal extern static void Actor_SetMarker(ulong actorID, string value);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static object Actor_GetScriptInstance(ulong actorID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static Actor[] Actor_GetChildren(ulong actorID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Actor_GetChild(ulong actorID, uint index);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Actor_AddChild(ulong parentActorID, ulong childActorID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool Actor_RemoveChild(ulong parentActorID, ulong childActorID);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static object Actor_GetScriptInstance(ulong actorID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Actor_Destroy(ulong actorID, bool excludeChildren);

@@ -22,6 +22,16 @@
 			return new Actor(actorID);
 		}
 
+		public static Actor FindChildByName(Actor actor, string name)
+		{
+			ulong actorID = InternalCalls.Scene_FindChildByName(actor.ID, name);
+
+			if (actorID == 0)
+				return null;
+
+			return new Actor(actorID);
+		}
+
 		public static Actor CreateActor(string name = "")
 		{
 			ulong actorID = InternalCalls.Scene_CreateActor(name);

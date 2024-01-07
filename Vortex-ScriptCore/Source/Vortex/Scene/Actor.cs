@@ -70,17 +70,9 @@ namespace Vortex {
 		protected virtual void OnDebugRender() { }
 		protected virtual void OnGuiRender() { }
 
-		public void Destroy(Actor actor, bool excludeChildren = false) => InternalCalls.Actor_Destroy(actor.ID, excludeChildren);
-		public void Destroy(Actor actor, float delay, bool excludeChildren = false) => InternalCalls.Actor_DestroyWithDelay(actor.ID, delay, excludeChildren);
-
-		public void Invoke(string method) => InternalCalls.Actor_Invoke(ID, method);
-		public void Invoke(string method, float delay) => InternalCalls.Actor_InvokeWithDelay(ID, method, delay);
-
-		public Actor FindActorByName(string name) => Scene.FindActorByName(name);
-
-		public Actor FindChildByName(string name)
+		public Actor GetChild(uint index)
 		{
-			ulong actorID = InternalCalls.Actor_FindChildByName(ID, name);
+			ulong actorID = InternalCalls.Actor_GetChild(ID, index);
 
 			if (actorID == 0)
 				return null;
@@ -88,7 +80,24 @@ namespace Vortex {
 			return new Actor(actorID);
 		}
 
+		public bool AddChild(Actor child) => InternalCalls.Actor_AddChild(ID, child.ID);
+		public bool RemoveChild(Actor child) => InternalCalls.Actor_RemoveChild(ID, child.ID);
+
+		public Actor FindActorByName(string name) => Scene.FindActorByName(name);
+		public Actor FindChildByName(string name) => Scene.FindChildByName(this, name);
+
 		public Actor Instantiate(Actor actor) => Scene.Instantiate(actor);
+		public Actor Instantiate(Actor actor, Vector3 worldPos) => Scene.Instantiate(actor, worldPos);
+		public Actor Instantiate(Actor actor, Vector3 worldPos, Quaternion orientation) => Scene.Instantiate(actor, worldPos, orientation);
+		public Actor Instantiate(Actor actor, Actor parent) => Scene.Instantiate(actor, parent);
+		public Actor Instantiate(Actor actor, Actor parent, Vector3 worldPos) => Scene.Instantiate(actor, parent, worldPos);
+		public Actor Instantiate(Actor actor, Actor parent, Vector3 worldPos, Quaternion orientation) => Scene.Instantiate(actor, parent, worldPos, orientation);
+
+		public void Invoke(string method) => InternalCalls.Actor_Invoke(ID, method);
+		public void Invoke(string method, float delay) => InternalCalls.Actor_InvokeWithDelay(ID, method, delay);
+
+		public void Destroy(Actor actor, bool excludeChildren = false) => InternalCalls.Actor_Destroy(actor.ID, excludeChildren);
+		public void Destroy(Actor actor, float delay, bool excludeChildren = false) => InternalCalls.Actor_DestroyWithDelay(actor.ID, delay, excludeChildren);
 
 		public bool HasComponent<T>()
 			where T : Component, new()
@@ -144,19 +153,6 @@ namespace Vortex {
 			component = new T() { Actor = this };
 			return true;
 		}
-
-		public Actor GetChild(uint index)
-		{
-			ulong actorID = InternalCalls.Actor_GetChild(ID, index);
-
-			if (actorID == 0)
-				return null;
-
-			return new Actor(actorID);
-		}
-
-		public bool AddChild(Actor child) =>  InternalCalls.Actor_AddChild(ID, child.ID);
-		public bool RemoveChild(Actor child) => InternalCalls.Actor_RemoveChild(ID, child.ID);
 
 		public bool Is<T>()
 			where T : Actor, new()

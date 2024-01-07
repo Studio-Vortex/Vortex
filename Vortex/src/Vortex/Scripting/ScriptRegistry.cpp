@@ -428,9 +428,9 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
-			const auto& children = actor.Children();
+			const std::vector<UUID>& children = actor.Children();
 
-			for (const auto& child : children)
+			for (const UUID& child : children)
 			{
 				Actor childActor = contextScene->TryGetActorWithUUID(child);
 
@@ -465,7 +465,6 @@ namespace Vortex {
 			}
 
 			Actor duplicate = contextScene->DuplicateActor(actor);
-
 			return duplicate.GetUUID();
 		}
 
@@ -556,39 +555,6 @@ namespace Vortex {
 			s_Data.ActorRemoveComponentFuncs.at(managedType)(actor);
 		}
 
-		MonoArray* Actor_GetChildren(UUID actorUUID)
-		{
-			Actor actor = GetActor(actorUUID);
-
-			const std::vector<UUID>& children = actor.Children();
-
-			MonoClass* coreActorClass = ScriptEngine::GetCoreActorClass()->GetMonoClass();
-			VX_CORE_ASSERT(coreActorClass, "Core Actor Class was Invalid!");
-
-			ManagedArray managedArray(coreActorClass, children.size());
-			managedArray.FillFromVector(children);
-			return managedArray.GetHandle();
-		}
-
-		uint64_t Actor_GetChild(UUID actorUUID, uint32_t index)
-		{
-			Scene* contextScene = GetContextScene();
-			Actor actor = GetActor(actorUUID);
-
-			const std::vector<UUID>& children = actor.Children();
-			if (index > (children.size() - 1))
-			{
-				VX_CORE_ASSERT(false, "Index out of bounds!");
-				return 0;
-			}
-
-			uint64_t childUUID = children[index];
-			Actor child = contextScene->TryGetActorWithUUID(childUUID);
-			VX_CORE_ASSERT(child, "Child UUID was Invalid!");
-
-			return child.GetUUID();
-		}
-
 		MonoString* Actor_GetTag(UUID actorUUID)
 		{
 			Actor actor = GetActor(actorUUID);
@@ -627,6 +593,12 @@ namespace Vortex {
 			tagComponent.Marker = mstring.String();
 		}
 
+		MonoObject* Actor_GetScriptInstance(UUID actorUUID)
+		{
+			Scene* contextScene = GetContextScene();
+			return ScriptEngine::TryGetManagedInstance(actorUUID);
+		}
+
 		bool Actor_AddChild(UUID parentUUID, UUID childUUID)
 		{
 			Scene* contextScene = GetContextScene();
@@ -657,10 +629,37 @@ namespace Vortex {
 			return false;
 		}
 
-		MonoObject* Actor_GetScriptInstance(UUID actorUUID)
+		MonoArray* Actor_GetChildren(UUID actorUUID)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			const std::vector<UUID>& children = actor.Children();
+
+			MonoClass* coreActorClass = ScriptEngine::GetCoreActorClass()->GetMonoClass();
+			VX_CORE_ASSERT(coreActorClass, "Core Actor Class was Invalid!");
+
+			ManagedArray managedArray(coreActorClass, children.size());
+			managedArray.FillFromVector(children);
+			return managedArray.GetHandle();
+		}
+
+		uint64_t Actor_GetChild(UUID actorUUID, uint32_t index)
 		{
 			Scene* contextScene = GetContextScene();
-			return ScriptEngine::TryGetManagedInstance(actorUUID);
+			Actor actor = GetActor(actorUUID);
+
+			const std::vector<UUID>& children = actor.Children();
+			if (index > (children.size() - 1))
+			{
+				VX_CORE_ASSERT(false, "Index out of bounds!");
+				return 0;
+			}
+
+			uint64_t childUUID = children[index];
+			Actor child = contextScene->TryGetActorWithUUID(childUUID);
+			VX_CORE_ASSERT(child, "Child UUID was Invalid!");
+
+			return child.GetUUID();
 		}
 
 		void Actor_Destroy(UUID actorUUID, bool excludeChildren)
@@ -9299,15 +9298,15 @@ namespace Vortex {
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_AddComponent);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_HasComponent);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_RemoveComponent);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetChildren);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetChild);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetTag);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_SetTag);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetMarker);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_SetMarker);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetScriptInstance);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetChildren);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetChild);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_AddChild);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_RemoveChild);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_GetScriptInstance);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_Destroy);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_DestroyWithDelay);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_Invoke);

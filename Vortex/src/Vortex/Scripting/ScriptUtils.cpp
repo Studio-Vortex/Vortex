@@ -122,16 +122,52 @@ namespace Vortex {
 		return mono_class_from_name(assemblyImage, classNamespace.c_str(), className.c_str());
 	}
 
-	bool ScriptUtils::RT_HandleInvokeResult(const RT_ScriptInvokeResult& result)
+	struct MonoExceptionInfo
 	{
-		if (!result.Exception)
+		std::string Typename;
+		std::string Source;
+		std::string Message;
+		std::string StackTrace;
+	};
+
+	static MonoExceptionInfo GetExceptionInfo(MonoObject* exception)
+	{
+		MonoClass* exceptionClass = mono_object_get_class(exception);
+		MonoType* exceptionType = mono_class_get_type(exceptionClass);
+
+		auto GetExceptionStringFn = [exception, exceptionClass](const char* stringName) -> std::string {
+			MonoProperty* property = mono_class_get_property_from_name(exceptionClass, stringName);
+
+			if (property == nullptr)
+				return "";
+
+			MonoMethod* getterMethod = mono_property_get_get_method(property);
+
+			if (getterMethod == nullptr)
+				return "";
+
+			MonoString* string = (MonoString*)mono_runtime_invoke(getterMethod, exception, NULL, NULL);
+			ManagedString mstring(string);
+			return mstring.String();
+		};
+
+		MonoExceptionInfo result;
+		result.Typename = mono_type_get_name(exceptionType);
+		result.Source = GetExceptionStringFn("Source");
+		result.Message = GetExceptionStringFn("Message");
+		result.StackTrace = GetExceptionStringFn("StackTrace");
+		return result;
+	}
+
+	void ScriptUtils::RT_HandleInvokeResult(const RT_ScriptInvokeResult& result)
+	{
+		if (result.Exception == nullptr)
 		{
-			return false;
+			return;
 		}
 		
-		ManagedString mstring((MonoString*)result.Exception);
-		VX_CONSOLE_LOG_ERROR("[Script Engine] Error: {}", mstring.String());
-		return true;
+		MonoExceptionInfo exceptionInfo = GetExceptionInfo(result.Exception);
+		VX_CONSOLE_LOG_ERROR("[Script Engine] {}: {}. Source {}, StackTrace: {}", exceptionInfo.Typename, exceptionInfo.Message, exceptionInfo.Source, exceptionInfo.StackTrace);
 	}
 
 	bool ScriptUtils::RT_CheckError(MonoError* error)

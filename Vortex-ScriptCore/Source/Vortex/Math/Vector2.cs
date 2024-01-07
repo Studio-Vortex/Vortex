@@ -83,15 +83,11 @@
 			return new Vector2(vector.X / scalar, vector.Y / scalar);
 		}
 
-		public static bool operator ==(Vector2 vector, Vector2 other)
-		{
-			return vector.X == other.X && vector.Y == other.Y;
-		}
+		public static bool operator ==(Vector2 left, Vector2 right) => left.Equals(right);
+		public static bool operator !=(Vector2 left, Vector2 right) => !(left == right);
 
-		public static bool operator !=(Vector2 vector, Vector2 other)
-		{
-			return !(vector == other);
-		}
+		public override bool Equals(object obj) => obj is Vector2 other && Equals(other);
+		public bool Equals(Vector2 right) => X == right.X && Y == right.Y;
 
 		public override int GetHashCode() => (X, Y).GetHashCode();
 

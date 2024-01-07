@@ -118,15 +118,15 @@ namespace Vortex {
 		void Actor_AddComponent(UUID actorUUID, MonoReflectionType* componentType);
 		bool Actor_HasComponent(UUID actorUUID, MonoReflectionType* componentType);
 		void Actor_RemoveComponent(UUID actorUUID, MonoReflectionType* componentType);
-		MonoArray* Actor_GetChildren(UUID actorUUID);
-		uint64_t Actor_GetChild(UUID actorUUID, uint32_t index);
 		MonoString* Actor_GetTag(UUID actorUUID);
 		void Actor_SetTag(UUID actorUUID, MonoString* tag);
 		MonoString* Actor_GetMarker(UUID actorUUID);
 		void Actor_SetMarker(UUID actorUUID, MonoString* marker);
+		MonoObject* Actor_GetScriptInstance(UUID actorUUID);
+		MonoArray* Actor_GetChildren(UUID actorUUID);
+		uint64_t Actor_GetChild(UUID actorUUID, uint32_t index);
 		bool Actor_AddChild(UUID parentUUID, UUID childUUID);
 		bool Actor_RemoveChild(UUID parentUUID, UUID childUUID);
-		MonoObject* Actor_GetScriptInstance(UUID actorUUID);
 		void Actor_Destroy(UUID actorUUID, bool excludeChildren);
 		void Actor_DestroyWithDelay(UUID actorUUID, float delay, bool excludeChildren);
 		void Actor_Invoke(UUID actorUUID, MonoString* methodName);
