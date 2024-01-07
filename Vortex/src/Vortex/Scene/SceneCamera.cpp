@@ -29,11 +29,6 @@ namespace Vortex {
 			return;
 		}
 
-		if (Math::vec2(width, height) == m_ViewportSize)
-		{
-			return;
-		}
-
 		m_AspectRatio = (float)width / (float)height;
 		m_ViewportSize = { (float)width, (float)height };
 
@@ -75,13 +70,7 @@ namespace Vortex {
 			}
 		}
 
-		const uint32_t width = (uint32_t)m_ViewportSize.x;
-		const uint32_t height = (uint32_t)m_ViewportSize.y;
-
-		if (width != 0 && height != 0)
-		{
-			SetViewportSize(width, height);
-		}
+		SetDirty(true);
 	}
 
 	Math::Ray SceneCamera::Raycast(const Math::vec2& point, const Math::vec3& cameraPosition, float maxDistance, const Math::mat4& view) const
