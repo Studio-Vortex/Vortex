@@ -9,9 +9,12 @@ namespace Vortex {
 		{
 			if (str == "OnAwake")                  return ScriptMethod::OnAwake;
 			if (str == "OnEnable")                 return ScriptMethod::OnEnable;
+			if (str == "OnReset")                  return ScriptMethod::OnReset;
 			if (str == "OnCreate")                 return ScriptMethod::OnCreate;
 			if (str == "OnUpdate")                 return ScriptMethod::OnUpdate;
 			if (str == "OnPostUpdate")             return ScriptMethod::OnPostUpdate;
+			if (str == "OnApplicationPause")       return ScriptMethod::OnApplicationPause;
+			if (str == "OnApplicationResume")      return ScriptMethod::OnApplicationResume;
 			if (str == "OnDebugRender")            return ScriptMethod::OnDebugRender;
 			if (str == "OnCollisionEnter")         return ScriptMethod::OnCollisionEnter;
 			if (str == "OnCollisionExit")          return ScriptMethod::OnCollisionExit;
@@ -33,9 +36,12 @@ namespace Vortex {
 			{
 				case ScriptMethod::OnAwake:                  return "OnAwake";
 				case ScriptMethod::OnEnable:                 return "OnEnable";
+				case ScriptMethod::OnReset:                  return "OnReset";
 				case ScriptMethod::OnCreate:                 return "OnCreate";
 				case ScriptMethod::OnUpdate:                 return "OnUpdate";
 				case ScriptMethod::OnPostUpdate:             return "OnPostUpdate";
+				case ScriptMethod::OnApplicationPause:       return "OnApplicationPause";
+				case ScriptMethod::OnApplicationResume:      return "OnApplicationResume";
 				case ScriptMethod::OnDebugRender:            return "OnDebugRender";
 				case ScriptMethod::OnCollisionEnter:         return "OnCollisionEnter";
 				case ScriptMethod::OnCollisionExit:          return "OnCollisionExit";

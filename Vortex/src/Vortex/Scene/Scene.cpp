@@ -41,6 +41,7 @@
 
 #include "Vortex/Editor/EditorCamera.h"
 #include "Vortex/Editor/SelectionManager.h"
+#include "Vortex/Editor/UI/UI.h"
 
 namespace Vortex {
 
@@ -390,6 +391,20 @@ namespace Vortex {
 					continue;
 
 				actor.CallMethod(ScriptMethod::OnEnable);
+			}
+
+			// Invoke Actor.OnReset
+			if (!Application::Get().IsRuntime())
+			{
+				for (const auto e : view)
+				{
+					Actor actor{ e, this };
+
+					if (!actor.IsActive())
+						continue;
+
+					actor.CallMethod(ScriptMethod::OnReset);
+				}
 			}
 
 			// Invoke Actor.OnCreate
@@ -775,17 +790,39 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(m_IsRunning, "Scene must be running!");
 
-		const bool consistent = (m_IsPaused && paused) || (!m_IsPaused && !paused);
-
+		const bool consistent = m_IsPaused == paused;
 		if (consistent)
 			return;
 
 		m_IsPaused = paused;
 
-		switch ((uint32_t)m_IsPaused)
+		if (m_IsPaused)
 		{
-			case 1: SystemManager::OnRuntimeScenePaused(this);  break;
-			case 0: SystemManager::OnRuntimeSceneResumed(this); break;
+			SystemManager::OnRuntimeScenePaused(this);
+
+			GetAllActorsWith<ScriptComponent>().each([=](auto actorID, auto& sc)
+			{
+				Actor actor{ actorID, this };
+
+				if (!actor.IsActive())
+					return;
+
+				actor.CallMethod(ScriptMethod::OnApplicationPause);
+			});
+		}
+		else
+		{
+			SystemManager::OnRuntimeSceneResumed(this);
+
+			GetAllActorsWith<ScriptComponent>().each([=](auto actorID, auto& sc)
+			{
+				Actor actor{ actorID, this };
+
+				if (!actor.IsActive())
+					return;
+
+				actor.CallMethod(ScriptMethod::OnApplicationResume);
+			});
 		}
 	}
 

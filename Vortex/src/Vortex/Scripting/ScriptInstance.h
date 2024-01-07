@@ -15,7 +15,7 @@
 
 #include "Vortex/ReferenceCounting/SharedRef.h"
 
-#include "Vortex/std/option.h"
+#include "Vortex/stl/option.h"
 
 #include <unordered_map>
 #include <string>
@@ -31,21 +31,24 @@ namespace Vortex {
 		ScriptInstance(SharedReference<ScriptClass>& scriptClass);
 		~ScriptInstance() = default;
 
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnAwake();
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnEnable();
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnCreate();
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnUpdate();
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnPostUpdate();
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnDebugRender();
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnCollisionEnter(const Collision& collision);
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnCollisionExit(const Collision& collision);
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnTriggerEnter(const Collision& collision);
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnTriggerExit(const Collision& collision);
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque);
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnApplicationQuit();
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnDisable();
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnDestroy();
-		vxstd::option<RT_ScriptInvokeResult> InvokeOnGuiRender();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnAwake();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnEnable();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnReset();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnCreate();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnUpdate();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnPostUpdate();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnApplicationPause();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnApplicationResume();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnDebugRender();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnCollisionEnter(const Collision& collision);
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnCollisionExit(const Collision& collision);
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnTriggerEnter(const Collision& collision);
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnTriggerExit(const Collision& collision);
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque);
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnApplicationQuit();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnDisable();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnDestroy();
+		vxstl::option<RT_ScriptInvokeResult> InvokeOnGuiRender();
 
 		bool ScriptMethodExists(ScriptMethod method) const;
 
@@ -74,7 +77,7 @@ namespace Vortex {
 		VX_FORCE_INLINE MonoObject* GetManagedObject() const { return m_Instance; }
 
 	private:
-		vxstd::option<RT_ScriptInvokeResult> InvokeParameteredMethodInternal(ScriptMethod method, void** params);
+		vxstl::option<RT_ScriptInvokeResult> InvokeParameteredMethodInternal(ScriptMethod method, void** params);
 
 		bool GetFieldValueInternal(const std::string& fieldName, void* buffer);
 		bool SetFieldValueInternal(const std::string& fieldName, const void* value);

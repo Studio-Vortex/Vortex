@@ -2,7 +2,7 @@
 
 #include "Vortex/Core/Base.h"
 
-namespace Vortex::vxstd {
+namespace Vortex::vxstl {
 
 	template <typename t_value_type>
 	class VORTEX_API option

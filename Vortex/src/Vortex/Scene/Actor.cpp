@@ -83,14 +83,10 @@ namespace Vortex {
 
 		const bool sceneRunning = context->IsRunning();
 		const bool sceneSimulating = sceneRunning || context->IsSimulating();
-		const bool isPhysicsActor = Physics::IsPhysicsActor(actor->GetUUID());
+		const bool isPhysicsActor = actor->HasComponent<RigidBodyComponent>();
+		const bool rigidbodyCreated = Physics::IsPhysicsActor(actor->GetUUID());
 
 		context->ActiveateChildren(*actor);
-
-		if (!actor->HasComponent<ScriptComponent>())
-		{
-			return;
-		}
 
 		if (sceneRunning && actor->HasComponent<ScriptComponent>())
 		{
@@ -110,7 +106,7 @@ namespace Vortex {
 		}
 
 		// create the rigid body if the actor has one
-		if (sceneSimulating && isPhysicsActor)
+		if (sceneSimulating && isPhysicsActor && !rigidbodyCreated)
 		{
 			Physics::CreatePhysicsActor(*actor);
 		}
@@ -124,14 +120,10 @@ namespace Vortex {
 
 		const bool sceneRunning = context->IsRunning();
 		const bool sceneSimulating = sceneRunning || context->IsSimulating();
-		const bool isPhysicsActor = Physics::IsPhysicsActor(actor->GetUUID());
+		const bool isPhysicsActor = actor->HasComponent<RigidBodyComponent>();
+		const bool rigidbodyCreated = Physics::IsPhysicsActor(actor->GetUUID());
 
 		context->DeactiveateChildren(*actor);
-
-		if (!actor->HasComponent<ScriptComponent>())
-		{
-			return;
-		}
 
 		// Invoke Actor.OnDisable
 		if (sceneRunning)
@@ -140,7 +132,7 @@ namespace Vortex {
 		}
 
 		// destroy the rigid body if the actor has one
-		if (sceneSimulating && isPhysicsActor)
+		if (sceneSimulating && isPhysicsActor && rigidbodyCreated)
 		{
 			Physics::DestroyPhysicsActor(*actor);
 		}

@@ -9141,14 +9141,14 @@ namespace Vortex {
 		{
 			ManagedString mstring(label);
 
-			return UI::Property(mstring.String().c_str(), *outValue);
+			return UI::DrawVec2Controls(mstring.String(), *outValue);
 		}
 
 		bool Gui_PropertyVec3(MonoString* label, Math::vec3* outValue)
 		{
 			ManagedString mstring(label);
 
-			return UI::Property(mstring.String().c_str(), *outValue);
+			return UI::DrawVec3Controls(mstring.String(), *outValue);
 		}
 
 		bool Gui_PropertyVec4(MonoString* label, Math::vec4* outValue)

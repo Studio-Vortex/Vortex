@@ -1373,11 +1373,12 @@ namespace Vortex {
 		Math::vec3 rotation = Math::Rad2Deg(component.GetRotationEuler());
 		UI::DrawVec3Controls("Rotation", rotation, 0.0f, 100.0f, 0.0f, 0.0f, [&]()
 		{
-			if (rotation.x > 360.0f || rotation.x < -360.0f)
+			const float maxRotationEuler = 360.0f;
+			if (rotation.x > maxRotationEuler || rotation.x < -maxRotationEuler)
 				rotation.x = 0.0f;
-			if (rotation.y > 360.0f || rotation.y < -360.0f)
+			if (rotation.y > maxRotationEuler || rotation.y < -maxRotationEuler)
 				rotation.y = 0.0f;
-			if (rotation.z > 360.0f || rotation.z < -360.0f)
+			if (rotation.z > maxRotationEuler || rotation.z < -maxRotationEuler)
 				rotation.z = 0.0f;
 			component.SetRotationEuler(Math::Deg2Rad(rotation));
 		});
@@ -2912,7 +2913,7 @@ namespace Vortex {
 
 		const bool sceneRunning = m_ContextScene->IsRunning();
 
-		Gui::BeginDisabled(!component.Enabled);
+		Gui::BeginDisabled(!component.Enabled || !component.Instantiated);
 
 		// Fields
 		if (sceneRunning)

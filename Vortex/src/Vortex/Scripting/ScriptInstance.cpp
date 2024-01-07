@@ -14,9 +14,12 @@ namespace Vortex {
 
 		m_ScriptMethods[ScriptMethod::OnAwake] = m_ScriptClass->GetMethod("OnAwake", 0);
 		m_ScriptMethods[ScriptMethod::OnEnable] = m_ScriptClass->GetMethod("OnEnable", 0);
+		m_ScriptMethods[ScriptMethod::OnReset] = m_ScriptClass->GetMethod("OnReset", 0);
 		m_ScriptMethods[ScriptMethod::OnCreate] = m_ScriptClass->GetMethod("OnCreate", 0);
 		m_ScriptMethods[ScriptMethod::OnUpdate] = m_ScriptClass->GetMethod("OnUpdate", 0);
 		m_ScriptMethods[ScriptMethod::OnPostUpdate] = m_ScriptClass->GetMethod("OnPostUpdate", 0);
+		m_ScriptMethods[ScriptMethod::OnApplicationPause] = m_ScriptClass->GetMethod("OnApplicationPause", 0);
+		m_ScriptMethods[ScriptMethod::OnApplicationResume] = m_ScriptClass->GetMethod("OnApplicationResume", 0);
 		m_ScriptMethods[ScriptMethod::OnCollisionEnter] = m_ScriptClass->GetMethod("OnCollisionEnter", 1);
 		m_ScriptMethods[ScriptMethod::OnCollisionExit] = m_ScriptClass->GetMethod("OnCollisionExit", 1);
 		m_ScriptMethods[ScriptMethod::OnTriggerEnter] = m_ScriptClass->GetMethod("OnTriggerEnter", 1);
@@ -29,96 +32,114 @@ namespace Vortex {
 		m_ScriptMethods[ScriptMethod::OnGuiRender] = m_ScriptClass->GetMethod("OnGuiRender", 0);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnAwake()
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnAwake()
 	{
 		ScriptMethod method = ScriptMethod::OnAwake;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnEnable()
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnEnable()
 	{
 		ScriptMethod method = ScriptMethod::OnEnable;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCreate()
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnReset()
+	{
+		ScriptMethod method = ScriptMethod::OnReset;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCreate()
 	{
 		ScriptMethod method = ScriptMethod::OnCreate;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnUpdate()
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnUpdate()
 	{
 		ScriptMethod method = ScriptMethod::OnUpdate;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-    vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnPostUpdate()
+    vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnPostUpdate()
     {
 		ScriptMethod method = ScriptMethod::OnPostUpdate;
 		return InvokeParameteredMethodInternal(method, nullptr);
     }
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDebugRender()
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnApplicationPause()
+	{
+		ScriptMethod method = ScriptMethod::OnApplicationPause;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnApplicationResume()
+	{
+		ScriptMethod method = ScriptMethod::OnApplicationResume;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDebugRender()
 	{
 		ScriptMethod method = ScriptMethod::OnDebugRender;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCollisionEnter(const Collision& collision)
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCollisionEnter(const Collision& collision)
 	{
 		ScriptMethod method = ScriptMethod::OnCollisionEnter;
 		void* param = (void*)&collision;
 		return InvokeParameteredMethodInternal(method, &param);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCollisionExit(const Collision& collision)
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCollisionExit(const Collision& collision)
 	{
 		ScriptMethod method = ScriptMethod::OnCollisionExit;
 		void* param = (void*)&collision;
 		return InvokeParameteredMethodInternal(method, &param);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnTriggerEnter(const Collision& collision)
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnTriggerEnter(const Collision& collision)
 	{
 		ScriptMethod method = ScriptMethod::OnTriggerEnter;
 		void* param = (void*)&collision;
 		return InvokeParameteredMethodInternal(method, &param);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnTriggerExit(const Collision& collision)
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnTriggerExit(const Collision& collision)
 	{
 		ScriptMethod method = ScriptMethod::OnTriggerExit;
 		void* param = (void*)&collision;
 		return InvokeParameteredMethodInternal(method, &param);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
 	{
 		ScriptMethod method = ScriptMethod::OnFixedJointDisconnected;
 		void* params[] = { (void*)&forceAndTorque.first, (void*)&forceAndTorque.second };
 		return InvokeParameteredMethodInternal(method, params);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnApplicationQuit()
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnApplicationQuit()
 	{
 		ScriptMethod method = ScriptMethod::OnApplicationQuit;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDisable()
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDisable()
 	{
 		ScriptMethod method = ScriptMethod::OnDisable;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDestroy()
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDestroy()
 	{
 		ScriptMethod method = ScriptMethod::OnDestroy;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnGuiRender()
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnGuiRender()
 	{
 		ScriptMethod method = ScriptMethod::OnGuiRender;
 		return InvokeParameteredMethodInternal(method, nullptr);
@@ -141,21 +162,21 @@ namespace Vortex {
 		return true;
     }
 
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeParameteredMethodInternal(ScriptMethod method, void** params)
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeParameteredMethodInternal(ScriptMethod method, void** params)
 	{
 		if (!m_Instance)
 		{
-			return vxstd::make_option<RT_ScriptInvokeResult>();
+			return vxstl::make_option<RT_ScriptInvokeResult>();
 		}
 
 		if (!ScriptMethodExists(method))
 		{
-			return vxstd::make_option<RT_ScriptInvokeResult>();
+			return vxstl::make_option<RT_ScriptInvokeResult>();
 		}
 
 		MonoMethod* managedMethod = m_ScriptMethods[method];
 		RT_ScriptInvokeResult result = ScriptUtils::InvokeManagedMethod(m_Instance, managedMethod, params);
-		return vxstd::make_option(result);
+		return vxstl::make_option(result);
 	}
 
 	bool ScriptInstance::GetFieldValueInternal(const std::string& fieldName, void* buffer)

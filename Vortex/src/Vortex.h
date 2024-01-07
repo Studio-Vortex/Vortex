@@ -16,6 +16,11 @@
 #include "Vortex/ReferenceCounting/RefCounted.h"
 /// ---------------------------------------------------
 
+/// Vortex STL
+#include "Vortex/stl/option.h"
+#include "Vortex/stl/result.h"
+/// ---------------------------------------------------
+
 /// Events
 #include "Vortex/Events/WindowEvent.h"
 #include "Vortex/Events/KeyEvent.h"

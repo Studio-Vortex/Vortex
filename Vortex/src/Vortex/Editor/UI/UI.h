@@ -535,8 +535,10 @@ namespace Vortex::UI {
 		s_CheckboxCount = 0;
 	}
 
-	VORTEX_API inline static void DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f, float min = 0.0f, float max = 0.0f, std::function<void()> uiCallback = nullptr)
+	VORTEX_API inline static bool DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f, float min = 0.0f, float max = 0.0f, std::function<void()> uiCallback = nullptr)
 	{
+		bool modified = false;
+
 		Gui::PushID(label.c_str());
 
 		Gui::Columns(2);
@@ -544,7 +546,7 @@ namespace Vortex::UI {
 		Gui::Text(label.c_str());
 		Gui::NextColumn();
 
-		Gui::PushMultiItemsWidths(3, Gui::CalcItemWidth());
+		Gui::PushMultiItemsWidths(values.length(), Gui::CalcItemWidth());
 		Gui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
 
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
@@ -560,6 +562,8 @@ namespace Vortex::UI {
 				{
 					std::invoke(uiCallback);
 				}
+
+				modified = true;
 			}
 			PopFont();
 			Gui::PopStyleColor(3);
@@ -572,6 +576,8 @@ namespace Vortex::UI {
 				{
 					std::invoke(uiCallback);
 				}
+
+				modified = true;
 			}
 			DrawItemActivityOutline();
 			Gui::PopItemWidth();
@@ -606,6 +612,81 @@ namespace Vortex::UI {
 		Gui::PopStyleVar();
 		Gui::Columns(1);
 		Gui::PopID();
+
+		return modified;
+	}
+
+	VORTEX_API inline static bool DrawVec2Controls(const std::string& label, Math::vec2& values, float resetValue = 0.0f, float columnWidth = 100.0f, float min = 0.0f, float max = 0.0f, std::function<void()> uiCallback = nullptr)
+	{
+		bool modified = false;
+
+		Gui::PushID(label.c_str());
+
+		Gui::Columns(2);
+		Gui::SetColumnWidth(0, columnWidth);
+		Gui::Text(label.c_str());
+		Gui::NextColumn();
+
+		Gui::PushMultiItemsWidths(values.length(), Gui::CalcItemWidth());
+		Gui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+		auto button = [&](auto label, auto index) {
+			PushFont("Bold");
+			if (Gui::Button(label, buttonSize))
+			{
+				values[index] = resetValue;
+
+				if (uiCallback != nullptr)
+				{
+					std::invoke(uiCallback);
+				}
+
+				modified = true;
+			}
+			PopFont();
+			Gui::PopStyleColor(3);
+		};
+
+		auto drag = [&](auto label, auto index) {
+			if (Gui::DragFloat(label, &values[index], 0.1f, min > 0 ? min : -FLT_MAX, max > 0 ? max : FLT_MAX, "%.2f"))
+			{
+				if (uiCallback != nullptr)
+				{
+					std::invoke(uiCallback);
+				}
+
+				modified = true;
+			}
+			DrawItemActivityOutline();
+			Gui::PopItemWidth();
+		};
+
+		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		button("X", 0);
+		Gui::SameLine();
+
+		drag("##X", 0);
+		Gui::SameLine();
+
+		Gui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
+		Gui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		button("Y", 1);
+		Gui::SameLine();
+
+		drag("##Y", 1);
+		Gui::SameLine();
+
+		Gui::PopStyleVar();
+		Gui::Columns(1);
+		Gui::PopID();
+
+		return modified;
 	}
 
 	VORTEX_API inline static bool PropertyCheckboxGroup(const char* label, bool& value, const char* desc = nullptr)

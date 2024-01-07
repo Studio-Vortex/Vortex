@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace Vortex::vxstd {
+namespace Vortex::vxstl {
 
 	template <typename t_value_type>
 	class VORTEX_API result

@@ -38,6 +38,18 @@ namespace Vortex {
 
 	static constexpr const char* APP_ASSEMBLY_RELOAD_SOUND_PATH = "Resources/Sounds/Compile.wav";
 
+#define VX_INVOKE_MANAGED_METHOD_NO_PARAMS(type, fn)\
+	case ScriptMethod::type:\
+	{\
+		vxstl::option<RT_ScriptInvokeResult> result = instance->fn();\
+		if (!result.some())\
+		{\
+			return false;\
+		}\
+		ScriptUtils::RT_HandleInvokeResult(result.value());\
+		break;\
+	}
+
 	struct ScriptEngineInternalData
 	{
 		MonoDomain* RootDomain = nullptr;
@@ -548,54 +560,15 @@ namespace Vortex {
 
 		switch (method)
 		{
-			case ScriptMethod::OnAwake:
-			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnAwake();
-				if (!result.some())
-					return false;
-				ScriptUtils::RT_HandleInvokeResult(result.value());
-				break;
-			}
-			case ScriptMethod::OnEnable:
-			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnEnable();
-				if (!result.some())
-					return false;
-				ScriptUtils::RT_HandleInvokeResult(result.value());
-				break;
-			}
-			case ScriptMethod::OnCreate:
-			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnCreate();
-				if (!result.some())
-					return false;
-				ScriptUtils::RT_HandleInvokeResult(result.value());
-				break;
-			}
-			case ScriptMethod::OnUpdate:
-			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnUpdate();
-				if (!result.some())
-					return false;
-				ScriptUtils::RT_HandleInvokeResult(result.value());
-				break;
-			}
-			case ScriptMethod::OnPostUpdate:
-			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnPostUpdate();
-				if (!result.some())
-					return false;
-				ScriptUtils::RT_HandleInvokeResult(result.value());
-				break;
-			}
-			case ScriptMethod::OnDebugRender:
-			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnDebugRender();
-				if (!result.some())
-					return false;
-				ScriptUtils::RT_HandleInvokeResult(result.value());
-				break;
-			}
+			VX_INVOKE_MANAGED_METHOD_NO_PARAMS(OnAwake, InvokeOnAwake)
+			VX_INVOKE_MANAGED_METHOD_NO_PARAMS(OnEnable, InvokeOnEnable)
+			VX_INVOKE_MANAGED_METHOD_NO_PARAMS(OnReset, InvokeOnReset)
+			VX_INVOKE_MANAGED_METHOD_NO_PARAMS(OnCreate, InvokeOnCreate)
+			VX_INVOKE_MANAGED_METHOD_NO_PARAMS(OnUpdate, InvokeOnUpdate)
+			VX_INVOKE_MANAGED_METHOD_NO_PARAMS(OnPostUpdate, InvokeOnPostUpdate)
+			VX_INVOKE_MANAGED_METHOD_NO_PARAMS(OnApplicationPause, InvokeOnApplicationPause)
+			VX_INVOKE_MANAGED_METHOD_NO_PARAMS(OnApplicationResume, InvokeOnApplicationResume)
+			VX_INVOKE_MANAGED_METHOD_NO_PARAMS(OnDebugRender, InvokeOnDebugRender)
 			case ScriptMethod::OnCollisionEnter:
 			{
 				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
@@ -606,7 +579,7 @@ namespace Vortex {
 
 				const RuntimeMethodArgument& arg0 = argumentList.front();
 				VX_CORE_ASSERT(arg0.Is(RuntimeArgumentType::Collision), "unexpected argument type!");
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnCollisionEnter(arg0.AsCollision());
+				vxstl::option<RT_ScriptInvokeResult> result = instance->InvokeOnCollisionEnter(arg0.AsCollision());
 				if (!result.some())
 					return false;
 				ScriptUtils::RT_HandleInvokeResult(result.value());
@@ -622,7 +595,7 @@ namespace Vortex {
 
 				const RuntimeMethodArgument& arg0 = argumentList.front();
 				VX_CORE_ASSERT(arg0.Is(RuntimeArgumentType::Collision), "unexpected argument type!");
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnCollisionExit(arg0.AsCollision());
+				vxstl::option<RT_ScriptInvokeResult> result = instance->InvokeOnCollisionExit(arg0.AsCollision());
 				if (!result.some())
 					return false;
 				ScriptUtils::RT_HandleInvokeResult(result.value());
@@ -638,7 +611,7 @@ namespace Vortex {
 
 				const RuntimeMethodArgument& arg0 = argumentList.front();
 				VX_CORE_ASSERT(arg0.Is(RuntimeArgumentType::Collision), "unexpected argument type!");
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnTriggerEnter(arg0.AsCollision());
+				vxstl::option<RT_ScriptInvokeResult> result = instance->InvokeOnTriggerEnter(arg0.AsCollision());
 				if (!result.some())
 					return false;
 				ScriptUtils::RT_HandleInvokeResult(result.value());
@@ -654,7 +627,7 @@ namespace Vortex {
 
 				const RuntimeMethodArgument& arg0 = argumentList.front();
 				VX_CORE_ASSERT(arg0.Is(RuntimeArgumentType::Collision), "unexpected argument type!");
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnTriggerExit(arg0.AsCollision());
+				vxstl::option<RT_ScriptInvokeResult> result = instance->InvokeOnTriggerExit(arg0.AsCollision());
 				if (!result.some())
 					return false;
 				ScriptUtils::RT_HandleInvokeResult(result.value());
@@ -670,31 +643,17 @@ namespace Vortex {
 
 				const RuntimeMethodArgument& arg0 = argumentList.front();
 				VX_CORE_ASSERT(arg0.Is(RuntimeArgumentType::ForceAndTorque), "unexpected argument type!");
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnFixedJointDisconnected(arg0.AsForceAndTorque());
+				vxstl::option<RT_ScriptInvokeResult> result = instance->InvokeOnFixedJointDisconnected(arg0.AsForceAndTorque());
 				if (!result.some())
 					return false;
 				ScriptUtils::RT_HandleInvokeResult(result.value());
 				break;
 			}
-			case ScriptMethod::OnApplicationQuit:
-			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnApplicationQuit();
-				if (!result.some())
-					return false;
-				ScriptUtils::RT_HandleInvokeResult(result.value());
-				break;
-			}
-			case ScriptMethod::OnDisable:
-			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnDisable();
-				if (!result.some())
-					return false;
-				ScriptUtils::RT_HandleInvokeResult(result.value());
-				break;
-			}
+			VX_INVOKE_MANAGED_METHOD_NO_PARAMS(OnApplicationQuit, InvokeOnApplicationQuit)
+			VX_INVOKE_MANAGED_METHOD_NO_PARAMS(OnDisable, InvokeOnDisable)
 			case ScriptMethod::OnDestroy:
 			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnDestroy();
+				vxstl::option<RT_ScriptInvokeResult> result = instance->InvokeOnDestroy();
 				if (!result.some())
 					return false;
 				ScriptUtils::RT_HandleInvokeResult(result.value());
@@ -704,14 +663,7 @@ namespace Vortex {
 
 				break;
 			}
-			case ScriptMethod::OnGuiRender:
-			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnGuiRender();
-				if (!result.some())
-					return false;
-				ScriptUtils::RT_HandleInvokeResult(result.value());
-				break;
-			}
+			VX_INVOKE_MANAGED_METHOD_NO_PARAMS(OnGuiRender, InvokeOnGuiRender)
 		}
 
 		return true;

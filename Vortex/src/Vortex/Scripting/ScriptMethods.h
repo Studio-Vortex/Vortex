@@ -11,11 +11,16 @@ namespace Vortex {
 		// Initialization
 		OnAwake,
 		OnEnable,
+		OnReset, // Editor Only
 		OnCreate,
 
 		// Game-Logic
 		OnUpdate,
 		OnPostUpdate,
+
+		// Scene
+		OnApplicationPause,
+		OnApplicationResume,
 
 		// Rendering
 		OnDebugRender,

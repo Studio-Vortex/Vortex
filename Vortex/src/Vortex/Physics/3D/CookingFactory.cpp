@@ -20,7 +20,7 @@ namespace Vortex {
 		cookingParams.midphaseDesc = physx::PxMeshMidPhase::eBVH34;
 
 		s_Data.CookingSDK = PxCreateCooking(PX_PHYSICS_VERSION, *((physx::PxFoundation*)Physics::GetFoundation()), cookingParams);
-		VX_CORE_ASSERT(s_CookingSDK, "Failed to Initialize PhysX Cooking!");
+		VX_CORE_ASSERT(s_Data.CookingSDK, "Failed to Initialize PhysX Cooking!");
 	}
 
 	void CookingFactory::Shutdown()

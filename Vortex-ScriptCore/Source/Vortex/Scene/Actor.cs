@@ -58,9 +58,12 @@ namespace Vortex {
 
 		protected virtual void OnAwake() { }
 		protected virtual void OnEnable() { }
+		protected virtual void OnReset() { }
 		protected virtual void OnCreate() { }
 		protected virtual void OnUpdate() { }
 		protected virtual void OnPostUpdate() { }
+		protected virtual void OnApplicationPause() { }
+		protected virtual void OnApplicationResume() { }
 		protected virtual void OnDebugRender() { }
 		protected virtual void OnCollisionEnter(Collision other) { }
 		protected virtual void OnCollisionExit(Collision other) { }
