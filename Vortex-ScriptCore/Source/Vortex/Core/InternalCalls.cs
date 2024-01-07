@@ -539,6 +539,12 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void MeshRendererComponent_SetVisible(ulong actorID, bool visible);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool MeshRendererComponent_GetCastShadows(ulong actorID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void MeshRendererComponent_SetCastShadows(ulong actorID, bool castShadows);
+
 		#endregion
 
 		#region StaticMeshRenderer
@@ -557,6 +563,12 @@ namespace Vortex {
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void StaticMeshRendererComponent_SetVisible(ulong actorID, bool visible);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool StaticMeshRendererComponent_GetCastShadows(ulong actorID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void StaticMeshRendererComponent_SetCastShadows(ulong actorID, bool castShadows);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static bool StaticMeshRendererComponent_GetMaterialHandle(uint submeshIndex, ulong actorID, out AssetHandle assetHandle);

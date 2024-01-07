@@ -448,7 +448,7 @@
 		}
 	}
 
-	public class Button : Component
+	public class Button: Component
 	{
 
 	}
@@ -489,6 +489,12 @@
 			get => InternalCalls.MeshRendererComponent_IsVisible(Actor.ID);
 			set => InternalCalls.MeshRendererComponent_SetVisible(Actor.ID, value);
 		}
+
+		public bool CastShadows
+		{
+			get => InternalCalls.MeshRendererComponent_GetCastShadows(Actor.ID);
+			set => InternalCalls.MeshRendererComponent_SetCastShadows(Actor.ID, value);
+		}
 	}
 
 	public class StaticMeshRenderer: Component
@@ -527,6 +533,12 @@
 		{
 			get => InternalCalls.StaticMeshRendererComponent_IsVisible(Actor.ID);
 			set => InternalCalls.StaticMeshRendererComponent_SetVisible(Actor.ID, value);
+		}
+
+		public bool CastShadows
+		{
+			get => InternalCalls.StaticMeshRendererComponent_GetCastShadows(Actor.ID);
+			set => InternalCalls.StaticMeshRendererComponent_SetCastShadows(Actor.ID, value);
 		}
 
 		AssetHandle GetMaterialHandle(uint submeshIndex)

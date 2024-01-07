@@ -285,6 +285,8 @@ namespace Vortex {
 		bool MeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID actorUUID, AssetHandle* outHandle);
 		bool MeshRendererComponent_IsVisible(UUID actorUUID);
 		void MeshRendererComponent_SetVisible(UUID actorUUID, bool visible);
+		bool MeshRendererComponent_GetCastShadows(UUID actorUUID);
+		void MeshRendererComponent_SetCastShadows(UUID actorUUID, bool castShadows);
 
 #pragma endregion
 
@@ -295,6 +297,8 @@ namespace Vortex {
 		void StaticMeshRendererComponent_SetMaterialHandle(uint32_t submeshIndex, UUID actorUUID, AssetHandle* materialHandle);
 		bool StaticMeshRendererComponent_IsVisible(UUID actorUUID);
 		void StaticMeshRendererComponent_SetVisible(UUID actorUUID, bool visible);
+		bool StaticMeshRendererComponent_GetCastShadows(UUID actorUUID);
+		void StaticMeshRendererComponent_SetCastShadows(UUID actorUUID, bool castShadows);
 		bool StaticMeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID actorUUID, AssetHandle* outHandle);
 
 #pragma endregion

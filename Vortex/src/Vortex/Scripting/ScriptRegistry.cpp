@@ -2466,6 +2466,34 @@ namespace Vortex {
 			meshRendererComponent.Visible = visible;
 		}
 
+		bool MeshRendererComponent_GetCastShadows(UUID actorUUID)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<MeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access MeshRenderer.CastShadows without a Mesh Renderer!");
+				return false;
+			}
+
+			const MeshRendererComponent& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
+			return meshRendererComponent.CastShadows;
+		}
+
+		void MeshRendererComponent_SetCastShadows(UUID actorUUID, bool castShadows)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<MeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set MeshRenderer.CastShadows without a Mesh Renderer!");
+				return;
+			}
+
+			MeshRendererComponent& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
+			meshRendererComponent.CastShadows = castShadows;
+		}
+
 #pragma endregion
 
 #pragma region Static Mesh Renderer Component
@@ -2566,6 +2594,34 @@ namespace Vortex {
 
 			StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
 			staticMeshRendererComponent.Visible = visible;
+		}
+
+		bool StaticMeshRendererComponent_GetCastShadows(UUID actorUUID)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access StaticMeshRenderer.CastShadows without a Static Mesh Renderer!");
+				return false;
+			}
+
+			const StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
+			return staticMeshRendererComponent.CastShadows;
+		}
+
+		void StaticMeshRendererComponent_SetCastShadows(UUID actorUUID, bool castShadows)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<StaticMeshRendererComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set StaticMeshRenderer.CastShadows without a Static Mesh Renderer!");
+				return;
+			}
+
+			StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
+			staticMeshRendererComponent.CastShadows = castShadows;
 		}
 
 		bool StaticMeshRendererComponent_GetMaterialHandle(uint32_t submeshIndex, UUID actorUUID, AssetHandle* outHandle)
@@ -9356,12 +9412,16 @@ namespace Vortex {
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshRendererComponent_GetMaterialHandle);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshRendererComponent_IsVisible);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshRendererComponent_SetVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshRendererComponent_GetCastShadows);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(MeshRendererComponent_SetCastShadows);
 
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_GetMeshType);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_SetMeshType);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_SetMaterialHandle);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_IsVisible);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_SetVisible);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_GetCastShadows);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_SetCastShadows);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(StaticMeshRendererComponent_GetMaterialHandle);
 
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Material_GetAlbedo);
