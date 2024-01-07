@@ -1740,7 +1740,7 @@ namespace Vortex {
 
 		if (AssetManager::IsHandleValid(component.StaticMesh))
 		{
-			if (UI::PropertyGridHeader("Materials"))
+			if (UI::PropertyGridHeader("Materials", false))
 			{
 				UI::BeginPropertyGrid();
 
@@ -1808,7 +1808,7 @@ namespace Vortex {
 				UI::EndTreeNode();
 			}
 
-			if (UI::PropertyGridHeader("Rendering"))
+			if (UI::PropertyGridHeader("Rendering", false))
 			{
 				UI::BeginPropertyGrid();
 
