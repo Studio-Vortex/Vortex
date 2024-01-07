@@ -366,7 +366,7 @@ namespace Vortex {
 		return s_Data->ActorInstances.contains(actorUUID);
 	}
 
-	bool ScriptEngine::ScriptInstanceHasMethod(Actor actor, ManagedMethod method)
+	bool ScriptEngine::ScriptInstanceHasMethod(Actor actor, ScriptMethod method)
 	{
 		if (!actor.HasComponent<ScriptComponent>())
 		{
@@ -386,7 +386,7 @@ namespace Vortex {
 			return false;
 		}
 
-		return instance->MethodExists(method);
+		return instance->ScriptMethodExists(method);
 	}
 
 	void ScriptEngine::RT_ActorConstructor(UUID actorUUID, MonoObject* instance)
@@ -399,7 +399,7 @@ namespace Vortex {
 		MonoMethod* constructor = s_Data->ActorClass->GetMethod(".ctor", 1);
 
 		void* param = (void*)&actorUUID;
-		const RT_ScriptInvokeResult result = ScriptUtils::InvokeMethod(instance, constructor, &param);
+		const RT_ScriptInvokeResult result = ScriptUtils::InvokeManagedMethod(instance, constructor, &param);
 		if (result.Exception)
 		{
 			MonoString* err = (MonoString*)result.Exception;
@@ -488,7 +488,7 @@ namespace Vortex {
 		VX_CORE_ASSERT(ScriptInstanceExists(actor), "Actor script instance not instantiated properly!");
 
 		// Invoke Actor.OnAwake, Actor.OnCreate
-		ManagedMethod methods[] = { ManagedMethod::OnAwake, ManagedMethod::OnCreate };
+		ScriptMethod methods[] = { ScriptMethod::OnAwake, ScriptMethod::OnCreate };
 		const size_t methodCount = VX_ARRAYSIZE(methods);
 
 		for (size_t i = 0; i < methodCount; i++)
@@ -497,7 +497,7 @@ namespace Vortex {
 		}
 	}
 
-	bool ScriptEngine::Invoke(const std::string& methodName, Actor actor, const std::vector<RuntimeMethodArgument>& argumentList)
+	bool ScriptEngine::Invoke(Actor actor, const std::string& methodName, const std::vector<RuntimeMethodArgument>& argumentList)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -507,18 +507,18 @@ namespace Vortex {
 			return false;
 		}
 
-		ManagedMethod method = Utils::ManagedMethodFromString(methodName);
+		ScriptMethod method = Utils::ScriptMethodFromString(methodName);
 
-		return Invoke(method, actor, argumentList);
+		return Invoke(actor, method, argumentList);
 	}
 
-	bool ScriptEngine::Invoke(ManagedMethod method, Actor actor, const std::vector<RuntimeMethodArgument>& argumentList)
+	bool ScriptEngine::Invoke(Actor actor, ScriptMethod method, const std::vector<RuntimeMethodArgument>& argumentList)
 	{
 		VX_PROFILE_FUNCTION();
 
 		if (!actor)
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.{} on invalid actor!", Utils::StringFromManagedMethod(method));
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.{} on invalid actor!", Utils::StringFromScriptMethod(method));
 			return false;
 		}
 
@@ -539,24 +539,24 @@ namespace Vortex {
 
 		if (instance == nullptr)
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.{} on actor '{}' with invalid script instance!", Utils::StringFromManagedMethod(method), actor.GetName());
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.{} on actor '{}' with invalid script instance!", Utils::StringFromScriptMethod(method), actor.GetName());
 			return false;
 		}
 
 		switch (method)
 		{
-			case ManagedMethod::OnAwake:
+			case ScriptMethod::OnAwake:
 			{
 				instance->InvokeOnAwake();
 				break;
 			}
-			case ManagedMethod::OnCreate:
+			case ScriptMethod::OnCreate:
 			{
 				instance->InvokeOnCreate();
 				break;
 			}
-			case ManagedMethod::OnUpdateDelta: // fallthrough
-			case ManagedMethod::OnUpdate:
+			case ScriptMethod::OnUpdateDelta: // fallthrough
+			case ScriptMethod::OnUpdate:
 			{
 				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
 				if (argumentList.size() < 1)
@@ -569,7 +569,7 @@ namespace Vortex {
 				instance->InvokeOnUpdate(arg0.AsTimeStep());
 				break;
 			}
-			case ManagedMethod::OnDestroy:
+			case ScriptMethod::OnDestroy:
 			{
 				instance->InvokeOnDestroy();
 				
@@ -578,7 +578,7 @@ namespace Vortex {
 
 				break;
 			}
-			case ManagedMethod::OnCollisionEnter:
+			case ScriptMethod::OnCollisionEnter:
 			{
 				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
 				if (argumentList.size() < 1)
@@ -591,7 +591,7 @@ namespace Vortex {
 				instance->InvokeOnCollisionEnter(arg0.AsCollision());
 				break;
 			}
-			case ManagedMethod::OnCollisionExit:
+			case ScriptMethod::OnCollisionExit:
 			{
 				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
 				if (argumentList.size() < 1)
@@ -604,7 +604,7 @@ namespace Vortex {
 				instance->InvokeOnCollisionExit(arg0.AsCollision());
 				break;
 			}
-			case ManagedMethod::OnTriggerEnter:
+			case ScriptMethod::OnTriggerEnter:
 			{
 				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
 				if (argumentList.size() < 1)
@@ -617,7 +617,7 @@ namespace Vortex {
 				instance->InvokeOnTriggerEnter(arg0.AsCollision());
 				break;
 			}
-			case ManagedMethod::OnTriggerExit:
+			case ScriptMethod::OnTriggerExit:
 			{
 				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
 				if (argumentList.size() < 1)
@@ -630,7 +630,7 @@ namespace Vortex {
 				instance->InvokeOnTriggerExit(arg0.AsCollision());
 				break;
 			}
-			case ManagedMethod::OnFixedJointDisconnected:
+			case ScriptMethod::OnFixedJointDisconnected:
 			{
 				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
 				if (argumentList.size() < 1)
@@ -643,22 +643,22 @@ namespace Vortex {
 				instance->InvokeOnFixedJointDisconnected(arg0.AsForceAndTorque());
 				break;
 			}
-			case ManagedMethod::OnEnable:
+			case ScriptMethod::OnEnable:
 			{
 				instance->InvokeOnEnable();
 				break;
 			}
-			case ManagedMethod::OnDisable:
+			case ScriptMethod::OnDisable:
 			{
 				instance->InvokeOnDisable();
 				break;
 			}
-			case ManagedMethod::OnDebugRender:
+			case ScriptMethod::OnDebugRender:
 			{
 				instance->InvokeOnDebugRender();
 				break;
 			}
-			case ManagedMethod::OnGuiRender:
+			case ScriptMethod::OnGuiRender:
 			{
 				instance->InvokeOnGuiRender();
 				break;

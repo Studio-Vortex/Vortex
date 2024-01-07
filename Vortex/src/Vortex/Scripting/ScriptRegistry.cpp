@@ -723,7 +723,7 @@ namespace Vortex {
 				return;
 			}
 
-			ScriptUtils::InvokeMethod(scriptInstance, method, nullptr);
+			ScriptUtils::InvokeManagedMethod(scriptInstance, method, nullptr);
 		}
 
 		void Actor_InvokeWithDelay(UUID actorUUID, MonoString* methodName, float delay)

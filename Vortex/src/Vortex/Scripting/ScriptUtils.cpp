@@ -24,7 +24,7 @@ namespace Vortex {
 		return object;
 	}
 
-	RT_ScriptInvokeResult ScriptUtils::InvokeMethod(MonoObject* instance, MonoMethod* method, void** params)
+	RT_ScriptInvokeResult ScriptUtils::InvokeManagedMethod(MonoObject* instance, MonoMethod* method, void** params)
 	{
 		RT_ScriptInvokeResult result;
 		result.ReturnValue = mono_runtime_invoke(method, instance, params, &result.Exception);

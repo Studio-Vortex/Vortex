@@ -10,7 +10,7 @@
 #include "Vortex/Scripting/ScriptAssemblyTypedefInfo.h"
 #include "Vortex/Scripting/ScriptFieldInstance.h"
 #include "Vortex/Scripting/ScriptFieldTypes.h"
-#include "Vortex/Scripting/ManagedMethods.h"
+#include "Vortex/Scripting/ScriptMethods.h"
 #include "Vortex/Scripting/ScriptField.h"
 
 #include "Vortex/Utils/FileSystem.h"
@@ -56,14 +56,14 @@ namespace Vortex {
 		static bool IsScriptComponentEnabled(Actor actor);
 
 		static bool ScriptInstanceExists(UUID actorUUID);
-		static bool ScriptInstanceHasMethod(Actor actor, ManagedMethod method);
+		static bool ScriptInstanceHasMethod(Actor actor, ScriptMethod method);
 
 		static void RT_ActorConstructor(UUID actorUUID, MonoObject* instance);
 		static void RT_CreateActorScriptInstance(Actor actor);
 		static void RT_InstantiateActor(Actor actor);
 
-		static bool Invoke(const std::string& methodName, Actor actor, const std::vector<RuntimeMethodArgument>& argumentList);
-		static bool Invoke(ManagedMethod method, Actor actor, const std::vector<RuntimeMethodArgument>& argumentList = {});
+		static bool Invoke(Actor actor, const std::string& methodName, const std::vector<RuntimeMethodArgument>& argumentList);
+		static bool Invoke(Actor actor, ScriptMethod method, const std::vector<RuntimeMethodArgument>& argumentList = {});
 
 		static SharedReference<ScriptClass> GetCoreActorClass();
 

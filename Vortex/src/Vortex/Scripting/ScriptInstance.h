@@ -9,7 +9,7 @@
 #include "Vortex/Scene/Actor.h"
 
 #include "Vortex/Scripting/ScriptClass.h"
-#include "Vortex/Scripting/ManagedMethods.h"
+#include "Vortex/Scripting/ScriptMethods.h"
 #include "Vortex/Scripting/ScriptFieldInstance.h"
 #include "Vortex/Scripting/RT_ScriptInvokeResult.h"
 
@@ -45,7 +45,7 @@ namespace Vortex {
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnDebugRender();
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnGuiRender();
 
-		bool MethodExists(ManagedMethod method) const;
+		bool ScriptMethodExists(ScriptMethod method) const;
 
 		VX_FORCE_INLINE SharedReference<ScriptClass> GetScriptClass() { return m_ScriptClass; }
 
@@ -72,6 +72,8 @@ namespace Vortex {
 		VX_FORCE_INLINE MonoObject* GetManagedObject() const { return m_Instance; }
 
 	private:
+		vxstd::option<RT_ScriptInvokeResult> InvokeParameteredMethodInternal(ScriptMethod method, void** params);
+
 		bool GetFieldValueInternal(const std::string& fieldName, void* buffer);
 		bool SetFieldValueInternal(const std::string& fieldName, const void* value);
 
@@ -80,7 +82,7 @@ namespace Vortex {
 
 		MonoObject* m_Instance = nullptr;
 
-		std::unordered_map<ManagedMethod, MonoMethod*> m_ManagedMethods;
+		std::unordered_map<ScriptMethod, MonoMethod*> m_ScriptMethods;
 
 		inline static char s_FieldValueBuffer[VX_SCRIPT_FIELD_MAX_BYTES];
 

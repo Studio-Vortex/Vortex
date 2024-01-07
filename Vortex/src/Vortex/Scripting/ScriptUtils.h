@@ -21,7 +21,7 @@ namespace Vortex {
 	public:
 		static MonoMethod* GetManagedMethodFromName(MonoClass* klass, const std::string& name, uint32_t parameterCount);
 		static MonoObject* InstantiateManagedClass(MonoClass* klass);
-		static RT_ScriptInvokeResult InvokeMethod(MonoObject* instance, MonoMethod* method, void** params = nullptr);
+		static RT_ScriptInvokeResult InvokeManagedMethod(MonoObject* instance, MonoMethod* method, void** params = nullptr);
 
 		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& filepath, bool loadPdb = false);
 		
