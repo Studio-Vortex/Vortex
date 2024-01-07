@@ -3172,6 +3172,15 @@ namespace Vortex {
 
 		if (InPlaySceneState())
 		{
+			// Invoke Actor.OnApplicationQuit
+			auto view = m_ActiveScene->GetAllActorsWith<ScriptComponent>();
+			for (const auto e : view)
+			{
+				Actor actor{ e, m_ActiveScene.Raw() };
+
+				actor.CallMethod(ScriptMethod::OnApplicationQuit);
+			}
+
 			m_ActiveScene->OnRuntimeStop();
 		}
 		else if (InSimulateSceneState())

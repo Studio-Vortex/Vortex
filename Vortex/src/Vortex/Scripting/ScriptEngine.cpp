@@ -588,6 +588,14 @@ namespace Vortex {
 				ScriptUtils::RT_HandleInvokeResult(result.value());
 				break;
 			}
+			case ScriptMethod::OnDebugRender:
+			{
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnDebugRender();
+				if (!result.some())
+					return false;
+				ScriptUtils::RT_HandleInvokeResult(result.value());
+				break;
+			}
 			case ScriptMethod::OnCollisionEnter:
 			{
 				VX_CORE_ASSERT(argumentList.size() >= 1, "Expected arguments to managed method!");
@@ -668,6 +676,14 @@ namespace Vortex {
 				ScriptUtils::RT_HandleInvokeResult(result.value());
 				break;
 			}
+			case ScriptMethod::OnApplicationQuit:
+			{
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnApplicationQuit();
+				if (!result.some())
+					return false;
+				ScriptUtils::RT_HandleInvokeResult(result.value());
+				break;
+			}
 			case ScriptMethod::OnDisable:
 			{
 				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnDisable();
@@ -686,14 +702,6 @@ namespace Vortex {
 				// Remove the instance from the script instance map
 				s_Data->ActorInstances.erase(actorUUID);
 
-				break;
-			}
-			case ScriptMethod::OnDebugRender:
-			{
-				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnDebugRender();
-				if (!result.some())
-					return false;
-				ScriptUtils::RT_HandleInvokeResult(result.value());
 				break;
 			}
 			case ScriptMethod::OnGuiRender:

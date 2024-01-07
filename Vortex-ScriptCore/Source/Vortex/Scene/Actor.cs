@@ -61,14 +61,15 @@ namespace Vortex {
 		protected virtual void OnCreate() { }
 		protected virtual void OnUpdate() { }
 		protected virtual void OnPostUpdate() { }
+		protected virtual void OnDebugRender() { }
 		protected virtual void OnCollisionEnter(Collision other) { }
 		protected virtual void OnCollisionExit(Collision other) { }
 		protected virtual void OnTriggerEnter(Collision other) { }
 		protected virtual void OnTriggerExit(Collision other) { }
 		protected virtual void OnFixedJointDisconnected(Vector3 linearForce, Vector3 angularForce) { }
+		protected virtual void OnApplicationQuit() { }
 		protected virtual void OnDisable() { }
 		protected virtual void OnDestroy() { }
-		protected virtual void OnDebugRender() { }
 		protected virtual void OnGuiRender() { }
 
 		public Actor GetChild(uint index)

@@ -17,6 +17,9 @@ namespace Vortex {
 		OnUpdate,
 		OnPostUpdate,
 
+		// Rendering
+		OnDebugRender,
+
 		// Physics
 		OnCollisionEnter,
 		OnCollisionExit,
@@ -25,11 +28,9 @@ namespace Vortex {
 		OnFixedJointDisconnected,
 
 		// Decommissioning
+		OnApplicationQuit,
 		OnDisable,
 		OnDestroy,
-		
-		// Rendering
-		OnDebugRender,
 
 		// Gui
 		OnGuiRender,

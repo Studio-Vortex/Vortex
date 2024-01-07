@@ -22,6 +22,7 @@ namespace Vortex {
 		m_ScriptMethods[ScriptMethod::OnTriggerEnter] = m_ScriptClass->GetMethod("OnTriggerEnter", 1);
 		m_ScriptMethods[ScriptMethod::OnTriggerExit] = m_ScriptClass->GetMethod("OnTriggerExit", 1);
 		m_ScriptMethods[ScriptMethod::OnFixedJointDisconnected] = m_ScriptClass->GetMethod("OnFixedJointDisconnected", 2);
+		m_ScriptMethods[ScriptMethod::OnApplicationQuit] = m_ScriptClass->GetMethod("OnApplicationQuit", 0);
 		m_ScriptMethods[ScriptMethod::OnDisable] = m_ScriptClass->GetMethod("OnDisable", 0);
 		m_ScriptMethods[ScriptMethod::OnDestroy] = m_ScriptClass->GetMethod("OnDestroy", 0);
 		m_ScriptMethods[ScriptMethod::OnDebugRender] = m_ScriptClass->GetMethod("OnDebugRender", 0);
@@ -58,6 +59,12 @@ namespace Vortex {
 		return InvokeParameteredMethodInternal(method, nullptr);
     }
 
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDebugRender()
+	{
+		ScriptMethod method = ScriptMethod::OnDebugRender;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
 	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCollisionEnter(const Collision& collision)
 	{
 		ScriptMethod method = ScriptMethod::OnCollisionEnter;
@@ -93,6 +100,12 @@ namespace Vortex {
 		return InvokeParameteredMethodInternal(method, params);
 	}
 
+	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnApplicationQuit()
+	{
+		ScriptMethod method = ScriptMethod::OnApplicationQuit;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
 	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDisable()
 	{
 		ScriptMethod method = ScriptMethod::OnDisable;
@@ -102,12 +115,6 @@ namespace Vortex {
 	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDestroy()
 	{
 		ScriptMethod method = ScriptMethod::OnDestroy;
-		return InvokeParameteredMethodInternal(method, nullptr);
-	}
-
-	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDebugRender()
-	{
-		ScriptMethod method = ScriptMethod::OnDebugRender;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
