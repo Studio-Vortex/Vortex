@@ -7,17 +7,17 @@
 
 namespace Vortex {
 
-	void Actor::SetActive(bool active) const
+	void Actor::SetActive(bool active)
 	{
 		VX_PROFILE_FUNCTION();
 
 		if (active)
 		{
-			OnEnabled();
+			OnEnabled(this);
 		}
 		else
 		{
-			OnDisabled();
+			OnDisabled(this);
 		}
 	}
 
@@ -37,19 +37,23 @@ namespace Vortex {
 	{
 		const std::vector<UUID>& children = GetComponent<HierarchyComponent>().Children;
 
-		if (children.size() == 0)
+		if (children.empty())
 			return false;
 
-		for (UUID child : children)
+		for (UUID childUUID : children)
 		{
-			if (child == actor.GetUUID())
-				return true;
+			if (childUUID != actor.GetUUID())
+				continue;
+
+			return true;
 		}
 
 		for (UUID child : children)
 		{
-			if (m_Scene->TryGetActorWithUUID(child).IsAncesterOf(actor))
-				return true;
+			if (!m_Scene->TryGetActorWithUUID(child).IsAncesterOf(actor))
+				continue;
+
+			return true;
 		}
 
 		return false;
@@ -71,55 +75,74 @@ namespace Vortex {
 		return ScriptEngine::Invoke(self, method, argumentList);
 	}
 
-	void Actor::OnEnabled() const
+	void Actor::OnEnabled(Actor* actor)
 	{
-		GetComponent<TagComponent>().IsActive = true;
+		actor->GetComponent<TagComponent>().IsActive = true;
 
-		Actor self = *this;
-		Scene* context = self.GetContextScene();
+		Scene* context = actor->GetContextScene();
 
 		const bool sceneRunning = context->IsRunning();
 		const bool sceneSimulating = sceneRunning || context->IsSimulating();
-		const bool isPhysicsActor = Physics::IsPhysicsActor(self.GetUUID());
+		const bool isPhysicsActor = Physics::IsPhysicsActor(actor->GetUUID());
 
-		context->ActiveateChildren(self);
+		context->ActiveateChildren(*actor);
+
+		if (!actor->HasComponent<ScriptComponent>())
+		{
+			return;
+		}
+
+		if (sceneRunning && actor->HasComponent<ScriptComponent>())
+		{
+			const ScriptComponent& scriptComponent = actor->GetComponent<ScriptComponent>();
+			if (scriptComponent.Enabled && !scriptComponent.Instantiated)
+			{
+				ScriptEngine::RT_InstantiateActor(*actor);
+				context->ActiveateChildren(*actor);
+				return;
+			}
+		}
 
 		// Invoke Actor.OnEnable
 		if (sceneRunning)
 		{
-			self.CallMethod(ScriptMethod::OnEnable);
+			actor->CallMethod(ScriptMethod::OnEnable);
 		}
 
 		// create the rigid body if the actor has one
 		if (sceneSimulating && isPhysicsActor)
 		{
-			Physics::CreatePhysicsActor(self);
+			Physics::CreatePhysicsActor(*actor);
 		}
 	}
 
-	void Actor::OnDisabled() const
+	void Actor::OnDisabled(Actor* actor)
 	{
-		GetComponent<TagComponent>().IsActive = false;
+		actor->GetComponent<TagComponent>().IsActive = false;
 
-		Actor self = *this;
-		Scene* context = self.GetContextScene();
+		Scene* context = actor->GetContextScene();
 
 		const bool sceneRunning = context->IsRunning();
 		const bool sceneSimulating = sceneRunning || context->IsSimulating();
-		const bool isPhysicsActor = Physics::IsPhysicsActor(self.GetUUID());
+		const bool isPhysicsActor = Physics::IsPhysicsActor(actor->GetUUID());
 
-		context->DeactiveateChildren(self);
+		context->DeactiveateChildren(*actor);
+
+		if (!actor->HasComponent<ScriptComponent>())
+		{
+			return;
+		}
 
 		// Invoke Actor.OnDisable
 		if (sceneRunning)
 		{
-			self.CallMethod(ScriptMethod::OnDisable);
+			actor->CallMethod(ScriptMethod::OnDisable);
 		}
 
 		// destroy the rigid body if the actor has one
 		if (sceneSimulating && isPhysicsActor)
 		{
-			Physics::DestroyPhysicsActor(self);
+			Physics::DestroyPhysicsActor(*actor);
 		}
 	}
 

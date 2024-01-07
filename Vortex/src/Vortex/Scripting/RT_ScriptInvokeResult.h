@@ -13,8 +13,6 @@ namespace Vortex {
 	{
 		MonoObject* ReturnValue = nullptr;
 		MonoObject* Exception = nullptr;
-
-		RT_ScriptInvokeResult() = default;
 	};
 
 }

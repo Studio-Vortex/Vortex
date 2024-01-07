@@ -381,6 +381,17 @@ namespace Vortex {
 				actor.CallMethod(ScriptMethod::OnAwake);
 			}
 
+			// Invoke Actor.OnEnable
+			for (const auto e : view)
+			{
+				Actor actor{ e, this };
+
+				if (!actor.IsActive())
+					continue;
+
+				actor.CallMethod(ScriptMethod::OnEnable);
+			}
+
 			// Invoke Actor.OnCreate
 			for (const auto e : view)
 			{
@@ -410,10 +421,13 @@ namespace Vortex {
 
 		m_IsRunning = false;
 
-		// Invoke Actor.OnDestroy on all actors in the scene
+		// Invoke Actor.OnDestroy
 		GetAllActorsWith<ScriptComponent>().each([=](auto actorID, auto& scriptComponent)
 		{
 			Actor actor{ actorID, this };
+
+			if (!actor.IsActive())
+				return;
 
 			actor.CallMethod(ScriptMethod::OnDestroy);
 		});
@@ -489,16 +503,15 @@ namespace Vortex {
 			});
 
 			// Invoke Actor.OnUpdate
-			auto view = GetAllActorsWith<ScriptComponent>();
-			for (const auto e : view)
+			GetAllActorsWith<ScriptComponent>().each([=](auto actorID, auto& sc)
 			{
-				Actor actor{ e, this };
+				Actor actor{ actorID, this };
 
 				if (!actor.IsActive())
-					continue;
+					return;
 
 				actor.CallMethod(ScriptMethod::OnUpdate);
-			}
+			});
 
 #ifndef VX_DIST
 			Application& application = Application::Get();
@@ -569,6 +582,17 @@ namespace Vortex {
 		if (updateCurrentFrame)
 		{
 			OnUpdateActorTimers(delta);
+
+			// Invoke Actor.OnPostUpdate
+			GetAllActorsWith<ScriptComponent>().each([=](auto actorID, auto& sc)
+			{
+				Actor actor{ actorID, this };
+
+				if (!actor.IsActive())
+					return;
+
+				actor.CallMethod(ScriptMethod::OnPostUpdate);
+			});
 		}
 
 		ExecutePostUpdateQueue();
@@ -733,18 +757,16 @@ namespace Vortex {
 		if (!m_IsRunning)
 			return;
 
-		auto view = GetAllActorsWith<ScriptComponent>();
-
 		// Invoke Actor.OnGuiRender
-		for (const auto e : view)
+		GetAllActorsWith<ScriptComponent>().each([=](auto actorID, auto& sc)
 		{
-			Actor actor{ e, this };
+			Actor actor{ actorID, this };
 
 			if (!actor.IsActive())
-				continue;
+				return;
 
 			actor.CallMethod(ScriptMethod::OnGuiRender);
-		}
+		});
 	}
 
 	void Scene::SetPaused(bool paused)
@@ -1091,7 +1113,7 @@ namespace Vortex {
 		{
 			Actor actor{ e, this };
 			const std::string& tag = actor.GetName();
-			if (!String::FastCompare(name, tag))
+			if (String::FastCompare(name, tag) == 0)
 				continue;
 
 			return Actor{ actor, this };
@@ -1126,7 +1148,7 @@ namespace Vortex {
 			return;
 		}
 
-		auto& transform = actor.GetTransform();
+		TransformComponent& transform = actor.GetTransform();
 		Math::mat4 parentTransform = GetWorldSpaceTransformMatrix(parent);
 		Math::mat4 localTransform = Math::Inverse(parentTransform) * transform.GetTransform();
 		transform.SetTransform(localTransform);

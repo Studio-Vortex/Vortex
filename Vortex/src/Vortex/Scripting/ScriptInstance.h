@@ -35,6 +35,7 @@ namespace Vortex {
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnEnable();
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnCreate();
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnUpdate();
+		vxstd::option<RT_ScriptInvokeResult> InvokeOnPostUpdate();
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnCollisionEnter(const Collision& collision);
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnCollisionExit(const Collision& collision);
 		vxstd::option<RT_ScriptInvokeResult> InvokeOnTriggerEnter(const Collision& collision);

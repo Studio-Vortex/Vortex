@@ -12,19 +12,20 @@ namespace Vortex {
 	{
 		m_Instance = m_ScriptClass->Instantiate();
 
-		m_ScriptMethods[ScriptMethod::OnAwake] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnAwake), 0);
-		m_ScriptMethods[ScriptMethod::OnCreate] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnCreate), 0);
-		m_ScriptMethods[ScriptMethod::OnUpdate] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnUpdate), 0);
-		m_ScriptMethods[ScriptMethod::OnDestroy] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnDestroy), 0);
-		m_ScriptMethods[ScriptMethod::OnCollisionEnter] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnCollisionEnter), 1);
-		m_ScriptMethods[ScriptMethod::OnCollisionExit] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnCollisionExit), 1);
-		m_ScriptMethods[ScriptMethod::OnTriggerEnter] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnTriggerEnter), 1);
-		m_ScriptMethods[ScriptMethod::OnTriggerExit] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnTriggerExit), 1);
-		m_ScriptMethods[ScriptMethod::OnFixedJointDisconnected] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnFixedJointDisconnected), 2);
-		m_ScriptMethods[ScriptMethod::OnEnable] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnEnable), 0);
-		m_ScriptMethods[ScriptMethod::OnDisable] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnDisable), 0);
-		m_ScriptMethods[ScriptMethod::OnDebugRender] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnDebugRender), 0);
-		m_ScriptMethods[ScriptMethod::OnGuiRender] = m_ScriptClass->GetMethod(Utils::StringFromScriptMethod(ScriptMethod::OnGuiRender), 0);
+		m_ScriptMethods[ScriptMethod::OnAwake] = m_ScriptClass->GetMethod("OnAwake", 0);
+		m_ScriptMethods[ScriptMethod::OnEnable] = m_ScriptClass->GetMethod("OnEnable", 0);
+		m_ScriptMethods[ScriptMethod::OnCreate] = m_ScriptClass->GetMethod("OnCreate", 0);
+		m_ScriptMethods[ScriptMethod::OnUpdate] = m_ScriptClass->GetMethod("OnUpdate", 0);
+		m_ScriptMethods[ScriptMethod::OnPostUpdate] = m_ScriptClass->GetMethod("OnPostUpdate", 0);
+		m_ScriptMethods[ScriptMethod::OnCollisionEnter] = m_ScriptClass->GetMethod("OnCollisionEnter", 1);
+		m_ScriptMethods[ScriptMethod::OnCollisionExit] = m_ScriptClass->GetMethod("OnCollisionExit", 1);
+		m_ScriptMethods[ScriptMethod::OnTriggerEnter] = m_ScriptClass->GetMethod("OnTriggerEnter", 1);
+		m_ScriptMethods[ScriptMethod::OnTriggerExit] = m_ScriptClass->GetMethod("OnTriggerExit", 1);
+		m_ScriptMethods[ScriptMethod::OnFixedJointDisconnected] = m_ScriptClass->GetMethod("OnFixedJointDisconnected", 2);
+		m_ScriptMethods[ScriptMethod::OnDisable] = m_ScriptClass->GetMethod("OnDisable", 0);
+		m_ScriptMethods[ScriptMethod::OnDestroy] = m_ScriptClass->GetMethod("OnDestroy", 0);
+		m_ScriptMethods[ScriptMethod::OnDebugRender] = m_ScriptClass->GetMethod("OnDebugRender", 0);
+		m_ScriptMethods[ScriptMethod::OnGuiRender] = m_ScriptClass->GetMethod("OnGuiRender", 0);
 	}
 
 	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnAwake()
@@ -50,6 +51,12 @@ namespace Vortex {
 		ScriptMethod method = ScriptMethod::OnUpdate;
 		return InvokeParameteredMethodInternal(method, nullptr);
 	}
+
+    vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnPostUpdate()
+    {
+		ScriptMethod method = ScriptMethod::OnPostUpdate;
+		return InvokeParameteredMethodInternal(method, nullptr);
+    }
 
 	vxstd::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCollisionEnter(const Collision& collision)
 	{

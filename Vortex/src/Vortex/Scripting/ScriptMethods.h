@@ -15,6 +15,7 @@ namespace Vortex {
 
 		// Game-Logic
 		OnUpdate,
+		OnPostUpdate,
 
 		// Physics
 		OnCollisionEnter,

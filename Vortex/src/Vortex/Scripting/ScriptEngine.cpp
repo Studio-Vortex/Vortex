@@ -417,9 +417,10 @@ namespace Vortex {
 
 		const UUID actorUUID = actor.GetUUID();
 
-		const ScriptComponent& scriptComponent = actor.GetComponent<ScriptComponent>();
-		const std::string& className = scriptComponent.ClassName;
+		ScriptComponent& scriptComponent = actor.GetComponent<ScriptComponent>();
+		VX_CORE_ASSERT(!scriptComponent.Instantiated, "script instance was already created!");
 
+		const std::string& className = scriptComponent.ClassName;
 		if (className.empty())
 		{
 			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to create script instance for Actor '{}' without a class name!", actor.GetName());
@@ -450,6 +451,8 @@ namespace Vortex {
 		{
 			instance->SetFieldValueInternal(name, fieldInstance.GetDataBuffer());
 		}
+
+		scriptComponent.Instantiated = true;
 	}
 
 	void ScriptEngine::RT_InstantiateActor(Actor actor)
@@ -488,7 +491,7 @@ namespace Vortex {
 		VX_CORE_ASSERT(ScriptInstanceExists(actor), "Actor script instance not instantiated properly!");
 
 		// Invoke Actor.OnAwake, Actor.OnCreate
-		ScriptMethod methods[] = { ScriptMethod::OnAwake, ScriptMethod::OnCreate };
+		ScriptMethod methods[] = { ScriptMethod::OnAwake, ScriptMethod::OnEnable, ScriptMethod::OnCreate };
 		const size_t methodCount = VX_ARRAYSIZE(methods);
 
 		for (size_t i = 0; i < methodCount; i++)
@@ -572,6 +575,14 @@ namespace Vortex {
 			case ScriptMethod::OnUpdate:
 			{
 				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnUpdate();
+				if (!result.some())
+					return false;
+				ScriptUtils::RT_HandleInvokeResult(result.value());
+				break;
+			}
+			case ScriptMethod::OnPostUpdate:
+			{
+				vxstd::option<RT_ScriptInvokeResult> result = instance->InvokeOnPostUpdate();
 				if (!result.some())
 					return false;
 				ScriptUtils::RT_HandleInvokeResult(result.value());

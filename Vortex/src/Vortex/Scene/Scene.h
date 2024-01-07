@@ -133,7 +133,7 @@ namespace Vortex {
 		SharedReference<SceneGeometry>& GetSceneMeshes();
 
 		template <typename TComponent>
-		VX_FORCE_INLINE void CopyComponentIfExists(entt::entity dst, entt::registry& dstRegistry, entt::entity src)
+		VX_FORCE_INLINE void CopyComponentIfExists(entt::entity dst, entt::registry& dstRegistry, entt::entity src) const
 		{
 			if (m_Registry.all_of<TComponent>(src))
 			{
@@ -185,7 +185,7 @@ namespace Vortex {
 
 	private:
 		SharedReference<Framebuffer> m_TargetFramebuffer = nullptr;
-		SharedReference<SceneGeometry> m_SceneMeshes = nullptr;
+		mutable SharedReference<SceneGeometry> m_SceneMeshes = nullptr;
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;

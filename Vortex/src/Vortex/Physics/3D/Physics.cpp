@@ -753,6 +753,9 @@ namespace Vortex {
 		{
 			Actor actor{ e, s_Data->ContextScene };
 
+			if (!actor.IsActive())
+				continue;
+
 			if (s_Data->ActiveActors.contains(actor.GetUUID()))
 				continue;
 
@@ -764,6 +767,9 @@ namespace Vortex {
 		for (const auto e : controllerView)
 		{
 			Actor actor{ e, s_Data->ContextScene };
+
+			if (!actor.IsActive())
+				continue;
 
 			if (s_Data->ActiveControllers.contains(actor.GetUUID()))
 				continue;
@@ -797,6 +803,9 @@ namespace Vortex {
 		for (const auto e : fixedJointView)
 		{
 			Actor actor{ e, s_Data->ContextScene };
+
+			if (!actor.IsActive())
+				continue;
 
 			if (s_Data->ActiveFixedJoints.contains(actor.GetUUID()))
 				continue;

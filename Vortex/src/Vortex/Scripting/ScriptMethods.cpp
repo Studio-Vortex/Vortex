@@ -11,6 +11,7 @@ namespace Vortex {
 			if (str == "OnEnable")                 return ScriptMethod::OnEnable;
 			if (str == "OnCreate")                 return ScriptMethod::OnCreate;
 			if (str == "OnUpdate")                 return ScriptMethod::OnUpdate;
+			if (str == "OnPostUpdate")             return ScriptMethod::OnPostUpdate;
 			if (str == "OnCollisionEnter")         return ScriptMethod::OnCollisionEnter;
 			if (str == "OnCollisionExit")          return ScriptMethod::OnCollisionExit;
 			if (str == "OnTriggerEnter")           return ScriptMethod::OnTriggerEnter;
@@ -33,6 +34,7 @@ namespace Vortex {
 				case ScriptMethod::OnEnable:                 return "OnEnable";
 				case ScriptMethod::OnCreate:                 return "OnCreate";
 				case ScriptMethod::OnUpdate:                 return "OnUpdate";
+				case ScriptMethod::OnPostUpdate:             return "OnPostUpdate";
 				case ScriptMethod::OnCollisionEnter:         return "OnCollisionEnter";
 				case ScriptMethod::OnCollisionExit:          return "OnCollisionExit";
 				case ScriptMethod::OnTriggerEnter:           return "OnTriggerEnter";

@@ -593,6 +593,7 @@ namespace Vortex {
 	{
 		std::string ClassName;
 		bool Enabled = true;
+		bool Instantiated = false;
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;

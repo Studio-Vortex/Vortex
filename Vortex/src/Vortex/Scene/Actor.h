@@ -22,8 +22,8 @@ namespace Vortex {
 		Actor() = default;
 		Actor(const Actor&) = default;
 		
-		Actor(entt::entity handle, Scene* scene)
-			: m_ActorID(handle), m_Scene(scene) { }
+		Actor(entt::entity handle, Scene* context)
+			: m_ActorID(handle), m_Scene(context) { }
 
 		~Actor() = default;
 
@@ -80,7 +80,7 @@ namespace Vortex {
 		VX_FORCE_INLINE TransformComponent& GetTransform() const { return GetComponent<TransformComponent>(); }
 
 		VX_FORCE_INLINE bool IsActive() const { return GetComponent<TagComponent>().IsActive; }
-		void SetActive(bool active) const;
+		void SetActive(bool active);
 
 		VX_FORCE_INLINE Actor GetParent() const { return m_Scene->TryGetActorWithUUID(GetParentUUID()); }
 
@@ -119,8 +119,8 @@ namespace Vortex {
 		VX_FORCE_INLINE operator entt::entity() const { return m_ActorID; }
 
 	private:
-		void OnEnabled() const;
-		void OnDisabled() const;
+		static void OnEnabled(Actor* actor);
+		static void OnDisabled(Actor* actor);
 
 	private:
 		entt::entity m_ActorID = entt::null;
