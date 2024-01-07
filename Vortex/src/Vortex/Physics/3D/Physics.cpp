@@ -321,8 +321,10 @@ namespace Vortex {
 			{
 				case RigidBodyType::Static:
 				{
+					// unfortunately we can't just synchronize transforms,
+					// physx says it causes a performance penalty and you should use dynamic actor with kinematic abilities
 					// Synchronize with actor Transform
-					pxActor->setGlobalPose(PhysicsUtils::ToPhysXTransform(transform));
+					//pxActor->setGlobalPose(PhysicsUtils::ToPhysXTransform(transform));
 					break;
 				}
 				case RigidBodyType::Dynamic:
