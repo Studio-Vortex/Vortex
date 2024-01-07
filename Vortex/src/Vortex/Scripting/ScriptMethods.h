@@ -6,7 +6,7 @@
 
 namespace Vortex {
 
-	enum class VORTEX_API ManagedMethod
+	enum class VORTEX_API ScriptMethod
 	{
 		OnAwake,
 		OnCreate,
@@ -26,8 +26,8 @@ namespace Vortex {
 
 	namespace Utils {
 
-		ManagedMethod ManagedMethodFromString(const std::string& str);
-		std::string StringFromManagedMethod(ManagedMethod method);
+		ScriptMethod ScriptMethodFromString(const std::string& str);
+		std::string StringFromScriptMethod(ScriptMethod method);
 
 	}
 

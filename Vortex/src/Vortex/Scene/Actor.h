@@ -7,7 +7,7 @@
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Components.h"
 
-#include "Vortex/Scripting/ManagedMethods.h"
+#include "Vortex/Scripting/ScriptMethods.h"
 #include "Vortex/Scripting/RuntimeMethodArgument.h"
 
 #include <entt/entt.hpp>
@@ -101,7 +101,7 @@ namespace Vortex {
 			return actor.IsAncesterOf(*this);
 		}
 
-		bool CallMethod(ManagedMethod method, const std::vector<RuntimeMethodArgument>& argumentList = {}) const;
+		bool CallMethod(ScriptMethod method, const std::vector<RuntimeMethodArgument>& argumentList = {}) const;
 
 		VX_FORCE_INLINE bool operator==(const Actor& other) const
 		{

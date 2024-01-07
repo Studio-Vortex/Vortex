@@ -55,7 +55,7 @@ namespace Vortex {
 		return false;
 	}
 
-	bool Actor::CallMethod(ManagedMethod method, const std::vector<RuntimeMethodArgument>& argumentList) const
+	bool Actor::CallMethod(ScriptMethod method, const std::vector<RuntimeMethodArgument>& argumentList) const
 	{
 		const Actor self = *this;
 
@@ -68,7 +68,7 @@ namespace Vortex {
 		if (!ScriptEngine::IsScriptComponentEnabled(self))
 			return false;
 
-		return ScriptEngine::Invoke(method, self, argumentList);
+		return ScriptEngine::Invoke(self, method, argumentList);
 	}
 
 	void Actor::OnEnabled() const
@@ -87,7 +87,7 @@ namespace Vortex {
 		// Invoke Actor.OnEnable
 		if (sceneRunning)
 		{
-			self.CallMethod(ManagedMethod::OnEnable);
+			self.CallMethod(ScriptMethod::OnEnable);
 		}
 
 		// create the rigid body if the actor has one
@@ -113,7 +113,7 @@ namespace Vortex {
 		// Invoke Actor.OnDisable
 		if (sceneRunning)
 		{
-			self.CallMethod(ManagedMethod::OnDisable);
+			self.CallMethod(ScriptMethod::OnDisable);
 		}
 
 		// destroy the rigid body if the actor has one

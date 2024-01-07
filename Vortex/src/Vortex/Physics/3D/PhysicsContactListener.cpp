@@ -51,7 +51,7 @@ namespace Vortex {
 
 			if (nativeJoint->is<physx::PxFixedJoint>())
 			{
-				ManagedMethod method = ManagedMethod::OnFixedJointDisconnected;
+				ScriptMethod method = ScriptMethod::OnFixedJointDisconnected;
 				physx::PxFixedJoint* fixedJoint = nativeJoint->is<physx::PxFixedJoint>();
 				const std::pair<Math::vec3, Math::vec3>& forceAndTorque = Physics::GetLastReportedFixedJointForces(fixedJoint);
 
@@ -115,7 +115,7 @@ namespace Vortex {
 
 		if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_HAS_FIRST_TOUCH)
 		{
-			ManagedMethod method = ManagedMethod::OnCollisionEnter;
+			ScriptMethod method = ScriptMethod::OnCollisionEnter;
 			Collision collision{};
 
 			collision.ActorID = actorB.GetUUID();
@@ -128,7 +128,7 @@ namespace Vortex {
 		}
 		else if (pairs->flags == physx::PxContactPairFlag::eACTOR_PAIR_LOST_TOUCH)
 		{
-			ManagedMethod method = ManagedMethod::OnCollisionExit;
+			ScriptMethod method = ScriptMethod::OnCollisionExit;
 			Collision collision{};
 
 			collision.ActorID = actorB.GetUUID();
@@ -204,7 +204,7 @@ namespace Vortex {
 
 			if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
 			{
-				ManagedMethod method = ManagedMethod::OnTriggerEnter;
+				ScriptMethod method = ScriptMethod::OnTriggerEnter;
 				Collision collision{};
 
 				collision.ActorID = otherActor.GetUUID();
@@ -217,7 +217,7 @@ namespace Vortex {
 			}
 			else if (pairs[i].status == physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
-				ManagedMethod method = ManagedMethod::OnTriggerExit;
+				ScriptMethod method = ScriptMethod::OnTriggerExit;
 				Collision collision{};
 
 				collision.ActorID = otherActor.GetUUID();
