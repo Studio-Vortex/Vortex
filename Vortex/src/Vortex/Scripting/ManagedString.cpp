@@ -1,15 +1,33 @@
 #include "vxpch.h"
 #include "ManagedString.h"
 
+#include "Vortex/Scripting/ScriptUtils.h"
+
 #include <mono/jit/jit.h>
 
 namespace Vortex {
 	
 	ManagedString::ManagedString(MonoString* managedString)
 	{
-		char* data = mono_string_to_utf8(managedString);
-		m_String = std::string(data);
-		mono_free(data);
+		if (!managedString)
+		{
+			return;
+		}
+
+		if (mono_string_length(managedString) == 0)
+		{
+			return;
+		}
+
+		MonoError error;
+		char* utf8 = mono_string_to_utf8_checked(managedString, &error);
+		if (ScriptUtils::RT_CheckError(&error))
+		{
+			return;
+		}
+
+		m_String = std::string(utf8);
+		mono_free(utf8);
 	}
 
 	ManagedString::ManagedString(const std::string& data)

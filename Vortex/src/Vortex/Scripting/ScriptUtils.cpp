@@ -1,6 +1,7 @@
 #include "vxpch.h"
 #include "ScriptUtils.h"
 
+#include "Vortex/Scripting/ManagedString.h"
 #include "Vortex/Scripting/ScriptFieldTypesMap.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
@@ -119,6 +120,35 @@ namespace Vortex {
 	MonoClass* ScriptUtils::GetClassFromAssemblyImageByName(MonoImage* assemblyImage, const std::string& classNamespace, const std::string& className)
 	{
 		return mono_class_from_name(assemblyImage, classNamespace.c_str(), className.c_str());
+	}
+
+	bool ScriptUtils::RT_HandleInvokeResult(const RT_ScriptInvokeResult& result)
+	{
+		if (!result.Exception)
+		{
+			return false;
+		}
+		
+		ManagedString mstring((MonoString*)result.Exception);
+		VX_CONSOLE_LOG_ERROR("[Script Engine] Error: {}", mstring.String());
+		return true;
+	}
+
+	bool ScriptUtils::RT_CheckError(MonoError* error)
+	{
+		if (mono_error_ok(error))
+		{
+			return false;
+		}
+
+		unsigned short errorCode = mono_error_get_error_code(error);
+		const char* errorMessage = mono_error_get_message(error);
+
+		VX_CONSOLE_LOG_ERROR("[Script Engine] Error: ({}): {}", errorCode, errorMessage);
+
+		mono_error_cleanup(error);
+
+		return true;
 	}
 
 	ScriptFieldType ScriptUtils::MonoTypeToScriptFieldType(MonoType* monoType)

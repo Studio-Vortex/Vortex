@@ -30,6 +30,9 @@ namespace Vortex {
 
 		static MonoClass* GetClassFromAssemblyImageByName(MonoImage* assemblyImage, const std::string& classNamespace, const std::string& className);
 
+		static bool RT_HandleInvokeResult(const RT_ScriptInvokeResult& result);
+		static bool RT_CheckError(MonoError* error);
+
 		static ScriptFieldType MonoTypeToScriptFieldType(MonoType* monoType);
 		static const char* ScriptFieldTypeToString(ScriptFieldType type);
 		static ScriptFieldType StringToScriptFieldType(std::string_view fieldType);
