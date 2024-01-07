@@ -1314,7 +1314,7 @@ namespace Vortex {
 				if (capsuleColliderComponentData["Visible"])
 					capsuleColliderComponent.Visible = capsuleColliderComponentData["Visible"].as<bool>();
 
-				const YAML::Node physicsMaterialData = boxColliderComponentData["PhysicsMaterial"];
+				const YAML::Node physicsMaterialData = capsuleColliderComponentData["PhysicsMaterial"];
 
 				if (physicsMaterialData)
 				{
