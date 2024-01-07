@@ -32,7 +32,7 @@ namespace Vortex {
 		Math::vec3 PrimaryCameraWorldSpaceTranslation = {};
 		SharedReference<Framebuffer> TargetFramebuffer = nullptr;
 		Scene* Scene = nullptr;
-		bool EditorScene = false;
+		bool IsEditorScene = false;
 	};
 
 	class VORTEX_API SceneRenderer
@@ -56,6 +56,7 @@ namespace Vortex {
 		void SpritePass2D(const SceneRenderPacket& renderPacket);
 		void ParticlePass2D(const SceneRenderPacket& renderPacket);
 		void TextPass2D(const SceneRenderPacket& renderPacket);
+		void DebugRenderPass2D(const SceneRenderPacket& renderPacket);
 		void SceneGizmosPass2D(const SceneRenderPacket& renderPacket);
 
 		// 3D

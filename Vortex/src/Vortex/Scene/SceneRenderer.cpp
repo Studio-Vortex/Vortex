@@ -53,8 +53,7 @@ namespace Vortex {
 
 		TextPass2D(renderPacket);
 
-		// Scene Gizmos
-		if (renderPacket.EditorScene)
+		if (renderPacket.IsEditorScene)
 		{
 			SharedReference<Project> project = Project::GetActive();
 			const ProjectProperties& properties = project->GetProperties();
@@ -63,6 +62,10 @@ namespace Vortex {
 			{
 				SceneGizmosPass2D(renderPacket);
 			}
+		}
+		else
+		{
+			DebugRenderPass2D(renderPacket);
 		}
 
 		EndScene2D();
@@ -116,7 +119,7 @@ namespace Vortex {
 
 	void SceneRenderer::BeginScene2D(const SceneRenderPacket& renderPacket)
 	{
-		if (renderPacket.EditorScene)
+		if (renderPacket.IsEditorScene)
 		{
 			EditorCamera* camera = (EditorCamera*)renderPacket.PrimaryCamera;
 
@@ -328,11 +331,32 @@ namespace Vortex {
 		Renderer2D::SetCullMode(originalCullMode);
 	}
 
+	void SceneRenderer::DebugRenderPass2D(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
+
+		VX_CORE_ASSERT(!renderPacket.IsEditorScene, "DebugRenderPass2D can only be called in a non Editor Scene!");
+
+		Scene* scene = renderPacket.Scene;
+
+		// Invoke Actor.OnDebugRender
+		auto view = scene->GetAllActorsWith<ScriptComponent>();
+		for (const auto e : view)
+		{
+			Actor actor{ e, scene };
+
+			if (!actor.IsActive())
+				continue;
+
+			actor.CallMethod(ScriptMethod::OnDebugRender);
+		}
+	}
+
 	void SceneRenderer::SceneGizmosPass2D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
-		VX_CORE_ASSERT(renderPacket.EditorScene, "Scene Gizmos can only be rendered in a Editor Scene!");
+		VX_CORE_ASSERT(renderPacket.IsEditorScene, "Scene Gizmos can only be rendered in a Editor Scene!");
 
 		Scene* scene = renderPacket.Scene;
 		const Math::mat4& cameraView = renderPacket.PrimaryCameraViewMatrix;
@@ -430,7 +454,7 @@ namespace Vortex {
 
 		PreparePostProcess(renderPacket);
 
-		if (renderPacket.EditorScene)
+		if (renderPacket.IsEditorScene)
 		{
 			EditorCamera* camera = (EditorCamera*)renderPacket.PrimaryCamera;
 
@@ -630,7 +654,7 @@ namespace Vortex {
 
 				const Math::vec3 worldSpaceTranslation = scene->GetWorldSpaceTransform(actor).Translation;
 
-				if (renderPacket.EditorScene)
+				if (renderPacket.IsEditorScene)
 				{
 					const EditorCamera* editorCamera = (EditorCamera*)renderPacket.PrimaryCamera;
 					const Math::vec3& cameraPosition = editorCamera->GetPosition();
@@ -668,7 +692,7 @@ namespace Vortex {
 
 				const Math::vec3 worldSpaceTranslation = scene->GetWorldSpaceTransform(actor).Translation;
 
-				if (renderPacket.EditorScene)
+				if (renderPacket.IsEditorScene)
 				{
 					const EditorCamera* editorCamera = (EditorCamera*)renderPacket.PrimaryCamera;
 					const Math::vec3& cameraPosition = editorCamera->GetPosition();

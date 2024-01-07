@@ -248,7 +248,7 @@ namespace Vortex {
 		if (m_IsRunning)
 		{
 			// Invoke Actor.OnDestroy
-			actor.CallMethod(ManagedMethod::OnDestroy);
+			actor.CallMethod(ScriptMethod::OnDestroy);
 
 			if (actor.HasComponent<NativeScriptComponent>())
 			{
@@ -378,7 +378,7 @@ namespace Vortex {
 				if (!actor.IsActive())
 					continue;
 
-				actor.CallMethod(ManagedMethod::OnAwake);
+				actor.CallMethod(ScriptMethod::OnAwake);
 			}
 
 			// Invoke Actor.OnCreate
@@ -389,7 +389,7 @@ namespace Vortex {
 				if (!actor.IsActive())
 					continue;
 
-				actor.CallMethod(ManagedMethod::OnCreate);
+				actor.CallMethod(ScriptMethod::OnCreate);
 			}
 		}
 
@@ -415,7 +415,7 @@ namespace Vortex {
 		{
 			Actor actor{ actorID, this };
 
-			actor.CallMethod(ManagedMethod::OnDestroy);
+			actor.CallMethod(ScriptMethod::OnDestroy);
 		});
 
 		ScriptEngine::OnRuntimeStop();
@@ -503,14 +503,14 @@ namespace Vortex {
 				if (!ScriptEngine::IsScriptComponentEnabled(actor))
 					continue;
 
-				if (!ScriptEngine::ScriptInstanceHasMethod(actor, ManagedMethod::OnUpdate))
+				if (!ScriptEngine::ScriptInstanceHasMethod(actor, ScriptMethod::OnUpdate))
 				{
-					if (!ScriptEngine::ScriptInstanceHasMethod(actor, ManagedMethod::OnUpdateDelta))
+					if (!ScriptEngine::ScriptInstanceHasMethod(actor, ScriptMethod::OnUpdateDelta))
 						continue; // No OnUpdate method was found
 				}
 
 				RuntimeMethodArgument arg0(delta);
-				ScriptEngine::Invoke(ManagedMethod::OnUpdate, actor, { arg0 });
+				actor.CallMethod(ScriptMethod::OnUpdate, { arg0 });
 			}
 
 #ifndef VX_DIST
@@ -552,37 +552,27 @@ namespace Vortex {
 			// Set clear color
 			RenderCommand::SetClearColor(cameraComponent.ClearColor);
 
-			if (primarySceneCamera)
+			// Resize if needed
+			if (primarySceneCamera->IsDirty())
 			{
-				SceneRenderPacket renderPacket{};
-				renderPacket.PrimaryCamera = primarySceneCamera;
-				renderPacket.PrimaryCameraViewMatrix = Math::Inverse(primarySceneCameraTransform.GetTransform());
-				renderPacket.PrimaryCameraProjectionMatrix = primarySceneCamera->GetProjectionMatrix();
-				renderPacket.PrimaryCameraWorldSpaceTranslation = primarySceneCameraTransform.Translation;
-				renderPacket.TargetFramebuffer = m_TargetFramebuffer;
-				renderPacket.Scene = this;
-				renderPacket.EditorScene = false;
-				s_SceneRenderer.RenderScene(renderPacket);
-
-				// Invoke Actor.OnDebugRender
-				s_SceneRenderer.BeginScene2D(renderPacket);
-				auto view = GetAllActorsWith<ScriptComponent>();
-				for (const auto e : view)
-				{
-					Actor actor{ e, this };
-
-					if (!actor.IsActive())
-						continue;
-
-					actor.CallMethod(ManagedMethod::OnDebugRender);
-				}
-				s_SceneRenderer.EndScene2D();
-				
-				// we need to set the original line width incase a script set it to something else
-				SharedReference<Project> project = Project::GetActive();
-				const ProjectProperties& properties = project->GetProperties();
-				Renderer2D::SetLineWidth(properties.RendererProps.LineWidth);
+				ResizePrimaryCamera();
 			}
+
+			// Render
+			SceneRenderPacket renderPacket{};
+			renderPacket.PrimaryCamera = primarySceneCamera;
+			renderPacket.PrimaryCameraViewMatrix = Math::Inverse(primarySceneCameraTransform.GetTransform());
+			renderPacket.PrimaryCameraProjectionMatrix = primarySceneCamera->GetProjectionMatrix();
+			renderPacket.PrimaryCameraWorldSpaceTranslation = primarySceneCameraTransform.Translation;
+			renderPacket.TargetFramebuffer = m_TargetFramebuffer;
+			renderPacket.Scene = this;
+			renderPacket.IsEditorScene = false;
+			s_SceneRenderer.RenderScene(renderPacket);
+
+			// we need to set the original line width incase a script set it to something else
+			SharedReference<Project> project = Project::GetActive();
+			const ProjectProperties& properties = project->GetProperties();
+			Renderer2D::SetLineWidth(properties.RendererProps.LineWidth);
 		}
 
 		// Update Components/Systems
@@ -607,6 +597,7 @@ namespace Vortex {
 
 		if (updateCurrentFrame)
 		{
+			// Update Physics
 			OnPhysicsSimulationUpdate(delta);
 
 			// Update Animators
@@ -618,15 +609,32 @@ namespace Vortex {
 			}
 		}
 
+		if (Actor primaryCameraActor = GetPrimaryCameraActor())
+		{
+			const CameraComponent& cameraComponent = primaryCameraActor.GetComponent<CameraComponent>();
+			const SceneCamera& sceneCamera = cameraComponent.Camera;
+
+			// Set Clear color
+			RenderCommand::SetClearColor(cameraComponent.ClearColor);
+
+			// Resize if needed
+			if (sceneCamera.IsDirty())
+			{
+				ResizePrimaryCamera();
+			}
+		}
+
 		// Render
-		SceneRenderPacket renderPacket{};
-		renderPacket.PrimaryCamera = camera;
-		renderPacket.PrimaryCameraViewMatrix = camera->GetViewMatrix();
-		renderPacket.PrimaryCameraProjectionMatrix = camera->GetProjectionMatrix();
-		renderPacket.TargetFramebuffer = m_TargetFramebuffer;
-		renderPacket.Scene = this;
-		renderPacket.EditorScene = true;
-		s_SceneRenderer.RenderScene(renderPacket);
+		{
+			SceneRenderPacket renderPacket{};
+			renderPacket.PrimaryCamera = camera;
+			renderPacket.PrimaryCameraViewMatrix = camera->GetViewMatrix();
+			renderPacket.PrimaryCameraProjectionMatrix = camera->GetProjectionMatrix();
+			renderPacket.TargetFramebuffer = m_TargetFramebuffer;
+			renderPacket.Scene = this;
+			renderPacket.IsEditorScene = true;
+			s_SceneRenderer.RenderScene(renderPacket);
+		}
 
 		// Update Components/Systems
 		OnComponentUpdate(delta);
@@ -644,6 +652,21 @@ namespace Vortex {
 		// Update Animators
 		OnAnimatorUpdateRuntime(delta);
 
+		if (Actor primaryCameraActor = GetPrimaryCameraActor())
+		{
+			const CameraComponent& cameraComponent = primaryCameraActor.GetComponent<CameraComponent>();
+			const SceneCamera& sceneCamera = cameraComponent.Camera;
+
+			// Set Clear color
+			RenderCommand::SetClearColor(cameraComponent.ClearColor);
+
+			// Resize if needed
+			if (sceneCamera.IsDirty())
+			{
+				ResizePrimaryCamera();
+			}
+		}
+
 		// Render
 		{
 			SceneRenderPacket renderPacket{};
@@ -652,16 +675,8 @@ namespace Vortex {
 			renderPacket.PrimaryCameraProjectionMatrix = camera->GetProjectionMatrix();
 			renderPacket.TargetFramebuffer = m_TargetFramebuffer;
 			renderPacket.Scene = this;
-			renderPacket.EditorScene = true;
+			renderPacket.IsEditorScene = true;
 			s_SceneRenderer.RenderScene(renderPacket);
-		}
-
-		if (Actor primaryCameraActor = GetPrimaryCameraActor())
-		{
-			const CameraComponent& cameraComponent = primaryCameraActor.GetComponent<CameraComponent>();
-
-			// Set Clear color
-			RenderCommand::SetClearColor(cameraComponent.ClearColor);
 		}
 
 		// Update Components/Systems
@@ -741,7 +756,7 @@ namespace Vortex {
 			if (!actor.IsActive())
 				continue;
 
-			actor.CallMethod(ManagedMethod::OnGuiRender);
+			actor.CallMethod(ScriptMethod::OnGuiRender);
 		}
 	}
 
@@ -795,6 +810,7 @@ namespace Vortex {
 
 			SceneCamera& camera = cameraComponent.Camera;
 			camera.SetViewportSize(width, height);
+			camera.SetDirty(false);
 		}
 	}
 
@@ -1280,6 +1296,7 @@ namespace Vortex {
 		CameraComponent& cameraComponent = primaryCameraActor.GetComponent<CameraComponent>();
 		SceneCamera& sceneCamera = cameraComponent.Camera;
 		sceneCamera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		sceneCamera.SetDirty(false);
 	}
 
 	void Scene::StopAnimatorsRuntime()
