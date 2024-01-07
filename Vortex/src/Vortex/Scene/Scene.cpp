@@ -497,20 +497,11 @@ namespace Vortex {
 				if (!actor.IsActive())
 					continue;
 
-				if (!ScriptEngine::IsScriptClassValid(actor))
-					continue;
-
-				if (!ScriptEngine::IsScriptComponentEnabled(actor))
-					continue;
-
-				if (!ScriptEngine::ScriptInstanceHasMethod(actor, ScriptMethod::OnUpdate))
+				if (!actor.CallMethod(ScriptMethod::OnUpdate))
 				{
-					if (!ScriptEngine::ScriptInstanceHasMethod(actor, ScriptMethod::OnUpdateDelta))
-						continue; // No OnUpdate method was found
+					RuntimeMethodArgument arg0(delta);
+					actor.CallMethod(ScriptMethod::OnUpdateDelta, { arg0 });
 				}
-
-				RuntimeMethodArgument arg0(delta);
-				actor.CallMethod(ScriptMethod::OnUpdate, { arg0 });
 			}
 
 #ifndef VX_DIST
