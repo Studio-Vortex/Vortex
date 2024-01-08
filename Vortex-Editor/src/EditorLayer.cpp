@@ -2703,8 +2703,7 @@ namespace Vortex {
 				{
 					if (shiftDown)
 					{
-						SharedReference<BuildSettingsPanel> buildSettingsPanel = m_PanelManager->GetPanel<BuildSettingsPanel>();
-						buildSettingsPanel->ToggleOpen();
+						m_PanelManager->TogglePanelOpen<BuildSettingsPanel>();
 					}
 					else
 					{

@@ -35,7 +35,7 @@ namespace Vortex {
 		virtual void SetProjectContext(SharedReference<Project> project) { m_ContextProject = project; }
 		virtual void SetSceneContext(SharedReference<Scene> scene) { m_ContextScene = scene; }
 
-		virtual void ToggleOpen() { IsOpen = !IsOpen; }
+		virtual bool ToggleOpen() { return IsOpen = !IsOpen; }
 
 		virtual const std::string& GetName() const { return m_PanelName; }
 		virtual void SetName(const std::string& name) { m_PanelName = name; }
