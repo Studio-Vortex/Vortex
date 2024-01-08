@@ -44,6 +44,7 @@ namespace Vortex {
 		static void SetSceneStartTime(float currentTime);
 		static bool SavePlayerPrefs();
 		static bool LoadPlayerPrefs();
+		static bool TransitionQueued();
 	};
 
 	namespace InternalCalls {
@@ -736,23 +737,8 @@ namespace Vortex {
 
 #pragma region Mathf
 
-		float Mathf_GetPI();
-		double Mathf_GetPI_D();
-		float Mathf_Round(float value);
-		float Mathf_Abs(float in);
-		float Mathf_Sqrt(float in);
-		float Mathf_Pow(float base, float power);
-		float Mathf_Sin(float in);
-		float Mathf_Cos(float in);
-		float Mathf_Acos(float in);
-		float Mathf_Tan(float in);
-		float Mathf_Max(float x, float y);
-		float Mathf_Min(float x, float y);
-		float Mathf_Deg2Rad(float degrees);
-		float Mathf_Rad2Deg(float radians);
-		void Mathf_Deg2RadVector3(Math::vec3* value, Math::vec3* outResult);
-		void Mathf_Rad2DegVector3(Math::vec3* value, Math::vec3* outResult);
-		void Mathf_LookAt(Math::vec3* eyePos, Math::vec3* worldPoint, Math::vec3* outRotation);
+		void Mathf_EulerAngles(const Math::quaternion* orientation, Math::vec3* outEulers);
+		void Mathf_LookAt(Math::vec3* eyePos, Math::vec3* worldPoint, Math::quaternion* outRotation);
 		void Mathf_InverseQuat(Math::quaternion* rotation, Math::quaternion* result);
 
 #pragma endregion

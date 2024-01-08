@@ -1608,55 +1608,10 @@ namespace Vortex {
 		#region Mathf
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_GetPI();
+		internal extern static void Mathf_EulerAngles(ref Quaternion orientation, out Vector3 eulers);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static double Mathf_GetPI_D();
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_Round(float value);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_Abs(float value);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_Sqrt(float value);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_Pow(float value, float power);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_Sin(float value);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_Cos(float value);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_Acos(float value);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_Tan(float value);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_Max(float x, float y);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_Min(float x, float y);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_Deg2Rad(float degrees);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static float Mathf_Rad2Deg(float radians);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Mathf_Deg2RadVector3(ref Vector3 value, out Vector3 result);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Mathf_Rad2DegVector3(ref Vector3 value, out Vector3 result);
-
-		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static void Mathf_LookAt(ref Vector3 eyePos, ref Vector3 worldPoint, out Vector3 result);
+		internal extern static void Mathf_LookAt(ref Vector3 eyePos, ref Vector3 worldPoint, out Quaternion result);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void Mathf_InverseQuat(ref Quaternion value, out Quaternion result);

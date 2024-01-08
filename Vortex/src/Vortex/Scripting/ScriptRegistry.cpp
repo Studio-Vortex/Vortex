@@ -595,7 +595,7 @@ namespace Vortex {
 			if (!actor)
 			{
 				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Actor.Tag with invalid actor!");
-				return;
+				return nullptr;
 			}
 
 			ManagedString mstring(actor.GetName());
@@ -628,11 +628,11 @@ namespace Vortex {
 		MonoString* Actor_GetMarker(UUID actorUUID)
 		{
 			Actor actor = GetActor(actorUUID);
-
+			
 			if (!actor)
 			{
 				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Actor.Marker with invalid actor!");
-				return;
+				return nullptr;
 			}
 
 			ManagedString mstring(actor.GetMarker());
@@ -8794,89 +8794,14 @@ namespace Vortex {
 
 #pragma region Mathf
 
-		float Mathf_GetPI()
+		void Mathf_EulerAngles(const Math::quaternion* orientation, Math::vec3* outEulers)
 		{
-			return Math::PI;
+			*outEulers = Math::EulerAngles(*orientation);
 		}
 
-		double Mathf_GetPI_D()
+		void Mathf_LookAt(Math::vec3* eyePos, Math::vec3* worldPoint, Math::quaternion* outRotation)
 		{
-			return Math::PI_D;
-		}
-
-		float Mathf_Round(float value)
-		{
-			return Math::Round(value);
-		}
-
-		float Mathf_Abs(float in)
-		{
-			return Math::Abs(in);
-		}
-
-		float Mathf_Sqrt(float in)
-		{
-			return Math::Sqrt(in);
-		}
-
-		float Mathf_Pow(float base, float power)
-		{
-			return Math::Pow(base, power);
-		}
-
-		float Mathf_Sin(float in)
-		{
-			return Math::Sin(in);
-		}
-
-		float Mathf_Cos(float in)
-		{
-			return Math::Cos(in);
-		}
-
-		float Mathf_Acos(float in)
-		{
-			return Math::Acos(in);
-		}
-
-		float Mathf_Tan(float in)
-		{
-			return Math::Tan(in);
-		}
-
-		float Mathf_Max(float x, float y)
-		{
-			return Math::Max(x, y);
-		}
-
-		float Mathf_Min(float x, float y)
-		{
-			return Math::Min(x, y);
-		}
-
-		float Mathf_Deg2Rad(float degrees)
-		{
-			return Math::Deg2Rad(degrees);
-		}
-
-		float Mathf_Rad2Deg(float radians)
-		{
-			return Math::Rad2Deg(radians);
-		}
-
-		void Mathf_Deg2RadVector3(Math::vec3* value, Math::vec3* outResult)
-		{
-			*outResult = Math::Deg2Rad(*value);
-		}
-
-		void Mathf_Rad2DegVector3(Math::vec3* value, Math::vec3* outResult)
-		{
-			*outResult = Math::Rad2Deg(*value);
-		}
-
-		void Mathf_LookAt(Math::vec3* eyePos, Math::vec3* worldPoint, Math::vec3* outRotation)
-		{
-			Math::vec3 up{ 0.0f, 1.0f, 0.0f };
+			constexpr Math::vec3 up{ 0.0f, 1.0f, 0.0f };
 			Math::mat4 transform = Math::LookAt(*eyePos, *worldPoint, up);
 
 			Math::vec3 translation, scale;
@@ -9930,23 +9855,8 @@ namespace Vortex {
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Matrix4_Rotate);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Matrix4_LookAt);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Matrix4_Multiply);
-
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_GetPI);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_GetPI_D);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Round);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Abs);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Sqrt);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Pow);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Sin);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Cos);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Acos);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Tan);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Max);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Max);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Deg2Rad);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Rad2Deg);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Deg2RadVector3);
-		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_Rad2DegVector3);
+		
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_EulerAngles);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_LookAt);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Mathf_InverseQuat);
 

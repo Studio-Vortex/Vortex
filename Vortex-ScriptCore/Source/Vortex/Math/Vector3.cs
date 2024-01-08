@@ -141,7 +141,7 @@ namespace Vortex {
 				return 0F;
 
 			float dot = Mathf.Clamp(Dot(from, to) / denominator, -1F, 1F);
-			return Mathf.Rad2Deg(Mathf.Acos(dot));
+			return Mathf.Rad2Deg * Mathf.Acos(dot);
 		}
 
 		public static Vector3 Clamp(Vector3 value, Vector3 min, Vector3 max)

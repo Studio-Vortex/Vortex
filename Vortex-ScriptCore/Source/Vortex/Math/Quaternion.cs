@@ -103,7 +103,7 @@ namespace Vortex
 		public static Quaternion AngleAxis(float aAngle, Vector3 aAxis)
 		{
 			aAxis.Normalize();
-			float rad = Mathf.Deg2Rad(aAngle) * 0.5f;
+			float rad = (Mathf.Deg2Rad * aAngle) * 0.5f;
 			aAxis *= Mathf.Sin(rad);
 			return new Quaternion(Mathf.Cos(rad), aAxis.X, aAxis.Y, aAxis.Z);
 		}
@@ -170,9 +170,14 @@ namespace Vortex
 
 		public void Normalize()
 		{
-			float scale = 1.0f / this.Length;
+			float scale = 1.0f / Length;
 			XYZ *= scale;
 			W *= scale;
+		}
+
+		public Vector3 Eulers
+		{
+			get => Mathf.EulerAngles(this);
 		}
 
 		public static Quaternion EulerAngles(Vector3 eulers) => new Quaternion(eulers);
