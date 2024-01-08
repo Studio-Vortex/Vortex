@@ -1868,13 +1868,15 @@ namespace Vortex {
 			}
 		};
 
+		const float imageSize = 64.0f;
+
 		UI::PropertyAssetImageReferenceSettings settings;
 		settings.Label = "Texture";
-		std::string relativePath = "";
+		std::string relativePath = icon == EditorResources::CheckerboardIcon ? "(null)" : Fs::Path(icon->GetPath()).stem().string().c_str();
 		settings.CurrentFilepath = &relativePath;
 		settings.CurrentHandle = &component.Texture;
 		settings.CurrentImage.Texture = icon;
-		settings.CurrentImage.Size = Math::vec2(64.0f, 64.0f);
+		settings.CurrentImage.Size = Math::vec2(imageSize);
 		settings.CurrentImage.TintColor = component.SpriteColor;
 		std::unordered_set<AssetHandle> textureHandles = Project::GetEditorAssetManager()->GetAllAssetsWithType(AssetType::TextureAsset);
 		std::vector<UI::UIImage> images;
@@ -1889,8 +1891,8 @@ namespace Vortex {
 
 			UI::UIImage image;
 			image.Texture = texture;
-			image.Size = Math::vec2(64.0f, 64.0f);
-			image.TintColor = component.SpriteColor;
+			image.Size = Math::vec2(imageSize);
+			image.TintColor = ColorToVec4(Color::White);
 
 			images.push_back(image);
 		}

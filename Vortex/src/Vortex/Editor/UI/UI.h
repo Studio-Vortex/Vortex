@@ -45,7 +45,7 @@ namespace Vortex::UI {
 
 	namespace Internal {
 
-		inline static void Init()
+		VX_FORCE_INLINE static void Init()
 		{
 			for (size_t i = 0; i < UI_MAX_TEXT_FILTERS; i++)
 			{
@@ -55,7 +55,7 @@ namespace Vortex::UI {
 			}
 		}
 
-		inline static void Shutdown()
+		VX_FORCE_INLINE static void Shutdown()
 		{
 
 		}
@@ -77,7 +77,7 @@ namespace Vortex::UI {
 		~ScopedColor();
 	};
 
-	VORTEX_API inline static const char* GenerateID()
+	VORTEX_API VX_FORCE_INLINE static const char* GenerateID()
 	{
 		_itoa_s(s_Counter++, s_IDBuffer + 2, sizeof(s_IDBuffer) - 2, 16);
 		return s_IDBuffer;
@@ -187,7 +187,7 @@ namespace Vortex::UI {
 	// -----------------------------------------------------------------------------------------------------------------------------------------------------------
 	// Colours
 
-	VORTEX_API inline static ImColor ColorWithValue(const ImColor& color, float value)
+	VORTEX_API VX_FORCE_INLINE static ImColor ColorWithValue(const ImColor& color, float value)
 	{
 		const ImVec4& colRaw = color.Value;
 		float hue, sat, val;
@@ -195,7 +195,7 @@ namespace Vortex::UI {
 		return ImColor::HSV(hue, sat, std::min(value, 1.0f));
 	}
 
-	VORTEX_API inline static ImColor ColorWithSaturation(const ImColor& color, float saturation)
+	VORTEX_API VX_FORCE_INLINE static ImColor ColorWithSaturation(const ImColor& color, float saturation)
 	{
 		const ImVec4& colRaw = color.Value;
 		float hue, sat, val;
@@ -203,7 +203,7 @@ namespace Vortex::UI {
 		return ImColor::HSV(hue, std::min(saturation, 1.0f), val);
 	}
 
-	VORTEX_API inline static ImColor ColorWithHue(const ImColor& color, float hue)
+	VORTEX_API VX_FORCE_INLINE static ImColor ColorWithHue(const ImColor& color, float hue)
 	{
 		const ImVec4& colRaw = color.Value;
 		float h, s, v;
@@ -211,14 +211,14 @@ namespace Vortex::UI {
 		return ImColor::HSV(std::min(hue, 1.0f), s, v);
 	}
 
-	VORTEX_API inline static ImColor ColorWithAlpha(const ImColor& color, float multiplier)
+	VORTEX_API VX_FORCE_INLINE static ImColor ColorWithAlpha(const ImColor& color, float multiplier)
 	{
 		ImVec4 colRaw = color.Value;
 		colRaw.w = multiplier;
 		return colRaw;
 	}
 
-	VORTEX_API inline static ImColor ColorWithMultipliedValue(const ImColor& color, float multiplier)
+	VORTEX_API VX_FORCE_INLINE static ImColor ColorWithMultipliedValue(const ImColor& color, float multiplier)
 	{
 		const ImVec4& colRaw = color.Value;
 		float hue, sat, val;
@@ -226,7 +226,7 @@ namespace Vortex::UI {
 		return ImColor::HSV(hue, sat, std::min(val * multiplier, 1.0f));
 	}
 
-	VORTEX_API inline static ImColor ColorWithMultipliedSaturation(const ImColor& color, float multiplier)
+	VORTEX_API VX_FORCE_INLINE static ImColor ColorWithMultipliedSaturation(const ImColor& color, float multiplier)
 	{
 		const ImVec4& colRaw = color.Value;
 		float hue, sat, val;
@@ -234,7 +234,7 @@ namespace Vortex::UI {
 		return ImColor::HSV(hue, std::min(sat * multiplier, 1.0f), val);
 	}
 
-	VORTEX_API inline static ImColor ColorWithMultipliedHue(const ImColor& color, float multiplier)
+	VORTEX_API VX_FORCE_INLINE static ImColor ColorWithMultipliedHue(const ImColor& color, float multiplier)
 	{
 		const ImVec4& colRaw = color.Value;
 		float hue, sat, val;
@@ -242,25 +242,25 @@ namespace Vortex::UI {
 		return ImColor::HSV(std::min(hue * multiplier, 1.0f), sat, val);
 	}
 
-	VORTEX_API inline static ImColor ColorWithMultipliedAlpha(const ImColor& color, float multiplier)
+	VORTEX_API VX_FORCE_INLINE static ImColor ColorWithMultipliedAlpha(const ImColor& color, float multiplier)
 	{
 		ImVec4 colRaw = color.Value;
 		colRaw.w *= multiplier;
 		return colRaw;
 	}
 
-	VORTEX_API inline static const char* GenerateLabelID(std::string_view label)
+	VORTEX_API VX_FORCE_INLINE static const char* GenerateLabelID(std::string_view label)
 	{
 		*std::format_to_n(s_LabelIDBuffer, std::size(s_LabelIDBuffer), "{}##{}", label, s_Counter++).out = 0;
 		return s_LabelIDBuffer;
 	}
 
-	VORTEX_API inline static ImRect GetItemRect()
+	VORTEX_API VX_FORCE_INLINE static ImRect GetItemRect()
 	{
 		return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
 	}
 
-	VORTEX_API inline static ImRect RectExpanded(const ImRect& rect, float x, float y)
+	VORTEX_API VX_FORCE_INLINE static ImRect RectExpanded(const ImRect& rect, float x, float y)
 	{
 		ImRect result = rect;
 		result.Min.x -= x;
@@ -270,7 +270,7 @@ namespace Vortex::UI {
 		return result;
 	}
 
-	VORTEX_API inline static ImRect RectOffset(const ImRect& rect, float x, float y)
+	VORTEX_API VX_FORCE_INLINE static ImRect RectOffset(const ImRect& rect, float x, float y)
 	{
 		ImRect result = rect;
 		result.Min.x += x;
@@ -280,14 +280,14 @@ namespace Vortex::UI {
 		return result;
 	}
 
-	VORTEX_API inline static ImRect RectOffset(const ImRect& rect, ImVec2 xy)
+	VORTEX_API VX_FORCE_INLINE static ImRect RectOffset(const ImRect& rect, ImVec2 xy)
 	{
 		return RectOffset(rect, xy.x, xy.y);
 	}
 
 	namespace Draw {
 
-		VORTEX_API inline static void Underline(bool fullWidth = false, float offsetX = 0.0f, float offsetY = -1.0f)
+		VORTEX_API VX_FORCE_INLINE static void Underline(bool fullWidth = false, float offsetX = 0.0f, float offsetY = -1.0f)
 		{
 			if (fullWidth)
 			{
@@ -312,7 +312,7 @@ namespace Vortex::UI {
 			}
 		}
 
-		VORTEX_API inline static void Separator(ImVec2 size, ImVec4 color)
+		VORTEX_API VX_FORCE_INLINE static void Separator(ImVec2 size, ImVec4 color)
 		{
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, color);
 			ImGui::BeginChild("sep", size);
@@ -321,7 +321,7 @@ namespace Vortex::UI {
 		}
 	}
 
-	VORTEX_API inline static void SetTooltip(const char* message)
+	VORTEX_API VX_FORCE_INLINE static void SetTooltip(const char* message)
 	{
 		if (!Gui::IsItemHovered())
 			return;
@@ -335,7 +335,7 @@ namespace Vortex::UI {
 		Gui::PopStyleVar();
 	}
 
-	VORTEX_API inline static void HelpMarker(const char* desc)
+	VORTEX_API VX_FORCE_INLINE static void HelpMarker(const char* desc)
 	{
 		Gui::TextDisabled("(?)");
 
@@ -349,7 +349,7 @@ namespace Vortex::UI {
 		}
 	}
 
-	VORTEX_API inline static void DrawItemActivityOutline(float rounding = 0.0f, bool drawWhenInactive = false, ImColor colourWhenActive = ImColor(80, 80, 80))
+	VORTEX_API VX_FORCE_INLINE static void DrawItemActivityOutline(float rounding = 0.0f, bool drawWhenInactive = false, ImColor colourWhenActive = ImColor(80, 80, 80))
 	{
 		auto* drawList = ImGui::GetWindowDrawList();
 		const ImRect rect = RectExpanded(GetItemRect(), 1.0f, 1.0f);
@@ -370,18 +370,18 @@ namespace Vortex::UI {
 		}
 	};
 
-	VORTEX_API inline static void PushID()
+	VORTEX_API VX_FORCE_INLINE static void PushID()
 	{
 		Gui::PushID(s_UIContextID++);
 	}
 
-	VORTEX_API inline static void PopID()
+	VORTEX_API VX_FORCE_INLINE static void PopID()
 	{
 		Gui::PopID();
 		s_UIContextID--;
 	}
 
-	VORTEX_API inline static void PushFont(const char* fontName)
+	VORTEX_API VX_FORCE_INLINE static void PushFont(const char* fontName)
 	{
 		if (String::FastCompare(fontName, "Bold"))
 			Gui::PushFont(Gui::GetIO().Fonts->Fonts[0]);
@@ -391,18 +391,18 @@ namespace Vortex::UI {
 			Gui::PushFont(Gui::GetIO().Fonts->Fonts[2]);
 	}
 
-	VORTEX_API inline static void PopFont()
+	VORTEX_API VX_FORCE_INLINE static void PopFont()
 	{
 		Gui::PopFont();
 	}
 
-	VORTEX_API inline static bool IsInputEnabled()
+	VORTEX_API VX_FORCE_INLINE static bool IsInputEnabled()
 	{
 		const auto& io = ImGui::GetIO();
 		return (io.ConfigFlags & ImGuiConfigFlags_NoMouse) == 0 && (io.ConfigFlags & ImGuiConfigFlags_NavNoCaptureKeyboard) == 0;
 	}
 
-	VORTEX_API inline static void SetInputEnabled(bool enabled)
+	VORTEX_API VX_FORCE_INLINE static void SetInputEnabled(bool enabled)
 	{
 		auto& io = ImGui::GetIO();
 
@@ -418,23 +418,23 @@ namespace Vortex::UI {
 		}
 	}
 
-	VORTEX_API inline static void ShiftCursorX(float distance)
+	VORTEX_API VX_FORCE_INLINE static void ShiftCursorX(float distance)
 	{
 		Gui::SetCursorPosX(Gui::GetCursorPosX() + distance);
 	}
 
-	VORTEX_API inline static void ShiftCursorY(float distance)
+	VORTEX_API VX_FORCE_INLINE static void ShiftCursorY(float distance)
 	{
 		Gui::SetCursorPosY(Gui::GetCursorPosY() + distance);
 	}
 
-	VORTEX_API inline static void ShiftCursor(float x, float y)
+	VORTEX_API VX_FORCE_INLINE static void ShiftCursor(float x, float y)
 	{
 		ImVec2 cursorPos = Gui::GetCursorPos();
 		Gui::SetCursorPos(ImVec2{ cursorPos.x + x, cursorPos.y + y });
 	}
 
-	VORTEX_API inline static void BeginPropertyGrid(uint32_t columns = 2)
+	VORTEX_API VX_FORCE_INLINE static void BeginPropertyGrid(uint32_t columns = 2)
 	{
 		PushID();
 		Gui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 8.0f, 8.0f });
@@ -442,7 +442,7 @@ namespace Vortex::UI {
 		Gui::Columns(columns);
 	}
 
-	VORTEX_API inline static void BeginPropertyGrid(float columnWidth)
+	VORTEX_API VX_FORCE_INLINE static void BeginPropertyGrid(float columnWidth)
 	{
 		PushID();
 		Gui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 8.0f, 8.0f });
@@ -451,7 +451,7 @@ namespace Vortex::UI {
 		Gui::SetColumnWidth(0, columnWidth);
 	}
 
-	VORTEX_API inline static void EndPropertyGrid()
+	VORTEX_API VX_FORCE_INLINE static void EndPropertyGrid()
 	{
 		Gui::Columns(1);
 		Gui::PopStyleVar(2);
@@ -459,7 +459,7 @@ namespace Vortex::UI {
 		PopID();
 	}
 
-	VORTEX_API inline static bool BeginPopup(const char* str_id, ImGuiWindowFlags flags)
+	VORTEX_API VX_FORCE_INLINE static bool BeginPopup(const char* str_id, ImGuiWindowFlags flags)
 	{
 		bool opened = false;
 
@@ -483,14 +483,14 @@ namespace Vortex::UI {
 		return opened;
 	}
 
-	VORTEX_API inline static void EndPopup()
+	VORTEX_API VX_FORCE_INLINE static void EndPopup()
 	{
 		ImGui::PopStyleVar(); // WindowPadding;
 		ImGui::PopStyleColor(); // HeaderHovered;
 		ImGui::EndPopup();
 	}
 
-	VORTEX_API inline static bool PropertyGridHeader(const char* label, bool defaultOpen = true)
+	VORTEX_API VX_FORCE_INLINE static bool PropertyGridHeader(const char* label, bool defaultOpen = true)
 	{
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Framed
 			| ImGuiTreeNodeFlags_SpanAvailWidth
@@ -516,26 +516,26 @@ namespace Vortex::UI {
 		return open;
 	}
 
-	VORTEX_API inline static void EndTreeNode()
+	VORTEX_API VX_FORCE_INLINE static void EndTreeNode()
 	{
 		Gui::TreePop();
 	}
 
-	VORTEX_API inline static void BeginCheckboxGroup(const char* label)
+	VORTEX_API VX_FORCE_INLINE static void BeginCheckboxGroup(const char* label)
 	{
 		Gui::Text(label);
 		Gui::NextColumn();
 		Gui::PushItemWidth(-1);
 	}
 
-	VORTEX_API inline static void EndCheckboxGroup()
+	VORTEX_API VX_FORCE_INLINE static void EndCheckboxGroup()
 	{
 		Gui::PopItemWidth();
 		Gui::NextColumn();
 		s_CheckboxCount = 0;
 	}
 
-	VORTEX_API inline static bool DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f, float min = 0.0f, float max = 0.0f, std::function<void()> uiCallback = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool DrawVec3Controls(const std::string& label, Math::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f, float min = 0.0f, float max = 0.0f, std::function<void()> uiCallback = nullptr)
 	{
 		bool modified = false;
 
@@ -616,7 +616,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool DrawVec2Controls(const std::string& label, Math::vec2& values, float resetValue = 0.0f, float columnWidth = 100.0f, float min = 0.0f, float max = 0.0f, std::function<void()> uiCallback = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool DrawVec2Controls(const std::string& label, Math::vec2& values, float resetValue = 0.0f, float columnWidth = 100.0f, float min = 0.0f, float max = 0.0f, std::function<void()> uiCallback = nullptr)
 	{
 		bool modified = false;
 
@@ -689,7 +689,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool PropertyCheckboxGroup(const char* label, bool& value, const char* desc = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool PropertyCheckboxGroup(const char* label, bool& value, const char* desc = nullptr)
 	{
 		bool modified = false;
 
@@ -711,7 +711,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, bool& value, const char* desc = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool Property(const char* label, bool& value, const char* desc = nullptr)
 	{
 		bool modified = false;
 
@@ -739,7 +739,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, char& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool Property(const char* label, char& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
@@ -767,7 +767,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, unsigned char& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool Property(const char* label, unsigned char& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
@@ -795,7 +795,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, short& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool Property(const char* label, short& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
@@ -823,7 +823,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, unsigned short& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool Property(const char* label, unsigned short& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
@@ -851,7 +851,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, int& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool Property(const char* label, int& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
@@ -879,7 +879,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, uint32_t& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool Property(const char* label, uint32_t& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
@@ -907,7 +907,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, long long& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool Property(const char* label, long long& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
 	{
 		bool modified = false;
 
@@ -935,387 +935,24 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool Property(const char* label, unsigned long long& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		if (Gui::DragScalar(std::format("##{}", label).c_str(), ImGuiDataType_U64, &value, speed, (const void*)&min, (const void*)&max))
-		{
-			modified = true;
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool Property(const char* label, float& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr)
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		if (Gui::DragFloat(std::format("##{}", label).c_str(), &value, speed, min, max, format))
-		{
-			modified = true;
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool Property(const char* label, double& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr)
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		if (Gui::DragScalar(std::format("##{}", label).c_str(), ImGuiDataType_Double, &value, speed, (const void*)&min, (const void*)&max))
-		{
-			modified = true;
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool Property(const char* label, Math::vec2& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr)
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		if (Gui::DragFloat2(std::format("##{}", label).c_str(), Math::ValuePtr(value), speed, min, max, format))
-		{
-			modified = true;
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool Property(const char* label, Math::vec3& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr)
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		if (Gui::DragFloat3(std::format("##{}", label).c_str(), Math::ValuePtr(value), speed, min, max, format))
-		{
-			modified = true;
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool Property(const char* label, Math::vec4& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr)
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		if (Gui::DragFloat4(std::format("##{}", label).c_str(), Math::ValuePtr(value), speed, min, max, format))
-		{
-			modified = true;
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool Property(const char* label, Math::vec3* value, const char* desc = nullptr)
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		if (Gui::ColorEdit3(std::format("##{}", label).c_str(), Math::ValuePtr(*value)))
-		{
-			modified = true;
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool Property(const char* label, Math::vec4* value, const char* desc = nullptr)
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		if (Gui::ColorEdit4(std::format("##{}", label).c_str(), Math::ValuePtr(*value)))
-		{
-			modified = true;
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-	
-	VORTEX_API inline static bool Property(const char* label, std::string& value, bool readOnly = false, bool multiline = false, bool enterReturnsTrue = false, const char* desc = nullptr)
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		char buffer[256];
-		strcpy_s(buffer, sizeof(buffer), value.c_str());
-
-		ImGuiInputTextFlags flags = 0;
-		if (readOnly)
-			flags |= ImGuiInputTextFlags_ReadOnly;
-		if (enterReturnsTrue)
-			flags |= ImGuiInputTextFlags_EnterReturnsTrue;
-
-		if (Gui::InputText(std::format("##{}", label).c_str(), buffer, 256, flags))
-		{
-			value = buffer;
-			modified = true;
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool PropertyWithButton(const char* label, const char* buttonLabel, std::string& value, const std::function<void()>& onClickedFn, bool readOnly = false, bool multiline = false, bool enterReturnsTrue = false, const char* desc = nullptr)
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		char buffer[256];
-		strcpy_s(buffer, sizeof(buffer), value.c_str());
-
-		ImGuiInputTextFlags flags = 0;
-		if (readOnly)
-			flags |= ImGuiInputTextFlags_ReadOnly;
-		if (enterReturnsTrue)
-			flags |= ImGuiInputTextFlags_EnterReturnsTrue;
-
-		if (Gui::Button(buttonLabel))
-		{
-			if (onClickedFn != nullptr)
-			{
-				std::invoke(onClickedFn);
-			}
-		}
-
-		Gui::SameLine();
-
-		if (Gui::InputText(std::format("##{}", label).c_str(), buffer, 256, flags))
-		{
-			value = buffer;
-			modified = true;
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool PropertySlider(const char* label, float& value, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr)
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		if (Gui::SliderFloat(std::format("##{}", label).c_str(), &value, min, max, format))
-		{
-			modified = true;
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool MultilineTextBox(const char* label, std::string& value, bool readOnly = false, const char* desc = nullptr)
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		char buffer[2048];
-		strcpy_s(buffer, sizeof(buffer), value.c_str());
-
-		const ImGuiInputTextFlags inputTextFlags = readOnly ? ImGuiInputTextFlags_ReadOnly : 0;
-
-		if (Gui::InputTextMultiline(std::format("##{}", label).c_str(), buffer, 2048, ImVec2{ 0, 0 }, inputTextFlags))
-		{
-			value = buffer;
-			modified = true;
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool ColoredButton(const char* label, const ImVec4& backgroundColor, const ImVec4& foregroundColor, ImVec2 buttonSize)
-	{
-		ScopedColour textColor(ImGuiCol_Text, foregroundColor);
-		ScopedColour buttonColor(ImGuiCol_Button, backgroundColor);
-		return ImGui::Button(label, buttonSize);
-	}
+	VORTEX_API bool Property(const char* label, unsigned long long& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr);
+	VORTEX_API bool Property(const char* label, float& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr);
+	VORTEX_API bool Property(const char* label, double& value, float speed = 1.0f, int min = 0, int max = 0, const char* desc = nullptr);
+	VORTEX_API bool Property(const char* label, Math::vec2& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr);
+	VORTEX_API bool Property(const char* label, Math::vec3& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr);
+	VORTEX_API bool Property(const char* label, Math::vec4& value, float speed = 1.0f, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr);
+	VORTEX_API bool Property(const char* label, Math::vec3* value, const char* desc = nullptr);
+	VORTEX_API bool Property(const char* label, Math::vec4* value, const char* desc = nullptr);
+	VORTEX_API bool Property(const char* label, std::string& value, bool readOnly = false, bool multiline = false, bool enterReturnsTrue = false, const char* desc = nullptr);
+
+	VORTEX_API bool PropertyWithButton(const char* label, const char* buttonLabel, std::string& value, const std::function<void()>& onClickedFn, bool readOnly = false, bool multiline = false, bool enterReturnsTrue = false, const char* desc = nullptr);
+	VORTEX_API bool PropertySlider(const char* label, float& value, float min = 0.0f, float max = 0.0f, const char* format = "%.2f", const char* desc = nullptr);
+	VORTEX_API bool MultilineTextBox(const char* label, std::string& value, bool readOnly = false, const char* desc = nullptr);
+
+	VORTEX_API bool ColoredButton(const char* label, const ImVec4& backgroundColor, const ImVec4& foregroundColor, ImVec2 buttonSize);
 
 	template <typename TEnum, typename TUnderlying = int32_t>
-	VORTEX_API inline static bool PropertyDropdown(const char* label, const char** options, uint32_t count, TEnum& selected, const char* desc = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool PropertyDropdown(const char* label, const char** options, uint32_t count, TEnum& selected, const char* desc = nullptr)
 	{
 		TUnderlying selectedIndex = (TUnderlying)selected;
 		const char* current = options[selectedIndex];
@@ -1374,86 +1011,7 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API inline static bool PropertyDropdownSearch(const char* label, const char** options, uint32_t count, std::string& selected, ImGuiTextFilter& textFilter, const std::function<void()>& clearCallback = nullptr, const char* desc = nullptr)
-	{
-		const char* current = selected.c_str();
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		if (desc) {
-			Gui::SameLine();
-			HelpMarker(desc);
-		}
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		bool modified = false;
-
-		const std::string id = "##" + std::string(label);
-		if (Gui::BeginCombo(id.c_str(), current))
-		{
-			const bool isSearching = Gui::InputTextWithHint(id.c_str(), "Search", textFilter.InputBuf, IM_ARRAYSIZE(textFilter.InputBuf));
-			DrawItemActivityOutline();
-
-			if (clearCallback != nullptr)
-			{
-				Gui::SameLine();
-				if (Gui::Button("Clear"))
-				{
-					std::invoke(clearCallback);
-				}
-			}
-
-			if (isSearching)
-			{
-				textFilter.Build();
-			}
-
-			UI::Draw::Underline();
-
-			for (uint32_t i = 0; i < count; i++)
-			{
-				const bool isSelected = current == options[i];
-
-				if (!textFilter.PassFilter(options[i]))
-					continue;
-
-				if (Gui::Selectable(options[i], isSelected) || (Gui::IsItemFocused() && Gui::IsKeyPressed(ImGuiKey_Enter)))
-				{
-					current = options[i];
-					selected = options[i];
-					modified = true;
-
-					memset(textFilter.InputBuf, 0, IM_ARRAYSIZE(textFilter.InputBuf));
-					textFilter.Build();
-					Gui::CloseCurrentPopup();
-				}
-
-				if (isSelected)
-				{
-					Gui::SetItemDefaultFocus();
-				}
-
-				// skip last item
-				if (i != count - 1)
-				{
-					UI::Draw::Underline();
-					Gui::Spacing();
-				}
-			}
-
-			Gui::EndCombo();
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
+	VORTEX_API bool PropertyDropdownSearch(const char* label, const char** options, uint32_t count, std::string& selected, ImGuiTextFilter& textFilter, const std::function<void()>& clearCallback = nullptr, const char* desc = nullptr);
 
 	struct VORTEX_API UIImage
 	{
@@ -1464,190 +1022,23 @@ namespace Vortex::UI {
 
 	VORTEX_API bool PropertyDropdownSearchWithImages(const char* label, const char** options, uint32_t count, const std::vector<UIImage>& images, std::string& selected, const UIImage& selectedImage, ImGuiTextFilter& textFilter, const std::function<void()>& clearCallback = nullptr, const char* desc = nullptr);
 
-	VORTEX_API inline static void ImageEx(uint32_t rendererID, const ImVec2& size = ImVec2(64, 64), const ImVec4& tintColor = ImVec4(1, 1, 1, 1), const ImVec4& borderColor = ImVec4(0, 0, 0, 0))
-	{
-		Gui::Image((ImTextureID)rendererID, size, { 0, 1 }, { 1, 0 }, tintColor, borderColor);
-	}
-
-	VORTEX_API inline static void ImageEx(const SharedReference<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0))
-	{
-		Gui::Image((ImTextureID)texture->GetRendererID(), size, { 0, 1 }, { 1, 0 }, bgColor, tintColor);
-	}
-
-	VORTEX_API inline static bool ImageButton(const char* label, const SharedReference<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0))
-	{
-		bool modified = false;
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		if (Gui::ImageButton((ImTextureID)texture->GetRendererID(), size, { 0, 1 }, { 1, 0 }, -1, bgColor, tintColor))
-		{
-			modified = true;
-		}
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool ImageButtonEx(const SharedReference<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0))
-	{
-		bool modified = false;
-
-		if (Gui::ImageButton((ImTextureID)texture->GetRendererID(), size, { 0, 1 }, { 1, 0 }, -1, bgColor, tintColor))
-		{
-			modified = true;
-		}
-
-		return modified;
-	}
-
-	VORTEX_API inline static void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed,
-		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
-		ImVec2 rectMin, ImVec2 rectMax)
-	{
-		auto* drawList = ImGui::GetWindowDrawList();
-		if (ImGui::IsItemActive())
-			drawList->AddImage((ImTextureID)imagePressed->GetRendererID(), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintPressed);
-		else if (ImGui::IsItemHovered())
-			drawList->AddImage((ImTextureID)imageHovered->GetRendererID(), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintHovered);
-		else
-			drawList->AddImage((ImTextureID)imageNormal->GetRendererID(), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintNormal);
-	};
-
-	VORTEX_API inline static void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed,
-		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
-		ImRect rectangle)
-	{
-		DrawButtonImage(imageNormal, imageHovered, imagePressed, tintNormal, tintHovered, tintPressed, rectangle.Min, rectangle.Max);
-	};
-
-	VORTEX_API inline static void DrawButtonImage(const SharedReference<Texture2D>& image,
-		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
-		ImVec2 rectMin, ImVec2 rectMax)
-	{
-		DrawButtonImage(image, image, image, tintNormal, tintHovered, tintPressed, rectMin, rectMax);
-	};
-
-	VORTEX_API inline static void DrawButtonImage(const SharedReference<Texture2D>& image,
-		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
-		ImRect rectangle)
-	{
-		DrawButtonImage(image, image, image, tintNormal, tintHovered, tintPressed, rectangle.Min, rectangle.Max);
-	};
-
-
-	VORTEX_API inline static void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed,
-		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed)
-	{
-		DrawButtonImage(imageNormal, imageHovered, imagePressed, tintNormal, tintHovered, tintPressed, ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
-	};
-
-	VORTEX_API inline static void DrawButtonImage(const SharedReference<Texture2D>& image,
-		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed)
-	{
-		DrawButtonImage(image, image, image, tintNormal, tintHovered, tintPressed, ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
-	};
-
-	VORTEX_API inline static bool FontSelector(const char* label, const char** options, uint32_t count, ImFont* selected)
-	{
-		const char* current = Gui::GetFont()->GetDebugName();
-
-		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
-		Gui::NextColumn();
-		ShiftCursorY(4.0f);
-		Gui::PushItemWidth(-1);
-
-		bool modified = false;
-
-		const std::string id = "##" + std::string(label);
-		if (Gui::BeginCombo(id.c_str(), current))
-		{
-			ImGuiIO& io = Gui::GetIO();
-			for (uint32_t i = 0; i < count; i++)
-			{
-				const bool isSelected = current == selected->GetDebugName();
-				if (Gui::Selectable(options[i], isSelected))
-				{
-					current = options[i];
-					selected = io.Fonts->Fonts[i];
-					io.FontDefault = selected;
-					modified = true;
-
-					Gui::CloseCurrentPopup();
-				}
-
-				if (isSelected)
-				{
-					Gui::SetItemDefaultFocus();
-				}
-
-				// skip last item
-				if (i != count - 1)
-				{
-					UI::Draw::Underline();
-					Gui::Spacing();
-				}
-			}
-
-			Gui::EndCombo();
-		}
-
-		DrawItemActivityOutline();
-
-		Gui::PopItemWidth();
-		Gui::NextColumn();
-		Draw::Underline();
-
-		return modified;
-	}
-
-	VORTEX_API inline static bool TreeNode(const char* label, bool defaultOpen = true)
-	{
-		bool opened = false;
-		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-
-		if (defaultOpen)
-			treeNodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
-
-		if (Gui::TreeNodeEx(label, treeNodeFlags))
-		{
-			opened = true;
-		}
-
-		return opened;
-	}
-
-	VORTEX_API inline static bool ShowMessageBox(const char* title, bool* open, const ImVec2& size)
-	{
-		bool opened = false;
-
-		if (Gui::IsPopupOpen(title))
-		{
-			Gui::SetNextWindowSize(size, ImGuiCond_Always);
-			ImVec2 center = Gui::GetMainViewport()->GetCenter();
-			Gui::SetNextWindowPos({ center.x - (size.x * 0.5f), center.y - (size.y * 0.5f) }, ImGuiCond_Appearing);
-		}
-
-		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize;
-
-		if (Gui::BeginPopupModal(title, open, flags))
-		{
-			opened = true;
-		}
-
-		return opened;
-	}
+	VORTEX_API void ImageEx(uint32_t rendererID, const ImVec2& size = ImVec2(64, 64), const ImVec4& tintColor = ImVec4(1, 1, 1, 1), const ImVec4& borderColor = ImVec4(0, 0, 0, 0));
+	VORTEX_API void ImageEx(const SharedReference<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0));
+	VORTEX_API bool ImageButton(const char* label, const SharedReference<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0));
+	VORTEX_API bool ImageButtonEx(const SharedReference<Texture2D>& texture, const ImVec2& size = ImVec2(64, 64), const ImVec4& bgColor = ImVec4(0, 0, 0, 0), const ImVec4& tintColor = ImVec4(0, 0, 0, 0));
+	VORTEX_API void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed, ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed, ImVec2 rectMin, ImVec2 rectMax);
+	VORTEX_API void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed, ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed, ImRect rectangle);
+	VORTEX_API void DrawButtonImage(const SharedReference<Texture2D>& image, ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed, ImVec2 rectMin, ImVec2 rectMax);
+	VORTEX_API void DrawButtonImage(const SharedReference<Texture2D>& image, ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed, ImRect rectangle);
+	VORTEX_API void DrawButtonImage(const SharedReference<Texture2D>& imageNormal, const SharedReference<Texture2D>& imageHovered, const SharedReference<Texture2D>& imagePressed, ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed);
+	VORTEX_API void DrawButtonImage(const SharedReference<Texture2D>& image, ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed);
+	VORTEX_API bool FontSelector(const char* label, const char** options, uint32_t count, ImFont* selected);
+	VORTEX_API bool TreeNode(const char* label, bool defaultOpen = true);
+	VORTEX_API bool ShowMessageBox(const char* title, bool* open, const ImVec2& size);
+	VORTEX_API bool TableRowClickable(const char* id, float rowHeight);
 
 	template<typename T>
-	VORTEX_API inline static void Table(const char* tableName, const char** columns, uint32_t columnCount, const ImVec2& size, T callback)
+	VORTEX_API VX_FORCE_INLINE static void Table(const char* tableName, const char** columns, uint32_t columnCount, const ImVec2& size, T callback)
 	{
 		if (size.x <= 0.0f || size.y <= 0.0f)
 			return;
@@ -1698,33 +1089,10 @@ namespace Vortex::UI {
 		ImGui::EndTable();
 	}
 
-	VORTEX_API inline static bool TableRowClickable(const char* id, float rowHeight)
-	{
-		ImGuiWindow* window = ImGui::GetCurrentWindow();
-		window->DC.CurrLineSize.y = rowHeight;
-
-		ImGui::TableNextRow(0, rowHeight);
-		ImGui::TableNextColumn();
-
-		window->DC.CurrLineTextBaseOffset = 3.0f;
-		ImVec2 rowAreaMin = ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), 0).Min;
-		ImVec2 rowAreaMax = { ImGui::TableGetCellBgRect(ImGui::GetCurrentTable(), ImGui::TableGetColumnCount() - 1).Max.x, rowAreaMin.y + rowHeight };
-
-		ImGui::PushClipRect(rowAreaMin, rowAreaMax, false);
-
-		bool isRowHovered, held;
-		bool isRowClicked = ImGui::ButtonBehavior(ImRect(rowAreaMin, rowAreaMax), ImGui::GetID(id), &isRowHovered, &held, ImGuiButtonFlags_AllowItemOverlap);
-
-		ImGui::SetItemAllowOverlap();
-		ImGui::PopClipRect();
-
-		return isRowClicked;
-	}
-
 	using VORTEX_API AssetDropFn = std::function<void(const Fs::Path&)>;
 
 	template <typename TAssetType>
-	VORTEX_API inline static bool PropertyAssetReference(const char* label, const std::string& filepath, AssetHandle& assetHandle, const AssetDropFn& onAssetDroppedFn, const AssetRegistry& registry, const char* desc = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool PropertyAssetReference(const char* label, const std::string& filepath, AssetHandle& assetHandle, const AssetDropFn& onAssetDroppedFn, const AssetRegistry& registry, const char* desc = nullptr)
 	{
 		bool modified = false;
 
@@ -1818,7 +1186,7 @@ namespace Vortex::UI {
 	};
 
 	template <typename TImageAssetType>
-	VORTEX_API inline static bool PropertyAssetImageReference(const PropertyAssetImageReferenceSettings& settings)
+	VORTEX_API VX_FORCE_INLINE static bool PropertyAssetImageReference(const PropertyAssetImageReferenceSettings& settings)
 	{
 		bool modified = false;
 

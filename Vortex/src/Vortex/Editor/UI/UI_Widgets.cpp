@@ -40,7 +40,7 @@ namespace ImGui {
 
 		// Text stays at the submission position, but bounding box may be extended on both sides
 		const ImVec2 text_min = pos;
-		const ImVec2 text_max(min_x + size.x, pos.y + size.y);
+		const ImVec2 text_max(min_x + size.x, pos.y + size.y + imageSize.y);
 
 		// Selectables are meant to be tightly packed together with no click-gap, so we extend their box to cover spacing between selectable.
 		ImRect bb(min_x, pos.y, text_max.x, text_max.y);
@@ -145,10 +145,16 @@ namespace ImGui {
 		else if (span_all_columns && g.CurrentTable)
 			TablePopBackgroundChannel();
 
-		// IMAGE
-		Vortex::UI::ImageEx(image->GetRendererID(), imageSize, imageTintColor);
+		ImVec2 textAlign = style.SelectableTextAlign;
+		textAlign.x += 0.025f;
+
+		RenderTextClipped(text_min, text_max, label, NULL, &label_size, textAlign, & bb);
 		SameLine();
-		RenderTextClipped(text_min, text_max, label, NULL, &label_size, style.SelectableTextAlign, &bb);
+		// IMAGE
+		const ImVec2 contentRegionAvail = GetContentRegionAvail();
+		const float edgeOffset = 20.0f;
+		Vortex::UI::ShiftCursorX(contentRegionAvail.x - imageSize.x - edgeOffset);
+		Vortex::UI::ImageEx(image->GetRendererID(), imageSize, imageTintColor);
 
 		// Automatically close popups
 		if (pressed && (window->Flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiSelectableFlags_DontClosePopups) && !(g.LastItemData.InFlags & ImGuiItemFlags_SelectableDontClosePopup))
