@@ -82,6 +82,10 @@ namespace Vortex {
 
 		PlayerPrefsSerializer Serializer;
 		const Fs::Path PlayerPrefsFilename = "PlayerPrefs.prefs";
+
+		// Temporary until we figure out a better way of doing this
+		std::string NextScene = "";
+		bool TransitionQueued = false;
 	};
 
 	static ScriptRegistryInternalData s_Data;
@@ -91,17 +95,16 @@ namespace Vortex {
 		static Scene* GetContextScene()
 		{
 			Scene* contextScene = ScriptEngine::GetContextScene();
-			VX_CORE_ASSERT(contextScene, "Context Scene was null pointer!");
-
+			VX_CORE_ASSERT(contextScene, "contextScene was null pointer!");
 			return contextScene;
 		}
 
 		static Actor GetActor(UUID actorUUID)
 		{
 			Scene* contextScene = GetContextScene();
+			VX_CORE_ASSERT(contextScene, "cannot get actor from null scene!");
 			Actor actor = contextScene->TryGetActorWithUUID(actorUUID);
-			VX_CORE_ASSERT(actor, "Invalid Actor UUID!");
-
+			VX_CORE_ASSERT(actor, "contextScene doesn't contain Actor with UUID: {}", actorUUID);
 			return actor;
 		}
 
@@ -241,7 +244,7 @@ namespace Vortex {
 
 			if (!primaryCameraActor)
 			{
-				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.SetLineWidth without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.SetLineWidth on actor without a primary camera! Attach a camera component to an actor and enable 'Primary'");
 				return 0.0f;
 			}
 
@@ -255,7 +258,7 @@ namespace Vortex {
 
 			if (!primaryCameraActor)
 			{
-				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.SetLineWidth without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.SetLineWidth on actor without a primary camera! Attach a camera component to an actor and enable 'Primary'");
 				return;
 			}
 
@@ -269,7 +272,7 @@ namespace Vortex {
 
 			if (!primaryCameraActor)
 			{
-				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawLine without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawLine on actor without a primary camera! Attach a camera component to an actor and enable 'Primary'");
 				return;
 			}
 
@@ -283,7 +286,7 @@ namespace Vortex {
 
 			if (!primaryCameraActor)
 			{
-				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawQuadBillboard without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawQuadBillboard on actor without a primary camera! Attach a camera component to an actor and enable 'Primary'");
 				return;
 			}
 
@@ -300,7 +303,7 @@ namespace Vortex {
 
 			if (!primaryCameraActor)
 			{
-				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawCircle without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawCircle on actor without a primary camera! Attach a camera component to an actor and enable 'Primary'");
 				return;
 			}
 
@@ -314,7 +317,7 @@ namespace Vortex {
 
 			if (!primaryCameraActor)
 			{
-				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawCircle without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawCircle on actor without a primary camera! Attach a camera component to an actor and enable 'Primary'");
 				return;
 			}
 
@@ -328,7 +331,7 @@ namespace Vortex {
 
 			if (!primaryCameraActor)
 			{
-				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawBoundingBox without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawBoundingBox on actor without a primary camera! Attach a camera component to an actor and enable 'Primary'");
 				return;
 			}
 
@@ -348,7 +351,7 @@ namespace Vortex {
 
 			if (!primaryCameraActor)
 			{
-				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawBoundingBox without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling DebugRenderer.DrawBoundingBox on actor without a primary camera! Attach a camera component to an actor and enable 'Primary'");
 				return;
 			}
 
@@ -371,7 +374,7 @@ namespace Vortex {
 
 			if (!primaryCameraActor)
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling DebugRenderer.Flush without a primary camera! Attach a camera component to an actor and enable 'Primary'");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling DebugRenderer.Flush on actor without a primary camera! Attach a camera component to an actor and enable 'Primary'");
 				return;
 			}
 
@@ -392,7 +395,6 @@ namespace Vortex {
 		uint64_t Scene_GetPrimaryCamera()
 		{
 			Scene* contextScene = GetContextScene();
-
 			Actor primaryCamera = contextScene->GetPrimaryCameraActor();
 
 			if (!primaryCamera)
@@ -460,7 +462,7 @@ namespace Vortex {
 
 			if (!actor)
 			{
-				VX_CONSOLE_LOG_WARN("[Script Engine] Scene.Instantiate called with Invalid Actor UUID!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling Scene.Instantiate with invalid actor!");
 				return 0;
 			}
 
@@ -476,7 +478,7 @@ namespace Vortex {
 
 			if (!actor || !parent)
 			{
-				VX_CONSOLE_LOG_WARN("[Script Engine] Scene.Instantiate called with Invalid Actor UUID!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling Scene.Instantiate with invalid actor!");
 				return 0;
 			}
 
@@ -516,9 +518,22 @@ namespace Vortex {
 		{
 			Scene* contextScene = GetContextScene();
 
+			if (!contextScene)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling SceneManager.LoadScene with invalid context scene!");
+				return;
+			}
+
 			ManagedString mstring(sceneName);
 
-			// TODO
+			if (mstring.String().empty())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling SceneManager.LoadScene with empty sceneName!");
+				return;
+			}
+
+			s_Data.NextScene = mstring.String();
+			s_Data.TransitionQueued = true;
 		}
 
 #pragma endregion
@@ -528,6 +543,12 @@ namespace Vortex {
 		void Actor_AddComponent(UUID actorUUID, MonoReflectionType* componentType)
 		{
 			Actor actor = GetActor(actorUUID);
+
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.AddComponent with invalid actor!");
+				return;
+			}
 
 			MonoType* managedType = mono_reflection_type_get_type(componentType);
 			VX_CORE_ASSERT(s_Data.ActorAddComponentFuncs.find(managedType) != s_Data.ActorAddComponentFuncs.end(), "Managed type was not found in Map!");
@@ -539,6 +560,12 @@ namespace Vortex {
 		{
 			Actor actor = GetActor(actorUUID);
 
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.HasComponent with invalid actor!");
+				return false;
+			}
+
 			MonoType* managedType = mono_reflection_type_get_type(componentType);
 			VX_CORE_ASSERT(s_Data.ActorHasComponentFuncs.find(managedType) != s_Data.ActorHasComponentFuncs.end(), "Managed type was not found in Map!");
 
@@ -548,6 +575,12 @@ namespace Vortex {
 		void Actor_RemoveComponent(UUID actorUUID, MonoReflectionType* componentType)
 		{
 			Actor actor = GetActor(actorUUID);
+
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.RemoveComponent with invalid actor!");
+				return;
+			}
 
 			MonoType* managedType = mono_reflection_type_get_type(componentType);
 			VX_CORE_ASSERT(s_Data.ActorRemoveComponentFuncs.find(managedType) != s_Data.ActorRemoveComponentFuncs.end(), "Managed type was not found in Map!");
@@ -559,6 +592,12 @@ namespace Vortex {
 		{
 			Actor actor = GetActor(actorUUID);
 
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Actor.Tag with invalid actor!");
+				return;
+			}
+
 			ManagedString mstring(actor.GetName());
 
 			return mstring.GetAddressOf();
@@ -568,15 +607,33 @@ namespace Vortex {
 		{
 			Actor actor = GetActor(actorUUID);
 
-			TagComponent& tagComponent = actor.GetComponent<TagComponent>();
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Actor.Tag with invalid actor!");
+				return;
+			}
 
 			ManagedString mstring(tag);
-			tagComponent.Tag = std::string(mstring.String());
+			const std::string& name = mstring.String();
+			if (name.empty())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Actor.Tag with empty tag!");
+				return;
+			}
+
+			TagComponent& tagComponent = actor.GetComponent<TagComponent>();
+			tagComponent.Tag = name;
 		}
 
 		MonoString* Actor_GetMarker(UUID actorUUID)
 		{
 			Actor actor = GetActor(actorUUID);
+
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Actor.Marker with invalid actor!");
+				return;
+			}
 
 			ManagedString mstring(actor.GetMarker());
 
@@ -587,16 +644,50 @@ namespace Vortex {
 		{
 			Actor actor = GetActor(actorUUID);
 
-			TagComponent& tagComponent = actor.GetComponent<TagComponent>();
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Actor.Marker with invalid actor!");
+				return;
+			}
 
 			ManagedString mstring(marker);
-			tagComponent.Marker = mstring.String();
+			const std::string& _marker = mstring.String();
+			if (_marker.empty())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Actor.Marker with empty marker!");
+				return;
+			}
+			
+			TagComponent& tagComponent = actor.GetComponent<TagComponent>();
+			tagComponent.Marker = _marker;
 		}
 
 		MonoObject* Actor_GetScriptInstance(UUID actorUUID)
 		{
 			Scene* contextScene = GetContextScene();
-			return ScriptEngine::TryGetManagedInstance(actorUUID);
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Script.Instance with invalid actor!");
+				return nullptr;
+			}
+
+			if (!actor.HasComponent<ScriptComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Script.Instance on actor without a Script!");
+				return nullptr;
+			}
+
+			MonoObject* managedInstance = ScriptEngine::TryGetManagedInstance(actorUUID);
+			
+			if (managedInstance == nullptr)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Error: Failed when trying to access Script.Instance on actor with UUID: {}, managedInstance was null pointer!", actorUUID);
+				return nullptr;
+			}
+
+			return managedInstance;
 		}
 
 		bool Actor_AddChild(UUID parentUUID, UUID childUUID)
@@ -605,13 +696,20 @@ namespace Vortex {
 			Actor parent = GetActor(parentUUID);
 			Actor child = GetActor(childUUID);
 
-			if (parent && child)
+			if (!parent)
 			{
-				contextScene->ParentActor(child, parent);
-				return true;
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.RemoveChild with invalid parent!");
+				return false;
 			}
 
-			return false;
+			if (!child)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.RemoveChild with invalid child!");
+				return false;
+			}
+
+			contextScene->ParentActor(child, parent);
+			return true;
 		}
 
 		bool Actor_RemoveChild(UUID parentUUID, UUID childUUID)
@@ -620,25 +718,45 @@ namespace Vortex {
 			Actor parent = GetActor(parentUUID);
 			Actor child = GetActor(childUUID);
 
-			if (parent && child)
+			if (!parent)
 			{
-				contextScene->UnparentActor(child);
-				return true;
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.RemoveChild with invalid parent!");
+				return false;
 			}
 
-			return false;
+			if (!child)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.RemoveChild with invalid child!");
+				return false;
+			}
+
+			contextScene->UnparentActor(child);
+			return true;
 		}
 
 		MonoArray* Actor_GetChildren(UUID actorUUID)
 		{
 			Actor actor = GetActor(actorUUID);
 
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Actor.Children with invalid actor!");
+				return nullptr;
+			}
+
 			const std::vector<UUID>& children = actor.Children();
 
-			MonoClass* coreActorClass = ScriptEngine::GetCoreActorClass()->GetMonoClass();
-			VX_CORE_ASSERT(coreActorClass, "Core Actor Class was Invalid!");
+			SharedReference<ScriptClass> actorClass = ScriptEngine::GetCoreActorClass();
+			MonoClass* elementKlass = actorClass->GetMonoClass();
+			VX_CORE_ASSERT(elementKlass, "Actor Class was Invalid!");
 
-			ManagedArray managedArray(coreActorClass, children.size());
+			if (!elementKlass)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Failed to locate script-core Actor class!");
+				return nullptr;
+			}
+
+			ManagedArray managedArray(elementKlass, children.size());
 			managedArray.FillFromVector(children);
 			return managedArray.GetHandle();
 		}
@@ -647,6 +765,12 @@ namespace Vortex {
 		{
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
+
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.GetChild with invalid actor!");
+				return 0;
+			}
 
 			const std::vector<UUID>& children = actor.Children();
 			if (index > (children.size() - 1))
@@ -681,9 +805,15 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.Destroy with invalid actor!");
+				return;
+			}
+
 			auto onFinishedFn = [=]() { contextScene->SubmitToDestroyActor(actor, excludeChildren); };
 			Timer timer(actor.GetName() + std::to_string(actorUUID), delay, onFinishedFn);
-			timer.Start();
+			timer.Start(); // don't forget to start the timer
 
 			contextScene->EmplaceOrReplaceTimer(actor, std::move(timer));
 		}
@@ -693,11 +823,17 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.Invoke with invalid actor!");
+				return;
+			}
+
 			VX_CORE_VERIFY(contextScene);
 
 			if (!actor.HasComponent<ScriptComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.Invoke without a script component!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.Invoke on actor without a Script!");
 				return;
 			}
 
@@ -746,7 +882,7 @@ namespace Vortex {
 
 			auto onTimerFinishedFn = [=]() { Actor_Invoke(actorUUID, methodName); };
 			Timer timer("InvokeWithDelay", delay, onTimerFinishedFn);
-			timer.Start();
+			timer.Start(); // don't forget to start the timer
 
 			scene->EmplaceOrReplaceTimer(actor, std::move(timer));
 		}
@@ -1280,8 +1416,8 @@ namespace Vortex {
 					physx::PxRigidDynamic* actor = Physics::GetPhysicsActor(actorUUID)->is<physx::PxRigidDynamic>();
 					physx::PxTransform physxTransform = actor->getGlobalPose();
 
-					const Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
-					Math::mat4 result = Math::LookAt(PhysicsUtils::FromPhysXVector(physxTransform.p), *worldPoint, upDirection);
+					constexpr Math::vec3 up{ 0.0f, 1.0f, 0.0f };
+					Math::mat4 result = Math::LookAt(PhysicsUtils::FromPhysXVector(physxTransform.p), *worldPoint, up);
 					Math::vec3 translation, scale;
 					Math::quaternion rotation;
 					Math::vec3 skew;
@@ -1296,8 +1432,8 @@ namespace Vortex {
 			}
 
 			TransformComponent& transform = actor.GetTransform();
-			Math::vec3 upDirection(0.0f, 1.0f, 0.0f);
-			Math::mat4 result = Math::LookAt(transform.Translation, *worldPoint, upDirection);
+			constexpr Math::vec3 up{ 0.0f, 1.0f, 0.0f };
+			Math::mat4 result = Math::LookAt(transform.Translation, *worldPoint, up);
 			Math::vec3 translation, scale;
 			Math::quaternion rotation;
 			Math::vec3 skew;
@@ -1310,9 +1446,15 @@ namespace Vortex {
 		{
 			Actor child = GetActor(actorUUID);
 
+			if (!child)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Transform.Parent with invalid actor!");
+				return 0;
+			}
+
 			if (!child.HasParent())
 			{
-				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access Transform.Parent with invalid actor!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access Transform.Parent on actor on actor without a parent!");
 				return 0;
 			}
 
@@ -1327,8 +1469,15 @@ namespace Vortex {
 			Actor child = GetActor(childUUID);
 			Actor parent = GetActor(parentUUID);
 			
-			if (!parent || !child)
+			if (!parent)
 			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Transform.SetParent with invalid parent!");
+				return;
+			}
+
+			if (!child)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Transform.SetParent with invalid child!");
 				return;
 			}
 
@@ -1340,6 +1489,12 @@ namespace Vortex {
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
+			if (!actor)
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Transform.Unparent with invalid actor!");
+				return;
+			}
+
 			contextScene->UnparentActor(actor);
 		}
 
@@ -1348,7 +1503,6 @@ namespace Vortex {
 			Math::mat4 transform = a->GetTransform() * b->GetTransform();
 			TransformComponent& out = *outTransform;
 
-			Math::vec3 translation, scale;
 			Math::quaternion rotation;
 			Math::vec3 skew;
 			Math::vec4 perspective;
@@ -1366,7 +1520,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.ProjectionType without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.ProjectionType on actor without a Camera!");
 				return SceneCamera::ProjectionType::Perspective;
 			}
 
@@ -1383,7 +1537,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.ProjectionType without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.ProjectionType on actor without a Camera!");
 				return;
 			}
 
@@ -1406,7 +1560,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.IsPrimary without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.IsPrimary on actor without a Camera!");
 				return;
 			}
 
@@ -1421,7 +1575,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.IsPrimary without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.IsPrimary on actor without a Camera!");
 				return;
 			}
 
@@ -1436,7 +1590,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.FieldOfView without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.FieldOfView on actor without a Camera!");
 				return 0.0f;
 			}
 
@@ -1452,7 +1606,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.FieldOfView without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.FieldOfView on actor without a Camera!");
 				return;
 			}
 
@@ -1472,7 +1626,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.NearClip without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.NearClip on actor without a Camera!");
 				return 0.0f;
 			}
 
@@ -1489,7 +1643,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.NearClip without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.NearClip on actor without a Camera!");
 				return;
 			}
 
@@ -1507,7 +1661,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.FarClip without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.FarClip on actor without a Camera!");
 				return 0.0f;
 			}
 
@@ -1524,7 +1678,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.FarClip without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.FarClip on actor without a Camera!");
 				return;
 			}
 
@@ -1542,7 +1696,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.OrthographicSize without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.OrthographicSize on actor without a Camera!");
 				return 0.0f;
 			}
 
@@ -1559,7 +1713,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.OrthographicSize without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.OrthographicSize on actor without a Camera!");
 				return;
 			}
 
@@ -1577,7 +1731,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.OrthographicNear without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.OrthographicNear on actor without a Camera!");
 				return 0.0f;
 			}
 
@@ -1594,7 +1748,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.OrthographicNear without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.OrthographicNear on actor without a Camera!");
 				return;
 			}
 
@@ -1612,7 +1766,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.OrthographicFar without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.OrthographicFar on actor without a Camera!");
 				return 0.0f;
 			}
 
@@ -1629,7 +1783,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.OrthographicFar without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.OrthographicFar on actor without a Camera!");
 				return;
 			}
 
@@ -1647,7 +1801,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.IsFixedAspectRatio without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.IsFixedAspectRatio on actor without a Camera!");
 				return;
 			}
 
@@ -1662,7 +1816,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.IsFixedAspectRatio without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.IsFixedAspectRatio on actor without a Camera!");
 				return;
 			}
 
@@ -1677,7 +1831,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.ClearColor without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Camera.ClearColor on actor without a Camera!");
 				return;
 			}
 
@@ -1692,7 +1846,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.ClearColor without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set Camera.ClearColor on actor without a Camera!");
 				return;
 			}
 
@@ -1708,7 +1862,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Camera.CastRay without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Camera.CastRay on actor without a Camera!");
 				return;
 			}
 
@@ -1728,7 +1882,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Camera.ScreenToWorldPoint without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Camera.ScreenToWorldPoint on actor without a Camera!");
 				return;
 			}
 
@@ -1748,7 +1902,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Camera.ScreenToViewportPoint without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Camera.ScreenToViewportPoint on actor without a Camera!");
 				return;
 			}
 
@@ -1768,7 +1922,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access PostProcessInfo.Enabled without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access PostProcessInfo.Enabled on actor without a Camera!");
 				return false;
 			}
 
@@ -1782,7 +1936,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set PostProcessInfo.Enabled without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set PostProcessInfo.Enabled on actor without a Camera!");
 				return;
 			}
 
@@ -1800,7 +1954,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BloomInfo.Threshold without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BloomInfo.Threshold on actor without a Camera!");
 				return 0.0f;
 			}
 
@@ -1814,7 +1968,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BloomInfo.Threshold without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BloomInfo.Threshold on actor without a Camera!");
 				return;
 			}
 
@@ -1828,7 +1982,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BloomInfo.Knee without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BloomInfo.Knee on actor without a Camera!");
 				return 0.0f;
 			}
 
@@ -1842,7 +1996,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BloomInfo.Knee without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BloomInfo.Knee on actor without a Camera!");
 				return;
 			}
 
@@ -1856,7 +2010,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BloomInfo.Intensity without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BloomInfo.Intensity on actor without a Camera!");
 				return 0.0f;
 			}
 
@@ -1870,7 +2024,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BloomInfo.Intensity without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BloomInfo.Intensity on actor without a Camera!");
 				return;
 			}
 
@@ -1884,7 +2038,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BloomInfo.Enabled without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BloomInfo.Enabled on actor without a Camera!");
 				return false;
 			}
 
@@ -1898,7 +2052,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CameraComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BloomInfo.Enabled without a Camera!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BloomInfo.Enabled on actor without a Camera!");
 				return;
 			}
 
@@ -1916,7 +2070,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.LightType without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.LightType on actor without a Light Source!");
 				return LightType::Directional;
 			}
 
@@ -1930,7 +2084,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.LightType without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.LightType on actor without a Light Source!");
 				return;
 			}
 
@@ -1944,7 +2098,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.Radiance without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.Radiance on actor without a Light Source!");
 				return;
 			}
 
@@ -1958,7 +2112,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.Radiance without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.Radiance on actor without a Light Source!");
 				return;
 			}
 
@@ -1972,7 +2126,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.Intensity without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.Intensity on actor without a Light Source!");
 				return 0.0f;
 			}
 
@@ -1986,7 +2140,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.Intensity without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.Intensity on actor without a Light Source!");
 				return;
 			}
 
@@ -2000,7 +2154,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.Cutoff without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.Cutoff on actor without a Light Source!");
 				return 0.0f;
 			}
 
@@ -2014,7 +2168,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.Cutoff without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.Cutoff on actor without a Light Source!");
 				return;
 			}
 
@@ -2028,7 +2182,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.OuterCutoff without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.OuterCutoff on actor without a Light Source!");
 				return 0.0f;
 			}
 
@@ -2042,7 +2196,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.OuterCutoff without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.OuterCutoff on actor without a Light Source!");
 				return;
 			}
 
@@ -2056,7 +2210,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.ShadowBias without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.ShadowBias on actor without a Light Source!");
 				return 0.0f;
 			}
 
@@ -2070,7 +2224,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.ShadowBias without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.ShadowBias on actor without a Light Source!");
 				return;
 			}
 
@@ -2084,7 +2238,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.CastShadows without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.CastShadows on actor without a Light Source!");
 				return false;
 			}
 
@@ -2098,7 +2252,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.CastShadows without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.CastShadows on actor without a Light Source!");
 				return;
 			}
 
@@ -2112,7 +2266,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.UseSoftShadows without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.UseSoftShadows on actor without a Light Source!");
 				return false;
 			}
 
@@ -2126,7 +2280,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.UseSoftShadows without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.UseSoftShadows on actor without a Light Source!");
 				return;
 			}
 
@@ -2140,7 +2294,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.Visible without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access LightSource.Visible on actor without a Light Source!");
 				return false;
 			}
 
@@ -2154,7 +2308,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<LightSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.Visible without a Light Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set LightSource.Visible on actor without a Light Source!");
 				return;
 			}
 
@@ -2172,7 +2326,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.Text without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.Text on actor without a Text Mesh!");
 				ManagedString mstring("");
 				return mstring.GetAddressOf();
 			}
@@ -2190,7 +2344,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.Text without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.Text on actor without a Text Mesh!");
 				return;
 			}
 
@@ -2207,7 +2361,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.Color without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.Color on actor without a Text Mesh!");
 				return;
 			}
 
@@ -2221,7 +2375,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.Color without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.Color on actor without a Text Mesh!");
 				return;
 			}
 
@@ -2235,7 +2389,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.OutlineColor without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.OutlineColor on actor without a Text Mesh!");
 				return;
 			}
 
@@ -2249,7 +2403,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.OutlineColor without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.OutlineColor on actor without a Text Mesh!");
 				return;
 			}
 
@@ -2263,7 +2417,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.LineSpacing without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.LineSpacing on actor without a Text Mesh!");
 				return 0.0f;
 			}
 
@@ -2277,7 +2431,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.LineSpacing without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.LineSpacing on actor without a Text Mesh!");
 				return;
 			}
 
@@ -2291,7 +2445,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.Kerning without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.Kerning on actor without a Text Mesh!");
 				return 0.0f;
 			}
 
@@ -2305,7 +2459,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.Kerning without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.Kerning on actor without a Text Mesh!");
 				return;
 			}
 
@@ -2319,7 +2473,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.MaxWidth without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.MaxWidth on actor without a Text Mesh!");
 				return 0.0f;
 			}
 
@@ -2333,7 +2487,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.MaxWidth without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.MaxWidth on actor without a Text Mesh!");
 				return;
 			}
 
@@ -2347,7 +2501,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.Visible without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access TextMesh.Visible on actor without a Text Mesh!");
 				return false;
 			}
 
@@ -2361,7 +2515,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<TextMeshComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.Visible without a Text Mesh!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set TextMesh.Visible on actor without a Text Mesh!");
 				return;
 			}
 
@@ -2379,7 +2533,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AnimatorComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Animator.IsPlaying without a Animator!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Animator.IsPlaying on actor without a Animator!");
 				return false;
 			}
 
@@ -2394,7 +2548,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AnimatorComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Animator.Play without a Animator!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Animator.Play on actor without a Animator!");
 				return;
 			}
 
@@ -2403,7 +2557,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AnimationComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Animator.Play without an Animation!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Animator.Play on actor without an Animation!");
 				return;
 			}
 
@@ -2425,7 +2579,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AnimatorComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Animator.Stop without a Animator!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Animator.Stop on actor without a Animator!");
 				return;
 			}
 
@@ -2457,7 +2611,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<MeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access MeshRenderer.Visible without a Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access MeshRenderer.Visible on actor without a Mesh Renderer!");
 				return false;
 			}
 
@@ -2471,7 +2625,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<MeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set MeshRenderer.Visible without a Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set MeshRenderer.Visible on actor without a Mesh Renderer!");
 				return;
 			}
 
@@ -2485,7 +2639,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<MeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access MeshRenderer.CastShadows without a Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access MeshRenderer.CastShadows on actor without a Mesh Renderer!");
 				return false;
 			}
 
@@ -2499,7 +2653,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<MeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set MeshRenderer.CastShadows without a Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set MeshRenderer.CastShadows on actor without a Mesh Renderer!");
 				return;
 			}
 
@@ -2517,7 +2671,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access StaticMeshRenderer.MeshType without a Static Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access StaticMeshRenderer.MeshType on actor without a Static Mesh Renderer!");
 				return MeshType::Cube;
 			}
 
@@ -2532,7 +2686,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set StaticMeshRenderer.MeshType without a Static Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set StaticMeshRenderer.MeshType on actor without a Static Mesh Renderer!");
 				return;
 			}
 
@@ -2587,7 +2741,7 @@ namespace Vortex {
 			
 			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access StaticMeshRenderer.Visible without a Static Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access StaticMeshRenderer.Visible on actor without a Static Mesh Renderer!");
 				return false;
 			}
 
@@ -2601,7 +2755,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set StaticMeshRenderer.Visible without a Static Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set StaticMeshRenderer.Visible on actor without a Static Mesh Renderer!");
 				return;
 			}
 
@@ -2615,7 +2769,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access StaticMeshRenderer.CastShadows without a Static Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access StaticMeshRenderer.CastShadows on actor without a Static Mesh Renderer!");
 				return false;
 			}
 
@@ -2629,7 +2783,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set StaticMeshRenderer.CastShadows without a Static Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set StaticMeshRenderer.CastShadows on actor without a Static Mesh Renderer!");
 				return;
 			}
 
@@ -2643,7 +2797,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling StaticMeshRenderer.GetMaterialHandle without a Static Mesh Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling StaticMeshRenderer.GetMaterialHandle on actor without a Static Mesh Renderer!");
 				return false;
 			}
 
@@ -3186,7 +3340,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access SpriteRenderer.Texture without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access SpriteRenderer.Texture on actor without a Sprite Renderer!");
 				return false;
 			}
 
@@ -3206,7 +3360,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set SpriteRenderer.Texture without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set SpriteRenderer.Texture on actor without a Sprite Renderer!");
 				return;
 			}
 
@@ -3224,7 +3378,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access SpriteRenderer.Color without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access SpriteRenderer.Color on actor without a Sprite Renderer!");
 				return;
 			}
 
@@ -3238,7 +3392,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set SpriteRenderer.Color without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set SpriteRenderer.Color on actor without a Sprite Renderer!");
 				return;
 			}
 
@@ -3252,7 +3406,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access SpriteRenderer.Scale without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access SpriteRenderer.Scale on actor without a Sprite Renderer!");
 				return;
 			}
 
@@ -3266,7 +3420,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set SpriteRenderer.Scale without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set SpriteRenderer.Scale on actor without a Sprite Renderer!");
 				return;
 			}
 
@@ -3280,7 +3434,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access SpriteRenderer.Visible without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access SpriteRenderer.Visible on actor without a Sprite Renderer!");
 				return false;
 			}
 
@@ -3294,7 +3448,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SpriteRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set SpriteRenderer.Visible without a Sprite Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set SpriteRenderer.Visible on actor without a Sprite Renderer!");
 				return;
 			}
 
@@ -3312,7 +3466,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleRenderer.Color without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleRenderer.Color on actor without a Circle Renderer!");
 				return;
 			}
 
@@ -3326,7 +3480,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleRenderer.Color without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleRenderer.Color on actor without a Circle Renderer!");
 				return;
 			}
 
@@ -3340,7 +3494,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleRenderer.Thickness without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleRenderer.Thickness on actor without a Circle Renderer!");
 				return;
 			}
 
@@ -3354,7 +3508,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleRenderer.Thickness without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleRenderer.Thickness on actor without a Circle Renderer!");
 				return;
 			}
 
@@ -3368,7 +3522,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleRenderer.Fade without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleRenderer.Fade on actor without a Circle Renderer!");
 				return;
 			}
 
@@ -3382,7 +3536,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleRenderer.Fade without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleRenderer.Fade on actor without a Circle Renderer!");
 				return;
 			}
 
@@ -3396,7 +3550,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleRenderer.Visible without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleRenderer.Visible on actor without a Circle Renderer!");
 				return false;
 			}
 
@@ -3410,7 +3564,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleRendererComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleRenderer.Visible without a Circle Renderer!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleRenderer.Visible on actor without a Circle Renderer!");
 				return;
 			}
 
@@ -3428,7 +3582,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.Velocity without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.Velocity on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3452,7 +3606,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.Velocity without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.Velocity on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3476,7 +3630,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.VelocityVariation without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.VelocityVariation on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3500,7 +3654,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.VelocityVariation without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.VelocityVariation on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3524,7 +3678,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.Offset without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.Offset on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3548,7 +3702,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.Offset without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.Offset on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3572,7 +3726,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.SizeBegin without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.SizeBegin on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3596,7 +3750,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.SizeBegin without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.SizeBegin on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3620,7 +3774,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.SizeEnd without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.SizeEnd on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3644,7 +3798,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.SizeEnd without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.SizeEnd on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3668,7 +3822,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.SizeVariation without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.SizeVariation on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3692,7 +3846,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.SizeVariation without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.SizeVariation on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3716,7 +3870,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.ColorBegin without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.ColorBegin on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3740,7 +3894,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.ColorBegin without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.ColorBegin on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3764,7 +3918,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.ColorEnd without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.ColorEnd on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3788,7 +3942,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.ColorEnd without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.ColorEnd on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3812,7 +3966,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.Rotation without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.Rotation on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3836,7 +3990,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.Rotation without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.Rotation on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3860,7 +4014,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.LifeTime without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.LifeTime on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3884,7 +4038,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.LifeTime without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set ParticleEmitter.LifeTime on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3908,7 +4062,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling ParticleEmitter.Start without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling ParticleEmitter.Start on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3928,7 +4082,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling ParticleEmitter.Stop without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling ParticleEmitter.Stop on actor without a Particle Emitter!");
 				return;
 			}
 
@@ -3948,7 +4102,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<ParticleEmitterComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.IsActive without a Particle Emitter!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access ParticleEmitter.IsActive on actor without a Particle Emitter!");
 				return false;
 			}
 
@@ -3972,7 +4126,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Position without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Position on actor without a Audio Source!");
 				return;
 			}
 
@@ -3996,7 +4150,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Position without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Position on actor without a Audio Source!");
 				return;
 			}
 
@@ -4020,7 +4174,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Direction without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Direction on actor without a Audio Source!");
 				return;
 			}
 
@@ -4044,7 +4198,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Direction without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Direction on actor without a Audio Source!");
 				return;
 			}
 
@@ -4068,7 +4222,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Velocity without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Velocity on actor without a Audio Source!");
 				return;
 			}
 
@@ -4092,7 +4246,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Velocity without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Velocity on actor without a Audio Source!");
 				return;
 			}
 
@@ -4116,7 +4270,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.MinGain without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.MinGain on actor without a Audio Source!");
 				return 0.0f;
 			}
 
@@ -4140,7 +4294,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.MinGain without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.MinGain on actor without a Audio Source!");
 				return;
 			}
 
@@ -4164,7 +4318,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.MaxGain without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.MaxGain on actor without a Audio Source!");
 				return 0.0f;
 			}
 
@@ -4188,7 +4342,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.MaxGain without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.MaxGain on actor without a Audio Source!");
 				return;
 			}
 
@@ -4212,7 +4366,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.DirectionalAttenuationFactor without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.DirectionalAttenuationFactor on actor without a Audio Source!");
 				return 0.0f;
 			}
 
@@ -4236,7 +4390,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.DirectionalAttenuationFactor without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.DirectionalAttenuationFactor on actor without a Audio Source!");
 				return;
 			}
 
@@ -4260,7 +4414,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.AttenuationModel without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.AttenuationModel on actor without a Audio Source!");
 				return AttenuationModel::None;
 			}
 
@@ -4284,7 +4438,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.AttenuationModel without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.AttenuationModel on actor without a Audio Source!");
 				return;
 			}
 
@@ -4308,7 +4462,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Pan without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Pan on actor without a Audio Source!");
 				return 0.0f;
 			}
 
@@ -4332,7 +4486,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Pan without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Pan on actor without a Audio Source!");
 				return;
 			}
 
@@ -4356,14 +4510,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PanModel without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.PanModel on actor without a Audio Source!");
 				return PanMode::Balance;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PanModel with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.PanModel with an invalid asset handle!");
 				return PanMode::Balance;
 			}
 
@@ -4380,14 +4534,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PanModel without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.PanModel on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PanModel with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.PanModel with an invalid asset handle!");
 				return;
 			}
 
@@ -4404,14 +4558,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PositioningModel without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.PositioningModel on actor without a Audio Source!");
 				return PositioningMode::Absolute;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PositioningModel with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.PositioningModel with an invalid asset handle!");
 				return PositioningMode::Absolute;
 			}
 
@@ -4428,14 +4582,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PositioningModel without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.PositioningModel on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PositioningModel with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.PositioningModel with an invalid asset handle!");
 				return;
 			}
 
@@ -4452,14 +4606,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Falloff without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Falloff on actor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Falloff with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Falloff with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -4476,14 +4630,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Falloff without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Falloff on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Falloff with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Falloff with an invalid asset handle!");
 				return;
 			}
 
@@ -4500,14 +4654,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MinDistance without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.MinDistance on actor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MinDistance with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.MinDistance with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -4524,14 +4678,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MinDistance without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.MinDistance on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MinDistance with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.MinDistance with an invalid asset handle!");
 				return;
 			}
 
@@ -4548,14 +4702,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MaxDistance without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.MaxDistance on actor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.MaxDistance with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.MaxDistance with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -4572,14 +4726,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MaxDistance without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.MaxDistance on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.MaxDistance with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.MaxDistance with an invalid asset handle!");
 				return;
 			}
 
@@ -4596,14 +4750,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Pitch without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Pitch on actor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Pitch with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Pitch with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -4620,14 +4774,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Pitch without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Pitch on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Pitch with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Pitch with an invalid asset handle!");
 				return;
 			}
 
@@ -4644,14 +4798,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.DopplerFactor without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.DopplerFactor on actor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.DopplerFactor with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.DopplerFactor with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -4668,14 +4822,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.DopplerFactor without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.DopplerFactor on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.DopplerFactor with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.DopplerFactor with an invalid asset handle!");
 				return;
 			}
 
@@ -4692,14 +4846,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Volume without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Volume on actor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Volume with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Volume with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -4716,14 +4870,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Volume without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Volume on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.Volume with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.Volume with an invalid asset handle!");
 				return;
 			}
 
@@ -4740,14 +4894,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.GetDirectionToListener without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.GetDirectionToListener on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.GetDirectionToListener with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.GetDirectionToListener with an invalid asset handle!");
 				return;
 			}
 
@@ -4764,14 +4918,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PlayOnStart without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.PlayOnStart on actor without a Audio Source!");
 				return false;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PlayOnStart with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.PlayOnStart with an invalid asset handle!");
 				return false;
 			}
 
@@ -4790,14 +4944,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PlayOnStart without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.PlayOnStart on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.PlayOnStart with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.PlayOnStart with an invalid asset handle!");
 				return;
 			}
 
@@ -4815,14 +4969,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsSpacialized without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.IsSpacialized on actor without a Audio Source!");
 				return false;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsSpacialized with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.IsSpacialized with an invalid asset handle!");
 				return false;
 			}
 
@@ -4839,14 +4993,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.IsSpacialized without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.IsSpacialized on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.IsSpacialized with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.IsSpacialized with an invalid asset handle!");
 				return;
 			}
 
@@ -4863,14 +5017,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsLooping without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.IsLooping on actor without a Audio Source!");
 				return false;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsLooping with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.IsLooping with an invalid asset handle!");
 				return false;
 			}
 
@@ -4887,14 +5041,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.IsLooping without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.IsLooping on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioSource.IsLooping with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioSource.IsLooping with an invalid asset handle!");
 				return;
 			}
 
@@ -4911,14 +5065,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPlaying without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.IsPlaying on actor without a Audio Source!");
 				return false;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPlaying with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.IsPlaying with an invalid asset handle!");
 				return false;
 			}
 
@@ -4935,14 +5089,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPaused without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.IsPaused on actor without a Audio Source!");
 				return false;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.IsPaused with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.IsPaused with an invalid asset handle!");
 				return false;
 			}
 
@@ -4959,14 +5113,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Cursor without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Cursor on actor without a Audio Source!");
 				return 0;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.Cursor with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.Cursor with an invalid asset handle!");
 				return 0;
 			}
 
@@ -4984,14 +5138,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PinnedListenerIndex without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.PinnedListenerIndex on actor without a Audio Source!");
 				return 0;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PinnedListenerIndex with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.PinnedListenerIndex with an invalid asset handle!");
 				return 0;
 			}
 
@@ -5008,14 +5162,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PinnedListenerIndex without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.PinnedListenerIndex on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioSource.PinnedListenerIndex with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioSource.PinnedListenerIndex with an invalid asset handle!");
 				return;
 			}
 
@@ -5032,14 +5186,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Play without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.Play on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Play with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.Play with an invalid asset handle!");
 				return;
 			}
 
@@ -5056,14 +5210,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStartTimeInMilliseconds without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetStartTimeInMilliseconds on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStartTimeInMilliseconds with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetStartTimeInMilliseconds with an invalid asset handle!");
 				return;
 			}
 
@@ -5080,14 +5234,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStartTimeInPCMFrames without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetStartTimeInPCMFrames on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStartTimeInPCMFrames with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetStartTimeInPCMFrames with an invalid asset handle!");
 				return;
 			}
 
@@ -5104,14 +5258,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInMilliseconds without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetFadeInMilliseconds on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInMilliseconds with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetFadeInMilliseconds with an invalid asset handle!");
 				return;
 			}
 
@@ -5128,14 +5282,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeStartInMilliseconds without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetFadeStartInMilliseconds on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeStartInMilliseconds with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetFadeStartInMilliseconds with an invalid asset handle!");
 				return;
 			}
 
@@ -5152,14 +5306,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInPCMFrames without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetFadeInPCMFrames on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInPCMFrames with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetFadeInPCMFrames with an invalid asset handle!");
 				return;
 			}
 
@@ -5176,14 +5330,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInPCMFrames without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetFadeInPCMFrames on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetFadeInPCMFrames with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetFadeInPCMFrames with an invalid asset handle!");
 				return;
 			}
 
@@ -5200,14 +5354,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.GetCurrentFadeVolume without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.GetCurrentFadeVolume on actor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.GetCurrentFadeVolume with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.GetCurrentFadeVolume with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -5224,14 +5378,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.PlayOneShot without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.PlayOneShot on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.PlayOneShot with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.PlayOneShot with an invalid asset handle!");
 				return;
 			}
 
@@ -5249,14 +5403,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Pause without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.Pause on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Pause with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.Pause with an invalid asset handle!");
 				return;
 			}
 
@@ -5273,14 +5427,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Restart without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.Restart on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Restart with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.Restart with an invalid asset handle!");
 				return;
 			}
 
@@ -5297,14 +5451,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Stop without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.Stop on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Stop with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.Stop with an invalid asset handle!");
 				return;
 			}
 
@@ -5321,14 +5475,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeInMilliseconds without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetStopTimeInMilliseconds on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeInMilliseconds with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetStopTimeInMilliseconds with an invalid asset handle!");
 				return;
 			}
 
@@ -5345,14 +5499,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeInPCMFrames without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetStopTimeInPCMFrames on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeInPCMFrames with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetStopTimeInPCMFrames with an invalid asset handle!");
 				return;
 			}
 
@@ -5369,14 +5523,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeWithFadeInMilliseconds without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetStopTimeWithFadeInMilliseconds on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeWithFadeInMilliseconds with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetStopTimeWithFadeInMilliseconds with an invalid asset handle!");
 				return;
 			}
 
@@ -5393,14 +5547,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeWithFadeInPCMFrames without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetStopTimeWithFadeInPCMFrames on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.SetStopTimeWithFadeInPCMFrames with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.SetStopTimeWithFadeInPCMFrames with an invalid asset handle!");
 				return;
 			}
 
@@ -5417,14 +5571,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Seek without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.Seek on actor without a Audio Source!");
 				return false;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling AudioSource.Seek with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling AudioSource.Seek with an invalid asset handle!");
 				return false;
 			}
 
@@ -5445,7 +5599,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioClip.Name without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioClip.Name on actor without a Audio Source!");
 				ManagedString mstring("");
 				return mstring.GetAddressOf();
 			}
@@ -5480,14 +5634,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioClip.Length without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioClip.Length on actor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioClip.Length with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioClip.Length with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -5508,14 +5662,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.InnerAngle without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioCone.InnerAngle on actor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.InnerAngle with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioCone.InnerAngle with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -5532,14 +5686,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.InnerAngle without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioCone.InnerAngle on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.InnerAngle with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioCone.InnerAngle with an invalid asset handle!");
 				return;
 			}
 
@@ -5558,14 +5712,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterAngle without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioCone.OuterAngle on actor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterAngle with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioCone.OuterAngle with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -5582,14 +5736,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterAngle without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioCone.OuterAngle on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterAngle with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioCone.OuterAngle with an invalid asset handle!");
 				return;
 			}
 
@@ -5608,14 +5762,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterGain without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioCone.OuterGain on actor without a Audio Source!");
 				return 0.0f;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access AudioCone.OuterGain with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access AudioCone.OuterGain with an invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -5632,14 +5786,14 @@ namespace Vortex {
 
 			if (!actor.HasComponent<AudioSourceComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterGain without a Audio Source!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioCone.OuterGain on actor without a Audio Source!");
 				return;
 			}
 
 			const AudioSourceComponent& asc = actor.GetComponent<AudioSourceComponent>();
 			if (!AssetManager::IsHandleValid(asc.AudioHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set AudioCone.OuterGain with an invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set AudioCone.OuterGain with an invalid asset handle!");
 				return;
 			}
 
@@ -5662,7 +5816,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody.BodyType without a RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.BodyType on actor without a RigidBody!");
 				return RigidBodyType::Static;
 			}
 
@@ -5677,7 +5831,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.BodyType without a RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.BodyType on actor without a RigidBody!");
 				return;
 			}
 
@@ -5698,7 +5852,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody.CollisionDetection without a RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.CollisionDetection on actor without a RigidBody!");
 				return CollisionDetectionType::Discrete;
 			}
 
@@ -5706,7 +5860,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.CollisionDetection with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.CollisionDetection with a non-dynamic RigidBody!");
 				return CollisionDetectionType::Discrete;
 			}
 
@@ -5719,7 +5873,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.CollisionDetection without a RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.CollisionDetection on actor without a RigidBody!");
 				return;
 			}
 
@@ -5727,7 +5881,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.CollisionDetectiom with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set RigidBody.CollisionDetectiom with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -5740,7 +5894,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.Mass on actor without a RigidBody!");
 				return 0.0f;
 			}
 
@@ -5748,7 +5902,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.Mass with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.Mass with a non-dynamic RigidBody!");
 				return 0.0f;
 			}
 
@@ -5761,7 +5915,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.Mass on actor without a RigidBody!");
 				return;
 			}
 
@@ -5769,7 +5923,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.Mass with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set RigidBody.Mass with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -5782,7 +5936,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.LinearVelocity on actor without a RigidBody!");
 				return;
 			}
 
@@ -5790,7 +5944,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.LinearVelocity with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.LinearVelocity with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -5803,7 +5957,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.LinearVelocity on actor without a RigidBody!");
 				return;
 			}
 
@@ -5811,7 +5965,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.LinearVelocity with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set RigidBody.LinearVelocity with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -5824,7 +5978,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.MaxLinearVelocity on actor without a RigidBody!");
 				return 0.0f;
 			}
 
@@ -5832,7 +5986,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.MaxLinearVelocity with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.MaxLinearVelocity with a non-dynamic RigidBody!");
 				return 0.0f;
 			}
 
@@ -5845,7 +5999,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.MaxLinearVelocity on actor without a RigidBody!");
 				return;
 			}
 
@@ -5853,7 +6007,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.MaxLinearVelocity with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.MaxLinearVelocity with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -5866,7 +6020,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.LinearDrag on actor without a RigidBody!");
 				return 0.0f;
 			}
 
@@ -5874,7 +6028,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.LinearDrag with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.LinearDrag with a non-dynamic RigidBody!");
 				return 0.0f;
 			}
 
@@ -5887,7 +6041,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.LinearDrag on actor without a RigidBody!");
 				return;
 			}
 
@@ -5895,7 +6049,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.LinearDrag with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set RigidBody.LinearDrag with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -5908,7 +6062,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.AngularVelocity on actor without a RigidBody!");
 				return;
 			}
 
@@ -5916,7 +6070,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.AngularVelocity with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.AngularVelocity with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -5929,7 +6083,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.AngularVelocity on actor without a RigidBody!");
 				return;
 			}
 
@@ -5937,7 +6091,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.AngularVelocity with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set RigidBody.AngularVelocity with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -5950,7 +6104,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.MaxAngularVelocity on actor without a RigidBody!");
 				return 0.0f;
 			}
 
@@ -5958,7 +6112,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.MaxAngularVelocity with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.MaxAngularVelocity with a non-dynamic RigidBody!");
 				return 0.0f;
 			}
 
@@ -5971,7 +6125,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.MaxAngularVelocity on actor without a RigidBody!");
 				return;
 			}
 
@@ -5979,7 +6133,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.MaxAngularVelocity with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.MaxAngularVelocity with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -5992,7 +6146,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.AngularDrag on actor without a RigidBody!");
 				return 0.0f;
 			}
 
@@ -6000,7 +6154,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.AngularDrag with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.AngularDrag with a non-dynamic RigidBody!");
 				return 0.0f;
 			}
 
@@ -6013,7 +6167,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.AngluarDrag on actor without a RigidBody!");
 				return;
 			}
 
@@ -6021,7 +6175,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.AngluarDrag with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set RigidBody.AngluarDrag with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -6034,7 +6188,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.DisableGravity on actor without a RigidBody!");
 				return false;
 			}
 
@@ -6042,7 +6196,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.DisableGravity with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.DisableGravity with a non-dynamic RigidBody!");
 				return false;
 			}
 
@@ -6055,7 +6209,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.DisableGravity on actor without a RigidBody!");
 				return;
 			}
 
@@ -6063,7 +6217,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.DisableGravity with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set RigidBody.DisableGravity with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -6076,7 +6230,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.IsKinematic on actor without a RigidBody!");
 				return false;
 			}
 
@@ -6084,7 +6238,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.IsKinematic with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.IsKinematic with a non-dynamic RigidBody!");
 				return false;
 			}
 
@@ -6097,7 +6251,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.IsKinematic on actor without a RigidBody!");
 				return;
 			}
 
@@ -6105,7 +6259,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.IsKinematic with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set RigidBody.IsKinematic with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -6118,7 +6272,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody.KinematicTarget without a Kinematic RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.KinematicTarget on actor without a Kinematic RigidBody!");
 				return;
 			}
 
@@ -6126,7 +6280,7 @@ namespace Vortex {
 
 			if (!rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget with a non-kinematic RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.KinematicTarget with a non-kinematic RigidBody!");
 				return;
 			}
 
@@ -6147,7 +6301,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget without a Kinematic RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.KinematicTarget on actor without a Kinematic RigidBody!");
 				return;
 			}
 
@@ -6155,7 +6309,7 @@ namespace Vortex {
 
 			if (!rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget with a non-kinematic RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.KinematicTarget with a non-kinematic RigidBody!");
 				return;
 			}
 
@@ -6179,7 +6333,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody.KinematicTarget without a Kinematic RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.KinematicTarget on actor without a Kinematic RigidBody!");
 				return;
 			}
 
@@ -6187,7 +6341,7 @@ namespace Vortex {
 
 			if (!rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget with a non-kinematic RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.KinematicTarget with a non-kinematic RigidBody!");
 				return;
 			}
 
@@ -6208,7 +6362,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget without a Kinematic RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.KinematicTarget on actor without a Kinematic RigidBody!");
 				return;
 			}
 
@@ -6216,7 +6370,7 @@ namespace Vortex {
 
 			if (!rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody.KinematicTarget with a non-kinematic RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.KinematicTarget with a non-kinematic RigidBody!");
 				return;
 			}
 
@@ -6240,7 +6394,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.LockFlags on actor without a RigidBody!");
 				return 0;
 			}
 
@@ -6248,7 +6402,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.LockFlags with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.LockFlags with a non-dynamic RigidBody!");
 				return 0;
 			}
 
@@ -6261,7 +6415,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody.LockFlags on actor without a RigidBody!");
 				return;
 			}
 
@@ -6269,7 +6423,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set RigidBody.LockFlags with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set RigidBody.LockFlags with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -6298,7 +6452,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.LockFlag on actor without a RigidBody!");
 				return false;
 			}
 
@@ -6306,7 +6460,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.LockFlag with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.LockFlag with a non-dynamic RigidBody!");
 				return false;
 			}
 
@@ -6319,7 +6473,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody.IsSleeping on actor without a RigidBody!");
 				return false;
 			}
 
@@ -6327,7 +6481,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access RigidBody.IsSleeping with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access RigidBody.IsSleeping with a non-dynamic RigidBody!");
 				return false;
 			}
 
@@ -6341,7 +6495,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling RigidBody.Wakeup on actor without a RigidBody!");
 				return;
 			}
 
@@ -6349,7 +6503,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Calling RigidBody.Wakeup with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling RigidBody.Wakeup with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -6363,7 +6517,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling RigidBody.AddForce on actor without a RigidBody!");
 				return;
 			}
 
@@ -6371,7 +6525,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Calling Rigidbody.AddForce with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling Rigidbody.AddForce with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -6390,7 +6544,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling RigidBody.AddForceAtPosition on actor without a RigidBody!");
 				return;
 			}
 
@@ -6398,7 +6552,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Calling Rigidbody.AddForceAtPosition with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling Rigidbody.AddForceAtPosition with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -6412,7 +6566,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling RigidBody.AddTorque on actor without a RigidBody!");
 				return;
 			}
 
@@ -6420,7 +6574,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Calling Rigidbody.AddTorque with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling Rigidbody.AddTorque with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -6434,7 +6588,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling RigidBody.ClearTorque on actor without a RigidBody!");
 				return;
 			}
 
@@ -6442,7 +6596,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CORE_ASSERT(false, "Calling RigidBody.ClearTorque with a non-dynamic Rigidbody!");
+				VX_CORE_ASSERT(false, "[Script Engine] Calling RigidBody.ClearTorque with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -6456,7 +6610,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBodyComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Actor doesn't have RigidBody!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling RigidBody.ClearForce on actor without a RigidBody!");
 				return;
 			}
 
@@ -6464,7 +6618,7 @@ namespace Vortex {
 
 			if (rigidbody.Type != RigidBodyType::Dynamic || rigidbody.IsKinematic)
 			{
-				VX_CONSOLE_LOG_WARN("Calling RigidBody.ClearForce with a non-dynamic Rigidbody!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling RigidBody.ClearForce with a non-dynamic RigidBody!");
 				return;
 			}
 
@@ -6537,7 +6691,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.StaticFriction with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access PhysicsMaterial.StaticFriction with invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -6545,7 +6699,7 @@ namespace Vortex {
 			
 			if (!physicsMaterial)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.StaticFriction with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access PhysicsMaterial.StaticFriction with invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -6556,7 +6710,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.StaticFriction with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set PhysicsMaterial.StaticFriction with invalid asset handle!");
 				return;
 			}
 
@@ -6564,7 +6718,7 @@ namespace Vortex {
 
 			if (!physicsMaterial)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.StaticFriction with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set PhysicsMaterial.StaticFriction with invalid asset handle!");
 				return;
 			}
 
@@ -6575,7 +6729,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.DynamicFriction with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access PhysicsMaterial.DynamicFriction with invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -6583,7 +6737,7 @@ namespace Vortex {
 
 			if (!physicsMaterial)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.DynamicFriction with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access PhysicsMaterial.DynamicFriction with invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -6594,7 +6748,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.DynamicFriction with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set PhysicsMaterial.DynamicFriction with invalid asset handle!");
 				return;
 			}
 
@@ -6602,7 +6756,7 @@ namespace Vortex {
 
 			if (!physicsMaterial)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.DynamicFriction with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set PhysicsMaterial.DynamicFriction with invalid asset handle!");
 				return;
 			}
 
@@ -6613,7 +6767,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.BouncinessDynamicFriction with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access PhysicsMaterial.BouncinessDynamicFriction with invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -6621,7 +6775,7 @@ namespace Vortex {
 
 			if (!physicsMaterial)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.BouncinessDynamicFriction with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access PhysicsMaterial.BouncinessDynamicFriction with invalid asset handle!");
 				return 0.0f;
 			}
 
@@ -6632,7 +6786,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.BouncinessDynamicFriction with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set PhysicsMaterial.BouncinessDynamicFriction with invalid asset handle!");
 				return;
 			}
 
@@ -6640,7 +6794,7 @@ namespace Vortex {
 
 			if (!physicsMaterial)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.BouncinessDynamicFriction with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set PhysicsMaterial.BouncinessDynamicFriction with invalid asset handle!");
 				return;
 			}
 
@@ -6651,7 +6805,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.FrictionCombine with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access PhysicsMaterial.FrictionCombine with invalid asset handle!");
 				return CombineMode::Average;
 			}
 
@@ -6659,7 +6813,7 @@ namespace Vortex {
 
 			if (!physicsMaterial)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.FrictionCombine with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access PhysicsMaterial.FrictionCombine with invalid asset handle!");
 				return CombineMode::Average;
 			}
 
@@ -6670,7 +6824,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.FrictionCombine with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set PhysicsMaterial.FrictionCombine with invalid asset handle!");
 				return;
 			}
 
@@ -6678,7 +6832,7 @@ namespace Vortex {
 
 			if (!physicsMaterial)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.FrictionCombine with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set PhysicsMaterial.FrictionCombine with invalid asset handle!");
 				return;
 			}
 
@@ -6689,7 +6843,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.BouncinessCombineFrictionCombine with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access PhysicsMaterial.BouncinessCombineFrictionCombine with invalid asset handle!");
 				return CombineMode::Average;
 			}
 
@@ -6697,7 +6851,7 @@ namespace Vortex {
 
 			if (!physicsMaterial)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access PhysicsMaterial.BouncinessCombineFrictionCombine with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access PhysicsMaterial.BouncinessCombineFrictionCombine with invalid asset handle!");
 				return CombineMode::Average;
 			}
 
@@ -6708,7 +6862,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*assetHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.BouncinessCombineFrictionCombine with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set PhysicsMaterial.BouncinessCombineFrictionCombine with invalid asset handle!");
 				return;
 			}
 
@@ -6716,7 +6870,7 @@ namespace Vortex {
 
 			if (!physicsMaterial)
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set PhysicsMaterial.BouncinessCombineFrictionCombine with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set PhysicsMaterial.BouncinessCombineFrictionCombine with invalid asset handle!");
 				return;
 			}
 
@@ -6733,7 +6887,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Calling CharacterController.Move without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling CharacterController.Move on actor without a Character Controller!");
 				return;
 			}
 
@@ -6748,7 +6902,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Calling CharacterController.Jump without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling CharacterController.Jump on actor without a Character Controller!");
 				return;
 			}
 
@@ -6762,7 +6916,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.IsGrounded without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access CharacterController.IsGrounded on actor without a Character Controller!");
 				return false;
 			}
 
@@ -6779,7 +6933,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.FootPosition without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access CharacterController.FootPosition on actor without a Character Controller!");
 				return;
 			}
 
@@ -6793,7 +6947,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.SpeedDown without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access CharacterController.SpeedDown on actor without a Character Controller!");
 				return 0.0f;
 			}
 
@@ -6807,7 +6961,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.SlopeLimit without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access CharacterController.SlopeLimit on actor without a Character Controller!");
 				return 0.0f;
 			}
 
@@ -6821,7 +6975,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.SlopeLimit without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set CharacterController.SlopeLimit on actor without a Character Controller!");
 				return;
 			}
 
@@ -6837,7 +6991,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.StepOffset without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access CharacterController.StepOffset on actor without a Character Controller!");
 				return 0.0f;
 			}
 
@@ -6851,7 +7005,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.StepOffset without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set CharacterController.StepOffset on actor without a Character Controller!");
 				return;
 			}
 
@@ -6867,7 +7021,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.ContactOffset without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access CharacterController.ContactOffset on actor without a Character Controller!");
 				return 0.0f;
 			}
 
@@ -6881,7 +7035,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.ContactOffset without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set CharacterController.ContactOffset on actor without a Character Controller!");
 				return;
 			}
 
@@ -6897,7 +7051,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.NonWalkMode without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access CharacterController.NonWalkMode on actor without a Character Controller!");
 				return NonWalkableMode::PreventClimbing;
 			}
 
@@ -6911,7 +7065,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.NonWalkMode without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set CharacterController.NonWalkMode on actor without a Character Controller!");
 				return;
 			}
 
@@ -6927,7 +7081,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.ClimbMode without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access CharacterController.ClimbMode on actor without a Character Controller!");
 				return CapsuleClimbMode::Easy;
 			}
 
@@ -6941,7 +7095,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.ClimbMode without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set CharacterController.ClimbMode on actor without a Character Controller!");
 				return;
 			}
 
@@ -6956,7 +7110,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access CharacterController.DisableGravity without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access CharacterController.DisableGravity on actor without a Character Controller!");
 				return false;
 			}
 
@@ -6970,7 +7124,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CharacterControllerComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set CharacterController.DisableGravity without a Character Controller!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set CharacterController.DisableGravity on actor without a Character Controller!");
 				return;
 			}
 
@@ -6988,7 +7142,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.ConnectedActor without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access FixedJoint.ConnectedActor on actor without a Fixed Joint!");
 				return 0;
 			}
 
@@ -7003,7 +7157,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.ConnectedActor without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set FixedJoint.ConnectedActor on actor without a Fixed Joint!");
 				return;
 			}
 
@@ -7032,7 +7186,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.BreakForce without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access FixedJoint.BreakForce on actor without a Fixed Joint!");
 				return 0.0f;
 			}
 
@@ -7046,7 +7200,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.BreakForce without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set FixedJoint.BreakForce on actor without a Fixed Joint!");
 				return;
 			}
 
@@ -7063,7 +7217,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.BreakTorque without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access FixedJoint.BreakTorque on actor without a Fixed Joint!");
 				return 0.0f;
 			}
 
@@ -7077,7 +7231,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.BreakTorque without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set FixedJoint.BreakTorque on actor without a Fixed Joint!");
 				return;
 			}
 
@@ -7094,7 +7248,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Calling FixedJoint.SetBreakForceAndTorque without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling FixedJoint.SetBreakForceAndTorque on actor without a Fixed Joint!");
 				return;
 			}
 
@@ -7112,7 +7266,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.CollisionEnabled without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access FixedJoint.CollisionEnabled on actor without a Fixed Joint!");
 				return false;
 			}
 
@@ -7126,7 +7280,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.CollisionEnabled without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set FixedJoint.CollisionEnabled on actor without a Fixed Joint!");
 				return;
 			}
 
@@ -7143,7 +7297,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.PreProcessingEnabled without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access FixedJoint.PreProcessingEnabled on actor without a Fixed Joint!");
 				return false;
 			}
 
@@ -7157,7 +7311,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.PreProcessingEnabled without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set FixedJoint.PreProcessingEnabled on actor without a Fixed Joint!");
 				return;
 			}
 
@@ -7174,7 +7328,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.IsBroken without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access FixedJoint.IsBroken on actor without a Fixed Joint!");
 				return false;
 			}
 
@@ -7187,7 +7341,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to access FixedJoint.IsBreakable without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to access FixedJoint.IsBreakable on actor without a Fixed Joint!");
 				return false;
 			}
 
@@ -7201,7 +7355,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Trying to set FixedJoint.IsBreakable without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Trying to set FixedJoint.IsBreakable on actor without a Fixed Joint!");
 				return;
 			}
 
@@ -7215,7 +7369,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<FixedJointComponent>())
 			{
-				VX_CONSOLE_LOG_WARN("Calling FixedJoint.Break without a Fixed Joint!");
+				VX_CONSOLE_LOG_WARN("[Script Engine] Calling FixedJoint.Break on actor without a Fixed Joint!");
 				return;
 			}
 
@@ -7232,7 +7386,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider.HalfSize without a Box Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BoxCollider.HalfSize on actor without a Box Collider!");
 				return;
 			}
 
@@ -7251,7 +7405,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider.HalfSize without a Box Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BoxCollider.HalfSize on actor without a Box Collider!");
 				return;
 			}
 
@@ -7270,7 +7424,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider.Offset without a Box Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BoxCollider.Offset on actor without a Box Collider!");
 				return;
 			}
 
@@ -7289,7 +7443,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider.Offset without a Box Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BoxCollider.Offset on actor without a Box Collider!");
 				return;
 			}
 
@@ -7308,7 +7462,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider.IsTrigger without a Box Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BoxCollider.IsTrigger on actor without a Box Collider!");
 				return false;
 			}
 
@@ -7329,7 +7483,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider.IsTrigger without a Box Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BoxCollider.IsTrigger on actor without a Box Collider!");
 				return;
 			}
 
@@ -7348,7 +7502,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider.Material without a Box Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BoxCollider.Material on actor without a Box Collider!");
 				return false;
 			}
 
@@ -7367,7 +7521,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SphereColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access SphereCollider.Radius without a Sphere Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access SphereCollider.Radius on actor without a Sphere Collider!");
 				return 0.0f;
 			}
 
@@ -7388,7 +7542,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SphereColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set SphereCollider.Radius without a Sphere Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set SphereCollider.Radius on actor without a Sphere Collider!");
 				return;
 			}
 
@@ -7407,7 +7561,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SphereColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access SphereCollider.Offset without a Sphere Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access SphereCollider.Offset on actor without a Sphere Collider!");
 				return;
 			}
 
@@ -7426,7 +7580,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SphereColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set SphereCollider.Offset without a Sphere Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set SphereCollider.Offset on actor without a Sphere Collider!");
 				return;
 			}
 
@@ -7445,7 +7599,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SphereColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access SphereCollider.IsTrigger without a Sphere Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access SphereCollider.IsTrigger on actor without a Sphere Collider!");
 				return false;
 			}
 
@@ -7466,7 +7620,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SphereColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set SphereCollider.Offset without a Sphere Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set SphereCollider.Offset on actor without a Sphere Collider!");
 				return;
 			}
 
@@ -7485,7 +7639,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SphereColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access SphereCollider.Material without a Sphere Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access SphereCollider.Material on actor without a Sphere Collider!");
 				return false;
 			}
 
@@ -7504,7 +7658,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.Radius without a Capsule Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CapsuleCollider.Radius on actor without a Capsule Collider!");
 				return 0.0f;
 			}
 
@@ -7525,7 +7679,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CapsuleCollider.Radius without a Capsule Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CapsuleCollider.Radius on actor without a Capsule Collider!");
 				return;
 			}
 
@@ -7544,7 +7698,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.Height without a Capsule Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CapsuleCollider.Height on actor without a Capsule Collider!");
 				return 0.0f;
 			}
 
@@ -7565,7 +7719,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CapsuleCollider.Height without a Capsule Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CapsuleCollider.Height on actor without a Capsule Collider!");
 				return;
 			}
 
@@ -7584,7 +7738,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.Offset without a Capsule Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CapsuleCollider.Offset on actor without a Capsule Collider!");
 				return;
 			}
 
@@ -7603,7 +7757,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<SphereColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CapsuleCollider.Offset without a Capsule Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CapsuleCollider.Offset on actor without a Capsule Collider!");
 				return;
 			}
 
@@ -7622,7 +7776,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.IsTrigger without a Capsule Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CapsuleCollider.IsTrigger on actor without a Capsule Collider!");
 				return false;
 			}
 
@@ -7643,7 +7797,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CapsuleCollider.IsTrigger without a Capsule Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CapsuleCollider.IsTrigger on actor without a Capsule Collider!");
 				return;
 			}
 
@@ -7662,7 +7816,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CapsuleColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CapsuleCollider.Material without a Capsule Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CapsuleCollider.Material on actor without a Capsule Collider!");
 				return false;
 			}
 
@@ -7683,7 +7837,7 @@ namespace Vortex {
 			
 			if (!actor.HasComponent<MeshColliderComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access MeshCollider.IsStaticMesh without a Mesh Collider!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access MeshCollider.IsStaticMesh on actor without a Mesh Collider!");
 				return false;
 			}
 
@@ -7743,7 +7897,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.BodyType without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody2D.BodyType on actor without a RigidBody 2D!");
 				return RigidBody2DType::Static;
 			}
 
@@ -7758,7 +7912,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.BodyType without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody2D.BodyType on actor without a RigidBody 2D!");
 				return;
 			}
 
@@ -7781,7 +7935,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.Velocity without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody2D.Velocity on actor without a RigidBody 2D!");
 				return;
 			}
 
@@ -7796,7 +7950,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.Velocity without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody2D.Velocity on actor without a RigidBody 2D!");
 				return;
 			}
 
@@ -7811,7 +7965,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.Drag without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody2D.Drag on actor without a RigidBody 2D!");
 				return 0.0f;
 			}
 
@@ -7826,7 +7980,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.Drag without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody2D.Drag on actor without a RigidBody 2D!");
 				return;
 			}
 
@@ -7845,7 +7999,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.AngularVelocity without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody2D.AngularVelocity on actor without a RigidBody 2D!");
 				return 0.0f;
 			}
 
@@ -7860,7 +8014,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.AngularVelocity without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody2D.AngularVelocity on actor without a RigidBody 2D!");
 				return;
 			}
 
@@ -7879,7 +8033,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.AngularDrag without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody2D.AngularDrag on actor without a RigidBody 2D!");
 				return 0.0f;
 			}
 
@@ -7894,7 +8048,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.AngularDrag without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody2D.AngularDrag on actor without a RigidBody 2D!");
 				return;
 			}
 
@@ -7913,7 +8067,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.FxiedRotation without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody2D.FxiedRotation on actor without a RigidBody 2D!");
 				return false;
 			}
 
@@ -7928,7 +8082,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.FxiedRotation without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody2D.FxiedRotation on actor without a RigidBody 2D!");
 				return;
 			}
 
@@ -7947,7 +8101,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access RigidBody2D.GravityScale without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access RigidBody2D.GravityScale on actor without a RigidBody 2D!");
 				return 0.0f;
 			}
 
@@ -7962,7 +8116,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set RigidBody2D.GravityScale without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set RigidBody2D.GravityScale on actor without a RigidBody 2D!");
 				return;
 			}
 
@@ -7981,7 +8135,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling RigidBody2D.ApplyForce without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling RigidBody2D.ApplyForce on actor without a RigidBody 2D!");
 				return;
 			}
 
@@ -7998,7 +8152,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling RigidBody2D.ApplyForceToCenter without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling RigidBody2D.ApplyForceToCenter on actor without a RigidBody 2D!");
 				return;
 			}
 
@@ -8015,7 +8169,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling RigidBody2D.ApplyLinearImpulse without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling RigidBody2D.ApplyLinearImpulse on actor without a RigidBody 2D!");
 				return;
 			}
 
@@ -8032,7 +8186,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<RigidBody2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Calling RigidBody2D.ApplyLinearImpulseToCenter without a RigidBody 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling RigidBody2D.ApplyLinearImpulseToCenter on actor without a RigidBody 2D!");
 				return;
 			}
 
@@ -8106,7 +8260,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Offset without a Box Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BoxCollider2D.Offset on actor without a Box Collider 2D!");
 				return;
 			}
 
@@ -8121,7 +8275,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Offset without a Box Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BoxCollider2D.Offset on actor without a Box Collider 2D!");
 				return;
 			}
 
@@ -8139,7 +8293,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Size without a Box Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BoxCollider2D.Size on actor without a Box Collider 2D!");
 				return;
 			}
 
@@ -8154,7 +8308,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Size without a Box Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BoxCollider2D.Size on actor without a Box Collider 2D!");
 				return;
 			}
 
@@ -8172,7 +8326,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Density without a Box Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BoxCollider2D.Density on actor without a Box Collider 2D!");
 				return;
 			}
 
@@ -8187,7 +8341,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Density without a Box Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BoxCollider2D.Density on actor without a Box Collider 2D!");
 				return;
 			}
 
@@ -8209,7 +8363,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Friction without a Box Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BoxCollider2D.Friction on actor without a Box Collider 2D!");
 				return;
 			}
 
@@ -8224,7 +8378,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Friction without a Box Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BoxCollider2D.Friction on actor without a Box Collider 2D!");
 				return;
 			}
 
@@ -8243,7 +8397,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.Restitution without a Box Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BoxCollider2D.Restitution on actor without a Box Collider 2D!");
 				return;
 			}
 
@@ -8258,7 +8412,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.Restitution without a Box Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BoxCollider2D.Restitution on actor without a Box Collider 2D!");
 				return;
 			}
 
@@ -8277,7 +8431,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access BoxCollider2D.RestitutionThreshold without a Box Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access BoxCollider2D.RestitutionThreshold on actor without a Box Collider 2D!");
 				return;
 			}
 
@@ -8292,7 +8446,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<BoxCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set BoxCollider2D.RestitutionThreshold without a Box Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set BoxCollider2D.RestitutionThreshold on actor without a Box Collider 2D!");
 				return;
 			}
 
@@ -8315,7 +8469,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Offset without a Circle Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleCollider2D.Offset on actor without a Circle Collider 2D!");
 				return;
 			}
 
@@ -8330,7 +8484,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Offset without a Circle Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleCollider2D.Offset on actor without a Circle Collider 2D!");
 				return;
 			}
 
@@ -8348,7 +8502,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Radius without a Circle Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleCollider2D.Radius on actor without a Circle Collider 2D!");
 				return;
 			}
 
@@ -8363,7 +8517,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Radius without a Circle Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleCollider2D.Radius on actor without a Circle Collider 2D!");
 				return;
 			}
 
@@ -8381,7 +8535,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Density without a Circle Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleCollider2D.Density on actor without a Circle Collider 2D!");
 				return;
 			}
 
@@ -8396,7 +8550,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Density without a Circle Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleCollider2D.Density on actor without a Circle Collider 2D!");
 				return;
 			}
 
@@ -8418,7 +8572,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Friction without a Circle Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleCollider2D.Friction on actor without a Circle Collider 2D!");
 				return;
 			}
 
@@ -8433,7 +8587,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Friction without a Circle Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleCollider2D.Friction on actor without a Circle Collider 2D!");
 				return;
 			}
 
@@ -8452,7 +8606,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.Restitution without a Circle Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleCollider2D.Restitution on actor without a Circle Collider 2D!");
 				return;
 			}
 
@@ -8467,7 +8621,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.Restitution without a Circle Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleCollider2D.Restitution on actor without a Circle Collider 2D!");
 				return;
 			}
 
@@ -8486,7 +8640,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access CircleCollider2D.RestitutionThreshold without a Circle Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access CircleCollider2D.RestitutionThreshold on actor without a Circle Collider 2D!");
 				return;
 			}
 
@@ -8501,7 +8655,7 @@ namespace Vortex {
 
 			if (!actor.HasComponent<CircleCollider2DComponent>())
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to set CircleCollider2D.RestitutionThreshold without a Circle Collider 2D!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set CircleCollider2D.RestitutionThreshold on actor without a Circle Collider 2D!");
 				return;
 			}
 
@@ -8546,7 +8700,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*textureHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Texture2D.Width with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Texture2D.Width with invalid asset handle!");
 				return 0;
 			}
 
@@ -8559,7 +8713,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*textureHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Trying to access Texture2D.Height with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access Texture2D.Height with invalid asset handle!");
 				return 0;
 			}
 
@@ -8572,7 +8726,7 @@ namespace Vortex {
 		{
 			if (!AssetManager::IsHandleValid(*textureHandle))
 			{
-				VX_CONSOLE_LOG_ERROR("Calling Texture2D.SetPixel with invalid asset handle!");
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Texture2D.SetPixel with invalid asset handle!");
 				return;
 			}
 
@@ -8730,7 +8884,7 @@ namespace Vortex {
 			Math::vec3 skew;
 			Math::vec4 perspective;
 			Math::Decompose(transform, scale, rotation, translation, skew, perspective);
-			*outRotation = Math::EulerAngles(rotation);
+			*outRotation = rotation;
 		}
 
 		void Mathf_InverseQuat(Math::quaternion* rotation, Math::quaternion* result)
@@ -9251,6 +9405,11 @@ namespace Vortex {
     {
 		return s_Data.Serializer.Load(s_Data.PlayerPrefsFilename.string());
     }
+
+	bool ScriptRegistry::TransitionQueued()
+	{
+		return s_Data.TransitionQueued;
+	}
 
 	void ScriptRegistry::RegisterInternalCalls()
 	{
