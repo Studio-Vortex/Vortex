@@ -1403,7 +1403,9 @@ namespace Vortex {
 				if (!staticMesh)
 					continue;
 
-				auto& materialTable = staticMeshRendererComponent.Materials;
+				SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
+				if (!materialTable)
+					continue;
 
 				staticMesh->OnUpdate(materialTable, (int)(entt::entity)e);
 			}
