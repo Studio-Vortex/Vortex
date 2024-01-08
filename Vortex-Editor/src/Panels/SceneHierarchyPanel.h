@@ -10,8 +10,7 @@ namespace Vortex {
 	class SceneHierarchyPanel : public EditorPanel
 	{
 	public:
-		SceneHierarchyPanel() = default;
-		SceneHierarchyPanel(const SharedReference<Scene>& context);
+		SceneHierarchyPanel();
 		~SceneHierarchyPanel() override = default;
 
 		void OnGuiRender(Actor hoveredActor, const EditorCamera* editorCamera);

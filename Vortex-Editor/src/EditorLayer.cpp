@@ -134,7 +134,7 @@ namespace Vortex {
 
 		m_SecondEditorCamera = CreateEditorCamera(editorCameraProperties);
 
-		m_PanelManager->OnEditorCreate();
+		m_PanelManager->OnEditorAttach();
 		m_PanelManager->SetSceneContext(m_ActiveScene);
 		m_PanelManager->SetProjectContext(project);
 	}
@@ -3264,7 +3264,7 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "active scene must be running to queue transition");
 
-		Application::Get().SubmitToMainThreadQueue([=]()
+		Application::Get().SubmitToPreUpdateFrameMainThreadQueue([=]()
 		{
 			m_StartSceneFilepath = m_EditorSceneFilepath;
 

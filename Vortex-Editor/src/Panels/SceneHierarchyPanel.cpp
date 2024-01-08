@@ -14,18 +14,16 @@
 
 namespace Vortex {
 
-#define ACTOR_TAG_BUF_SIZE 256
+#define ACTOR_TAG_BUFFER_SIZE 256
 #define ACTOR_MAX_MARKER_SIZE 64
 #define ACTOR_MAX_CHILD_ACTOR_SEARCH_DEPTH 10
 
 #define INSPECTOR_PANEL_NAME "Inspector"
 
-	SceneHierarchyPanel::SceneHierarchyPanel(const SharedReference<Scene>& context)
+	SceneHierarchyPanel::SceneHierarchyPanel()
 	{
-		SetSceneContext(context);
-
 		// Create copy actor here so it will live the lifetime of the scene hierarchy panel
-		// This will allow us to copy components throughout different scenes
+		// This will allow us to copy components to and from different scenes
 		m_CopyScene = Scene::Create();
 		m_CopyActor = m_CopyScene->CreateActor("Copy Actor");
 	}
@@ -927,15 +925,16 @@ namespace Vortex {
 	template <typename TComponent>
 	struct ComponentUICallbacks
 	{
-		using ValueType = TComponent&;
-		using ReferenceType = std::function<void(ValueType, Actor)>;
-		using ConstType = std::function<void(const ValueType, Actor)>;
+		using ValueType = TComponent;
+		using ReferenceType = ValueType&;
+		using ReferenceFn = std::function<void(ReferenceType, Actor)>;
+		using ConstFn = std::function<void(const ReferenceType, Actor)>;
 
-		ReferenceType OnGuiRenderFn = nullptr;
-		ReferenceType OnComponentResetFn = nullptr;
-		ConstType OnComponentCopiedFn = nullptr;
-		ReferenceType OnComponentPastedFn = nullptr;
-		ReferenceType OnComponentRemovedFn = nullptr;
+		ReferenceFn OnGuiRenderFn = nullptr;
+		ReferenceFn OnComponentResetFn = nullptr;
+		ConstFn OnComponentCopiedFn = nullptr;
+		ReferenceFn OnComponentPastedFn = nullptr;
+		ReferenceFn OnComponentRemovedFn = nullptr;
 
 		bool IsRemoveable = true;
 	};
@@ -1059,16 +1058,8 @@ namespace Vortex {
 		ComponentUICallbacks<TransformComponent> transformComponentCallbacks;
 		transformComponentCallbacks.OnGuiRenderFn = VX_BIND_CALLBACK(SceneHierarchyPanel::TransformComponentOnGuiRender);
 		transformComponentCallbacks.OnComponentResetFn = [](auto& component, auto actor) { component = TransformComponent(); };
-		// TODO!
-		transformComponentCallbacks.OnComponentCopiedFn = [&](auto& component, auto actor) {
-			if (!m_CopyActor.HasComponent<TransformComponent>()) {
-				m_CopyActor.AddComponent<TransformComponent>(component);
-			}
-		};
-		// DITTO!
-		transformComponentCallbacks.OnComponentPastedFn = [&](auto& component, auto actor) {
-			component = m_CopyActor.GetComponent<TransformComponent>();
-		};
+		transformComponentCallbacks.OnComponentCopiedFn = [&](const auto& component, auto actor) { m_CopyActor.AddOrReplaceComponent<TransformComponent>() = component; };
+		transformComponentCallbacks.OnComponentPastedFn = [&](auto& component, auto actor) { component = m_CopyActor.GetComponent<TransformComponent>(); };
 		transformComponentCallbacks.IsRemoveable = false;
 		DrawComponent<TransformComponent>("Transform", actor, transformComponentCallbacks);
 
@@ -1236,7 +1227,7 @@ namespace Vortex {
 	{
 		std::string& tag = component.Tag;
 
-		char buffer[ACTOR_TAG_BUF_SIZE];
+		char buffer[ACTOR_TAG_BUFFER_SIZE];
 		memset(buffer, 0, sizeof(buffer));
 		strcpy_s(buffer, sizeof(buffer), tag.c_str());
 
@@ -2913,7 +2904,7 @@ namespace Vortex {
 
 		const bool sceneRunning = m_ContextScene->IsRunning();
 
-		Gui::BeginDisabled(!component.Enabled || !component.Instantiated);
+		Gui::BeginDisabled(!component.Enabled);
 
 		// Fields
 		if (sceneRunning)

@@ -28,8 +28,6 @@ extern bool g_ApplicationRunning;
 
 namespace Vortex {
 
-	Application* Application::s_Instance = nullptr;
-
 	Application::Application(const ApplicationProperties& props)
 		: m_Properties(props)
 	{
@@ -37,32 +35,6 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
-
-		SetWorkingDirectory();
-		CreateWindowV();
-		InitializeSubModules();
-
-		m_Running = true;
-	}
-
-	Application::~Application()
-	{
-		VX_PROFILE_FUNCTION();
-
-		// Note:
-		// We have to explicitly destroy the layer stack before
-		// the engine's submodules are shutdown. This is mainly because
-		// the Audio system needs to outlive the lifetime of the layer stack.
-		// It is also just a good idea to destroy all the layers before submodules
-		// get shutdown because something in the layers code may rely on a submodule
-		m_Layers.~LayerStack();
-
-		ShutdownSubModules();
-	}
-
-	void Application::SetWorkingDirectory()
-	{
-		VX_PROFILE_FUNCTION();
 
 		if (!m_Properties.WorkingDirectory.empty())
 		{
@@ -72,11 +44,6 @@ namespace Vortex {
 		{
 			m_Properties.WorkingDirectory = FileSystem::GetWorkingDirectory().string();
 		}
-	}
-
-	void Application::CreateWindowV()
-	{
-		VX_PROFILE_FUNCTION();
 
 		WindowProperties windowProps;
 		windowProps.Size.x = m_Properties.WindowWidth;
@@ -98,11 +65,6 @@ namespace Vortex {
 		}
 
 		m_Window->SetEventCallback(VX_BIND_CALLBACK(Application::OnEvent));
-	}
-
-	void Application::InitializeSubModules()
-	{
-		VX_PROFILE_FUNCTION();
 
 		Networking::Init();
 		Renderer::Init();
@@ -119,11 +81,21 @@ namespace Vortex {
 			m_GuiLayer = new GuiLayer();
 			PushOverlay(m_GuiLayer);
 		}
+
+		m_Running = true;
 	}
 
-	void Application::ShutdownSubModules()
+	Application::~Application()
 	{
 		VX_PROFILE_FUNCTION();
+
+		// Note:
+		// We have to explicitly destroy the layer stack before
+		// the engine's submodules are shutdown. This is mainly because
+		// the Audio system needs to outlive the lifetime of the layer stack.
+		// It is also just a good idea to destroy all the layers before submodules
+		// get shutdown because something in the layers code may rely on a submodule
+		m_Layers.~LayerStack();
 
 		Input::Shutdown();
 		SystemManager::UnRegisterSystem<UISystem>();
@@ -176,11 +148,16 @@ namespace Vortex {
 		}
 	}
 
-	void Application::SubmitToMainThreadQueue(const std::function<void()>& func)
+	void Application::SubmitToPreUpdateFrameMainThreadQueue(const std::function<void()>& func)
 	{
-		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
+		std::scoped_lock<std::mutex> lock(m_PreUpdateFrameMainThreadQueueMutex);
 
-		m_MainThreadQueue.emplace_back(func);
+		m_PreUpdateFrameMainThreadQueue.emplace_back(func);
+	}
+
+	void Application::SubmitToPostUpdateFrameMainThreadQueue(const std::function<void()>& func)
+	{
+		std::scoped_lock<std::mutex> lock(m_PostUpdateFrameMainThreadQueueMutex);
 	}
 
 	void Application::AddModule(const SubModule& submodule)
@@ -199,16 +176,28 @@ namespace Vortex {
 		return m_ModuleLibrary;
 	}
 
-	void Application::ExecuteMainThreadQueue()
+	void Application::ExecutePreUpdateFrameMainThreadQueue()
 	{
-		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
+		std::scoped_lock<std::mutex> lock(m_PreUpdateFrameMainThreadQueueMutex);
 
-		for (const auto& fn : m_MainThreadQueue)
+		for (const auto& fn : m_PreUpdateFrameMainThreadQueue)
 		{
 			std::invoke(fn);
 		}
 
-		m_MainThreadQueue.clear();
+		m_PreUpdateFrameMainThreadQueue.clear();
+	}
+
+	void Application::ExecutePostUpdateFrameMainThreadQueue()
+	{
+		std::scoped_lock<std::mutex> lock(m_PostUpdateFrameMainThreadQueueMutex);
+
+		for (const auto& fn : m_PostUpdateFrameMainThreadQueue)
+		{
+			std::invoke(fn);
+		}
+
+		m_PostUpdateFrameMainThreadQueue.clear();
 	}
 
 	void Application::Run()
@@ -226,7 +215,7 @@ namespace Vortex {
 			Time::SetDeltaTime(m_FrameTime.DeltaTime);
 			m_LastFrameTimeStamp = currentTime;
 
-			ExecuteMainThreadQueue();
+			ExecutePreUpdateFrameMainThreadQueue();
 
 			if (!m_ApplicationMinimized)
 			{
@@ -257,6 +246,8 @@ namespace Vortex {
 			Input::ResetChangesForNextFrame();
 
 			m_Window->OnUpdate();
+
+			ExecutePostUpdateFrameMainThreadQueue();
 		}
 	}
 

@@ -158,7 +158,7 @@ namespace Vortex {
 
 		ASSET_CLASS_TYPE(SceneAsset)
 
-		static SharedReference<Scene> Create(SharedReference<Framebuffer>& targetFramebuffer);
+		static SharedReference<Scene> Create(SharedReference<Framebuffer> targetFramebuffer);
 		static SharedReference<Scene> Create();
 
 	private:

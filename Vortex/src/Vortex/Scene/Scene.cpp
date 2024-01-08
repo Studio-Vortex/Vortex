@@ -1683,7 +1683,7 @@ namespace Vortex {
 		}
 	}
 
-	SharedReference<Scene> Scene::Create(SharedReference<Framebuffer>& targetFramebuffer)
+	SharedReference<Scene> Scene::Create(SharedReference<Framebuffer> targetFramebuffer)
 	{
 		return SharedReference<Scene>::Create(targetFramebuffer);
 	}

@@ -69,20 +69,21 @@ namespace Vortex {
 
 		void OnEvent(Event& e);
 
-		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
+		VX_FORCE_INLINE GuiLayer* GetGuiLayer() { return m_GuiLayer; }
 
 		VX_FORCE_INLINE static Application& Get() { return *s_Instance; }
 		VX_FORCE_INLINE Window& GetWindow() { return *m_Window; }
 		VX_FORCE_INLINE const Window& GetWindow() const { return *m_Window; }
 
-		const ApplicationProperties& GetProperties() const { return m_Properties; }
+		VX_FORCE_INLINE const ApplicationProperties& GetProperties() const { return m_Properties; }
 
 		VX_FORCE_INLINE bool IsRuntime() const { return m_Properties.IsRuntime; }
 		VX_FORCE_INLINE bool IsMinimized() const { return m_ApplicationMinimized; }
 
 		void Close();
 
-		void SubmitToMainThreadQueue(const std::function<void()>& func);
+		void SubmitToPreUpdateFrameMainThreadQueue(const std::function<void()>& func);
+		void SubmitToPostUpdateFrameMainThreadQueue(const std::function<void()>& func);
 
 		// TODO: think of a better place to put these
 		VX_FORCE_INLINE std::string GetEditorBinaryPath() const { return "Vortex-Editor.exe"; }
@@ -96,22 +97,15 @@ namespace Vortex {
 		VX_FORCE_INLINE FrameTime& GetFrameTime() { return m_FrameTime; }
 
 	private:
-		void SetWorkingDirectory();
-
-		// We can't use 'CreateWindow' because it is a function of the Windows API
-		void CreateWindowV();
-
-		void InitializeSubModules();
-		void ShutdownSubModules();
-
-		void ExecuteMainThreadQueue();
+		void ExecutePreUpdateFrameMainThreadQueue();
+		void ExecutePostUpdateFrameMainThreadQueue();
 		
 		void Run();
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
 
 	private:
-		static Application* s_Instance;
+		inline static Application* s_Instance = nullptr;
 
 	private:
 		FrameTime m_FrameTime;
@@ -122,10 +116,14 @@ namespace Vortex {
 
 		ModuleLibrary m_ModuleLibrary;
 
-		std::vector<std::function<void()>> m_MainThreadQueue;
-		std::mutex m_MainThreadQueueMutex;
+		std::vector<std::function<void()>> m_PreUpdateFrameMainThreadQueue;
+		std::vector<std::function<void()>> m_PostUpdateFrameMainThreadQueue;
+
+		std::mutex m_PreUpdateFrameMainThreadQueueMutex;
+		std::mutex m_PostUpdateFrameMainThreadQueueMutex;
 
 		float m_LastFrameTimeStamp = 0.0f;
+
 		bool m_Running = false;
 		bool m_ApplicationMinimized = false;
 

@@ -99,7 +99,7 @@ namespace Vortex {
 			s_Data->AssemblyReloadPending = true;
 
 			// Add reload to main thread queue
-			Application::Get().SubmitToMainThreadQueue([]()
+			Application::Get().SubmitToPreUpdateFrameMainThreadQueue([]()
 			{
 				s_Data->AppAssemblyFilewatcher.reset();
 
