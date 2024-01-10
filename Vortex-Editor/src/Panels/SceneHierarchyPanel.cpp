@@ -1392,32 +1392,27 @@ namespace Vortex {
 			camera.SetProjectionType((SceneCamera::ProjectionType)currentProjectionType);
 		}
 
-		bool modified = false;
-
 		switch (camera.GetProjectionType())
 		{
 			case SceneCamera::ProjectionType::Perspective:
 			{
-				float perspectiveVerticalFOV = Math::Rad2Deg(camera.GetPerspectiveVerticalFOVRad());
+				float perspectiveVerticalFOV = Math::Rad2Deg(camera.GetPerspectiveFOV());
 				if (UI::Property("Field of View", perspectiveVerticalFOV, 1.0f, FLT_MIN, 180.0f))
 				{
-					camera.SetPerspectiveVerticalFOVRad(Math::Deg2Rad(perspectiveVerticalFOV));
-					modified = true;
+					camera.SetPerspectiveFOV(Math::Deg2Rad(perspectiveVerticalFOV));
 				}
 
 				float nearClip = camera.GetPerspectiveNearClip();
 				float farClip = camera.GetPerspectiveFarClip();
 
-				if (UI::Property("Near", nearClip, 0.1f, FLT_MIN, farClip))
+				if (UI::Property("Near Clip", nearClip, 0.1f, FLT_MIN, farClip))
 				{
 					camera.SetPerspectiveNearClip(nearClip);
-					modified = true;
 				}
 
-				if (UI::Property("Far", farClip, 0.1f, nearClip, FLT_MAX))
+				if (UI::Property("Far Clip", farClip, 0.1f, nearClip, FLT_MAX))
 				{
 					camera.SetPerspectiveFarClip(farClip);
-					modified = true;
 				}
 
 				break;
@@ -1425,25 +1420,22 @@ namespace Vortex {
 			case SceneCamera::ProjectionType::Orthographic:
 			{
 				float orthoSize = camera.GetOrthographicSize();
-				if (UI::Property("Size", orthoSize, 0.1f, FLT_MIN, FLT_MAX))
+				if (UI::Property("Ortho Size", orthoSize, 0.1f, FLT_MIN, FLT_MAX))
 				{
 					camera.SetOrthographicSize(orthoSize);
-					modified = true;
 				}
 
 				float nearClip = camera.GetOrthographicNearClip();
 				float farClip = camera.GetOrthographicFarClip();
 
-				if (UI::Property("Near", nearClip, 0.1f, FLT_MIN, farClip))
+				if (UI::Property("Near Clip", nearClip, 0.1f, FLT_MIN, farClip))
 				{
 					camera.SetOrthographicNearClip(nearClip);
-					modified = true;
 				}
 
-				if (UI::Property("Far", farClip, 0.1f, nearClip, FLT_MAX))
+				if (UI::Property("Far Clip", farClip, 0.1f, nearClip, FLT_MAX))
 				{
 					camera.SetOrthographicFarClip(farClip);
-					modified = true;
 				}
 
 				UI::Property("Fixed Aspect Ratio", component.FixedAspectRatio);
@@ -1509,7 +1501,7 @@ namespace Vortex {
 			UI::EndTreeNode();
 		}
 
-		if (modified)
+		if (camera.IsDirty())
 		{
 			const Math::uvec2& viewportSize = m_ContextScene->GetViewportSize();
 			camera.SetViewportSize(viewportSize.x, viewportSize.y);

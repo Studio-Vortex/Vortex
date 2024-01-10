@@ -109,7 +109,7 @@ namespace Vortex {
 		// Editor Callbacks
 
 		void LaunchRuntimeApp();
-		void QueueSceneTransition();
+		void QueueSceneTransition(const std::string& sceneName);
 
 		// Helper
 
@@ -136,16 +136,6 @@ namespace Vortex {
 		Math::Ray Raycast(EditorCamera* editorCamera, float mx, float my);
 
 		Actor GetHoveredMeshActorFromRaycast();
-
-		struct EditorCameraProperties
-		{
-			Math::vec2 ViewportSize;
-			float FOV;
-			float NearPlane;
-			float FarPlane;
-		};
-
-		EditorCamera* CreateEditorCamera(const EditorCameraProperties& properties);
 
 	private:
 		struct SelectionData
@@ -193,6 +183,7 @@ namespace Vortex {
 		float m_SceneViewportBorderFadeLengthInSeconds = 3.0f;
 		float m_SceneViewportBorderFadeTimer;
 		float m_SceneViewportBorderSize = 3.0f;
+		Math::vec4 m_SceneViewportBorderFadeColor;
 		Math::vec4 m_SceneViewportOnPlayBorderColor = ColorToVec4(Color::Red);
 		Math::vec4 m_SceneViewportOnSimulateBorderColor = ColorToVec4(Color::Green);
 

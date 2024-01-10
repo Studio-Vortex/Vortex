@@ -117,22 +117,27 @@ namespace Vortex {
 		}
 
 		VX_CORE_ASSERT(Project::GetActive(), "Failed to open project!");
-		VX_CORE_ASSERT(m_ActiveScene, "Failed to open a scene!");
+		VX_CORE_ASSERT(m_ActiveScene, "failed to open a scene!");
 
 		SharedReference<Project> project = Project::GetActive();
 		const ProjectProperties& properties = project->GetProperties();
 
-		EditorCameraProperties editorCameraProperties;
-		editorCameraProperties.ViewportSize = m_ViewportPanelSize;
-		editorCameraProperties.FOV = properties.EditorProps.EditorCameraFOV;
-		editorCameraProperties.NearPlane = 0.1f;
-		editorCameraProperties.FarPlane = 1000.0f;
+		EditorCameraProperties editorCameraParams;
+		editorCameraParams.Translation = properties.EditorProps.EditorCameraProps.Translation;
+		editorCameraParams.Width = m_ViewportPanelSize.x;
+		editorCameraParams.Height = m_ViewportPanelSize.y;
+		editorCameraParams.FOV = Math::Deg2Rad(properties.EditorProps.EditorCameraProps.FOVdegrees);
+		editorCameraParams.NearClip = 0.01f;
+		editorCameraParams.FarClip = 1000.0f;
+		m_EditorCamera = new EditorCamera(editorCameraParams);
 
-		m_EditorCamera = CreateEditorCamera(editorCameraProperties);
-
-		editorCameraProperties.ViewportSize = m_SecondViewportPanelSize;
-
-		m_SecondEditorCamera = CreateEditorCamera(editorCameraProperties);
+		editorCameraParams.Translation = Math::vec3(-5, 5, 5);
+		editorCameraParams.Width = m_SecondViewportPanelSize.x;
+		editorCameraParams.Height = m_SecondViewportPanelSize.y;
+		editorCameraParams.FOV = Math::Deg2Rad(45.0f);
+		editorCameraParams.NearClip = 0.01f;
+		editorCameraParams.FarClip = 1000.0f;
+		m_SecondEditorCamera = new EditorCamera(editorCameraParams);
 
 		m_PanelManager->OnEditorAttach();
 		m_PanelManager->SetSceneContext(m_ActiveScene);
@@ -187,15 +192,16 @@ namespace Vortex {
 
 		if (!InPlaySceneState())
 		{
-			m_EditorCamera->SetActive(m_AllowViewportCameraEvents);
+			m_EditorCamera->SetActive(m_AllowViewportCameraEvents && !m_AllowSecondViewportCameraEvents);
 			m_EditorCamera->OnUpdate(delta);
 			m_AllowViewportCameraEvents = false;
 		}
 
 		if (m_SecondViewportPanelOpen)
 		{
-			m_SecondEditorCamera->SetActive(m_AllowSecondViewportCameraEvents);
+			m_SecondEditorCamera->SetActive(m_AllowSecondViewportCameraEvents && !m_AllowViewportCameraEvents);
 			m_SecondEditorCamera->OnUpdate(delta);
+			m_AllowSecondViewportCameraEvents = false;
 		}
 
 		// Update Scene
@@ -337,6 +343,11 @@ namespace Vortex {
 		if (!rightMouseButtonDown && !(altDown && (leftMouseButtonDown || (middleMouseButtonDown))))
 		{
 			m_StartedClickInViewport = m_StartedClickInSecondViewport = false;
+		}
+
+		if (ScriptRegistry::TransitionQueued())
+		{
+			QueueSceneTransition(ScriptRegistry::GetNextSceneByName());
 		}
 	}
 
@@ -487,7 +498,10 @@ namespace Vortex {
 		if (Gui::BeginPopup("ViewportCreateActorMenu", ImGuiWindowFlags_NoMove))
 		{
 			EditorCamera* camera = GetCurrentEditorCamera();
-			m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateActorMenu(camera);
+			if (camera)
+			{
+				m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateActorMenu(camera);
+			}
 
 			Gui::PopStyleVar();
 			Gui::EndPopup();
@@ -711,7 +725,10 @@ namespace Vortex {
 			if (Gui::BeginMenu("Actor"))
 			{
 				EditorCamera* camera = GetCurrentEditorCamera();
-				m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateActorMenu(camera);
+				if (camera)
+				{
+					m_PanelManager->GetPanel<SceneHierarchyPanel>()->DisplayCreateActorMenu(camera);
+				}
 
 				Gui::EndMenu();
 			}
@@ -750,7 +767,7 @@ namespace Vortex {
 
 			if (Gui::BeginMenu("Script"))
 			{
-				auto projectSolutionFilename = Fs::Path(project->GetName());
+				Fs::Path projectSolutionFilename = Fs::Path(project->GetName());
 				projectSolutionFilename.replace_extension(".sln");
 				Fs::Path scriptsFolder = Fs::Path("Projects") / project->GetName() / "Assets\\Scripts";
 				Fs::Path solutionPath = scriptsFolder / projectSolutionFilename;
@@ -907,7 +924,7 @@ namespace Vortex {
 		{
 			m_SceneViewportBorderFadeTimer -= delta;
 			const float mapped = Math::Min(1.0f, m_SceneViewportBorderFadeTimer * 0.5f + 0.5f);
-			const Math::vec4& viewportBorderColor = InPlaySceneState() ? m_SceneViewportOnPlayBorderColor : m_SceneViewportOnSimulateBorderColor;
+			const Math::vec4& viewportBorderColor = m_SceneViewportBorderFadeColor;
 			const Math::vec4 lvalue = viewportBorderColor * mapped;
 			borderColor = *(ImVec4*)&(lvalue);
 		}
@@ -1037,10 +1054,10 @@ namespace Vortex {
 							}
 							else if (m_HoveredActor.HasComponent<StaticMeshRendererComponent>())
 							{
-								auto& staticMeshRendererComponent = m_HoveredActor.GetComponent<StaticMeshRendererComponent>();
+								StaticMeshRendererComponent& staticMeshRendererComponent = m_HoveredActor.GetComponent<StaticMeshRendererComponent>();
 								AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
 
-								auto& materialTable = staticMeshRendererComponent.Materials;
+								SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
 
 								if (AssetManager::IsHandleValid(staticMeshHandle))
 								{
@@ -1102,15 +1119,15 @@ namespace Vortex {
 
 								if (m_HoveredActor.HasComponent<MeshRendererComponent>())
 								{
-									auto& meshRendererComponent = m_HoveredActor.GetComponent<MeshRendererComponent>();
-									auto& materialTable = meshRendererComponent.Materials;
+									MeshRendererComponent& meshRendererComponent = m_HoveredActor.GetComponent<MeshRendererComponent>();
+									SharedReference<MaterialTable> materialTable = meshRendererComponent.Materials;
 
 									materialTable->SetMaterial(0, materialHandle);
 								}
 								else if (m_HoveredActor.HasComponent<StaticMeshRendererComponent>())
 								{
-									auto& staticMeshRendererComponent = m_HoveredActor.GetComponent<StaticMeshRendererComponent>();
-									auto& materialTable = staticMeshRendererComponent.Materials;
+									StaticMeshRendererComponent& staticMeshRendererComponent = m_HoveredActor.GetComponent<StaticMeshRendererComponent>();
+									SharedReference<MaterialTable>& materialTable = staticMeshRendererComponent.Materials;
 
 									materialTable->SetMaterial(0, materialHandle);
 								}
@@ -1337,6 +1354,11 @@ namespace Vortex {
 				m_Framebuffer->Resize((uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y);
 				m_EditorCamera->SetViewportSize((uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y);
 			}
+
+			if (m_EditorCamera->IsDirty())
+			{
+				m_EditorCamera->SetViewportSize((uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y);
+			}
 		}
 
 		if (m_SecondViewportPanelOpen)
@@ -1346,6 +1368,11 @@ namespace Vortex {
 				(props.Width != m_SecondViewportPanelSize.x || props.Height != m_SecondViewportPanelSize.y))
 			{
 				m_SecondViewportFramebuffer->Resize((uint32_t)m_SecondViewportPanelSize.x, (uint32_t)m_SecondViewportPanelSize.y);
+				m_SecondEditorCamera->SetViewportSize((uint32_t)m_SecondViewportPanelSize.x, (uint32_t)m_SecondViewportPanelSize.y);
+			}
+
+			if (m_SecondEditorCamera->IsDirty())
+			{
 				m_SecondEditorCamera->SetViewportSize((uint32_t)m_SecondViewportPanelSize.x, (uint32_t)m_SecondViewportPanelSize.y);
 			}
 		}
@@ -1383,18 +1410,46 @@ namespace Vortex {
 		Gui::Spring();
 		Gui::BeginHorizontal("##viewportTransformationModeToolbarH", { backgroundWidth, Gui::GetContentRegionAvail().y });
 		Gui::Spring();
-
-		if (UI::ImageButtonEx(EditorResources::LocalModeIcon, textureSize, m_TransformationMode == 0 ? bgColor : normalColor, tintColor))
+		
+		uint32_t mode = m_TransformationMode;
+		SharedReference<Texture2D> transformationModeIcon = nullptr;
+		std::string tooltip = "";
+		if (mode == (uint32_t)ImGuizmo::MODE::LOCAL)
 		{
-			m_TransformationMode = (uint32_t)ImGuizmo::MODE::LOCAL;
+			transformationModeIcon = EditorResources::WorldModeIcon;
+			tooltip = "World";
 		}
-		UI::SetTooltip("Local Transformation");
-
-		if (UI::ImageButtonEx(EditorResources::WorldModeIcon, textureSize, m_TransformationMode == 1 ? bgColor : normalColor, tintColor))
+		else if (mode == (uint32_t)ImGuizmo::MODE::WORLD)
 		{
-			m_TransformationMode = (uint32_t)ImGuizmo::MODE::WORLD;
+			transformationModeIcon = EditorResources::LocalModeIcon;
+			tooltip = "Local";
 		}
-		UI::SetTooltip("World Transformation");
+
+		if (transformationModeIcon)
+		{
+			if (UI::ImageButtonEx(transformationModeIcon, textureSize, normalColor, tintColor))
+			{
+				m_TransformationMode++;
+				if (m_TransformationMode == 2) // invalid
+					m_TransformationMode = 0;
+			}
+			UI::SetTooltip(tooltip.c_str());
+		}
+
+		const std::string label = m_EditorCamera->GetProjectionType() == Camera::ProjectionType::Perspective ? "2D" : "3D";
+		if (Gui::Button(label.c_str(), textureSize))
+		{
+			switch (m_EditorCamera->GetProjectionType())
+			{
+				case Camera::ProjectionType::Perspective:
+				{
+					m_EditorCamera->SetProjectionType(Camera::ProjectionType::Orthographic);
+					m_EditorCamera->UpdateCameraView();
+					break;
+				}
+				case Camera::ProjectionType::Orthographic: m_EditorCamera->SetProjectionType(Camera::ProjectionType::Perspective); break;
+			}
+		}
 
 		Gui::Spring();
 		Gui::EndHorizontal();
@@ -1736,14 +1791,29 @@ namespace Vortex {
 					drawHeading("Gizmos");
 					UI::BeginPropertyGrid(columnWidth);
 
-					if (UI::ImageButton("Local Mode", EditorResources::LocalModeIcon, textureSize, m_TransformationMode == 0 ? bgColor : normalColor, tintColor))
+					uint32_t mode = m_TransformationMode;
+					SharedReference<Texture2D> transformationModeIcon = nullptr;
+					std::string tooltip = "";
+					if (mode == (uint32_t)ImGuizmo::MODE::LOCAL)
 					{
-						m_TransformationMode = (uint32_t)ImGuizmo::MODE::LOCAL;
+						transformationModeIcon = EditorResources::WorldModeIcon;
+						tooltip = "World";
+					}
+					else if (mode == (uint32_t)ImGuizmo::MODE::WORLD)
+					{
+						transformationModeIcon = EditorResources::LocalModeIcon;
+						tooltip = "Local";
 					}
 
-					if (UI::ImageButton("World Mode", EditorResources::WorldModeIcon, textureSize, m_TransformationMode == 1 ? bgColor : normalColor, tintColor))
+					if (transformationModeIcon)
 					{
-						m_TransformationMode = (uint32_t)ImGuizmo::MODE::WORLD;
+						if (UI::ImageButton("Transformation Mode", transformationModeIcon, textureSize, normalColor, tintColor))
+						{
+							m_TransformationMode++;
+							if (m_TransformationMode == 2) // invalid
+								m_TransformationMode = 0;
+						}
+						UI::SetTooltip(tooltip.c_str());
 					}
 
 					UI::Property("Enable Snapping", properties.GizmoProps.SnapEnabled);
@@ -1764,27 +1834,16 @@ namespace Vortex {
 					drawHeading("Editor Camera");
 					UI::BeginPropertyGrid(columnWidth);
 
-					float degFOV = Math::Rad2Deg(m_EditorCamera->m_VerticalFOV);
-					if (UI::Property("Field of View", degFOV))
+					float FOVdegrees = Math::Rad2Deg(m_EditorCamera->m_PerspectiveFOV);
+					if (UI::Property("Field of View", FOVdegrees))
 					{
-						m_EditorCamera->SetVerticalFOV(degFOV);
-						properties.EditorProps.EditorCameraFOV = degFOV;
+						m_EditorCamera->SetPerspectiveFOV(Math::Deg2Rad(FOVdegrees));
+						properties.EditorProps.EditorCameraProps.FOVdegrees = FOVdegrees;
 					}
 
-					UI::Property("Camera Speed", m_EditorCamera->m_NormalSpeed, 0.001f, 0.0002f, 0.5f, "%.4f");
-
-					bool isUsing2DView = m_EditorCamera->IsUsing2DView();
-					if (UI::ImageButton("2D View", EditorResources::TwoDViewIcon, textureSize, isUsing2DView ? bgColor : normalColor, tintColor))
+					if (UI::Property("Camera Speed", m_EditorCamera->m_Speed, 0.001f, EditorCamera::MIN_SPEED, EditorCamera::MAX_SPEED, "%.4f"))
 					{
-						m_EditorCamera->SetUse2DView(!isUsing2DView);
-						m_EditorCamera->SetUseTopDownView(false);
-					}
-
-					bool isUsingTopDownView = m_EditorCamera->IsUsingTopDownView();
-					if (UI::ImageButton("Top Down View", EditorResources::TopDownViewIcon, textureSize, isUsingTopDownView ? bgColor : normalColor, tintColor))
-					{
-						m_EditorCamera->SetUseTopDownView(!isUsingTopDownView);
-						m_EditorCamera->SetUse2DView(false);
+						properties.EditorProps.EditorCameraProps.Speed = m_EditorCamera->m_Speed;
 					}
 
 					UI::EndPropertyGrid();
@@ -2188,8 +2247,8 @@ namespace Vortex {
 	{
 		if (actor.HasComponent<MeshRendererComponent>())
 		{
-			const auto& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
-			const auto& scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
+			const MeshRendererComponent& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
+			const Math::mat4& scaledTransform = transform * Math::Scale(Math::vec3(1.001f));
 
 			if (!meshRendererComponent.Visible)
 				return;
@@ -2202,15 +2261,15 @@ namespace Vortex {
 			if (!mesh)
 				return;
 
-			const auto& submesh = mesh->GetSubmesh();
+			const Submesh& submesh = mesh->GetSubmesh();
 
 			Renderer2D::DrawAABB(submesh.GetBoundingBox(), scaledTransform, boundingBoxColor);
 		}
 
 		if (actor.HasComponent<StaticMeshRendererComponent>())
 		{
-			const auto& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
-			const auto& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor) * Math::Scale(Math::vec3(1.001f));
+			const StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
+			const Math::mat4& transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor) * Math::Scale(Math::vec3(1.001f));
 
 			if (!staticMeshRendererComponent.Visible)
 				return;
@@ -2223,7 +2282,7 @@ namespace Vortex {
 			if (!staticMesh)
 				return;
 
-			const auto& submeshes = staticMesh->GetSubmeshes();
+			const std::unordered_map<uint32_t, StaticSubmesh>& submeshes = staticMesh->GetSubmeshes();
 
 			for (const auto& [submeshIndex, submesh] : submeshes)
 			{
@@ -2258,7 +2317,7 @@ namespace Vortex {
 	{
 		if (actor.HasComponent<BoxColliderComponent>())
 		{
-			const auto& bc = actor.GetComponent<BoxColliderComponent>();
+			const BoxColliderComponent& bc = actor.GetComponent<BoxColliderComponent>();
 
 			const Math::AABB aabb = {
 				-Math::vec3(0.503f),
@@ -2274,10 +2333,10 @@ namespace Vortex {
 
 		if (actor.HasComponent<SphereColliderComponent>())
 		{
-			const auto& sc = actor.GetComponent<SphereColliderComponent>();
-			auto transform = m_ActiveScene->GetWorldSpaceTransform(actor);
-			Math::vec3 translation = transform.Translation + sc.Offset;
-			Math::vec3 scale = transform.Scale;
+			const SphereColliderComponent& sc = actor.GetComponent<SphereColliderComponent>();
+			const TransformComponent transform = m_ActiveScene->GetWorldSpaceTransform(actor);
+			const Math::vec3 translation = transform.Translation + sc.Offset;
+			const Math::vec3 scale = transform.Scale;
 
 			const float largestComponent = Math::Max(scale.x, Math::Max(scale.y, scale.z));
 			const float radius = (largestComponent * sc.Radius) * 1.005f;
@@ -2318,7 +2377,7 @@ namespace Vortex {
 
 		if (actor.HasComponent<MeshRendererComponent>())
 		{
-			const auto& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
+			const MeshRendererComponent& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
 
 			AssetHandle meshHandle = meshRendererComponent.Mesh;
 			if (AssetManager::IsHandleValid(meshHandle))
@@ -2337,7 +2396,7 @@ namespace Vortex {
 				}
 				case SelectionMode::Submesh:
 				{
-					const auto& submesh = mesh->GetSubmesh();
+					const Submesh& submesh = mesh->GetSubmesh();
 					Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, outlineColor);
 					break;
 				}
@@ -2346,7 +2405,7 @@ namespace Vortex {
 
 		if (actor.HasComponent<StaticMeshRendererComponent>())
 		{
-			const auto& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
+			const StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
 
 			AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
 			if (!AssetManager::IsHandleValid(staticMeshHandle))
@@ -2365,7 +2424,7 @@ namespace Vortex {
 				}
 				case SelectionMode::Submesh:
 				{
-					const auto& submeshes = staticMesh->GetSubmeshes();
+					const std::unordered_map<uint32_t, StaticSubmesh>& submeshes = staticMesh->GetSubmeshes();
 					for (const auto& [submeshIndex, submesh] : submeshes)
 					{
 						Renderer2D::DrawAABB(submesh.GetBoundingBox(), transform, outlineColor);
@@ -2384,7 +2443,7 @@ namespace Vortex {
 
 		if (actor.HasComponent<BoxCollider2DComponent>())
 		{
-			const auto& bc2d = actor.GetComponent<BoxCollider2DComponent>();
+			const BoxCollider2DComponent& bc2d = actor.GetComponent<BoxCollider2DComponent>();
 
 			Math::vec3 scale = Math::vec3(bc2d.Size * 2.0f, 1.0f);
 
@@ -2397,7 +2456,7 @@ namespace Vortex {
 
 		if (actor.HasComponent<CircleCollider2DComponent>())
 		{
-			const auto& cc2d = actor.GetComponent<CircleCollider2DComponent>();
+			const CircleCollider2DComponent& cc2d = actor.GetComponent<CircleCollider2DComponent>();
 
 			Math::vec3 scale = Math::vec3(cc2d.Radius * 2.0f);
 
@@ -2454,7 +2513,7 @@ namespace Vortex {
 			if (!actor.IsActive())
 				return;
 
-			const auto& spriteRenderer = actor.GetComponent<SpriteRendererComponent>();
+			const SpriteRendererComponent& spriteRenderer = actor.GetComponent<SpriteRendererComponent>();
 			if (!spriteRenderer.Visible)
 				return;
 
@@ -2466,7 +2525,7 @@ namespace Vortex {
 			if (!actor.IsActive())
 				return;
 
-			const auto& circleRenderer = actor.GetComponent<CircleRendererComponent>();
+			const CircleRendererComponent& circleRenderer = actor.GetComponent<CircleRendererComponent>();
 			if (!circleRenderer.Visible)
 				return;
 
@@ -2528,7 +2587,7 @@ namespace Vortex {
 
 	bool EditorLayer::OnWindowDragDropEvent(WindowDragDropEvent& e)
 	{
-		for (const auto& path : e.GetPaths())
+		for (const Fs::Path& path : e.GetPaths())
 		{
 			Project::GetEditorAssetManager()->ImportAsset(path);
 		}
@@ -2621,7 +2680,7 @@ namespace Vortex {
 				if (altDown && selectedActor)
 				{
 					TransformComponent& transformComponent = selectedActor.GetTransform();
-					Math::quaternion identity(1.0f, 0.0f, 0.0f, 0.0f);
+					const Math::quaternion identity(1.0f, 0.0f, 0.0f, 0.0f);
 					transformComponent.SetRotation(identity);
 				}
 
@@ -2649,38 +2708,25 @@ namespace Vortex {
 					const Math::vec3& translation = m_ActiveScene->GetWorldSpaceTransform(selectedActor).Translation;
 					const float distance = 10.0f;
 
-					EditorCamera* camera = nullptr;
-
-					const bool sceneViewportHovered = m_AllowViewportCameraEvents && m_SceneViewportHovered;
-					const bool secondViewportHovered = m_AllowSecondViewportCameraEvents && m_SecondViewportHovered;
-
-					if (sceneViewportHovered && InEditSceneState())
-					{
-						camera = m_EditorCamera;
-					}
-					else if (secondViewportHovered)
-					{
-						camera = m_SecondEditorCamera;
-					}
-
+					EditorCamera* camera = GetCurrentEditorCamera();
 					if (camera == nullptr)
 					{
 						break;
 					}
 
 					camera->Focus(translation);
-					camera->SetDistance(distance);
+
+					if (camera->IsPerspective())
+					{
+						camera->SetDistance(distance);
+					}
 				}
 
 				break;
 			}
 			case KeyCode::G:
 			{
-				if (InEditSceneState())
-				{
-					ToggleGrid();
-				}
-				else if (m_SecondViewportHovered)
+				if (InEditSceneState() || m_SecondViewportHovered)
 				{
 					ToggleGrid();
 				}
@@ -2824,6 +2870,11 @@ namespace Vortex {
 	{
 		const bool noViewportsHovered = !m_SceneViewportHovered && !m_SecondViewportHovered;
 		if (noViewportsHovered)
+		{
+			return false;
+		}
+
+		if (InPlaySceneState() && m_SceneViewportHovered)
 		{
 			return false;
 		}
@@ -3069,6 +3120,10 @@ namespace Vortex {
 		{
 			SaveSceneAs();
 		}
+
+		SharedReference<Project> project = Project::GetActive();
+		ProjectProperties& properties = project->GetProperties();
+		properties.EditorProps.EditorCameraProps.Translation = m_EditorCamera->m_Position;
 	}
 
 	void EditorLayer::SerializeScene(SharedReference<Scene>& scene, const Fs::Path& filepath)
@@ -3124,6 +3179,7 @@ namespace Vortex {
 		OnSelectGizmoToolSelected();
 
 		m_SceneViewportBorderFadeTimer = m_SceneViewportBorderFadeLengthInSeconds;
+		m_SceneViewportBorderFadeColor = m_SceneViewportOnPlayBorderColor;
 	}
 
 	void EditorLayer::OnScenePause()
@@ -3160,6 +3216,11 @@ namespace Vortex {
 		m_ActiveScene->SetPaused(false);
 
 		m_SceneViewportBorderFadeTimer = m_SceneViewportBorderFadeLengthInSeconds;
+
+		if (InPlaySceneState())
+			m_SceneViewportBorderFadeColor = m_SceneViewportOnPlayBorderColor;
+		else if (InSimulateSceneState())
+			m_SceneViewportBorderFadeColor = m_SceneViewportOnSimulateBorderColor;
 	}
 
 	void EditorLayer::OnSceneStop()
@@ -3172,13 +3233,12 @@ namespace Vortex {
 		if (InPlaySceneState())
 		{
 			// Invoke Actor.OnApplicationQuit
-			auto view = m_ActiveScene->GetAllActorsWith<ScriptComponent>();
-			for (const auto e : view)
+			m_ActiveScene->GetAllActorsWith<ScriptComponent>().each([=](auto actorID, auto& sc)
 			{
-				Actor actor{ e, m_ActiveScene.Raw() };
+				Actor actor{ actorID, m_ActiveScene.Raw() };
 
 				actor.CallMethod(ScriptMethod::OnApplicationQuit);
-			}
+			});
 
 			m_ActiveScene->OnRuntimeStop();
 		}
@@ -3248,6 +3308,7 @@ namespace Vortex {
 		SetSceneContext(m_ActiveScene);
 
 		m_SceneViewportBorderFadeTimer = m_SceneViewportBorderFadeLengthInSeconds;
+		m_SceneViewportBorderFadeColor = m_SceneViewportOnSimulateBorderColor;
 	}
 
 	void EditorLayer::RestartSceneSimulation()
@@ -3257,7 +3318,7 @@ namespace Vortex {
 		OnSceneSimulate();
 	}
 
-	void EditorLayer::QueueSceneTransition()
+	void EditorLayer::QueueSceneTransition(const std::string& sceneName)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -3267,14 +3328,17 @@ namespace Vortex {
 		{
 			m_StartSceneFilepath = m_EditorSceneFilepath;
 
-			// TODO
+			const std::string filename = sceneName + Project::GetEditorAssetManager()->GetExtensionFromAssetType(AssetType::SceneAsset);
+			const Fs::Path relativePath = Project::GetEditorAssetManager()->GetRelativePath(filename);
 			const Fs::Path assetDirectory = Project::GetAssetDirectory();
-			const Fs::Path nextSceneFilepath = assetDirectory / "";
+			const Fs::Path nextSceneFilepath = relativePath;
 
-			OpenScene(nextSceneFilepath);
-			OnScenePlay();
+			VX_CONSOLE_LOG_INFO("SceneManager.LoadScene", nextSceneFilepath);
 
-			m_TransitionedFromStartScene = true;
+			//OpenScene(nextSceneFilepath);
+			//OnScenePlay();
+
+			//m_TransitionedFromStartScene = true;
 		});
 	}
 
@@ -3333,8 +3397,12 @@ namespace Vortex {
 			if (camera == nullptr)
 				continue;
 
-			camera->SetDistance(distance);
 			camera->Focus(origin);
+
+			if (camera->IsOrthographic())
+				continue;
+			
+			camera->SetDistance(distance);
 		}
 	}
 
@@ -3475,7 +3543,7 @@ namespace Vortex {
 	{
 		auto [mx, my] = Gui::GetMousePos();
 
-		ViewportBounds viewportBounds = mainViewport ? m_ViewportBounds : m_SecondViewportBounds;
+		const ViewportBounds viewportBounds = mainViewport ? m_ViewportBounds : m_SecondViewportBounds;
 
 		mx -= viewportBounds.MinBound.x;
 		my -= viewportBounds.MinBound.y;
@@ -3486,14 +3554,14 @@ namespace Vortex {
 
 	Math::Ray EditorLayer::Raycast(EditorCamera* editorCamera, float mx, float my)
 	{
-		Math::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+		const Math::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
 
-		auto inverseProj = Math::Inverse(editorCamera->GetProjectionMatrix());
-		auto inverseView = Math::Inverse(Math::mat3(editorCamera->GetViewMatrix()));
+		const Math::mat4 inverseProj = Math::Inverse(editorCamera->GetProjectionMatrix());
+		const Math::mat3 inverseView = Math::Inverse(Math::mat3(editorCamera->GetViewMatrix()));
 
-		Math::vec4 ray = inverseProj * mouseClipPos;
-		Math::vec3 rayPos = editorCamera->GetPosition();
-		Math::vec3 rayDir = inverseView * Math::vec3(ray);
+		const Math::vec4 ray = inverseProj * mouseClipPos;
+		const Math::vec3 rayPos = editorCamera->GetPosition();
+		const Math::vec3 rayDir = inverseView * Math::vec3(ray);
 
 		return Math::Ray(rayPos, rayDir);
 	}
@@ -3502,18 +3570,21 @@ namespace Vortex {
 	{
 		std::vector<SelectionData> selectionData;
 
-		auto [mouseX, mouseY] = GetEditorCameraMouseViewportSpace(m_SceneViewportHovered);
+		const auto [mouseX, mouseY] = GetEditorCameraMouseViewportSpace(m_SceneViewportHovered);
 		if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
 		{
-			const auto& camera = m_SceneViewportHovered ? m_EditorCamera : m_SecondEditorCamera;
-			auto [origin, direction] = Raycast(camera, mouseX, mouseY);
+			EditorCamera* camera = GetCurrentEditorCamera();
+			if (camera == nullptr)
+				return Actor{};
+
+			const auto [origin, direction] = Raycast(camera, mouseX, mouseY);
 
 			auto meshView = m_ActiveScene->GetAllActorsWith<MeshRendererComponent>();
 			for (const auto e : meshView)
 			{
 				Actor actor{ e, m_ActiveScene.Raw() };
 
-				Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor);
+				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor);
 			}
 
 			auto staticMeshView = m_ActiveScene->GetAllActorsWith<StaticMeshRendererComponent>();
@@ -3523,16 +3594,16 @@ namespace Vortex {
 
 				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(actor);
 
-				const auto& staticMeshRenderer = actor.GetComponent<StaticMeshRendererComponent>();
-				if (!AssetManager::IsHandleValid(staticMeshRenderer.StaticMesh))
+				const StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
+				if (!AssetManager::IsHandleValid(staticMeshRendererComponent.StaticMesh))
 					continue;
 
-				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRenderer.StaticMesh);
+				SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshRendererComponent.StaticMesh);
 				if (staticMesh == nullptr)
 					continue;
 
 				const Math::mat4 transform = worldSpaceTransform.GetTransform();
-				const auto& submeshes = staticMesh->GetSubmeshes();
+				const std::unordered_map<uint32_t, StaticSubmesh>& submeshes = staticMesh->GetSubmeshes();
 
 				for (const auto& [submeshIndex, submesh] : submeshes)
 				{
@@ -3570,7 +3641,7 @@ namespace Vortex {
 			SelectionData selectedData = selectionData[0];
 
 			float closest = selectedData.Distance;
-			for (const auto& current : selectionData)
+			for (const SelectionData& current : selectionData)
 			{
 				if (current.Distance > closest)
 					continue;
@@ -3587,17 +3658,6 @@ namespace Vortex {
 		}
 
 		return Actor{};
-	}
-
-	EditorCamera* EditorLayer::CreateEditorCamera(const EditorCameraProperties& properties)
-	{
-		const float degreeFOV = properties.FOV;
-		const float width = properties.ViewportSize.x;
-		const float height = properties.ViewportSize.y;
-		const float nearPlane = properties.NearPlane;
-		const float farPlane = properties.FarPlane;
-
-		return new EditorCamera(degreeFOV, width, height, nearPlane, farPlane);
 	}
 
 	void EditorLayer::OnSelectGizmoToolSelected()
