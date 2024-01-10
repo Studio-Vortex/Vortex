@@ -164,6 +164,19 @@ namespace Vortex {
 		UpdateCameraView();
 	}
 
+	void EditorCamera::SetDistance(float distance)
+	{
+		if (IsPerspective())
+		{
+			m_Distance = distance;
+		}
+		else if (IsOrthographic())
+		{
+			m_OrthographicSize = distance;
+			m_IsDirty = true;
+		}
+	}
+
 	float EditorCamera::GetCameraSpeed() const
 	{
 		float speed = m_Speed;
@@ -226,24 +239,26 @@ namespace Vortex {
 
 	void EditorCamera::Focus(const Math::vec3& focusPoint)
 	{
+		m_CameraMode = CameraMode::FlyCam;
 		m_FocalPoint = focusPoint;
 
 		if (IsOrthographic())
 		{
 			m_FocalPoint.z = 0.0f;
+			m_Position = m_FocalPoint;
+			SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 		}
-
-		m_CameraMode = CameraMode::FlyCam;
-
-		if (m_Distance > m_MinFocusDistance)
+		else if (IsPerspective())
 		{
-			m_Distance -= m_Distance - m_MinFocusDistance;
+			if (m_Distance > m_MinFocusDistance)
+			{
+				m_Distance -= m_Distance - m_MinFocusDistance;
+				m_Position = m_FocalPoint - GetForwardDirection() * m_Distance;
+			}
+
 			m_Position = m_FocalPoint - GetForwardDirection() * m_Distance;
+			UpdateCameraView();
 		}
-
-		m_Position = m_FocalPoint - GetForwardDirection() * m_Distance;
-
-		UpdateCameraView();
 	}
 
 	std::pair<float, float> EditorCamera::PanSpeed() const

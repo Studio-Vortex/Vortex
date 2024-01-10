@@ -2742,11 +2742,7 @@ namespace Vortex {
 					}
 
 					camera->Focus(translation);
-
-					if (camera->IsPerspective())
-					{
-						camera->SetDistance(distance);
-					}
+					camera->SetDistance(distance);
 				}
 
 				break;
@@ -3425,10 +3421,6 @@ namespace Vortex {
 				continue;
 
 			camera->Focus(origin);
-
-			if (camera->IsOrthographic())
-				continue;
-			
 			camera->SetDistance(distance);
 		}
 	}

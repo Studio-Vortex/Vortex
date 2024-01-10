@@ -55,7 +55,7 @@ namespace Vortex {
 		Math::vec3 GetForwardDirection() const;
 
 		VX_FORCE_INLINE float GetDistance() const { return m_Distance; }
-		VX_FORCE_INLINE void SetDistance(float distance) { m_Distance = distance; }
+		void SetDistance(float distance);
 
 		float GetCameraSpeed() const;
 
