@@ -1444,6 +1444,8 @@ namespace Vortex {
 				case Camera::ProjectionType::Perspective:  m_EditorCamera->SetProjectionType(Camera::ProjectionType::Orthographic); break;
 				case Camera::ProjectionType::Orthographic: m_EditorCamera->SetProjectionType(Camera::ProjectionType::Perspective); break;
 			}
+
+			Gui::SetWindowFocus("Scene");
 		}
 
 		Gui::Spring();
