@@ -60,7 +60,7 @@ namespace Vortex {
 		float GetCameraSpeed() const;
 
 	private:
-		void CalculateRotation();
+		void CalculateFocalPoint();
 		void UpdateCameraView();
 
 		bool OnMouseScroll(MouseScrolledEvent& e);

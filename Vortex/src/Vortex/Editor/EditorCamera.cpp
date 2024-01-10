@@ -134,7 +134,7 @@ namespace Vortex {
 				m_PitchDelta += Math::Clamp(delta.y * RotationSpeed(), -rotateRate, rotateRate);
 			}
 
-			CalculateRotation();
+			CalculateFocalPoint();
 		}
 		else
 		{
@@ -193,7 +193,7 @@ namespace Vortex {
 		return Math::Clamp(speed, MIN_SPEED, MAX_SPEED);
 	}
 
-	void EditorCamera::CalculateRotation()
+	void EditorCamera::CalculateFocalPoint()
 	{
 		const float upSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
 		const Math::vec3 yawSign{ 0.0f, upSign, 0.0f };
@@ -310,7 +310,7 @@ namespace Vortex {
 
 		if (flyCam && rightMouseButtonDown)
 		{
-			m_Speed += e.GetYOffset() * Time::GetDeltaTime() * 50.0f;
+			m_Speed += e.GetYOffset() * Time::GetDeltaTime() * 0.027f;
 			m_Speed = std::clamp(m_Speed, MIN_SPEED, MAX_SPEED);
 			return false;
 		}
