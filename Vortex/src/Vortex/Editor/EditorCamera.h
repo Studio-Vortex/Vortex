@@ -21,6 +21,7 @@ namespace Vortex {
 	struct VORTEX_API EditorCameraProperties : public PerspectiveProjectionParams
 	{
 		Math::vec3 Translation;
+		Math::quaternion Rotation;
 	};
 
 	class VORTEX_API EditorCamera : public Camera
@@ -40,28 +41,26 @@ namespace Vortex {
 
 		VX_FORCE_INLINE CameraMode GetCurrentMode() const { return m_CameraMode; }
 
-		VX_FORCE_INLINE float GetDistance() const { return m_Distance; }
-		VX_FORCE_INLINE void SetDistance(float distance) { m_Distance = distance; }
-
-		VX_FORCE_INLINE const Math::vec3& GetFocalPoint() const { return m_FocalPoint; }
-
 		VX_FORCE_INLINE const Math::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		VX_FORCE_INLINE Math::mat4 GetViewProjection() const { return GetProjectionMatrix() * m_ViewMatrix; }
+
+		VX_FORCE_INLINE const Math::vec3& GetPosition() const { return m_Position; }
+		Math::quaternion GetOrientation() const;
+		VX_FORCE_INLINE float GetPitch() const { return m_Pitch; }
+		VX_FORCE_INLINE float GetYaw() const { return m_Yaw; }
+		VX_FORCE_INLINE const Math::vec3& GetFocalPoint() const { return m_FocalPoint; }
 
 		Math::vec3 GetUpDirection() const;
 		Math::vec3 GetRightDirection() const;
 		Math::vec3 GetForwardDirection() const;
 
-		VX_FORCE_INLINE const Math::vec3& GetPosition() const { return m_Position; }
+		VX_FORCE_INLINE float GetDistance() const { return m_Distance; }
+		VX_FORCE_INLINE void SetDistance(float distance) { m_Distance = distance; }
 
-		Math::quaternion GetOrientation() const;
-
-		VX_FORCE_INLINE float GetAspectRatio() const { return m_AspectRatio; }
-		VX_FORCE_INLINE float GetPitch() const { return m_Pitch; }
-		VX_FORCE_INLINE float GetYaw() const { return m_Yaw; }
 		float GetCameraSpeed() const;
 
 	private:
+		void CalculateRotation();
 		void UpdateCameraView();
 
 		bool OnMouseScroll(MouseScrolledEvent& e);
@@ -77,24 +76,29 @@ namespace Vortex {
 		float ZoomSpeed() const;
 
 	private:
+		CameraMode m_CameraMode = CameraMode::ArcBall;
+
 		Math::mat4 m_ViewMatrix;
-		Math::vec3 m_Position, m_Direction, m_FocalPoint;
+
+		Math::vec3 m_Position{};
+		Math::vec3 m_Direction{};
+		Math::vec3 m_FocalPoint{};
+		float m_Pitch{};
+		float m_Yaw{};
+		
+		Math::vec3 m_RightDirection{};
+		Math::vec2 m_InitialMousePosition{};
+
+		float m_PitchDelta{};
+		float m_YawDelta{};
+		Math::vec3 m_PositionDelta{};
+
+		float m_Distance{};
+		float m_Speed = DEFAULT_SPEED;
+
+		float m_MinFocusDistance = 100.0f;
 
 		bool m_IsActive = false;
-		Math::vec2 m_InitialMousePosition{};
-		Math::vec3 m_InitialFocalPoint, m_InitialRotation;
-
-		float m_Distance;
-		float m_Speed{ DEFAULT_SPEED };
-
-		float m_Pitch, m_Yaw;
-		float m_PitchDelta{}, m_YawDelta{};
-		Math::vec3 m_PositionDelta{};
-		Math::vec3 m_RightDirection{};
-
-		CameraMode m_CameraMode{ CameraMode::ArcBall };
-
-		float m_MinFocusDistance{ 100.0f };
 
 	private:
 		friend class EditorLayer;

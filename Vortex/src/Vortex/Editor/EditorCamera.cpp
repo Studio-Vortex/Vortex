@@ -82,7 +82,10 @@ namespace Vortex {
 		{
 			m_CameraMode = CameraMode::FlyCam;
 			
-			DisableMouse();
+			if (isPerspective)
+			{
+				DisableMouse();
+			}
 			
 			const float upSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
 			const Math::vec3 yawSign{ 0.0f, upSign, 0.0f };
@@ -120,17 +123,7 @@ namespace Vortex {
 				m_PitchDelta += Math::Clamp(delta.y * RotationSpeed(), -rotateRate, rotateRate);
 			}
 
-			m_RightDirection = Math::Cross(m_Direction, yawSign);
-
-			m_Direction = Math::Rotate(
-				Math::Normalize(Math::Cross(Math::AngleAxis(-m_PitchDelta, m_RightDirection),
-				Math::AngleAxis(-m_YawDelta, yawSign))),
-				m_Direction
-			);
-
-			const float distance = Math::Distance(m_FocalPoint, m_Position);
-			m_FocalPoint = m_Position + GetForwardDirection() * distance;
-			m_Distance = distance;
+			CalculateRotation();
 		}
 		else
 		{
@@ -145,8 +138,7 @@ namespace Vortex {
 			m_Yaw += m_YawDelta;
 			m_Pitch += m_PitchDelta;
 		}
-
-		if (isOrthographic)
+		else if (isOrthographic)
 		{
 			m_Yaw = m_Pitch = m_Distance = 0.0f;
 			m_Position.z = 0.1f;
@@ -175,6 +167,24 @@ namespace Vortex {
 		}
 
 		return Math::Clamp(speed, MIN_SPEED, MAX_SPEED);
+	}
+
+	void EditorCamera::CalculateRotation()
+	{
+		const float upSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
+		const Math::vec3 yawSign{ 0.0f, upSign, 0.0f };
+
+		m_RightDirection = Math::Cross(m_Direction, yawSign);
+
+		m_Direction = Math::Rotate(
+			Math::Normalize(Math::Cross(Math::AngleAxis(-m_PitchDelta, m_RightDirection),
+				Math::AngleAxis(-m_YawDelta, yawSign))),
+			m_Direction
+		);
+
+		const float distance = Math::Distance(m_FocalPoint, m_Position);
+		m_FocalPoint = m_Position + GetForwardDirection() * distance;
+		m_Distance = distance;
 	}
 
 	void EditorCamera::UpdateCameraView()

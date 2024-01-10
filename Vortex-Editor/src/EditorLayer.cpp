@@ -1436,17 +1436,12 @@ namespace Vortex {
 			UI::SetTooltip(tooltip.c_str());
 		}
 
-		const std::string label = m_EditorCamera->GetProjectionType() == Camera::ProjectionType::Perspective ? "2D" : "3D";
+		const std::string label = m_EditorCamera->IsPerspective() ? "2D" : "3D";
 		if (Gui::Button(label.c_str(), textureSize))
 		{
 			switch (m_EditorCamera->GetProjectionType())
 			{
-				case Camera::ProjectionType::Perspective:
-				{
-					m_EditorCamera->SetProjectionType(Camera::ProjectionType::Orthographic);
-					m_EditorCamera->UpdateCameraView();
-					break;
-				}
+				case Camera::ProjectionType::Perspective:  m_EditorCamera->SetProjectionType(Camera::ProjectionType::Orthographic); break;
 				case Camera::ProjectionType::Orthographic: m_EditorCamera->SetProjectionType(Camera::ProjectionType::Perspective); break;
 			}
 		}
@@ -2004,7 +1999,7 @@ namespace Vortex {
 
 			switch (sceneCamera.GetProjectionType())
 			{
-				case SceneCamera::ProjectionType::Perspective:
+				case Camera::ProjectionType::Perspective:
 				{
 					const Camera* camera = &sceneCamera;
 					const Math::mat4 view = Math::Inverse(transform);
@@ -2015,7 +2010,7 @@ namespace Vortex {
 					Renderer::DrawFrustum(corners, frustumColor);
 					break;
 				}
-				case SceneCamera::ProjectionType::Orthographic:
+				case Camera::ProjectionType::Orthographic:
 				{
 					const Math::mat4 scaled = transform * Math::Scale({ sceneCamera.GetOrthographicSize() * 1.6f, sceneCamera.GetOrthographicSize() * 0.9f, 1.0f });
 					Renderer2D::DrawRect(scaled, outlineColor);
@@ -3123,7 +3118,7 @@ namespace Vortex {
 
 		SharedReference<Project> project = Project::GetActive();
 		ProjectProperties& properties = project->GetProperties();
-		properties.EditorProps.EditorCameraProps.Translation = m_EditorCamera->m_Position;
+		properties.EditorProps.EditorCameraProps.Translation = m_EditorCamera->GetPosition();
 	}
 
 	void EditorLayer::SerializeScene(SharedReference<Scene>& scene, const Fs::Path& filepath)
