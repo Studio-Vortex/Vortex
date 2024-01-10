@@ -201,13 +201,12 @@ namespace Vortex {
 		if (m_RuntimeScene->IsRunning())
 		{
 			// Invoke Actor.OnApplicationQuit
-			auto view = m_RuntimeScene->GetAllActorsWith<ScriptComponent>();
-			for (const auto e : view)
+			m_RuntimeScene->GetAllActorsWith<ScriptComponent>().each([=](auto actorID, auto& sc)
 			{
-				Actor actor{ e, m_RuntimeScene.Raw() };
+				Actor actor{ actorID, m_RuntimeScene.Raw() };
 
 				actor.CallMethod(ScriptMethod::OnApplicationQuit);
-			}
+			});
 
 			OnSceneStop();
 		}
