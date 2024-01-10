@@ -1873,7 +1873,7 @@ namespace Vortex {
 		// Render Editor Grid
 		if (properties.EditorProps.DrawEditorGrid)
 		{
-			OverlayRenderGrid(properties.EditorProps.DrawEditorAxes);
+			OverlayRenderGrid(editorCamera, properties.EditorProps.DrawEditorAxes);
 		}
 
 		const Math::vec4 colliderColor = properties.PhysicsProps.Physics3DColliderColor;
@@ -2530,12 +2530,13 @@ namespace Vortex {
 		}
 	}
 
-	void EditorLayer::OverlayRenderGrid(bool drawAxes)
+	void EditorLayer::OverlayRenderGrid(EditorCamera* editorCamera, bool drawAxes)
 	{
 		const float axisLineLength = 1'000.0f;
 		const float gridLineLength = 750.0f;
 		const int32_t gridWidth = 750;
 		const int32_t gridDepth = 750;
+		const int32_t gridHeight = 750;
 		const float originalLineWidth = Renderer2D::GetLineWidth();
 		const float axisLineWidth = 5.0f;
 
@@ -2550,31 +2551,60 @@ namespace Vortex {
 		{
 			Renderer2D::DrawLine({ -axisLineLength, 0.0f + 0.02f, 0.0f }, { axisLineLength, 0.0f + 0.02f, 0.0f }, xAxisColor);
 			Renderer2D::DrawLine({ 0.0f, -axisLineLength + 0.02f, 0.0f }, { 0.0f, axisLineLength + 0.02f, 0.0f }, yAxisColor);
-			Renderer2D::DrawLine({ 0.0f, 0.0f + 0.02f, -axisLineLength }, { 0.0f, 0.0f + 0.02f, axisLineLength }, zAxisColor);
+			
+			if (editorCamera->IsPerspective())
+			{
+				Renderer2D::DrawLine({ 0.0f, 0.0f + 0.02f, -axisLineLength }, { 0.0f, 0.0f + 0.02f, axisLineLength }, zAxisColor);
+			}
 
 			Renderer2D::SetLineWidth(axisLineWidth);
 			Renderer2D::Flush();
 			Renderer2D::SetLineWidth(originalLineWidth);
 		}
 
-		// X grid lines
-		for (int32_t x = -gridWidth; x <= gridWidth; x++)
+		if (editorCamera->IsOrthographic())
 		{
-			// Skip the origin lines
-			if (drawAxes && x == 0)
-				continue;
+			// X grid lines
+			for (int32_t x = -gridWidth; x <= gridWidth; x++)
+			{
+				// Skip the origin line
+				if (drawAxes && x == 0)
+					continue;
 
-			Renderer2D::DrawLine({ x, 0, -gridLineLength }, { x, 0, gridLineLength }, gridColor);
+				Renderer2D::DrawLine({ x, -gridLineLength, 0 }, { x, gridLineLength, 0 }, gridColor);
+			}
+
+			// Y grid lines
+			for (int32_t y = -gridHeight; y <= gridHeight; y++)
+			{
+				// Skip the origin line
+				if (drawAxes && y == 0)
+					continue;
+
+				Renderer2D::DrawLine({ -gridLineLength, y, 0 }, { gridLineLength, y, 0 }, gridColor);
+			}
 		}
-
-		// Z grid lines
-		for (int32_t z = -gridDepth; z <= gridDepth; z++)
+		else if (editorCamera->IsPerspective())
 		{
-			// Skip the origin lines
-			if (drawAxes && z == 0)
-				continue;
+			// X grid lines
+			for (int32_t x = -gridWidth; x <= gridWidth; x++)
+			{
+				// Skip the origin line
+				if (drawAxes && x == 0)
+					continue;
 
-			Renderer2D::DrawLine({ -gridLineLength, 0, z }, { gridLineLength, 0, z }, gridColor);
+				Renderer2D::DrawLine({ x, 0, -gridLineLength }, { x, 0, gridLineLength }, gridColor);
+			}
+
+			// Z grid lines
+			for (int32_t z = -gridDepth; z <= gridDepth; z++)
+			{
+				// Skip the origin line
+				if (drawAxes && z == 0)
+					continue;
+
+				Renderer2D::DrawLine({ -gridLineLength, 0, z }, { gridLineLength, 0, z }, gridColor);
+			}
 		}
 
 		Renderer2D::Flush();

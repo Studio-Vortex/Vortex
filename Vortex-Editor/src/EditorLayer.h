@@ -104,7 +104,7 @@ namespace Vortex {
 		void OverlayRenderSpriteColliders(EditorCamera* editorCamera, const Math::vec4& colliderColor);
 		void OverlayRenderSpriteBoundingBoxes(const Math::vec4& boundingBoxColor);
 		void OverlayRenderSpriteOutline(Actor actor, const Math::mat4& transform, const Math::vec4& outlineColor);
-		void OverlayRenderGrid(bool drawAxes);
+		void OverlayRenderGrid(EditorCamera* editorCamera, bool drawAxes);
 
 		// Editor Callbacks
 

@@ -56,22 +56,41 @@ namespace Vortex {
 
 		if (Input::IsKeyDown(KeyCode::LeftAlt))
 		{
-			m_CameraMode = CameraMode::ArcBall;
+			if (isPerspective)
+				m_CameraMode = CameraMode::ArcBall;
 
 			if (Input::IsMouseButtonDown(MouseButton::Middle))
 			{
-				DisableMouse();
-				MousePan(delta);
+				if (isPerspective)
+				{
+					DisableMouse();
+					MousePan(delta);
+				}
+				else if (isOrthographic)
+				{
+					OrthoPan(delta);
+				}
 			}
-			else if (isPerspective && Input::IsMouseButtonDown(MouseButton::Left))
+			else if (Input::IsMouseButtonDown(MouseButton::Left))
 			{
-				DisableMouse();
-				MouseRotate(delta);
+				if (isPerspective)
+				{
+					DisableMouse();
+					MouseRotate(delta);
+				}
 			}
 			else if (Input::IsMouseButtonDown(MouseButton::Right))
 			{
-				DisableMouse();
-				MouseZoom((delta.x + delta.y) * 0.1f);
+				const float zoom = (delta.x + delta.y) * 0.1f;
+				if (isPerspective)
+				{
+					DisableMouse();
+					MouseZoom(zoom);
+				}
+				else if (isOrthographic)
+				{
+					OrthoZoom(zoom);
+				}
 			}
 			else
 			{
@@ -100,14 +119,14 @@ namespace Vortex {
 			if (Input::IsKeyDown(KeyCode::W))
 			{
 				if (isOrthographic)
-					m_OrthographicSize += deltaTime * 10.0f;
+					OrthoZoom(deltaTime * speed * 0.1f);
 				else
 					m_PositionDelta += deltaTime * speed * m_Direction;
 			}
 			else if (Input::IsKeyDown(KeyCode::S))
 			{
 				if (isOrthographic)
-					m_OrthographicSize -= deltaTime * 10.0f;
+					OrthoZoom(-deltaTime * speed * 0.1f);
 				else
 					m_PositionDelta -= deltaTime * speed * m_Direction;
 			}
@@ -263,6 +282,14 @@ namespace Vortex {
 		return speed;
 	}
 
+	float EditorCamera::OrthoZoomSpeed() const
+	{
+		const float dt = Time::GetDeltaTime();
+		const float currentSize = m_OrthographicSize;
+		const float targetSize = m_OrthographicSize + (dt * 2.0f);
+		return Math::Lerp(currentSize, targetSize, dt);
+	}
+
 	void EditorCamera::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);
@@ -272,19 +299,24 @@ namespace Vortex {
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
 		const bool rightMouseButtonDown = Input::IsMouseButtonDown(MouseButton::Right);
-		const bool isPerspective = IsPerspective();
+		const bool flyCam = m_CameraMode == CameraMode::FlyCam;
 
-		if (rightMouseButtonDown)
+		if (flyCam && rightMouseButtonDown)
 		{
-			m_Speed += e.GetYOffset() * Time::GetDeltaTime();
+			m_Speed += e.GetYOffset() * Time::GetDeltaTime() * 50.0f;
 			m_Speed = std::clamp(m_Speed, MIN_SPEED, MAX_SPEED);
 			return false;
 		}
 		
-		if (isPerspective)
+		if (IsPerspective())
 		{
 			MouseZoom(e.GetYOffset() * 0.1f);
 			UpdateCameraView();
+		}
+
+		if (IsOrthographic())
+		{
+			OrthoZoom(e.GetYOffset() * 0.1f);
 		}
 
 		return false;
@@ -295,6 +327,13 @@ namespace Vortex {
 		auto [xSpeed, ySpeed] = PanSpeed();
 		m_FocalPoint -= GetRightDirection() * delta.x * xSpeed * m_Distance;
 		m_FocalPoint += GetUpDirection() * delta.y * ySpeed * m_Distance;
+	}
+
+	void EditorCamera::OrthoPan(const Math::vec2& delta)
+	{
+		auto [xSpeed, ySpeed] = PanSpeed();
+		m_Position -= GetRightDirection() * delta.x * xSpeed;
+		m_Position += GetUpDirection() * delta.y * ySpeed;
 	}
 
 	void EditorCamera::MouseRotate(const Math::vec2& delta)
@@ -317,6 +356,12 @@ namespace Vortex {
 		}
 
 		m_PositionDelta += delta * ZoomSpeed() * forwardDir;
+	}
+
+	void EditorCamera::OrthoZoom(float delta)
+	{
+		m_OrthographicSize -= delta * OrthoZoomSpeed();
+		SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 	}
 
 	Math::vec3 EditorCamera::GetUpDirection() const

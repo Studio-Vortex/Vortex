@@ -66,17 +66,20 @@ namespace Vortex {
 		bool OnMouseScroll(MouseScrolledEvent& e);
 
 		void MousePan(const Math::vec2& delta);
+		void OrthoPan(const Math::vec2& delta);
 		void MouseRotate(const Math::vec2& delta);
 		void MouseZoom(float delta);
+		void OrthoZoom(float delta);
 
 		Math::vec3 CalculatePosition() const;
 
 		std::pair<float, float> PanSpeed() const;
 		float RotationSpeed() const;
 		float ZoomSpeed() const;
+		float OrthoZoomSpeed() const;
 
 	private:
-		CameraMode m_CameraMode = CameraMode::ArcBall;
+		CameraMode m_CameraMode = CameraMode::FlyCam;
 
 		Math::mat4 m_ViewMatrix;
 
