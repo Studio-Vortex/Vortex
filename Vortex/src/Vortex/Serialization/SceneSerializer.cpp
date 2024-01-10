@@ -192,7 +192,7 @@ namespace Vortex {
 
 			out << YAML::BeginMap; // Camera
 			VX_SERIALIZE_PROPERTY(ProjectionType, (int)camera.GetProjectionType(), out);
-			VX_SERIALIZE_PROPERTY(PerspectiveFOV, camera.GetPerspectiveVerticalFOVRad(), out);
+			VX_SERIALIZE_PROPERTY(PerspectiveFOV, camera.GetPerspectiveFOV(), out);
 			VX_SERIALIZE_PROPERTY(PerspectiveNear, camera.GetPerspectiveNearClip(), out);
 			VX_SERIALIZE_PROPERTY(PerspectiveFar, camera.GetPerspectiveFarClip(), out);
 			VX_SERIALIZE_PROPERTY(OrthographicSize, camera.GetOrthographicSize(), out);
@@ -824,9 +824,9 @@ namespace Vortex {
 				CameraComponent& cameraComponent = deserializedActor.AddComponent<CameraComponent>();
 
 				const YAML::Node cameraProps = cameraComponentData["Camera"];
-				cameraComponent.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
+				cameraComponent.Camera.SetProjectionType((Camera::ProjectionType)cameraProps["ProjectionType"].as<int>());
 
-				cameraComponent.Camera.SetPerspectiveVerticalFOVRad(cameraProps["PerspectiveFOV"].as<float>());
+				cameraComponent.Camera.SetPerspectiveFOV(cameraProps["PerspectiveFOV"].as<float>());
 				cameraComponent.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
 				cameraComponent.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
 

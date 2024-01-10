@@ -159,7 +159,16 @@ namespace Vortex {
 			out << YAML::Key << "EditorProperties" << YAML::BeginMap; // Editior Properties
 			{
 				out << YAML::Key << "FrameStepCount" << YAML::Value << props.EditorProps.FrameStepCount;
-				out << YAML::Key << "EditorCameraFOV" << YAML::Value << props.EditorProps.EditorCameraFOV;
+
+				out << YAML::Key << "EditorCameraProperties" << YAML::BeginMap; // Editor Camera Properties
+				{
+					VX_SERIALIZE_PROPERTY(FOV, props.EditorProps.EditorCameraProps.FOVdegrees, out);
+					VX_SERIALIZE_PROPERTY(Speed, props.EditorProps.EditorCameraProps.Speed, out);
+					VX_SERIALIZE_PROPERTY(Translation, props.EditorProps.EditorCameraProps.Translation, out);
+					VX_SERIALIZE_PROPERTY(ProjectionType, (int)props.EditorProps.EditorCameraProps.ProjectionType, out);
+				}
+				out << YAML::EndMap; // Editor Camera Properties
+
 				out << YAML::Key << "DrawGridAxes" << YAML::Value << props.EditorProps.DrawEditorAxes;
 				out << YAML::Key << "DrawGrid" << YAML::Value << props.EditorProps.DrawEditorGrid;
 				out << YAML::Key << "MaximizeOnPlay" << YAML::Value << props.EditorProps.MaximizeOnPlay;
@@ -318,7 +327,16 @@ namespace Vortex {
 		{
 			auto editorData = projectData["EditorProperties"];
 			props.EditorProps.FrameStepCount = editorData["FrameStepCount"].as<uint32_t>();
-			props.EditorProps.EditorCameraFOV = editorData["EditorCameraFOV"].as<float>();
+
+			YAML::Node editorCameraData = editorData["EditorCameraProperties"];
+			if (editorCameraData)
+			{
+				props.EditorProps.EditorCameraProps.FOVdegrees = editorCameraData["FOV"].as<float>();
+				props.EditorProps.EditorCameraProps.Speed = editorCameraData["Speed"].as<float>();
+				props.EditorProps.EditorCameraProps.Translation = editorCameraData["Translation"].as<Math::vec3>();
+				props.EditorProps.EditorCameraProps.ProjectionType = (Camera::ProjectionType)editorCameraData["ProjectionType"].as<int>();
+			}
+
 			props.EditorProps.DrawEditorAxes = editorData["DrawGridAxes"].as<bool>();
 			props.EditorProps.DrawEditorGrid = editorData["DrawGrid"].as<bool>();
 			props.EditorProps.MaximizeOnPlay = editorData["MaximizeOnPlay"].as<bool>();

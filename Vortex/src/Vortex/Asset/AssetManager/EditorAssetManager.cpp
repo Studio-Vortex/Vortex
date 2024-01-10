@@ -225,6 +225,20 @@ namespace Vortex {
 		return s_AssetExtensionMap.at(ext);
 	}
 
+	std::string EditorAssetManager::GetExtensionFromAssetType(AssetType type)
+	{
+		for (const auto& [extension, assetType] : s_AssetExtensionMap)
+		{
+			if (type != assetType)
+				continue;
+
+			return extension;
+		}
+
+		VX_CORE_ASSERT(false, "invalid asset type!");
+		return "";
+	}
+
 	AssetType EditorAssetManager::GetAssetTypeFromFilepath(const Fs::Path& filepath)
 	{
 		const std::string extension = FileSystem::GetFileExtension(filepath);

@@ -14,7 +14,7 @@ namespace Vortex {
 	class AssetRegistryPanel;
 	class ContentBrowserPanel;
 
-	class EditorAssetManager : public IAssetManager
+	class VORTEX_API EditorAssetManager : public IAssetManager
 	{
 	public:
 		EditorAssetManager();
@@ -38,6 +38,7 @@ namespace Vortex {
 		SharedReference<Asset> GetAssetFromFilepath(const Fs::Path& filepath);
 		AssetHandle GetAssetHandleFromFilepath(const Fs::Path& filepath);
 		AssetType GetAssetTypeFromExtension(const std::string& extension);
+		std::string GetExtensionFromAssetType(AssetType type);
 		AssetType GetAssetTypeFromFilepath(const Fs::Path& filepath);
 
 		bool IsValidAssetExtension(const Fs::Path& extension);
@@ -101,7 +102,6 @@ namespace Vortex {
 
 		AssetRegistry m_AssetRegistry;
 
-		// used only to prevent crashing when closing the editor
 		Fs::Path m_ProjectAssetDirectory;
 		Fs::Path m_ProjectAssetRegistryPath;
 

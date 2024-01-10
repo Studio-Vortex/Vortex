@@ -21,9 +21,9 @@
 #endif // DLL support
 
 #ifdef VX_DEBUG
-	#if defined(VX_PLATFORM_WINDOWS)
+	#ifdef VX_PLATFORM_WINDOWS
 		#define VX_DEBUGBREAK() __debugbreak()
-	#elif defined(VX_PLATFORM_LINUX)
+	#elif VX_PLATFORM_LINUX
 		#include <signal.h>
 		#define VX_DEBUGBREAK() raise(SIGTRAP)
 	#else
@@ -43,9 +43,9 @@
 #endif // VX_ENABLE_ASSERTS
 
 #ifdef VX_64BIT
-	#define VX_POINTER_WIDTH 8
-#elif
-	#define VX_POINTER_WIDTH 4
+	#define VX_ARCH_POINTER_WIDTH 8
+#elif VX_32BIT
+	#define VX_ARCH_POINTER_WIDTH 4
 #endif // VX_64
 
 #define VX_VERIFY(x) { if(!(x)) { VX_ERROR("Verify Failed: {} {}", __FILE__, __LINE__); } }
@@ -97,20 +97,20 @@ namespace Vortex {
 
 	// --- TYPEDEFS -----------------------------------------------------
 	
-	typedef int8_t i8;
-	typedef int16_t i16;
-	typedef int32_t i32;
-	typedef int64_t i64;
+	typedef int8_t VORTEX_API i8;
+	typedef int16_t VORTEX_API i16;
+	typedef int32_t VORTEX_API i32;
+	typedef int64_t VORTEX_API i64;
 
-	typedef uint8_t u8;
-	typedef uint16_t u16;
-	typedef uint32_t u32;
-	typedef uint64_t u64;
+	typedef uint8_t VORTEX_API u8;
+	typedef uint16_t VORTEX_API u16;
+	typedef uint32_t VORTEX_API u32;
+	typedef uint64_t VORTEX_API u64;
 
-	typedef float f32;
-	typedef double f64;
+	typedef float VORTEX_API f32;
+	typedef double VORTEX_API f64;
 
-	typedef uint8_t byte;
+	typedef uint8_t VORTEX_API byte;
 
 	// ------------------------------------------------------------------
 

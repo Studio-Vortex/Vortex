@@ -145,10 +145,6 @@ namespace Vortex {
 
 			const float volume = device.GetSound().GetVolume();
 			VX_SERIALIZE_PROPERTY(Volume, volume, out);
-
-			// TODO: come back when Wave has PlayOneShot and potentially PlayOnStart
-			//VX_SERIALIZE_PROPERTY(PlayOnStart, deviceProperties.PlayOnStart, out);
-			//VX_SERIALIZE_PROPERTY(PlayOneShot, deviceProperties.PlayOneShot, out);
 			
 			const bool spacialized = device.GetSound().IsSpacialized();
 			VX_SERIALIZE_PROPERTY(Spacialized, spacialized, out);
@@ -247,9 +243,6 @@ namespace Vortex {
 		float volume = deviceProps["Volume"].as<float>();
 		sound.SetVolume(volume);
 
-		// TODO: ditto
-		//data.PlayOnStart = deviceProps["PlayOnStart"].as<bool>();
-		//data.PlayOneShot = deviceProps["PlayOneShot"].as<bool>();
 		bool spacialized = deviceProps["Spacialized"].as<bool>();
 		sound.SetSpacialized(spacialized);
 		bool isLooping = deviceProps["Loop"].as<bool>();

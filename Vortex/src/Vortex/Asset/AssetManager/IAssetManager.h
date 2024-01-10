@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include "Vortex/Asset/Asset.h"
 #include "Vortex/Asset/AssetTypes.h"
 
@@ -10,7 +12,7 @@
 
 namespace Vortex {
 
-	class IAssetManager : public RefCounted
+	class VORTEX_API IAssetManager : public RefCounted
 	{
 	public:
 		IAssetManager() = default;

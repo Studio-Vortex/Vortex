@@ -98,6 +98,7 @@
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Actor.h"
 #include "Vortex/Scene/Prefab.h"
+#include "Vortex/Scene/SceneCamera.h"
 #include "Vortex/Scene/ScriptableActor.h"
 #include "Vortex/Scene/Components.h"
 /// ---------------------------------------------------
@@ -113,6 +114,7 @@
 #include "Vortex/Renderer/Renderer2D.h"
 #include "Vortex/Renderer/RenderCommand.h"
 
+#include "Vortex/Renderer/Camera.h"
 #include "Vortex/Renderer/Color.h"
 #include "Vortex/Renderer/Buffer.h"
 #include "Vortex/Renderer/Shader.h"

@@ -1449,11 +1449,12 @@ namespace Vortex {
 		Actor actor = { e, this };
 		CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 
-		if (m_ViewportWidth != 0 && m_ViewportHeight != 0)
+		if (m_ViewportWidth == 0 || m_ViewportHeight == 0)
 		{
-			SceneCamera& camera = cameraComponent.Camera;
-			camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+			return;
 		}
+
+		cameraComponent.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 
 		if (cameraComponent.Primary)
 		{

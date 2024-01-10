@@ -219,7 +219,7 @@ namespace Vortex {
 		{
 			case LightType::Directional:
 			{
-				const Math::mat4 orthogonalProjection = Math::Ortho(-75.0f, 75.0f, -75.0f, 75.0f, 0.01f, 500.0f);
+				const Math::mat4 orthogonalProjection = Math::OrthographicProjection(-75.0f, 75.0f, -75.0f, 75.0f, 0.01f, 500.0f);
 				const Math::mat4 lightView = Math::LookAt(transform.Translation, transform.GetRotationEuler(), Math::vec3(0.0f, 1.0f, 0.0f));
 				const Math::mat4 lightProjection = orthogonalProjection * lightView;
 
@@ -423,7 +423,7 @@ namespace Vortex {
 
 		Math::mat4 rotationMatrix = Math::Rotate(Math::Deg2Rad(skyboxComponent.Rotation), { 0.0f, 1.0f, 0.0f });
 
-		Math::mat4 captureProjection = Math::Perspective(Math::Deg2Rad(90.0f), 1.0f, 0.1f, 10.0f);
+		Math::mat4 captureProjection = Math::PerspectiveProjection(Math::Deg2Rad(90.0f), 1.0f, 0.1f, 10.0f);
 		Math::mat4 captureViews[] =
 		{
 		   Math::LookAt(Math::vec3(0.0f, 0.0f, 0.0f), Math::vec3(1.0f,  0.0f,  0.0f), Math::vec3(0.0f, -1.0f,  0.0f)) * rotationMatrix,
@@ -798,7 +798,7 @@ namespace Vortex {
 
 		// Configure shader
 		{
-			const Math::mat4 orthogonalProjection = Math::Ortho(-75.0f, 75.0f, -75.0f, 75.0f, 0.01f, 500.0f);
+			const Math::mat4 orthogonalProjection = Math::OrthographicProjection(-75.0f, 75.0f, -75.0f, 75.0f, 0.01f, 500.0f);
 			Scene* contextScene = lightSourceEntity.GetContextScene();
 			const TransformComponent transform = contextScene->GetWorldSpaceTransform(lightSourceEntity);
 			const Math::mat4 lightView = Math::LookAt(transform.Translation, Math::Normalize(transform.GetRotationEuler()), Math::vec3(0.0f, 1.0f, 0.0f));

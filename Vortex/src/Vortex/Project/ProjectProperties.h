@@ -7,6 +7,8 @@
 #include "Vortex/Renderer/Color.h"
 #include "Vortex/Physics/3D/PhysicsTypes.h"
 
+#include "Vortex/Editor/EditorCamera.h"
+
 #include "Vortex/Utils/FileSystem.h"
 
 #include <string>
@@ -38,7 +40,15 @@ namespace Vortex {
 		struct VORTEX_API EditorProperties
 		{
 			uint32_t FrameStepCount = 1;
-			float EditorCameraFOV = 45.0f;
+
+			struct EditorCameraProperties
+			{
+				float FOVdegrees = 45.0f;
+				float Speed = EditorCamera::DEFAULT_SPEED;
+				Math::vec3 Translation = { -5, 5, 5 };
+				Camera::ProjectionType ProjectionType = Camera::ProjectionType::Perspective;
+			} EditorCameraProps;
+
 			bool DrawEditorGrid = true;
 			bool DrawEditorAxes = true;
 			bool MaximizeOnPlay = false;

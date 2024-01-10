@@ -68,19 +68,19 @@ namespace Vortex {
 	class VORTEX_API WindowDragDropEvent : public Event
 	{
 	public:
-		WindowDragDropEvent(const std::vector<std::filesystem::path>& paths)
+		WindowDragDropEvent(const std::vector<Fs::Path>& paths)
 			: m_Filepaths(paths) { }
 
-		WindowDragDropEvent(std::vector<std::filesystem::path>&& paths)
+		WindowDragDropEvent(std::vector<Fs::Path>&& paths)
 			: m_Filepaths(std::move(paths)) { }
 
-		const std::vector<std::filesystem::path>& GetPaths() const { return m_Filepaths; }
+		const std::vector<Fs::Path>& GetPaths() const { return m_Filepaths; }
 
 		EVENT_CLASS_TYPE(WindowDragDrop)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 
 	private:
-		std::vector<std::filesystem::path> m_Filepaths;
+		std::vector<Fs::Path> m_Filepaths;
 	};
 
 }

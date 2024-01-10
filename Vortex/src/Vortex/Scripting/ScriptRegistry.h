@@ -45,6 +45,7 @@ namespace Vortex {
 		static bool SavePlayerPrefs();
 		static bool LoadPlayerPrefs();
 		static bool TransitionQueued();
+		static std::string GetNextSceneByName();
 	};
 
 	namespace InternalCalls {

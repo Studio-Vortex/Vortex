@@ -2,32 +2,23 @@
 
 #include "Vortex/Core/Base.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtx/compatibility.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <glm/gtx/hash.hpp>
-#include <glm/gtx/norm.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include "Vortex/Math/MathInternals.h"
 
 namespace Vortex::Math {
 
-	typedef glm::vec2 vec2;
-	typedef glm::vec3 vec3;
-	typedef glm::vec4 vec4;
-	typedef glm::ivec2 ivec2;
-	typedef glm::ivec3 ivec3;
-	typedef glm::ivec4 ivec4;
-	typedef glm::uvec2 uvec2;
-	typedef glm::uvec3 uvec3;
-	typedef glm::uvec4 uvec4;
-	typedef glm::mat2 mat2;
-	typedef glm::mat3 mat3;
-	typedef glm::mat4 mat4;
-	typedef glm::quat quaternion;
+	typedef glm::vec2 VORTEX_API vec2;
+	typedef glm::vec3 VORTEX_API vec3;
+	typedef glm::vec4 VORTEX_API vec4;
+	typedef glm::ivec2 VORTEX_API ivec2;
+	typedef glm::ivec3 VORTEX_API ivec3;
+	typedef glm::ivec4 VORTEX_API ivec4;
+	typedef glm::uvec2 VORTEX_API uvec2;
+	typedef glm::uvec3 VORTEX_API uvec3;
+	typedef glm::uvec4 VORTEX_API uvec4;
+	typedef glm::mat2 VORTEX_API mat2;
+	typedef glm::mat3 VORTEX_API mat3;
+	typedef glm::mat4 VORTEX_API mat4;
+	typedef glm::quat VORTEX_API quaternion;
 
 	static constexpr float PI = glm::pi<float>();
 	static constexpr float TWO_PI = glm::two_pi<float>();
@@ -35,188 +26,223 @@ namespace Vortex::Math {
 	static constexpr float EPSILON = glm::epsilon<float>();
 
 	template <typename T>
-	static auto Deg2Rad(T degrees)
+	VORTEX_API VX_FORCE_INLINE static auto Deg2Rad(T degrees)
 	{
 		return glm::radians(degrees);
 	}
 
 	template <typename T>
-	static auto Rad2Deg(T radians)
+	VORTEX_API VX_FORCE_INLINE static auto Rad2Deg(T radians)
 	{
 		return glm::degrees(radians);
 	}
 
 	template <typename T>
-	static auto Perspective(T verticalFOV, T aspectRatio, T zNear, T zFar)
+	VORTEX_API VX_FORCE_INLINE static auto PerspectiveProjection(T FOV, T aspectRatio, T zNear, T zFar)
 	{
-		return glm::perspective(verticalFOV, aspectRatio, zNear, zFar);
+		return glm::perspective(FOV, aspectRatio, zNear, zFar);
 	}
 
 	template <typename T>
-	static auto PerspectiveFOV(T FOV, T width, T height, T zNear, T zFar)
+	VORTEX_API VX_FORCE_INLINE static auto PerspectiveFOVProjection(T FOV, T width, T height, T zNear, T zFar)
 	{
 		return glm::perspectiveFov(FOV, width, height, zNear, zFar);
 	}
 
-	static auto LookAt(const Math::vec3& eyePos, const Math::vec3& point, const Math::vec3& up)
-	{
-		return glm::lookAt(eyePos, point, up);
-	}
-
 	template <typename T>
-	static auto Ortho(T left, T right, T bottom, T top, T zNear, T zFar)
+	VORTEX_API VX_FORCE_INLINE static auto OrthographicProjection(T left, T right, T bottom, T top, T zNear, T zFar)
 	{
 		return glm::ortho<T>(left, right, bottom, top, zNear, zFar);
 	}
 
+	struct VORTEX_API ProjectionParams
+	{
+		// Perspective only
+		float FOV; 
+
+		// Orthographic only
+		float OrthographicSize;
+
+		// Both
+		float Width;
+		float Height;
+		float NearClip;
+		float FarClip;
+
+		float AspectRatio() const { return Width / Height; }
+
+		mat4 CalculatePerspectiveProjectionMatrix() const
+		{
+			return PerspectiveFOVProjection(FOV, Width, Height, NearClip, FarClip);
+		}
+
+		mat4 CalculateOrthographicProjectionMatrix() const
+		{
+			const float size = OrthographicSize;
+			const float halfone = 0.5f;
+			const float aspectRatio = AspectRatio();
+			const float left = -size * aspectRatio * halfone;
+			const float right = size * aspectRatio * halfone;
+			const float bottom = -size * halfone;
+			const float top = size * halfone;
+
+			return OrthographicProjection(left, right, bottom, top, NearClip, FarClip);
+		}
+	};
+
+	VORTEX_API VX_FORCE_INLINE static auto LookAt(const Math::vec3& eyePos, const Math::vec3& point, const Math::vec3& up)
+	{
+		return glm::lookAt(eyePos, point, up);
+	}
+
 	template <typename T, typename Z>
-	static auto Lerp(T v, T v1, Z z)
+	VORTEX_API VX_FORCE_INLINE static auto Lerp(T v, T v1, Z z)
 	{
 		return glm::lerp(v, v1, z);
 	}
 
 	template <typename T, typename Z>
-	static auto Slerp(T v, T v1, Z z)
+	VORTEX_API VX_FORCE_INLINE static auto Slerp(T v, T v1, Z z)
 	{
 		return glm::slerp(v, v1, z);
 	}
 
-	static auto Translate(const vec3& translation)
+	VORTEX_API VX_FORCE_INLINE static auto Translate(const vec3& translation)
 	{
 		return glm::translate(mat4(1.0f), translation);
 	}
 
-	static auto Rotate(quaternion v, const vec3& axis)
+	VORTEX_API VX_FORCE_INLINE static auto Rotate(quaternion v, const vec3& axis)
 	{
 		return glm::rotate(v, axis);
 	}
 
-	static auto Rotate(float rotation, const vec3& axis)
+	VORTEX_API VX_FORCE_INLINE static auto Rotate(float rotation, const vec3& axis)
 	{
 		return glm::rotate(mat4(1.0f), rotation, axis);
 	}
 
-	static auto Scale(const vec3& scale)
+	VORTEX_API VX_FORCE_INLINE static auto Scale(const vec3& scale)
 	{
 		return glm::scale(mat4(1.0f), scale);
 	}
 
 	template <typename T>
-	static auto Round(T value)
+	VORTEX_API VX_FORCE_INLINE static auto Round(T value)
 	{
 		return glm::round(value);
 	}
 
 	template <typename T>
-	static auto Max(T x, T y)
+	VORTEX_API VX_FORCE_INLINE static auto Max(T x, T y)
 	{
 		return glm::max(x, y);
 	}
 
 	template <typename T>
-	static auto Min(T x, T y)
+	VORTEX_API VX_FORCE_INLINE static auto Min(T x, T y)
 	{
 		return glm::min(x, y);
 	}
 
 	template <typename T>
-	static auto Clamp(T v, T min, T max)
+	VORTEX_API VX_FORCE_INLINE static auto Clamp(T v, T min, T max)
 	{
 		return glm::clamp(v, min, max);
 	}
 
 	template <typename T>
-	static auto Log(T v)
+	VORTEX_API VX_FORCE_INLINE static auto Log(T v)
 	{
 		return glm::log(v);
 	}
 
 	template <typename T>
-	static auto Abs(T v)
+	VORTEX_API VX_FORCE_INLINE static auto Abs(T v)
 	{
 		return glm::abs(v);
 	}
 
 	template <typename T>
-	static auto Sqrt(T x)
+	VORTEX_API VX_FORCE_INLINE static auto Sqrt(T x)
 	{
 		return glm::sqrt(x);
 	}
 
 	template <typename T>
-	static auto Pow(T base, T power)
+	VORTEX_API VX_FORCE_INLINE static auto Pow(T base, T power)
 	{
 		return glm::pow(base, power);
 	}
 
 	template <typename T>
-	static auto Cos(T v)
+	VORTEX_API VX_FORCE_INLINE static auto Cos(T v)
 	{
 		return glm::cos(v);
 	}
 
 	template <typename T>
-	static auto Acos(T v)
+	VORTEX_API VX_FORCE_INLINE static auto Acos(T v)
 	{
 		return glm::acos(v);
 	}
 
 	template <typename T>
-	static auto Sin(T v)
+	VORTEX_API VX_FORCE_INLINE static auto Sin(T v)
 	{
 		return glm::sin(v);
 	}
 
 	template <typename T>
-	static auto Tan(T v)
+	VORTEX_API VX_FORCE_INLINE static auto Tan(T v)
 	{
 		return glm::tan(v);
 	}
 
 	template <typename T>
-	static auto Atan(T v)
+	VORTEX_API VX_FORCE_INLINE static auto Atan(T v)
 	{
 		return glm::atan(v);
 	}
 
 	template <typename T>
-	static auto Atan2(T v0, T v1)
+	VORTEX_API VX_FORCE_INLINE static auto Atan2(T v0, T v1)
 	{
 		return glm::atan2(v0, v1);
 	}
 
 	template <typename T>
-	static auto Normalize(T v)
+	VORTEX_API VX_FORCE_INLINE static auto Normalize(T v)
 	{
 		return glm::normalize(v);
 	}
 
 	template <typename T>
-	static auto ToMat4(T v)
+	VORTEX_API VX_FORCE_INLINE static auto ToMat4(T v)
 	{
 		return glm::toMat4(v);
 	}
 	
 	template <typename T>
-	static auto Cross(T v1, T v2)
+	VORTEX_API VX_FORCE_INLINE static auto Cross(T v1, T v2)
 	{
 		return glm::cross(v1, v2);
 	}
 
 	template <typename T>
-	static auto Dot(T v1, T v2)
+	VORTEX_API VX_FORCE_INLINE static auto Dot(T v1, T v2)
 	{
 		return glm::dot(v1, v2);
 	}
 
 	template <typename T>
-	static auto Length(T v)
+	VORTEX_API VX_FORCE_INLINE static auto Length(T v)
 	{
 		return glm::length(v);
 	}
 
 	template <typename T>
-	static auto Midpoint(T v0, T v1)
+	VORTEX_API VX_FORCE_INLINE static auto Midpoint(T v0, T v1)
 	{
 #ifdef VX_DEBUG
 		if (v0.length() != v1.length())
@@ -239,84 +265,84 @@ namespace Vortex::Math {
 	}
 
 	template <typename T>
-	static auto Distance(T v0, T v1)
+	VORTEX_API VX_FORCE_INLINE static auto Distance(T v0, T v1)
 	{
 		return glm::distance(v0, v1);
 	}
 
 	template <typename T, typename K>
-	static auto Mix(const T& v0, const T& v1, K c0)
+	VORTEX_API VX_FORCE_INLINE static auto Mix(const T& v0, const T& v1, K c0)
 	{
 		return glm::mix(v0, v1, c0);
 	}
 
 	template <typename T>
-	static auto Quaternion(T v)
+	VORTEX_API VX_FORCE_INLINE static auto Quaternion(T v)
 	{
 		return glm::quat(v);
 	}
 
 	template <typename T>
-	static auto ToQuaternion(T v)
+	VORTEX_API VX_FORCE_INLINE static auto ToQuaternion(T v)
 	{
 		return glm::toQuat(v);
 	}
 
 	template <typename T, typename U>
-	static auto AngleAxis(T angle, const U& axis)
+	VORTEX_API VX_FORCE_INLINE static auto AngleAxis(T angle, const U& axis)
 	{
 		return glm::angleAxis(angle, axis);
 	}
 
-	static quaternion GetOrientation(float pitch, float yaw, float roll)
+	VORTEX_API VX_FORCE_INLINE static quaternion GetOrientation(float pitch, float yaw, float roll)
 	{
 		return quaternion(vec3(pitch, yaw, roll));
 	}
 
-	static quaternion GetOrientation(const vec3& v)
+	VORTEX_API VX_FORCE_INLINE static quaternion GetOrientation(const vec3& v)
 	{
 		return quaternion(v);
 	}
 
-	static auto Transpose(const mat4& matrix)
+	VORTEX_API VX_FORCE_INLINE static auto Transpose(const mat4& matrix)
 	{
 		return glm::transpose(matrix);
 	}
 
 	template <typename T>
-	static auto Inverse(const T& v)
+	VORTEX_API VX_FORCE_INLINE static auto Inverse(const T& v)
 	{
 		return glm::inverse(v);
 	}
 
-	static auto Identity()
+	VORTEX_API VX_FORCE_INLINE static auto Identity()
 	{
 		return mat4(1.0f);
 	}
 
 	template <typename T>
-	static auto ValuePtr(const T& value)
+	VORTEX_API VX_FORCE_INLINE static auto ValuePtr(const T& value)
 	{
 		return glm::value_ptr(value);
 	}
 	
 	template <typename T>
-	static auto ValuePtr(T& value)
+	VORTEX_API VX_FORCE_INLINE static auto ValuePtr(T& value)
 	{
 		return glm::value_ptr(value);
 	}
 
-	static auto EulerAngles(const quaternion& rotationQuat)
+	VORTEX_API VX_FORCE_INLINE static auto EulerAngles(const quaternion& rotationQuat)
 	{
 		return glm::eulerAngles(rotationQuat);
 	}
 
-	static auto Decompose(const mat4& transform, vec3& scale, quaternion& orientation, vec3& translation, vec3& skew, vec4& perspective)
+	VORTEX_API VX_FORCE_INLINE static auto Decompose(const mat4& transform, vec3& scale, quaternion& orientation, vec3& translation, vec3& skew, vec4& perspective)
 	{
 		return glm::decompose(transform, scale, orientation, translation, skew, perspective);
 	}
 
-	static bool DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale)
+	VORTEX_API VX_FORCE_INLINE static bool DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale)
 	{
 		using namespace glm;
 		using T = float;
@@ -386,12 +412,12 @@ namespace Vortex::Math {
 		return true;
 	}
 
-	static glm::vec3 Scale(const glm::vec3& v, float desiredLength)
+	VORTEX_API VX_FORCE_INLINE static glm::vec3 Scale(const glm::vec3& v, float desiredLength)
 	{
 		return v * desiredLength / length(v);
 	}
 
-	static bool DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::quat& rotation, glm::vec3& scale)
+	VORTEX_API VX_FORCE_INLINE static bool DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::quat& rotation, glm::vec3& scale)
 	{
 		using namespace glm;
 		using T = float;

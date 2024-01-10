@@ -84,7 +84,7 @@ namespace Vortex {
 		const Fs::Path PlayerPrefsFilename = "PlayerPrefs.prefs";
 
 		// Temporary until we figure out a better way of doing this
-		std::string NextScene = "";
+		std::string NextSceneName = "";
 		bool TransitionQueued = false;
 	};
 
@@ -532,7 +532,7 @@ namespace Vortex {
 				return;
 			}
 
-			s_Data.NextScene = mstring.String();
+			s_Data.NextSceneName = mstring.String();
 			s_Data.TransitionQueued = true;
 		}
 
@@ -1596,7 +1596,7 @@ namespace Vortex {
 
 			const CameraComponent& cameraComponent = actor.GetComponent<CameraComponent>();
 
-			return Math::Rad2Deg(cameraComponent.Camera.GetPerspectiveVerticalFOVRad());
+			return Math::Rad2Deg(cameraComponent.Camera.GetPerspectiveFOV());
 		}
 
 		void CameraComponent_SetPerspectiveVerticalFOV(UUID actorUUID, float perspectiveVerticalFOV)
@@ -1615,7 +1615,7 @@ namespace Vortex {
 
 			const float FOVRad = Math::Deg2Rad(perspectiveVerticalFOV);
 
-			camera.SetPerspectiveVerticalFOVRad(FOVRad);
+			camera.SetPerspectiveFOV(FOVRad);
 			const Math::uvec2& viewportSize = scene->GetViewportSize();
 			camera.SetViewportSize(viewportSize.x, viewportSize.y);
 		}
@@ -9334,6 +9334,11 @@ namespace Vortex {
 	bool ScriptRegistry::TransitionQueued()
 	{
 		return s_Data.TransitionQueued;
+	}
+
+	std::string ScriptRegistry::GetNextSceneByName()
+	{
+		return s_Data.NextSceneName;
 	}
 
 	void ScriptRegistry::RegisterInternalCalls()
