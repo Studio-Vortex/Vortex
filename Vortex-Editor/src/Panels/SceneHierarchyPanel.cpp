@@ -60,7 +60,7 @@ namespace Vortex {
 			if (!child)
 				continue;
 
-			const std::string& name = child.GetName();
+			const std::string& name = child.Name();
 
 			if (m_ActorSearchInputTextFilter.PassFilter(name.c_str()))
 			{
@@ -510,7 +510,7 @@ namespace Vortex {
 
 				rootActorsInHierarchy.push_back(actor.GetUUID());
 
-				const bool matchingSearch = m_ActorSearchInputTextFilter.PassFilter(actor.GetName().c_str());
+				const bool matchingSearch = m_ActorSearchInputTextFilter.PassFilter(actor.Name().c_str());
 
 				if (!matchingSearch)
 					return;
@@ -884,7 +884,7 @@ namespace Vortex {
 
 		if (Gui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 		{
-			Gui::Text(actor.GetName().c_str());
+			Gui::Text(actor.Name().c_str());
 			Gui::SetDragDropPayload("SCENE_HIERARCHY_ITEM", &actor, sizeof(Actor));
 			Gui::EndDragDropSource();
 		}
@@ -2708,7 +2708,7 @@ namespace Vortex {
 		std::string connectedActorName = "Null";
 		if (Actor connectedActor = m_ContextScene->TryGetActorWithUUID(component.ConnectedActor))
 		{
-			connectedActorName = connectedActor.GetName();
+			connectedActorName = connectedActor.Name();
 		}
 
 		UI::BeginPropertyGrid();

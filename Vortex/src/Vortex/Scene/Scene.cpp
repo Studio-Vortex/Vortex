@@ -1080,7 +1080,7 @@ namespace Vortex {
 		
 		VX_CORE_ASSERT(actor.HasComponent<TagComponent>(), "all actors must have a tag component!");
 
-		Actor duplicate = CreateActor(actor.GetName(), actor.GetMarker());
+		Actor duplicate = CreateActor(actor.Name(), actor.GetMarker());
 
 		// Copy components (except IDComponent and TagComponent)
 		Utils::CopyComponentIfExists(AllComponents{}, duplicate, actor);
@@ -1138,7 +1138,7 @@ namespace Vortex {
 		for (const auto e : view)
 		{
 			Actor actor{ e, this };
-			const std::string& tag = actor.GetName();
+			const std::string& tag = actor.Name();
 			if (String::FastCompare(name, tag) == 0)
 				continue;
 

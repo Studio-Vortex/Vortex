@@ -216,7 +216,7 @@ namespace Vortex {
 	{
 		if (!actor.HasComponent<RigidBodyComponent>())
 		{
-			VX_CONSOLE_LOG_WARN("[Physics] Trying to wake up Actor without RigidBody Component '{}', '{}'", actor.GetName(), actor.GetUUID());
+			VX_CONSOLE_LOG_WARN("[Physics] Trying to wake up Actor without RigidBody Component '{}', '{}'", actor.Name(), actor.GetUUID());
 			return;
 		}
 
@@ -224,7 +224,7 @@ namespace Vortex {
 		
 		if (rigidbody.Type != RigidBodyType::Dynamic)
 		{
-			VX_CONSOLE_LOG_WARN("[Physics] Trying to wake up Static Actor '{}', '{}'", actor.GetName(), actor.GetUUID());
+			VX_CONSOLE_LOG_WARN("[Physics] Trying to wake up Static Actor '{}', '{}'", actor.Name(), actor.GetUUID());
 			return;
 		}
 
@@ -474,7 +474,7 @@ namespace Vortex {
 		CharacterControllerComponent& characterController = actor.GetComponent<CharacterControllerComponent>();
 		characterController.RuntimeController = (void*)controller;
 
-		pxActor->setName(actor.GetName().c_str());
+		pxActor->setName(actor.Name().c_str());
 
 		RT_SetCollisionFilters(pxActor, (uint32_t)FilterGroup::Dynamic, (uint32_t)FilterGroup::All);
 	}
@@ -590,7 +590,7 @@ namespace Vortex {
 
 		if (!actor0 || !actor1)
 		{
-			VX_CONSOLE_LOG_ERROR("Unable to create Fixed Joint with entities '{}', '{}'", actor.GetName(), connectedActor.GetName());
+			VX_CONSOLE_LOG_ERROR("Unable to create Fixed Joint with entities '{}', '{}'", actor.Name(), connectedActor.Name());
 			return;
 		}
 

@@ -31,7 +31,7 @@ namespace Vortex {
 			return;
 		}
 
-		Gui::Text("Selected Actor - %s (%llu)", selectedActor.GetName(), selectedActor.GetUUID());
+		Gui::Text("Selected Actor - %s (%llu)", selectedActor.Name(), selectedActor.GetUUID());
 
 		Gui::SameLine();
 		Gui::BeginDisabled(m_ClickedActors.empty());
@@ -59,7 +59,7 @@ namespace Vortex {
 			Gui::TableNextColumn();
 			Gui::Text("Actor");
 			Gui::TableNextColumn();
-			Gui::Text(selectedActor.GetName().c_str());
+			Gui::Text(selectedActor.Name().c_str());
 
 			Gui::TableNextColumn();
 			Gui::Text("Marker");
@@ -74,7 +74,7 @@ namespace Vortex {
 			Gui::TableNextColumn();
 			Gui::Text("Parent");
 			Gui::TableNextColumn();
-			std::string parentName = selectedActor.HasParent() ? selectedActor.GetParent().GetName() : "None";
+			std::string parentName = selectedActor.HasParent() ? selectedActor.GetParent().Name() : "None";
 			Gui::Text("%s (%llu)", parentName.c_str(), selectedActor.GetParentUUID());
 
 			if (selectedActor.HasParent())
@@ -108,7 +108,7 @@ namespace Vortex {
 			if (!childActor)
 				continue;
 
-			Gui::Text("  Handle: %s (%llu)", childActor.GetName().c_str(), child);
+			Gui::Text("  Handle: %s (%llu)", childActor.Name().c_str(), child);
 			UI::DrawItemActivityOutline();
 
 			if (Gui::IsItemClicked())
@@ -144,7 +144,7 @@ namespace Vortex {
 				Actor actor{ actorID, m_ContextScene.Raw() };
 
 				Gui::TableNextColumn();
-				Gui::Text(actor.GetName().c_str());
+				Gui::Text(actor.Name().c_str());
 				UI::DrawItemActivityOutline();
 
 				if (Gui::IsItemClicked())

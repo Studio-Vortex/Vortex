@@ -73,7 +73,7 @@ namespace Vortex {
 		VX_FORCE_INLINE Scene* GetContextScene() { return m_Scene; }
 		VX_FORCE_INLINE const Scene* GetContextScene() const { return m_Scene; }
 		
-		VX_FORCE_INLINE const std::string& GetName() const { return GetComponent<TagComponent>().Tag; }
+		VX_FORCE_INLINE const std::string& Name() const { return GetComponent<TagComponent>().Tag; }
 		VX_FORCE_INLINE const std::string& GetMarker() const { return GetComponent<TagComponent>().Marker; }
 		
 		VX_FORCE_INLINE void SetTransform(const Math::mat4& transform) const { GetComponent<TransformComponent>().SetTransform(transform); }

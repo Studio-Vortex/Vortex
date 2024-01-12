@@ -263,7 +263,7 @@ public class Untitled : Actor
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 			{
 				const Actor& droppedActor = *(Actor*)payload->Data;
-				VX_CONSOLE_LOG_INFO("Dropped Actor Name: {}", droppedActor.GetName());
+				VX_CONSOLE_LOG_INFO("Dropped Actor Name: {}", droppedActor.Name());
 				// Todo Create a new prefab here from the Actor's uuid
 				//SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedActor.GetName() / ".vprefab"));
 				SharedRef<Prefab> prefab = Prefab::Create(droppedActor);

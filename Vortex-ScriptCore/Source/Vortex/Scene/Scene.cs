@@ -15,9 +15,9 @@ namespace Vortex {
 			return new Actor(actorID);
 		}
 
-		public static Actor FindActorByName(string name)
+		public static Actor FindActorByTag(string tag)
 		{
-			ulong actorID = InternalCalls.Scene_FindActorByName(name);
+			ulong actorID = InternalCalls.Scene_FindActorByTag(tag);
 
 			if (actorID == 0) {
 				return null;
@@ -40,7 +40,7 @@ namespace Vortex {
 		{
 			T foundInstance = FindActorByType<T>();
 
-			if (foundInstance is null) {
+			if (!foundInstance) {
 				instance = null;
 				return false;
 			}
@@ -49,9 +49,9 @@ namespace Vortex {
 			return true;
 		}
 
-		public static Actor FindChildByName(Actor actor, string name)
+		public static Actor FindChildByTag(Actor parent, string tag)
 		{
-			ulong actorID = InternalCalls.Scene_FindChildByName(actor.ID, name);
+			ulong actorID = InternalCalls.Scene_FindChildByTag(parent.ID, tag);
 
 			if (actorID == 0) {
 				return null;
@@ -60,9 +60,33 @@ namespace Vortex {
 			return new Actor(actorID);
 		}
 
-		public static Actor CreateActor(string name = "")
+		// Finds the first child with a specific user generated script type
+		public static T FindChildByType<T>(Actor parent)
+			where T : Actor, new()
 		{
-			ulong actorID = InternalCalls.Scene_CreateActor(name);
+			Type derivedType = typeof(T);
+			object instance = InternalCalls.Scene_FindChildByType(parent.ID, derivedType);
+			return instance as T;
+		}
+
+		public static bool TryFindChildByType<T>(Actor parent, out T instance)
+			where T : Actor, new()
+		{
+			T foundInstance = FindChildByType<T>(parent);
+
+			if (!foundInstance)
+			{
+				instance = null;
+				return false;
+			}
+
+			instance = foundInstance;
+			return true;
+		}
+
+		public static Actor CreateActor(string tag = "")
+		{
+			ulong actorID = InternalCalls.Scene_CreateActor(tag);
 			return new Actor(actorID);
 		}
 
@@ -152,9 +176,7 @@ namespace Vortex {
 		}
 
 		public static bool IsPaused() => InternalCalls.Scene_IsPaused();
-
 		public static void Pause() => InternalCalls.Scene_Pause();
-
 		public static void Resume() => InternalCalls.Scene_Resume();
 	}
 

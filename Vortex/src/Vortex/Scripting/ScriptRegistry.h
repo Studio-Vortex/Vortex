@@ -98,10 +98,11 @@ namespace Vortex {
 		
 		uint64_t Scene_GetPrimaryCamera();
 		bool Scene_FindActorByID(UUID actorUUID);
-		uint64_t Scene_FindActorByName(MonoString* name);
+		uint64_t Scene_FindActorByTag(MonoString* tag);
 		MonoObject* Scene_FindActorByType(MonoReflectionType* derivedType);
-		uint64_t Scene_FindChildByName(UUID actorUUID, MonoString* childName);
-		uint64_t Scene_CreateActor(MonoString* name);
+		uint64_t Scene_FindChildByTag(UUID parentUUID, MonoString* tag);
+		MonoObject* Scene_FindChildByType(UUID parentUUID, MonoReflectionType* derivedType);
+		uint64_t Scene_CreateActor(MonoString* tag);
 		uint64_t Scene_Instantiate(UUID actorUUID);
 		uint64_t Scene_InstantiateAsChild(UUID actorUUID, UUID parentUUID);
 		bool Scene_IsPaused();

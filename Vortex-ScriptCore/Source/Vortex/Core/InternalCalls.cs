@@ -102,16 +102,19 @@ namespace Vortex {
 		internal extern static bool Scene_FindActorByID(ulong actorID);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Scene_FindActorByName(string name);
+		internal extern static ulong Scene_FindActorByTag(string tag);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static object Scene_FindActorByType(Type type);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Scene_FindChildByName(ulong actorID, string name);
+		internal extern static ulong Scene_FindChildByTag(ulong parentID, string tag);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
-		internal extern static ulong Scene_CreateActor(string name);
+		internal extern static object Scene_FindChildByType(ulong parentID, Type type);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static ulong Scene_CreateActor(string tag);
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static ulong Scene_Instantiate(ulong actorID);

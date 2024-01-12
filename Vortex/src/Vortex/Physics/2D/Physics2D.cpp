@@ -43,7 +43,7 @@ namespace Vortex {
 			PhysicsBody2DData* physicsBodyData = reinterpret_cast<PhysicsBody2DData*>(raycastInfo->fixture->GetUserData().pointer);
 			UUID entityUUID = physicsBodyData->EntityUUID;
 			Actor entity = contextScene->TryGetActorWithUUID(entityUUID);
-			Tag = mono_string_new(mono_domain_get(), entity.GetName().c_str());
+			Tag = mono_string_new(mono_domain_get(), entity.Name().c_str());
 		}
 		else
 		{

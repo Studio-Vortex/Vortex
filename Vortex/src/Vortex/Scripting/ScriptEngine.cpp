@@ -435,7 +435,7 @@ namespace Vortex {
 		const std::string& className = scriptComponent.ClassName;
 		if (className.empty())
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to create script instance for Actor '{}' without a class name!", actor.GetName());
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to create script instance for Actor '{}' without a class name!", actor.Name());
 			return;
 		}
 
@@ -483,19 +483,19 @@ namespace Vortex {
 
 		if (!actor.HasComponent<ScriptComponent>())
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate Actor '{}' without script component!", actor.GetName());
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate Actor '{}' without script component!", actor.Name());
 			return;
 		}
 
 		if (!context->IsRunning())
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate Actor '{}' while scene is stopped!", actor.GetName());
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate Actor '{}' while scene is stopped!", actor.Name());
 			return;
 		}
 
 		if (!IsScriptClassValid(actor))
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate Actor '{}' with no script class!", actor.GetName());
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to instantiate Actor '{}' with no script class!", actor.Name());
 			return;
 		}
 
@@ -546,7 +546,7 @@ namespace Vortex {
 
 		if (!ScriptInstanceExists(actorUUID))
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Failed to find ScriptInstance for Actor with Tag: {}", actor.GetName());
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Failed to find ScriptInstance for Actor with Tag: {}", actor.Name());
 			return false;
 		}
 
@@ -555,7 +555,7 @@ namespace Vortex {
 
 		if (instance == nullptr)
 		{
-			VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.{} on actor '{}' with invalid script instance!", Utils::StringFromScriptMethod(method), actor.GetName());
+			VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Actor.{} on actor '{}' with invalid script instance!", Utils::StringFromScriptMethod(method), actor.Name());
 			return false;
 		}
 

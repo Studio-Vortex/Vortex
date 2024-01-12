@@ -88,14 +88,19 @@ namespace Vortex {
 		public bool AddChild(Actor child) => InternalCalls.Actor_AddChild(ID, child.ID);
 		public bool RemoveChild(Actor child) => InternalCalls.Actor_RemoveChild(ID, child.ID);
 
-		public Actor FindActorByName(string name) => Scene.FindActorByName(name);
+		public Actor FindActorByTag(string tag) => Scene.FindActorByTag(tag);
 		
 		public T FindActorByType<T>()
 			where T : Actor, new() => Scene.FindActorByType<T>();
 		public bool TryFindActorByType<T>(out T instance)
 			where T : Actor, new() => Scene.TryFindActorByType<T>(out instance);
 
-		public Actor FindChildByName(string name) => Scene.FindChildByName(this, name);
+		public Actor FindChildByTag(string tag) => Scene.FindChildByTag(this, tag);
+
+		public T FindChildByType<T>()
+			where T : Actor, new() => Scene.FindChildByType<T>(this);
+		public bool TryFindChildByType<T>(out T instance)
+			where T : Actor, new() => Scene.TryFindChildByType<T>(this, out instance);
 
 		public Actor Instantiate(Actor actor) => Scene.Instantiate(actor);
 		public Actor Instantiate(Actor actor, Vector3 worldPos) => Scene.Instantiate(actor, worldPos);
