@@ -59,7 +59,7 @@ namespace Vortex {
 		if (Actor skyLightEntity = m_RuntimeScene->GetSkyLightActor())
 		{
 			const LightSourceComponent& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
-			if (lsc.CastShadows)
+			if (lsc.Visible && lsc.CastShadows)
 			{
 				Renderer::RenderToDepthMap(m_RuntimeScene);
 			}

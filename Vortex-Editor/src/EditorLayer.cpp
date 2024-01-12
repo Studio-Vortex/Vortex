@@ -169,7 +169,7 @@ namespace Vortex {
 		if (Actor skyLightActor = m_ActiveScene->GetSkyLightActor())
 		{
 			const LightSourceComponent& lsc = skyLightActor.GetComponent<LightSourceComponent>();
-			if (lsc.CastShadows)
+			if (lsc.Visible && lsc.CastShadows)
 			{
 				InstrumentationTimer timer("Shadow Pass");
 				Renderer::RenderToDepthMap(m_ActiveScene);
@@ -1878,10 +1878,10 @@ namespace Vortex {
 			OverlayRenderGrid(editorCamera, properties.EditorProps.DrawEditorAxes);
 		}
 
-		const Math::vec4 colliderColor = properties.PhysicsProps.Physics3DColliderColor;
-		const Math::vec4 spriteColliderColor = properties.PhysicsProps.Physics2DColliderColor;
+		const Math::vec4& colliderColor = properties.PhysicsProps.Physics3DColliderColor;
+		const Math::vec4& spriteColliderColor = properties.PhysicsProps.Physics2DColliderColor;
 		const Math::vec4 boundingBoxColor = ColorToVec4(Color::Orange);
-		const Math::vec4 outlineColor = boundingBoxColor;
+		const Math::vec4& outlineColor = boundingBoxColor;
 
 		// Render Physics Colliders
 		if (properties.PhysicsProps.ShowColliders)
@@ -1907,6 +1907,8 @@ namespace Vortex {
 			for (const auto e : boxColliderView)
 			{
 				Actor actor = { e, m_ActiveScene.Raw() };
+				if (!actor.IsActive())
+					continue;
 				const BoxColliderComponent& boxCollider = actor.GetComponent<BoxColliderComponent>();
 				if (boxCollider.Visible)
 					entities.emplace_back(e, m_ActiveScene.Raw());
@@ -1914,6 +1916,8 @@ namespace Vortex {
 			for (const auto e : sphereColliderView)
 			{
 				Actor actor = { e, m_ActiveScene.Raw() };
+				if (!actor.IsActive())
+					continue;
 				const SphereColliderComponent& sphereCollider = actor.GetComponent<SphereColliderComponent>();
 				if (sphereCollider.Visible)
 					entities.emplace_back(e, m_ActiveScene.Raw());
@@ -1936,6 +1940,8 @@ namespace Vortex {
 			for (const auto e : boxColliderView)
 			{
 				Actor actor = { e, m_ActiveScene.Raw() };
+				if (!actor.IsActive())
+					continue;
 				const BoxCollider2DComponent& boxCollider = actor.GetComponent<BoxCollider2DComponent>();
 				if (boxCollider.Visible)
 					entities.emplace_back(e, m_ActiveScene.Raw());
@@ -1943,6 +1949,8 @@ namespace Vortex {
 			for (const auto e : circleColliderView)
 			{
 				Actor actor = { e, m_ActiveScene.Raw() };
+				if (!actor.IsActive())
+					continue;
 				const CircleCollider2DComponent& circleCollider = actor.GetComponent<CircleCollider2DComponent>();
 				if (circleCollider.Visible)
 					entities.emplace_back(e, m_ActiveScene.Raw());
@@ -1958,7 +1966,8 @@ namespace Vortex {
 		// Draw selected actor outline
 		if (m_ShowSelectedActorOutline)
 		{
-			if (Actor selectedActor = SelectionManager::GetSelectedActor())
+			Actor selectedActor = SelectionManager::GetSelectedActor();
+			if (selectedActor && selectedActor.IsActive())
 			{
 				OverlayRenderSelectedActorOutline(outlineColor);
 			}
@@ -1970,8 +1979,6 @@ namespace Vortex {
 	void EditorLayer::OverlayRenderSelectedActorOutline(const Math::vec4& outlineColor)
 	{
 		Actor selectedActor = SelectionManager::GetSelectedActor();
-		if (!selectedActor.IsActive())
-			return;
 
 		const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(selectedActor);
 
@@ -1989,10 +1996,13 @@ namespace Vortex {
 
 		if (selectedActor.HasComponent<TextMeshComponent>())
 		{
-			const TextMeshComponent& textMesh = selectedActor.GetComponent<TextMeshComponent>();
+			const TextMeshComponent& textMeshComponent = selectedActor.GetComponent<TextMeshComponent>();
 
-			// TODO calculate the text size and scale transform
-			Renderer2D::DrawRect(transform, outlineColor);
+			if (textMeshComponent.Visible)
+			{
+				// TODO calculate the text size and scale transform
+				Renderer2D::DrawRect(transform, outlineColor);
+			}
 		}
 
 		if (selectedActor.HasComponent<CameraComponent>())
@@ -2025,44 +2035,47 @@ namespace Vortex {
 		{
 			const LightSourceComponent& lightSourceComponent = selectedActor.GetComponent<LightSourceComponent>();
 
-			const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedActor);
-			const Math::vec3 translation = worldSpaceTransform.Translation;
-			const Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
-
-			switch (lightSourceComponent.Type)
+			if (lightSourceComponent.Visible)
 			{
-				case LightType::Directional:
+				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(selectedActor);
+				const Math::vec3 translation = worldSpaceTransform.Translation;
+				const Math::vec4 color = { lightSourceComponent.Radiance, 1.0f };
+
+				switch (lightSourceComponent.Type)
 				{
-					const Math::vec3 midpoint = Math::Midpoint(translation, Math::vec3(0.0f));
+					case LightType::Directional:
+					{
+						const Math::vec3 midpoint = Math::Midpoint(translation, Math::vec3(0.0f));
 
-					const Math::quaternion rotation = worldSpaceTransform.GetRotation();
+						const Math::quaternion rotation = worldSpaceTransform.GetRotation();
 
-					const Math::vec3 left = Math::Rotate(rotation, Math::vec3(-1.0f, 0.0f, 0.0f)) * 0.5f;
-					const Math::vec3 right = Math::Rotate(rotation, Math::vec3(1.0f, 0.0f, 0.0f)) * 0.5f;
-					const Math::vec3 up = Math::Rotate(rotation, Math::vec3(0.0f, 1.0f, 0.0f)) * 0.5f;
-					const Math::vec3 down = Math::Rotate(rotation, Math::vec3(0.0f, -1.0f, 0.0f)) * 0.5f;
+						const Math::vec3 left = Math::Rotate(rotation, Math::vec3(-1.0f, 0.0f, 0.0f)) * 0.5f;
+						const Math::vec3 right = Math::Rotate(rotation, Math::vec3(1.0f, 0.0f, 0.0f)) * 0.5f;
+						const Math::vec3 up = Math::Rotate(rotation, Math::vec3(0.0f, 1.0f, 0.0f)) * 0.5f;
+						const Math::vec3 down = Math::Rotate(rotation, Math::vec3(0.0f, -1.0f, 0.0f)) * 0.5f;
 
-					Renderer2D::DrawLine(translation, midpoint, color);
-					Renderer2D::DrawLine(translation + left, midpoint + left, color);
-					Renderer2D::DrawLine(translation + right, midpoint + right, color);
-					Renderer2D::DrawLine(translation + up, midpoint + up, color);
-					Renderer2D::DrawLine(translation + down, midpoint + down, color);
+						Renderer2D::DrawLine(translation, midpoint, color);
+						Renderer2D::DrawLine(translation + left, midpoint + left, color);
+						Renderer2D::DrawLine(translation + right, midpoint + right, color);
+						Renderer2D::DrawLine(translation + up, midpoint + up, color);
+						Renderer2D::DrawLine(translation + down, midpoint + down, color);
 
-					break;
-				}
-				case LightType::Point:
-				{
-					const float radius = lightSourceComponent.Intensity * 0.5f;
+						break;
+					}
+					case LightType::Point:
+					{
+						const float radius = lightSourceComponent.Intensity * 0.5f;
 
-					Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, color);
-					Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, color);
-					Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, color);
+						Renderer2D::DrawCircle(translation, { 0.0f, 0.0f, 0.0f }, radius, color);
+						Renderer2D::DrawCircle(translation, { Math::Deg2Rad(90.0f), 0.0f, 0.0f }, radius, color);
+						Renderer2D::DrawCircle(translation, { 0.0f, Math::Deg2Rad(90.0f), 0.0f }, radius, color);
 
-					break;
-				}
-				case LightType::Spot:
-				{
-					break;
+						break;
+					}
+					case LightType::Spot:
+					{
+						break;
+					}
 				}
 			}
 		}
@@ -2375,6 +2388,8 @@ namespace Vortex {
 		if (actor.HasComponent<MeshRendererComponent>())
 		{
 			const MeshRendererComponent& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
+			if (!meshRendererComponent.Visible)
+				return;
 
 			AssetHandle meshHandle = meshRendererComponent.Mesh;
 			if (AssetManager::IsHandleValid(meshHandle))
@@ -2403,6 +2418,8 @@ namespace Vortex {
 		if (actor.HasComponent<StaticMeshRendererComponent>())
 		{
 			const StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
+			if (!staticMeshRendererComponent.Visible)
+				return;
 
 			AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
 			if (!AssetManager::IsHandleValid(staticMeshHandle))
@@ -2434,6 +2451,9 @@ namespace Vortex {
 
 	void EditorLayer::OverlayRenderSpriteCollider(EditorCamera* editorCamera, Actor actor, const Math::mat4& transform, const Math::vec4& colliderColor)
 	{
+		if (!actor)
+			return;
+
 		float colliderDistance = 0.005f; // Editor camera will be looking at the origin of the world on the first frame
 		if (editorCamera->GetPosition().z < 0) // Show colliders on the side that the editor camera facing
 			colliderDistance = -colliderDistance;
@@ -3606,7 +3626,14 @@ namespace Vortex {
 				if (!actor.IsActive())
 					continue;
 
-				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor);
+				const TransformComponent worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(actor);
+
+				const MeshRendererComponent& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
+				if (!meshRendererComponent.Visible)
+					continue;
+
+				if (!AssetManager::IsHandleValid(meshRendererComponent.Mesh))
+					continue;
 			}
 
 			auto staticMeshView = m_ActiveScene->GetAllActorsWith<StaticMeshRendererComponent>();
@@ -3617,7 +3644,7 @@ namespace Vortex {
 				if (!actor.IsActive())
 					continue;
 
-				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(actor);
+				const TransformComponent worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(actor);
 
 				const StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
 				if (!staticMeshRendererComponent.Visible)
