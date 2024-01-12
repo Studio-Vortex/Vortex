@@ -3603,6 +3603,9 @@ namespace Vortex {
 			{
 				Actor actor{ e, m_ActiveScene.Raw() };
 
+				if (!actor.IsActive())
+					continue;
+
 				const Math::mat4 transform = m_ActiveScene->GetWorldSpaceTransformMatrix(actor);
 			}
 
@@ -3611,9 +3614,15 @@ namespace Vortex {
 			{
 				Actor actor{ e, m_ActiveScene.Raw() };
 
+				if (!actor.IsActive())
+					continue;
+
 				const TransformComponent& worldSpaceTransform = m_ActiveScene->GetWorldSpaceTransform(actor);
 
 				const StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
+				if (!staticMeshRendererComponent.Visible)
+					continue;
+
 				if (!AssetManager::IsHandleValid(staticMeshRendererComponent.StaticMesh))
 					continue;
 
