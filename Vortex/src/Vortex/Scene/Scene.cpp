@@ -382,18 +382,7 @@ namespace Vortex {
 				actor.CallMethod(ScriptMethod::OnAwake);
 			}
 
-			// Invoke Actor.OnEnable
-			for (const auto e : view)
-			{
-				Actor actor{ e, this };
-
-				if (!actor.IsActive())
-					continue;
-
-				actor.CallMethod(ScriptMethod::OnEnable);
-			}
-
-			// Invoke Actor.OnReset
+			// Invoke Actor.OnReset - Editor Only
 			if (!Application::Get().IsRuntime())
 			{
 				for (const auto e : view)
