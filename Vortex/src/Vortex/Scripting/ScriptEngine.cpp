@@ -443,17 +443,20 @@ namespace Vortex {
 		VX_CORE_ASSERT(ScriptClassExists(className), "Actor Class was not found in Actor Classes Map!");
 
 		SharedReference<ScriptClass> scriptClass = GetScriptClass(className);
-		SharedReference<ScriptInstance> instance = SharedReference<ScriptInstance>::Create(scriptClass);
+		SharedReference<ScriptInstance> instance = SharedReference<ScriptInstance>::Create(actorUUID, scriptClass);
 		
 		// Invoke C# Actor class constructor
 		RT_ActorConstructor(actorUUID, instance->GetManagedObject());
 
 		s_Data->ActorInstances[actorUUID] = instance;
 
+		scriptComponent.Instantiated = true;
+
 		// Copy field values
 		auto it = s_Data->ActorScriptFields.find(actorUUID);
 		if (it == s_Data->ActorScriptFields.end())
 		{
+			VX_CORE_ASSERT(false, "actor has no script fields! this should never happen");
 			return;
 		}
 
@@ -463,8 +466,6 @@ namespace Vortex {
 		{
 			instance->SetFieldValueInternal(name, fieldInstance.GetDataBuffer());
 		}
-
-		scriptComponent.Instantiated = true;
 	}
 
 	void ScriptEngine::RT_InstantiateActor(Actor actor)
@@ -684,6 +685,22 @@ namespace Vortex {
 		}
 
 		return s_Data->ActorInstances[uuid];
+	}
+
+	SharedReference<ScriptInstance> ScriptEngine::GetFirstInstanceOfScriptClass(SharedReference<ScriptClass> scriptClass)
+	{
+		VX_PROFILE_FUNCTION();
+
+		for (const auto& [actorUUID, instance] : s_Data->ActorInstances)
+		{
+			if (instance->GetScriptClass() != scriptClass)
+				continue;
+
+			return instance;
+		}
+
+		// no instance of script class was found
+		return nullptr;
 	}
 
 	SharedReference<ScriptClass> ScriptEngine::GetScriptClass(const std::string& className)

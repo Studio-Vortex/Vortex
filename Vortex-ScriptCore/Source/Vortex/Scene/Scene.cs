@@ -1,4 +1,6 @@
-﻿namespace Vortex {
+﻿using System;
+
+namespace Vortex {
 
 	public static class Scene
 	{
@@ -6,8 +8,9 @@
 		{
 			bool found = InternalCalls.Scene_FindActorByID(actorID);
 
-			if (!found)
+			if (!found) {
 				return null;
+			}
 
 			return new Actor(actorID);
 		}
@@ -16,18 +19,43 @@
 		{
 			ulong actorID = InternalCalls.Scene_FindActorByName(name);
 
-			if (actorID == 0)
+			if (actorID == 0) {
 				return null;
+			}
 
 			return new Actor(actorID);
+		}
+
+		// Finds the first actor with a specific user generated script type
+		public static T FindActorByType<T>()
+			where T : Actor, new()
+		{
+			Type derivedType = typeof(T);
+			object instance = InternalCalls.Scene_FindActorByType(derivedType);
+			return instance as T;
+		}
+
+		public static bool TryFindActorByType<T>(out T instance)
+			where T : Actor, new()
+		{
+			T foundInstance = FindActorByType<T>();
+
+			if (foundInstance is null) {
+				instance = null;
+				return false;
+			}
+
+			instance = foundInstance;
+			return true;
 		}
 
 		public static Actor FindChildByName(Actor actor, string name)
 		{
 			ulong actorID = InternalCalls.Scene_FindChildByName(actor.ID, name);
 
-			if (actorID == 0)
+			if (actorID == 0) {
 				return null;
+			}
 
 			return new Actor(actorID);
 		}
@@ -43,8 +71,9 @@
 		{
 			ulong actorID = InternalCalls.Scene_Instantiate(actor.ID);
 
-			if (actorID == 0)
+			if (actorID == 0) {
 				return null;
+			}
 
 			return new Actor(actorID);
 		}
@@ -53,8 +82,9 @@
 		{
 			ulong actorID = InternalCalls.Scene_Instantiate(actor.ID);
 
-			if (actorID == 0)
+			if (actorID == 0) {
 				return null;
+			}
 
 			Actor clone = new Actor(actorID);
 
@@ -67,8 +97,9 @@
 		{
 			ulong actorID = InternalCalls.Scene_Instantiate(actor.ID);
 
-			if (actorID == 0)
+			if (actorID == 0) {
 				return null;
+			}
 
 			Actor clone = new Actor(actorID);
 
@@ -82,9 +113,10 @@
 		{
 			ulong actorID = InternalCalls.Scene_InstantiateAsChild(actor.ID, parent.ID);
 
-			if (actorID == 0)
+			if (actorID == 0) {
 				return null;
-			
+			}
+
 			return new Actor(actorID);
 		}
 
@@ -92,8 +124,9 @@
 		{
 			ulong actorID = InternalCalls.Scene_InstantiateAsChild(actor.ID, parent.ID);
 
-			if (actorID == 0)
+			if (actorID == 0) {
 				return null;
+			}
 
 			Actor clone = new Actor(actorID);
 
@@ -106,8 +139,9 @@
 		{
 			ulong actorID = InternalCalls.Scene_InstantiateAsChild(actor.ID, parent.ID);
 
-			if (actorID == 0)
+			if (actorID == 0) {
 				return null;
+			}
 
 			Actor clone = new Actor(actorID);
 

@@ -74,6 +74,8 @@ namespace Vortex {
 
 		static SharedReference<ScriptInstance> GetScriptInstance(UUID uuid);
 
+		static SharedReference<ScriptInstance> GetFirstInstanceOfScriptClass(SharedReference<ScriptClass> scriptClass);
+
 		static SharedReference<ScriptClass> GetScriptClass(const std::string& className);
 		static std::unordered_map<std::string, SharedReference<ScriptClass>> GetScriptClasses();
 		static const ScriptFieldMap& GetScriptFieldMap(Actor actor);

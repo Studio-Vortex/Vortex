@@ -89,6 +89,12 @@ namespace Vortex {
 		public bool RemoveChild(Actor child) => InternalCalls.Actor_RemoveChild(ID, child.ID);
 
 		public Actor FindActorByName(string name) => Scene.FindActorByName(name);
+		
+		public T FindActorByType<T>()
+			where T : Actor, new() => Scene.FindActorByType<T>();
+		public bool TryFindActorByType<T>(out T instance)
+			where T : Actor, new() => Scene.TryFindActorByType<T>(out instance);
+
 		public Actor FindChildByName(string name) => Scene.FindChildByName(this, name);
 
 		public Actor Instantiate(Actor actor) => Scene.Instantiate(actor);
@@ -114,36 +120,34 @@ namespace Vortex {
 		public T GetComponent<T>()
 			where T : Component, new()
 		{
-			if (!HasComponent<T>())
+			if (!HasComponent<T>()) {
 				return null;
+			}
 
-			T component = new T() { Actor = this };
-			return component;
+			return new T() { Actor = this };
 		}
 
 		public T AddComponent<T>()
 			where T : Component, new()
 		{
-			if (!HasComponent<T>())
-			{
-				Type componentType = typeof(T);
-				InternalCalls.Actor_AddComponent(ID, componentType);
-				return GetComponent<T>();
+			if (HasComponent<T>()) {
+				return GetComponent<T>(); 
 			}
-			else
-			{
-				return GetComponent<T>();
-			}
+
+			Type componentType = typeof(T);
+			InternalCalls.Actor_AddComponent(ID, componentType);
+			return GetComponent<T>();
 		}
 
 		public void RemoveComponent<T>()
 			where T : Component, new()
 		{
-			if (HasComponent<T>())
-			{
-				Type componentType = typeof(T);
-				InternalCalls.Actor_RemoveComponent(ID, componentType);
+			if (!HasComponent<T>()) {
+				return;
 			}
+
+			Type componentType = typeof(T);
+			InternalCalls.Actor_RemoveComponent(ID, componentType);
 		}
 
 		public bool TryGetComponent<T>(out T component)

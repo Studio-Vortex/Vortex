@@ -2,6 +2,7 @@
 
 #include "Vortex/Core/Base.h"
 
+#include "Vortex/Core/UUID.h"
 #include "Vortex/Core/TimeStep.h"
 
 #include "Vortex/Math/Math.h"
@@ -28,7 +29,7 @@ namespace Vortex {
 	{
 	public:
 		ScriptInstance() = default;
-		ScriptInstance(SharedReference<ScriptClass>& scriptClass);
+		ScriptInstance(UUID actorUUID, SharedReference<ScriptClass>& scriptClass);
 		~ScriptInstance() = default;
 
 		vxstl::option<RT_ScriptInvokeResult> InvokeOnAwake();
@@ -53,6 +54,7 @@ namespace Vortex {
 		bool ScriptMethodExists(ScriptMethod method) const;
 
 		VX_FORCE_INLINE SharedReference<ScriptClass> GetScriptClass() { return m_ScriptClass; }
+		VX_FORCE_INLINE const SharedReference<ScriptClass>& GetScriptClass() const { return m_ScriptClass; }
 
 		template <typename TFieldType>
 		VX_FORCE_INLINE TFieldType GetFieldValue(const std::string& fieldName)
@@ -74,6 +76,8 @@ namespace Vortex {
 			SetFieldValueInternal(fieldName, &value);
 		}
 
+		VX_FORCE_INLINE UUID GetActorUUID() const { return m_ActorUUID; }
+
 		VX_FORCE_INLINE MonoObject* GetManagedObject() const { return m_Instance; }
 
 	private:
@@ -84,12 +88,14 @@ namespace Vortex {
 
 	private:
 		SharedReference<ScriptClass> m_ScriptClass = nullptr;
+		std::unordered_map<ScriptMethod, MonoMethod*> m_ScriptMethods;
+
+		UUID m_ActorUUID;
 
 		MonoObject* m_Instance = nullptr;
 
-		std::unordered_map<ScriptMethod, MonoMethod*> m_ScriptMethods;
-
-		inline static char s_FieldValueBuffer[VX_SCRIPT_FIELD_MAX_BYTES];
+	private:
+		VX_FORCE_INLINE static char s_FieldValueBuffer[VX_SCRIPT_FIELD_MAX_BYTES];
 
 	private:
 		friend class ScriptEngine;

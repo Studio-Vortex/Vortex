@@ -4,6 +4,8 @@
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Scripting/ScriptUtils.h"
 
+#include "Vortex/Core/String.h"
+
 #include <mono/jit/jit.h>
 
 namespace Vortex {
@@ -15,7 +17,14 @@ namespace Vortex {
 		m_MonoClass = ScriptUtils::GetClassFromAssemblyImageByName(assemblyImage, classNamespace, className);
 	}
 
-	MonoObject* ScriptClass::Instantiate()
+    bool ScriptClass::operator==(const ScriptClass& other)
+    {
+		return String::FastCompare(m_ClassName, other.m_ClassName)
+			&& String::FastCompare(m_ClassNamespace, other.m_ClassNamespace)
+			&& m_MonoClass == other.m_MonoClass;
+    }
+
+    MonoObject* ScriptClass::Instantiate()
 	{
 		return ScriptUtils::InstantiateManagedClass(m_MonoClass);
 	}

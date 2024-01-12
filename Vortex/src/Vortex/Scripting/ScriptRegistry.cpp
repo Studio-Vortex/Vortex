@@ -405,6 +405,7 @@ namespace Vortex {
 
 		bool Scene_FindActorByID(UUID actorUUID)
 		{
+			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
 			return (bool)actor;
@@ -412,9 +413,10 @@ namespace Vortex {
 
 		uint64_t Scene_FindActorByName(MonoString* name)
 		{
+			Scene* contextScene = GetContextScene();
+
 			ManagedString mstring(name);
 
-			Scene* contextScene = GetContextScene();
 			Actor actor = contextScene->FindActorByName(mstring.String());
 
 			if (!actor)
@@ -423,23 +425,53 @@ namespace Vortex {
 			return actor.GetUUID();
 		}
 
+		MonoObject* Scene_FindActorByType(MonoReflectionType* derivedType)
+		{
+			Scene* contextScene = GetContextScene();
+
+			MonoType* managedType = mono_reflection_type_get_type(derivedType);
+
+			if (managedType == nullptr) {
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Scene.FindActorByType with invalid type!");
+				return 0;
+			}
+
+			const std::string className = mono_type_get_name(managedType);
+			
+			if (!ScriptEngine::ScriptClassExists(className)) {
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Scene.FindActorByType with type not derived from actor!");
+				return 0;
+			}
+
+			SharedReference<ScriptClass> derivedClass = ScriptEngine::GetScriptClass(className);
+			
+			SharedReference<ScriptInstance> instance = ScriptEngine::GetFirstInstanceOfScriptClass(derivedClass);
+			if (instance == nullptr) {
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Calling Scene.FindActorByType with no instance of '{}'", derivedClass->GetClassNameV());
+				return 0;
+			}
+
+			MonoObject* managedInstance = instance->GetManagedObject();
+			return managedInstance;
+		}
+
 		uint64_t Scene_FindChildByName(UUID actorUUID, MonoString* childName)
 		{
-			ManagedString mstring(childName);
-
 			Scene* contextScene = GetContextScene();
 			Actor actor = GetActor(actorUUID);
 
 			const std::vector<UUID>& children = actor.Children();
 
+			ManagedString mstring(childName);
+
 			for (const UUID& child : children)
 			{
 				Actor childActor = contextScene->TryGetActorWithUUID(child);
 
-				if (childActor && childActor.GetName() == mstring.String())
-				{
-					return childActor.GetUUID();
-				}
+				if (!childActor || !String::FastCompare(childActor.GetName(), mstring.String()))
+					continue;
+
+				return childActor.GetUUID();
 			}
 
 			return 0;
@@ -447,9 +479,10 @@ namespace Vortex {
 
 		uint64_t Scene_CreateActor(MonoString* name)
 		{
+			Scene* contextScene = GetContextScene();
+
 			ManagedString mstring(name);
 
-			Scene* contextScene = GetContextScene();
 			Actor actor = contextScene->CreateActor(mstring.String());
 
 			return actor.GetUUID();
@@ -9374,6 +9407,7 @@ namespace Vortex {
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_GetPrimaryCamera);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_FindActorByID);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_FindActorByName);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_FindActorByType);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_FindChildByName);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_CreateActor);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_Instantiate);

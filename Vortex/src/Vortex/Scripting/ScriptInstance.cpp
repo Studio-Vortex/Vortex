@@ -7,8 +7,8 @@
 
 namespace Vortex {
 
-	ScriptInstance::ScriptInstance(SharedReference<ScriptClass>& scriptClass)
-		: m_ScriptClass(scriptClass)
+	ScriptInstance::ScriptInstance(UUID actorUUID, SharedReference<ScriptClass>& scriptClass)
+		: m_ActorUUID(actorUUID), m_ScriptClass(scriptClass)
 	{
 		m_Instance = m_ScriptClass->Instantiate();
 

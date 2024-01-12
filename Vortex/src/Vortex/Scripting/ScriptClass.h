@@ -25,6 +25,8 @@ namespace Vortex {
 		ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore = false);
 		~ScriptClass() = default;
 
+		bool operator==(const ScriptClass& other);
+
 		MonoObject* Instantiate();
 		MonoMethod* GetMethod(const std::string& name, uint32_t parameterCount);
 
