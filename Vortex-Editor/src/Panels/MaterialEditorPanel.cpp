@@ -223,13 +223,13 @@ namespace Vortex {
 
 		switch (index)
 		{
-			case 0: textureHandle = material->GetAlbedoMap();            break;
-			case 1: textureHandle = material->GetNormalMap();            break;
-			case 2: textureHandle = material->GetMetallicMap();          break;
-			case 3: textureHandle = material->GetRoughnessMap();         break;
-			case 4: textureHandle = material->GetEmissionMap();          break;
-			case 5: textureHandle = material->GetParallaxOcclusionMap(); break;
-			case 6: textureHandle = material->GetAmbientOcclusionMap();  break;
+			case 0: textureHandle = material->GetTexture("u_AlbedoMap");            break;
+			case 1: textureHandle = material->GetTexture("u_NormalMap");            break;
+			case 2: textureHandle = material->GetTexture("u_MetallicMap");          break;
+			case 3: textureHandle = material->GetTexture("u_RoughnessMap");         break;
+			case 4: textureHandle = material->GetTexture("u_EmissionMap");          break;
+			case 5: textureHandle = material->GetTexture("u_ParallaxOcclusionMap"); break;
+			case 6: textureHandle = material->GetTexture("u_AmbientOcclusionMap");  break;
 		}
 
 		if (!AssetManager::IsHandleValid(textureHandle))
@@ -248,13 +248,13 @@ namespace Vortex {
 
 		switch (index)
 		{
-			case 0: material->SetAlbedoMap(textureHandle);            break;
-			case 1: material->SetNormalMap(textureHandle);            break;
-			case 2: material->SetMetallicMap(textureHandle);          break;
-			case 3: material->SetRoughnessMap(textureHandle);         break;
-			case 4: material->SetEmissionMap(textureHandle);          break;
-			case 5: material->SetParallaxOcclusionMap(textureHandle); break;
-			case 6: material->SetAmbientOcclusionMap(textureHandle);  break;
+			case 0: material->SetTexture("u_AlbedoMap", textureHandle);            break;
+			case 1: material->SetTexture("u_NormalMap", textureHandle);            break;
+			case 2: material->SetTexture("u_MetallicMap", textureHandle);          break;
+			case 3: material->SetTexture("u_RoughnessMap", textureHandle);         break;
+			case 4: material->SetTexture("u_EmissionMap", textureHandle);          break;
+			case 5: material->SetTexture("u_ParallaxOcclusionMap", textureHandle); break;
+			case 6: material->SetTexture("u_AmbientOcclusionMap", textureHandle);  break;
 		}
 	}
 

@@ -22,23 +22,13 @@ namespace Vortex {
 	{
 		std::string Name = "Unnamed";
 		Math::vec3 Albedo = Math::vec3(1.0f);
-		AssetHandle AlbedoMap = 0;
 
-		AssetHandle NormalMap = 0;
+		std::unordered_map<std::string, AssetHandle> Textures;
 
 		float Metallic = 0.5f;
-		AssetHandle MetallicMap = 0;
-
 		float Roughness = 0.5f;
-		AssetHandle RoughnessMap = 0;
-
 		float Emission = 0.0f;
-		AssetHandle EmissionMap = 0;
-
 		float ParallaxHeightScale = 0.5f;
-		AssetHandle ParallaxOcclusionMap = 0;
-
-		AssetHandle AmbientOcclusionMap = 0;
 
 		Math::vec2 UV = Math::vec2(1.0f);
 
@@ -63,41 +53,25 @@ namespace Vortex {
 		const std::string& GetName() const;
 		void SetName(const std::string& name);
 
+		AssetHandle GetTexture(const std::string& name) const;
+		void SetTexture(const std::string& name, AssetHandle texture);
+
+		bool HasTexture(const std::string& name) const;
+
 		const Math::vec3& GetAlbedo() const;
 		void SetAlbedo(const Math::vec3& albedo);
-
-		AssetHandle GetAlbedoMap() const;
-		void SetAlbedoMap(AssetHandle albedoMap);
-
-		AssetHandle GetNormalMap() const;
-		void SetNormalMap(AssetHandle normalMap);
 
 		float GetMetallic() const;
 		void SetMetallic(float metallic);
 
-		AssetHandle GetMetallicMap() const;
-		void SetMetallicMap(AssetHandle metallicMap);
-
 		float GetRoughness() const;
 		void SetRoughness(float roughness);
-
-		AssetHandle GetRoughnessMap() const;
-		void SetRoughnessMap(AssetHandle roughnessMap);
 
 		float GetEmission() const;
 		void SetEmission(float emission);
 
-		AssetHandle GetEmissionMap() const;
-		void SetEmissionMap(AssetHandle emissionMap);
-
 		float GetParallaxHeightScale() const;
 		void SetParallaxHeightScale(float heightScale);
-
-		AssetHandle GetParallaxOcclusionMap() const;
-		void SetParallaxOcclusionMap(AssetHandle parallaxOcclusionMap);
-
-		AssetHandle GetAmbientOcclusionMap() const;
-		void SetAmbientOcclusionMap(AssetHandle ambientOcclusionMap);
 
 		const Math::vec2& GetUV() const;
 		void SetUV(const Math::vec2& uv);
@@ -138,7 +112,7 @@ namespace Vortex {
 		friend class DefaultMesh;
 	};
 
-	class MaterialTable : public RefCounted
+	class VORTEX_API MaterialTable : public RefCounted
 	{
 	public:
 		MaterialTable() = default;

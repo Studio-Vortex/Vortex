@@ -268,15 +268,17 @@ namespace Vortex {
 				return result;
 			};
 
-			materialProps.AlbedoMap = LoadMaterialTextureFunc(aiTextureType_DIFFUSE, 0);
-			if (!materialProps.AlbedoMap)
-				materialProps.AlbedoMap = LoadMaterialTextureFunc(aiTextureType_BASE_COLOR, 0);
+			std::unordered_map<std::string, AssetHandle>& materialTextures = materialProps.Textures;
 
-			materialProps.NormalMap = LoadMaterialTextureFunc(aiTextureType_NORMALS, 0);
-			materialProps.MetallicMap = LoadMaterialTextureFunc(aiTextureType_METALNESS, 0);
-			materialProps.RoughnessMap = LoadMaterialTextureFunc(aiTextureType_REFLECTION, 0);
-			materialProps.EmissionMap = LoadMaterialTextureFunc(aiTextureType_EMISSIVE, 0);
-			materialProps.AmbientOcclusionMap = LoadMaterialTextureFunc(aiTextureType_AMBIENT_OCCLUSION, 0);
+			materialTextures["u_AlbedoMap"] = LoadMaterialTextureFunc(aiTextureType_DIFFUSE, 0);
+			if (!materialTextures["u_AlbedoMap"])
+				materialTextures["u_AlbedoMap"] = LoadMaterialTextureFunc(aiTextureType_BASE_COLOR, 0);
+
+			materialTextures["u_NormalMap"] = LoadMaterialTextureFunc(aiTextureType_NORMALS, 0);
+			materialTextures["u_MetallicMap"] = LoadMaterialTextureFunc(aiTextureType_METALNESS, 0);
+			materialTextures["u_RoughnessMap"] = LoadMaterialTextureFunc(aiTextureType_REFLECTION, 0);
+			materialTextures["u_EmissionMap"] = LoadMaterialTextureFunc(aiTextureType_EMISSIVE, 0);
+			materialTextures["u_AmbientOcclusionMap"] = LoadMaterialTextureFunc(aiTextureType_AMBIENT_OCCLUSION, 0);
 			
 			material = Material::Create(Renderer::GetShaderLibrary().Get("PBR"), materialProps);
 		}

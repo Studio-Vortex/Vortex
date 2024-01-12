@@ -319,12 +319,12 @@ namespace Vortex {
 		{
 			// Create new asset
 			MaterialProperties materialProps;
-			materialProps.AlbedoMap = materialTextures[0];
-			materialProps.NormalMap = materialTextures[1];
-			materialProps.MetallicMap = materialTextures[2];
-			materialProps.RoughnessMap = materialTextures[3];
-			materialProps.EmissionMap = materialTextures[4];
-			materialProps.AmbientOcclusionMap = materialTextures[5];
+			materialProps.Textures["u_AlbedoMap"] = materialTextures[0];
+			materialProps.Textures["u_NormalMap"] = materialTextures[1];
+			materialProps.Textures["u_MetallicMap"] = materialTextures[2];
+			materialProps.Textures["u_RoughnessMap"] = materialTextures[3];
+			materialProps.Textures["u_EmissionMap"] = materialTextures[4];
+			materialProps.Textures["u_AmbientOcclusionMap"] = materialTextures[5];
 
 			SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("PBR_Static");
 			SharedReference<Material> material = Project::GetEditorAssetManager()->CreateNewAsset<Material>("Materials", filename, shader, materialProps);
