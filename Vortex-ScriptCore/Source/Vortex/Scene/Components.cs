@@ -1,8 +1,39 @@
-﻿namespace Vortex {
+﻿using System;
+
+namespace Vortex {
 
 	public abstract class Component
 	{
 		public Actor Actor { get; internal set; }
+
+		public override bool Equals(object obj) => obj is Component other && Equals(other);
+
+		public bool Equals(Component other)
+		{
+			if (other is null)
+				return false;
+
+			if (ReferenceEquals(this, other))
+				return true;
+
+			return Actor.ID == other.Actor.ID;
+		}
+
+		public override int GetHashCode() => Actor.GetHashCode() + typeof(Component).Name.GetHashCode();
+
+		public static bool operator ==(Component componentA, Component componentB) => !componentA ? !componentB : componentA.Equals(componentB);
+		public static bool operator !=(Component componentA, Component componentB) => !(componentA == componentB);
+		public static implicit operator bool(Component component)
+		{
+			if (component is null)
+				return false;
+
+			if (!component.Actor)
+				return false;
+
+			Type componentType = typeof(Component);
+			return InternalCalls.Component_IsValid(component.Actor.ID, componentType);
+		}
 	}
 
 	public class Transform: Component

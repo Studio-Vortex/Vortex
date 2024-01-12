@@ -116,6 +116,12 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region Component
+
+		bool Component_IsValid(UUID actorUUID, MonoReflectionType* componentType);
+
+#pragma endregion
+
 #pragma region Actor
 
 		void Actor_AddComponent(UUID actorUUID, MonoReflectionType* componentType);

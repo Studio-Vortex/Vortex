@@ -203,7 +203,7 @@ namespace Vortex {
 
 		public static bool operator ==(Actor actorA, Actor actorB) => !actorA ? !actorB : actorA.Equals(actorB);
 		public static bool operator !=(Actor actorA, Actor actorB) => !(actorA == actorB);
-		public static implicit operator bool(Actor actor) => InternalCalls.Actor_IsValid(actor.ID);
+		public static implicit operator bool(Actor actor) => actor is null ? false : InternalCalls.Actor_IsValid(actor.ID);
 	}
 
 }

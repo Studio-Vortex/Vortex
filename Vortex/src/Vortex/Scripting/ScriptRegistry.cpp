@@ -569,6 +569,20 @@ namespace Vortex {
 			s_Data.TransitionQueued = true;
 		}
 
+		bool Component_IsValid(UUID actorUUID, MonoReflectionType* componentType)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor) {
+				return false;
+			}
+
+			MonoType* managedType = mono_reflection_type_get_type(componentType);
+			VX_CORE_ASSERT(s_Data.ActorHasComponentFuncs.find(managedType) != s_Data.ActorHasComponentFuncs.end());
+
+			return s_Data.ActorHasComponentFuncs[managedType](actor);
+		}
+
 #pragma endregion
 
 #pragma region Actor
@@ -9231,6 +9245,8 @@ namespace Vortex {
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_Resume);
 
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneManager_LoadScene);
+
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(Component_IsValid);
 
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_AddComponent);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Actor_HasComponent);

@@ -137,6 +137,13 @@ namespace Vortex {
 
 		#endregion
 
+		#region Component
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool Component_IsValid(ulong actorID, Type componentType);
+
+		#endregion
+
 		#region Actor
 
 		[MethodImpl(MethodImplOptions.InternalCall)]
