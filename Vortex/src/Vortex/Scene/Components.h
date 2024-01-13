@@ -342,7 +342,7 @@ namespace Vortex {
 		struct DropShadowInfo
 		{
 			Math::vec4 Color = ColorToVec4(Color::Black);
-			Math::vec2 ShadowDistance = Math::vec2(0.1f, -0.1f);
+			Math::vec2 ShadowDistance = Math::vec2(0.05f, -0.05f);
 			float ShadowScale = 1.0f;
 
 			bool Enabled = false;

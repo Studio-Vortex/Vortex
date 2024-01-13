@@ -330,7 +330,7 @@ namespace Vortex {
 			if (!textMeshComponent.DropShadow.Enabled)
 				continue;
 
-			const Math::mat4 shadowOffset = Math::Translate({ textMeshComponent.DropShadow.ShadowDistance, 0.01f })
+			const Math::mat4 shadowOffset = Math::Translate({ textMeshComponent.DropShadow.ShadowDistance, -0.01f })
 				* Math::Scale(Math::vec3(textMeshComponent.DropShadow.ShadowScale));
 
 			Renderer2D::DrawString(

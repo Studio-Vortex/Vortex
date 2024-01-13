@@ -2116,7 +2116,7 @@ namespace Vortex {
 			UI::BeginPropertyGrid();
 
 			UI::Property("Color", &component.DropShadow.Color);
-			UI::Property("Shadow Distance", component.DropShadow.ShadowDistance, 0.01f, FLT_MIN, FLT_MAX);
+			UI::Property("Shadow Distance", component.DropShadow.ShadowDistance, 0.01f, -FLT_MIN, FLT_MAX);
 			UI::Property("Shadow Scale", component.DropShadow.ShadowScale, 0.01f, FLT_MIN, FLT_MAX);
 
 			UI::EndPropertyGrid();
