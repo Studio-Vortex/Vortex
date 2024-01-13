@@ -326,6 +326,24 @@ namespace Vortex {
 				textMeshComponent.Kerning,
 				(int)(entt::entity)e
 			);
+
+			if (!textMeshComponent.DropShadow.Enabled)
+				continue;
+			
+			const Math::mat4 shadowOffset = Math::Translate({ textMeshComponent.DropShadow.ShadowDistance, 0.0f })
+				* Math::Scale(Math::vec3(textMeshComponent.DropShadow.ShadowScale));
+
+			Renderer2D::DrawString(
+				textMeshComponent.TextString,
+				font,
+				worldSpaceTransform * shadowOffset,
+				textMeshComponent.MaxWidth,
+				textMeshComponent.DropShadow.Color,
+				textMeshComponent.BackgroundColor,
+				textMeshComponent.LineSpacing,
+				textMeshComponent.Kerning,
+				(int)(entt::entity)e
+			);
 		}
 
 		Renderer2D::SetCullMode(originalCullMode);

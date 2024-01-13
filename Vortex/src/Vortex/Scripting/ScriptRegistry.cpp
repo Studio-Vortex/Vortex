@@ -2607,6 +2607,122 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region DropShadowInfo
+
+		bool DropShadowInfo_GetEnabled(UUID actorUUID)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access DropShadowInfo.Enabled on actor without a Text Mesh!");
+				return false;
+			}
+
+			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
+			return textMeshComponent.DropShadow.Enabled;
+		}
+
+		void DropShadowInfo_SetEnabled(UUID actorUUID, bool enabled)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set DropShadowInfo.Enabled on actor without a Text Mesh!");
+				return;
+			}
+
+			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
+			textMeshComponent.DropShadow.Enabled = enabled;
+		}
+
+		void DropShadowInfo_GetColor(UUID actorUUID, Math::vec4* outColor)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access DropShadowInfo.Color on actor without a Text Mesh!");
+				return;
+			}
+
+			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
+			*outColor = textMeshComponent.DropShadow.Color;
+		}
+
+		void DropShadowInfo_SetColor(UUID actorUUID, const Math::vec4* color)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set DropShadowInfo.Color on actor without a Text Mesh!");
+				return;
+			}
+
+			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
+			textMeshComponent.DropShadow.Color = *color;
+		}
+
+		void DropShadowInfo_GetShadowDistance(UUID actorUUID, Math::vec2* outShadowDistance)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access DropShadowInfo.ShadowDistance on actor without a Text Mesh!");
+				return;
+			}
+
+			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
+			*outShadowDistance = textMeshComponent.DropShadow.ShadowDistance;
+		}
+
+		void DropShadowInfo_SetShadowDistance(UUID actorUUID, const Math::vec2* shadowDistance)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set DropShadowInfo.ShadowDistance on actor without a Text Mesh!");
+				return;
+			}
+
+			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
+			textMeshComponent.DropShadow.ShadowDistance = *shadowDistance;
+		}
+
+		float DropShadowInfo_GetShadowScale(UUID actorUUID)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to access DropShadowInfo.ShadowScale on actor without a Text Mesh!");
+				return 0.0f;
+			}
+
+			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
+			return textMeshComponent.DropShadow.ShadowScale;
+		}
+
+		void DropShadowInfo_SetShadowScale(UUID actorUUID, float shadowScale)
+		{
+			Actor actor = GetActor(actorUUID);
+
+			if (!actor.HasComponent<TextMeshComponent>())
+			{
+				VX_CONSOLE_LOG_ERROR("[Script Engine] Trying to set DropShadowInfo.ShadowScale on actor without a Text Mesh!");
+				return;
+			}
+
+			TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
+			textMeshComponent.DropShadow.ShadowScale = shadowScale;
+		}
+
+#pragma endregion
+
 #pragma region Animator Component
 
 		bool AnimatorComponent_IsPlaying(UUID actorUUID)
@@ -9407,6 +9523,15 @@ namespace Vortex {
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_SetMaxWidth);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_IsVisible);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(TextMeshComponent_SetVisible);
+		
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DropShadowInfo_GetEnabled);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DropShadowInfo_SetEnabled);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DropShadowInfo_GetColor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DropShadowInfo_SetColor);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DropShadowInfo_GetShadowDistance);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DropShadowInfo_SetShadowDistance);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DropShadowInfo_GetShadowScale);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(DropShadowInfo_SetShadowScale);
 
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(AnimatorComponent_IsPlaying);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(AnimatorComponent_Play);

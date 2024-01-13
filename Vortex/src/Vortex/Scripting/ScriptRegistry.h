@@ -283,6 +283,19 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region DropShadowInfo
+
+		bool DropShadowInfo_GetEnabled(UUID actorUUID);
+		void DropShadowInfo_SetEnabled(UUID actorUUID, bool enabled);
+		void DropShadowInfo_GetColor(UUID actorUUID, Math::vec4* outColor);
+		void DropShadowInfo_SetColor(UUID actorUUID, const Math::vec4* color);
+		void DropShadowInfo_GetShadowDistance(UUID actorUUID, Math::vec2* outShadowDistance);
+		void DropShadowInfo_SetShadowDistance(UUID actorUUID, const Math::vec2* shadowDistance);
+		float DropShadowInfo_GetShadowScale(UUID actorUUID);
+		void DropShadowInfo_SetShadowScale(UUID actorUUID, float shadowScale);
+
+#pragma endregion
+
 #pragma region Animator Component
 
 		bool AnimatorComponent_IsPlaying(UUID actorUUID);

@@ -528,6 +528,34 @@ namespace Vortex {
 
 		#endregion
 
+		#region DropShadowInfo
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool DropShadowInfo_GetEnabled(ulong actorID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DropShadowInfo_SetEnabled(ulong actorID, bool enabled);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DropShadowInfo_GetColor(ulong actorID, out Color4 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DropShadowInfo_SetColor(ulong actorID, ref Color4 color);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DropShadowInfo_GetShadowDistance(ulong actorID, out Vector2 result);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DropShadowInfo_SetShadowDistance(ulong actorID, ref Vector2 shadowDistance);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float DropShadowInfo_GetShadowScale(ulong actorID);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void DropShadowInfo_SetShadowScale(ulong actorID, float shadowScale);
+
+		#endregion
+
 		#region Animator
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

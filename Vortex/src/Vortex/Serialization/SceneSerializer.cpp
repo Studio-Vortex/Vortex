@@ -203,22 +203,22 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(ClearColor, cameraComponent.ClearColor, out);
 			VX_SERIALIZE_PROPERTY(Primary, cameraComponent.Primary, out);
 			VX_SERIALIZE_PROPERTY(FixedAspectRatio, cameraComponent.FixedAspectRatio, out);
+			
 			VX_SERIALIZE_PROPERTY(PostProcessingEnabled, cameraComponent.PostProcessing.Enabled, out);
 
 			if (cameraComponent.PostProcessing.Enabled)
 			{
-				out << YAML::Key << "PostProcessing" << YAML::Value;
-
-				out << YAML::BeginMap; // PostProcessing
+				out << YAML::Key << "PostProcessing" << YAML::Value << YAML::BeginMap; // PostProcessing
+				
 				{
-					out << YAML::Key << "Bloom" << YAML::Value;
-					out << YAML::BeginMap; // Bloom
+					out << YAML::Key << "Bloom" << YAML::Value << YAML::BeginMap; // Bloom
 					VX_SERIALIZE_PROPERTY(Threshold, cameraComponent.PostProcessing.Bloom.Threshold, out);
 					VX_SERIALIZE_PROPERTY(Knee, cameraComponent.PostProcessing.Bloom.Knee, out);
 					VX_SERIALIZE_PROPERTY(Intensity, cameraComponent.PostProcessing.Bloom.Intensity, out);
 					VX_SERIALIZE_PROPERTY(Enabled, cameraComponent.PostProcessing.Bloom.Enabled, out);
 					out << YAML::EndMap; // Bloom
 				}
+
 				out << YAML::EndMap; // PostProcessing
 			}
 
@@ -443,10 +443,9 @@ namespace Vortex {
 		if (actor.HasComponent<TextMeshComponent>())
 		{
 			const TextMeshComponent& textMeshComponent = actor.GetComponent<TextMeshComponent>();
+			AssetHandle fontHandle = textMeshComponent.FontAsset;
 
 			out << YAML::Key << "TextMeshComponent" << YAML::Value << YAML::BeginMap; // TextMeshComponent
-
-			AssetHandle fontHandle = textMeshComponent.FontAsset;
 
 			VX_SERIALIZE_PROPERTY(FontHandle, fontHandle, out);
 			VX_SERIALIZE_PROPERTY(Visible, textMeshComponent.Visible, out);
@@ -457,6 +456,17 @@ namespace Vortex {
 			VX_SERIALIZE_PROPERTY(MaxWidth, textMeshComponent.MaxWidth, out);
 			VX_SERIALIZE_PROPERTY(TextHash, textMeshComponent.TextHash, out);
 			VX_SERIALIZE_PROPERTY(TextString, textMeshComponent.TextString, out);
+			
+			VX_SERIALIZE_PROPERTY(DropShadowEnabled, textMeshComponent.DropShadow.Enabled, out);
+			
+			if (textMeshComponent.DropShadow.Enabled)
+			{
+				out << YAML::Key << "DropShadow" << YAML::Value << YAML::BeginMap; // DropShadow
+				VX_SERIALIZE_PROPERTY(Color, textMeshComponent.DropShadow.Color, out);
+				VX_SERIALIZE_PROPERTY(ShadowDistance, textMeshComponent.DropShadow.ShadowDistance, out);
+				VX_SERIALIZE_PROPERTY(ShadowScale, textMeshComponent.DropShadow.ShadowScale, out);
+				out << YAML::EndMap; // DropShadow
+			}
 
 			out << YAML::EndMap; // TextMeshComponent
 		}
@@ -838,6 +848,7 @@ namespace Vortex {
 					cameraComponent.ClearColor = cameraComponentData["ClearColor"].as<Math::vec3>();
 				cameraComponent.Primary = cameraComponentData["Primary"].as<bool>();
 				cameraComponent.FixedAspectRatio = cameraComponentData["FixedAspectRatio"].as<bool>();
+				
 				if (cameraComponentData["PostProcessingEnabled"])
 					cameraComponent.PostProcessing.Enabled = cameraComponentData["PostProcessingEnabled"].as<bool>();
 
@@ -1122,6 +1133,17 @@ namespace Vortex {
 				textMeshComponent.MaxWidth = textMeshComponentData["MaxWidth"].as<float>();
 				textMeshComponent.TextHash = textMeshComponentData["TextHash"].as<size_t>();
 				textMeshComponent.TextString = textMeshComponentData["TextString"].as<std::string>();
+				
+				if (textMeshComponentData["DropShadowEnabled"])
+					textMeshComponent.DropShadow.Enabled = textMeshComponentData["DropShadowEnabled"].as<bool>();
+
+				if (textMeshComponent.DropShadow.Enabled)
+				{
+					const YAML::Node dropShadowData = textMeshComponentData["DropShadow"];
+					textMeshComponent.DropShadow.Color = dropShadowData["Color"].as<Math::vec4>();
+					textMeshComponent.DropShadow.ShadowDistance = dropShadowData["ShadowDistance"].as<Math::vec2>();
+					textMeshComponent.DropShadow.ShadowScale = dropShadowData["ShadowScale"].as<float>();
+				}
 			}
 
 			const YAML::Node animationComponent = actor["AnimationComponent"];

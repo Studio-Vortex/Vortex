@@ -2107,7 +2107,20 @@ namespace Vortex {
 		UI::Property("Kerning", component.Kerning, 0.1f, FLT_MIN, FLT_MAX);
 		UI::Property("Max Width", component.MaxWidth, 0.1f, FLT_MIN, FLT_MAX);
 
+		UI::Property("Drop Shadow", component.DropShadow.Enabled);
+
 		UI::EndPropertyGrid();
+
+		if (component.DropShadow.Enabled && UI::PropertyGridHeader("Drop Shadow"))
+		{
+			UI::BeginPropertyGrid();
+
+			UI::Property("Color", &component.DropShadow.Color);
+			UI::Property("Shadow Distance", component.DropShadow.ShadowDistance);
+			UI::Property("Shadow Scale", component.DropShadow.ShadowScale);
+
+			UI::EndPropertyGrid();
+		}
 	}
 
 	void SceneHierarchyPanel::ButtonComponentOnGuiRender(ButtonComponent& component, Actor actor)

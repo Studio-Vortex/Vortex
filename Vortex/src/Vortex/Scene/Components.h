@@ -7,6 +7,7 @@
 #include "Vortex/Scene/SceneCamera.h"
 
 #include "Vortex/Renderer/Material.h"
+#include "Vortex/Renderer/Color.h"
 
 #include "Vortex/Physics/3D/PhysicsTypes.h"
 
@@ -330,13 +331,22 @@ namespace Vortex {
 		bool Visible = true;
 
 		// Font
-		Math::vec4 Color = Math::vec4(1.0f);
-		Math::vec4 BackgroundColor = Math::vec4(0.0f); // TODO this needs some work
+		Math::vec4 Color = ColorToVec4(Color::White);
+		Math::vec4 BackgroundColor = ColorToVec4(Color::Black); // TODO this needs some work
 		float LineSpacing = 0.0f;
 		float Kerning = 0.0f;
 
 		// Layout
 		float MaxWidth = 10.0f;
+
+		struct DropShadowInfo
+		{
+			Math::vec4 Color = ColorToVec4(Color::Black);
+			Math::vec2 ShadowDistance = Math::vec2(0.1f, -0.1f);
+			float ShadowScale = 1.0f;
+
+			bool Enabled = false;
+		} DropShadow;
 
 		TextMeshComponent() = default;
 		TextMeshComponent(const TextMeshComponent&) = default;

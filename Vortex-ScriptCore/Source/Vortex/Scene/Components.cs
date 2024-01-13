@@ -327,7 +327,7 @@ namespace Vortex {
 			set => InternalCalls.CameraComponent_SetClearColor(Actor.ID, ref value);
 		}
 
-		public bool IsFixedAspectRatio
+		public bool FixedAspectRatio
 		{
 			get
 			{
@@ -476,6 +476,11 @@ namespace Vortex {
 		{
 			get => InternalCalls.TextMeshComponent_IsVisible(Actor.ID);
 			set => InternalCalls.TextMeshComponent_SetVisible(Actor.ID, value);
+		}
+
+		public DropShadowInfo DropShadow
+		{
+			get => new DropShadowInfo(Actor);
 		}
 	}
 
