@@ -332,7 +332,7 @@ namespace Vortex {
 
 		// Font
 		Math::vec4 Color = ColorToVec4(Color::White);
-		Math::vec4 BackgroundColor = ColorToVec4(Color::Black); // TODO this needs some work
+		Math::vec4 BackgroundColor = Math::vec4(0.0f); // TODO this needs some work
 		float LineSpacing = 0.0f;
 		float Kerning = 0.0f;
 
@@ -366,7 +366,7 @@ namespace Vortex {
 			std::string TextString = "";
 			size_t TextHash = 0;
 
-			Math::vec4 Color = Math::vec4(1.0f);
+			Math::vec4 Color = ColorToVec4(Color::White);
 			Math::vec4 BackgroundColor = Math::vec4(0.0f);
 			Math::vec2 Offset = Math::vec2(0.0f);
 			Math::vec2 Scale = Math::vec2(0.25f);

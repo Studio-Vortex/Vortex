@@ -2111,7 +2111,7 @@ namespace Vortex {
 
 		UI::EndPropertyGrid();
 
-		if (component.DropShadow.Enabled && UI::PropertyGridHeader("Drop Shadow"))
+		if (component.DropShadow.Enabled && UI::PropertyGridHeader("Drop Shadow", false))
 		{
 			UI::BeginPropertyGrid();
 
@@ -2120,6 +2120,8 @@ namespace Vortex {
 			UI::Property("Shadow Scale", component.DropShadow.ShadowScale);
 
 			UI::EndPropertyGrid();
+
+			UI::EndTreeNode();
 		}
 	}
 
