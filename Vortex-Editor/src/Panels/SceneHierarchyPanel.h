@@ -64,6 +64,8 @@ namespace Vortex {
 
 		void RecursiveActorSearch(UUID rootActor, const EditorCamera* editorCamera, uint32_t& searchDepth);
 
+		bool RecursiveIsPrefabOrAncestorIsPrefab(Actor actor);
+
 	private:
 		void TagComponentOnGuiRender(TagComponent& component, Actor actor);
 		void TransformComponentOnGuiRender(TransformComponent& component, Actor actor);

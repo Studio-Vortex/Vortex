@@ -11,11 +11,13 @@
 
 #include "Vortex/Physics/3D/PhysicsTypes.h"
 
+#include <vector>
+
 namespace Vortex {
 
-#pragma region Core Components
-
-	class Prefab;
+	class Animator;
+	class Animation;
+	class ScriptableActor;
 
 	struct VORTEX_API IDComponent
 	{
@@ -88,7 +90,9 @@ namespace Vortex {
 
 		VX_FORCE_INLINE Math::mat4 GetTransform() const
 		{
-			return Math::Translate(Translation) * Math::ToMat4(Rotation) * Math::Scale(Scale);
+			return Math::Translate(Translation)
+				* Math::ToMat4(Rotation)
+				* Math::Scale(Scale);
 		}
 
 		VX_FORCE_INLINE void SetTransform(const Math::mat4& transform)
@@ -99,21 +103,27 @@ namespace Vortex {
 			RotationEuler = Math::EulerAngles(Rotation);
 		}
 
-		VX_FORCE_INLINE Math::quaternion GetRotation() const
-		{
-			return Rotation;
-		}
+		VX_FORCE_INLINE Math::quaternion GetRotation() const { return Rotation; }
 
 		VX_FORCE_INLINE void SetRotation(const Math::quaternion& rotation)
 		{
+			const Math::vec3 originalEuler = RotationEuler;
 			Rotation = rotation;
 			RotationEuler = Math::EulerAngles(Rotation);
+
+			// Attempt to avoid 180deg flips in the Euler angles when we SetRotation(quat)
+			if (
+				(fabs(RotationEuler.x - originalEuler.x) == Math::PI) &&
+				(fabs(RotationEuler.z - originalEuler.z) == Math::PI)
+				)
+			{
+				RotationEuler.x = originalEuler.x;
+				RotationEuler.y = Math::PI - RotationEuler.y;
+				RotationEuler.z = originalEuler.z;
+			}
 		}
 
-		VX_FORCE_INLINE Math::vec3 GetRotationEuler() const
-		{
-			return RotationEuler;
-		}
+		VX_FORCE_INLINE Math::vec3 GetRotationEuler() const { return RotationEuler; }
 
 		VX_FORCE_INLINE void SetRotationEuler(const Math::vec3& euler)
 		{
@@ -121,57 +131,32 @@ namespace Vortex {
 			Rotation = Math::quaternion(RotationEuler);
 		}
 
-		VX_FORCE_INLINE Math::vec3 CalculateForward() const
-		{
-			return Math::Rotate(Rotation, Math::vec3(0.0f, 0.0f, -1.0f));
-		}
+		VX_FORCE_INLINE Math::vec3 CalculateForward() const { return CalculateDirection({ 0.0f, 0.0f, -1.0f }); }
+		VX_FORCE_INLINE Math::vec3 CalculateBackward() const { return CalculateDirection({ 0.0f, 0.0f, 1.0f }); }
+		VX_FORCE_INLINE Math::vec3 CalculateUp() const { return CalculateDirection({ 0.0f, 1.0f, 0.0f }); }
+		VX_FORCE_INLINE Math::vec3 CalculateDown() const { return CalculateDirection({ 0.0f, -1.0f, 0.0f }); }
+		VX_FORCE_INLINE Math::vec3 CalculateRight() const { return CalculateDirection({ 1.0f, 0.0f, 0.0f }); }
+		VX_FORCE_INLINE Math::vec3 CalculateLeft() const { return CalculateDirection({ -1.0f, 0.0f, 0.0f }); }
 
-		VX_FORCE_INLINE Math::vec3 CalculateBackward() const
+	private:
+		VX_FORCE_INLINE Math::vec3 CalculateDirection(const Math::vec3& direction) const
 		{
-			return Math::Rotate(Rotation, Math::vec3(0.0f, 0.0f, 1.0f));
-		}
-
-		VX_FORCE_INLINE Math::vec3 CalculateUp() const
-		{
-			return Math::Rotate(Rotation, Math::vec3(0.0f, 1.0f, 0.0f));
-		}
-
-		VX_FORCE_INLINE Math::vec3 CalculateDown() const
-		{
-			return Math::Rotate(Rotation, Math::vec3(0.0f, -1.0f, 0.0f));
-		}
-
-		VX_FORCE_INLINE Math::vec3 CalculateRight() const
-		{
-			return Math::Rotate(Rotation, Math::vec3(1.0f, 0.0f, 0.0f));
-		}
-
-		VX_FORCE_INLINE Math::vec3 CalculateLeft() const
-		{
-			return Math::Rotate(Rotation, Math::vec3(-1.0f, 0.0f, 0.0f));
+			return Math::Rotate(Rotation, direction);
 		}
 
 	private:
-		Math::vec3 RotationEuler = Math::vec3(0.0f);
+		Math::vec3 RotationEuler = Math::vec3(0.0f, 0.0f, 0.0f);
 		Math::quaternion Rotation = Math::quaternion(1.0f, 0.0f, 0.0f, 0.0f);
 	};
 
 	struct VORTEX_API PrefabComponent
 	{
-		AssetHandle PrefabAsset = 0;
-		UUID PrefabUUID = 0;
+		AssetHandle Prefab = 0;
 		UUID ActorUUID = 0;
 
 		PrefabComponent() = default;
 		PrefabComponent(const PrefabComponent&) = default;
 	};
-
-#pragma endregion
-
-#pragma region Rendering Components
-
-	class Animator;
-	class Animation;
 
 	struct VORTEX_API CameraComponent
 	{
@@ -319,10 +304,6 @@ namespace Vortex {
 		AnimationComponent(const AnimationComponent&) = default;
 	};
 
-#pragma endregion
-
-#pragma region UI Components
-
 	struct VORTEX_API TextMeshComponent
 	{
 		AssetHandle FontAsset = 0;
@@ -382,10 +363,6 @@ namespace Vortex {
 		ButtonComponent(const ButtonComponent&) = default;
 	};
 
-#pragma endregion
-
-#pragma region Audio Components
-
 	struct VORTEX_API AudioSourceComponent
 	{
 		AssetHandle AudioHandle = 0;
@@ -403,10 +380,6 @@ namespace Vortex {
 		AudioListenerComponent() = default;
 		AudioListenerComponent(const AudioListenerComponent&) = default;
 	};
-
-#pragma endregion
-
-#pragma region Physics Components
 
 	enum class RigidBodyType { None = -1, Static, Dynamic };
 
@@ -581,10 +554,6 @@ namespace Vortex {
 		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
 	};
 
-#pragma endregion
-
-#pragma region AI Components
-
 	struct VORTEX_API NavMeshAgentComponent
 	{
 		uint64_t Unknown = 0;
@@ -592,12 +561,6 @@ namespace Vortex {
 		NavMeshAgentComponent() = default;
 		NavMeshAgentComponent(const NavMeshAgentComponent&) = default;
 	};
-
-#pragma endregion
-
-#pragma region Script Components
-
-	class ScriptableActor;
 
 	struct VORTEX_API ScriptComponent
 	{
@@ -623,8 +586,6 @@ namespace Vortex {
 			DestroyInstanceScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 		}
 	};
-
-#pragma endregion
 
 	template<typename... Component>
 	struct ComponentGroup { };

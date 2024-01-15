@@ -1004,6 +1004,23 @@ namespace Vortex {
 					}
 					case AssetType::PrefabAsset:
 					{
+						AssetHandle prefabHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
+						if (AssetManager::IsHandleValid(prefabHandle))
+						{
+							EditorCamera* editorCamera = GetCurrentEditorCamera();
+							if (editorCamera) {
+								const Math::vec3 translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
+								SharedReference<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabHandle);
+								Actor prefabInstance = m_ActiveScene->Instantiate(prefab, &translation);
+								SelectionManager::SetSelectedActor(prefabInstance);
+								m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnActorName(true);
+							}
+						}
+						else
+						{
+							VX_CONSOLE_LOG_ERROR("[Editor] Failed to instantiate prefab!");
+						}
+
 						break;
 					}
 					case AssetType::ScriptAsset:
@@ -3132,7 +3149,7 @@ namespace Vortex {
 
 		SetWindowTitle(sceneFilename);
 
-		m_ActiveScene->SetDebugName(sceneFilename);
+		m_ActiveScene->SetName(sceneFilename);
 	}
 
 	void EditorLayer::SaveSceneAs()
@@ -3367,24 +3384,22 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "active scene must be running to queue transition");
 
-		Application::Get().SubmitToPreUpdateFrameMainThreadQueue([=]()
+		Application::Get().SubmitToPreUpdateMainThreadQueue([=]()
 		{
 			m_StartSceneFilepath = m_EditorSceneFilepath;
 
 			const std::string filename = sceneName + Project::GetEditorAssetManager()->GetExtensionFromAssetType(AssetType::SceneAsset);
 			const Fs::Path relativePath = Project::GetEditorAssetManager()->GetRelativePath(filename);
 			const Fs::Path assetDirectory = Project::GetAssetDirectory();
-			const Fs::Path nextSceneFilepath = relativePath;
+			const Fs::Path nextSceneFilepath = assetDirectory / "Scenes" / relativePath;
 
-			VX_CONSOLE_LOG_INFO("SceneManager.LoadScene", nextSceneFilepath);
+			OpenScene(nextSceneFilepath);
+			OnScenePlay();
 
-			//OpenScene(nextSceneFilepath);
-			//OnScenePlay();
-
-			//m_TransitionedFromStartScene = true;
+			m_TransitionedFromStartScene = true;
 		});
 	}
-
+	
 	void EditorLayer::SetWindowTitle(const std::string& sceneName)
 	{
 		const std::string projectName = Project::GetActive()->GetName();

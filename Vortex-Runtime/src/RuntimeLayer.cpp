@@ -248,7 +248,7 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "Scene must be running to queue transition!");
 
-		Application::Get().SubmitToPreUpdateFrameMainThreadQueue([=]()
+		Application::Get().SubmitToPreUpdateMainThreadQueue([=]()
 		{
 			// TODO
 			const Fs::Path assetDirectory = Project::GetAssetDirectory();

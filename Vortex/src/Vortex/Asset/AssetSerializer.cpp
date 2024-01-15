@@ -3,6 +3,8 @@
 
 #include "Vortex/Project/Project.h"
 
+#include "Vortex/Scene/Prefab.h"
+
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioTypes.h"
 #include "Vortex/Audio/AudioUtils.h"
@@ -14,6 +16,8 @@
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Font/Font.h"
 #include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
+
+#include "Vortex/Serialization/SceneSerializer.h"
 
 #include "Vortex/Utils/YAML_SerializationUtils.h"
 #include "Vortex/Utils/FileSystem.h"
@@ -69,7 +73,7 @@ namespace Vortex {
 		SharedReference<AudioSource> audioSource = asset.Is<AudioSource>();
 		if (!audioSource)
 		{
-			VX_CONSOLE_LOG_ERROR("Attempting to serialize invalid audio source asset!");
+			VX_CONSOLE_LOG_ERROR("[Asset Serializer] Attempting to serialize invalid audio source asset!");
 			return;
 		}
 
@@ -265,14 +269,65 @@ namespace Vortex {
 
 	void PrefabAssetSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
 	{
-
+		SerializeToYAML(metadata, asset);
 	}
 
 	bool PrefabAssetSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
+		return DeserializeFromYAML(metadata, asset);
+	}
+
+	void PrefabAssetSerializer::SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
+	{
+		YAML::Emitter out;
+
+		SharedReference<Prefab> prefab = asset.Is<Prefab>();
+		if (!prefab)
+		{
+			VX_CONSOLE_LOG_ERROR("[Asset Serializer] Attempting to serialize invalid prefab asset!");
+			return;
+		}
+
+		out << YAML::BeginMap;
+		out << YAML::Key << "Prefab";
+		out << YAML::Value << YAML::BeginSeq;
+
+		prefab->m_Scene->m_Registry.each([&](auto actorID) {
+			Actor actor = { actorID, prefab->m_Scene.Raw() };
+			if (!actor || !actor.HasComponent<IDComponent>())
+				return;
+
+			SceneSerializer::SerializeActor(out, actor);
+		});
+
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
+
+		const std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		std::ofstream fout(outputFile);
+		VX_CORE_ASSERT(fout.is_open(), "Failed to open file!");
+
+		fout << out.c_str();
+
+		fout.close();
+	}
+
+	bool PrefabAssetSerializer::DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset)
+	{
 		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
-		return false;
+		asset = SharedReference<Prefab>::Create();
+		asset->Handle = metadata.Handle;
+
+		YAML::Node prefabData = YAML::LoadFile(relativePath);
+		if (!prefabData)
+			return false;
+
+		const YAML::Node prefabNode = prefabData["Prefab"];
+
+		SceneSerializer::DeserializeActors(prefabNode, asset.As<Prefab>()->m_Scene);
+
+		return true;
 	}
 
 	void ScriptSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
@@ -323,7 +378,7 @@ namespace Vortex {
 		SharedReference<ParticleEmitter> particleEmitter = asset.Is<ParticleEmitter>();
 		if (!particleEmitter)
 		{
-			VX_CONSOLE_LOG_ERROR("Attempting to serialize invalid particle emitter asset!");
+			VX_CONSOLE_LOG_ERROR("[Asset Serializer] Attempting to serialize invalid particle emitter asset!");
 			return;
 		}
 
@@ -422,14 +477,14 @@ namespace Vortex {
 		SharedReference<Material> material = asset.Is<Material>();
 		if (!material)
 		{
-			VX_CONSOLE_LOG_ERROR("Attempting to serialize invalid material asset!");
+			VX_CONSOLE_LOG_ERROR("[Asset Serializer] Attempting to serialize invalid material asset!");
 			return;
 		}
 
 		const std::string& materialName = material->GetName();
 		if (materialName.empty())
 		{
-			VX_CONSOLE_LOG_ERROR("Failed to serialize material with no name!");
+			VX_CONSOLE_LOG_ERROR("[Asset Serializer] Attempting to serialize material with no name!");
 			return;
 		}
 

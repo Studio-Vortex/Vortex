@@ -52,6 +52,10 @@ namespace Vortex {
 	public:
 		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
 		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+
+	private:
+		void SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset);
+		bool DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset);
 	};
 
 	class VORTEX_API ScriptSerializer : public AssetSerializer

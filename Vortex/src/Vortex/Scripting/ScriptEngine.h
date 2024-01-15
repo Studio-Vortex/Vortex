@@ -73,13 +73,16 @@ namespace Vortex {
 		static MonoImage* GetAppAssemblyImage();
 
 		static SharedReference<ScriptInstance> GetScriptInstance(UUID uuid);
+		static void DuplicateScriptInstance(Actor src, Actor dst);
 
 		static SharedReference<ScriptInstance> GetFirstInstanceOfScriptClass(SharedReference<ScriptClass> scriptClass);
 
 		static SharedReference<ScriptClass> GetScriptClass(const std::string& className);
-		static std::unordered_map<std::string, SharedReference<ScriptClass>> GetScriptClasses();
+		static const std::unordered_map<std::string, SharedReference<ScriptClass>>& GetScriptClasses();
 		static const ScriptFieldMap& GetScriptFieldMap(Actor actor);
 		static ScriptFieldMap& GetMutableScriptFieldMap(Actor actor);
+
+		static void CopyFieldValues(Actor src, Actor dst);
 
 		static MonoObject* TryGetManagedInstance(UUID uuid);
 

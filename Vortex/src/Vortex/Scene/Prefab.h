@@ -1,35 +1,34 @@
 #pragma once
 
-#include "Vortex/Scene/Scene.h"
+#include "Vortex/Asset/Asset.h"
+#include "Vortex/ReferenceCounting/SharedRef.h"
 #include "Vortex/Scene/Actor.h"
-
-#include <filesystem>
 
 namespace Vortex {
 
-	class Prefab
+	class Scene;
+
+	class VORTEX_API Prefab : public Asset
 	{
 	public:
-		Prefab(const std::filesystem::path& filepath);
-		Prefab(Actor actor);
-		~Prefab() = default;
+		Prefab();
+		~Prefab() override = default;
 
-		// Create a prefab with an empty actor
-		static SharedRef<Prefab> Create(const std::filesystem::path& filepath);
-		// Replaces existing actor if present
-		static SharedRef<Prefab> Create(Actor actor);
+		void Create(Actor actor, bool serialize = true);
+
+		ASSET_CLASS_TYPE(PrefabAsset)
 
 	private:
 		Actor CreatePrefabFromActor(Actor actor);
 
 	private:
-		std::filesystem::path m_Filepath;
 		SharedReference<Scene> m_Scene = nullptr;
 		Actor m_Actor;
 
+	private:
 		friend class Scene;
 		friend class ScriptEngine;
-		friend class PrefabSerializer;
+		friend class PrefabAssetSerializer;
 	};
 
 }

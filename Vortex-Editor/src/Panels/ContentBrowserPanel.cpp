@@ -81,51 +81,53 @@ namespace Vortex {
 
 	void ContentBrowserPanel::RenderCreateItemPopup()
 	{
-		// Right-click on blank space in content browser panel
-		if (Gui::BeginPopupContextWindow(0, 1, false))
+		auto separator = []() {
+			UI::Draw::Underline();
+			Gui::Spacing();
+		};
+
+		if (Gui::BeginMenu("Create"))
 		{
-			if (Gui::BeginMenu("Create"))
+			const Fs::Path currentDirectory = m_CurrentDirectory.filename();
+
+			if (Gui::MenuItem("Folder"))
 			{
-				const Fs::Path currentDirectory = m_CurrentDirectory.filename();
+				const std::string filename = "New Folder";
+				m_ItemPathToRename = m_CurrentDirectory / filename;
+				FileSystem::CreateDirectoryV(m_ItemPathToRename);
 
-				if (Gui::MenuItem("Folder"))
-				{
-					const std::string filename = "New Folder";
-					m_ItemPathToRename = m_CurrentDirectory / filename;
-					FileSystem::CreateDirectoryV(m_ItemPathToRename);
+				Gui::CloseCurrentPopup();
+			}
+			separator();
 
-					Gui::CloseCurrentPopup();
-				}
-				UI::Draw::Underline();
+			if (Gui::MenuItem("Scene"))
+			{
+				const std::string filename = "Untitled.vortex";
+				SharedReference<Scene> scene = Project::GetEditorAssetManager()->CreateNewAsset<Scene>(currentDirectory.string(), filename);
+				SceneSerializer serializer(scene);
+				serializer.Serialize((m_CurrentDirectory / filename).string());
+				VX_CORE_ASSERT(scene, "Failed to create scene!");
 
-				if (Gui::MenuItem("Scene"))
-				{
-					const std::string filename = "Untitled.vortex";
-					SharedReference<Scene> scene = Project::GetEditorAssetManager()->CreateNewAsset<Scene>(currentDirectory.string(), filename);
-					SceneSerializer serializer(scene);
-					serializer.Serialize((m_CurrentDirectory / filename).string());
-					VX_CORE_ASSERT(scene, "Failed to create scene!");
+				Gui::CloseCurrentPopup();
+			}
+			separator();
 
-					Gui::CloseCurrentPopup();
-				}
-				UI::Draw::Underline();
+			if (Gui::MenuItem("Material"))
+			{
+				const std::string filename = "NewMaterial.vmaterial";
+				SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("PBR_Static");
+				MaterialProperties properties = MaterialProperties();
+				SharedReference<Material> material = Project::GetEditorAssetManager()->CreateNewAsset<Material>(currentDirectory.string(), filename, shader, properties);
+				VX_CORE_ASSERT(material, "Failed to create material!");
 
-				if (Gui::MenuItem("Material"))
-				{
-					const std::string filename = "NewMaterial.vmaterial";
-					SharedReference<Shader> shader = Renderer::GetShaderLibrary().Get("PBR_Static");
-					MaterialProperties properties = MaterialProperties();
-					SharedReference<Material> material = Project::GetEditorAssetManager()->CreateNewAsset<Material>(currentDirectory.string(), filename, shader, properties);
-					VX_CORE_ASSERT(material, "Failed to create material!");
+				Gui::CloseCurrentPopup();
+			}
+			separator();
 
-					Gui::CloseCurrentPopup();
-				}
-				UI::Draw::Underline();
-
-				if (Gui::MenuItem("C# Script"))
-				{
-					std::ofstream fout(m_ItemPathToRename);
-					fout << R"(using Vortex;
+			if (Gui::MenuItem("C# Script"))
+			{
+				std::ofstream fout(m_ItemPathToRename);
+				fout << R"(using Vortex;
 
 public class Untitled : Actor
 {
@@ -143,15 +145,12 @@ public class Untitled : Actor
 }
 )";
 
-					fout.close();
+				fout.close();
 
-					Gui::CloseCurrentPopup();
-				}
-
-				Gui::EndMenu();
+				Gui::CloseCurrentPopup();
 			}
 
-			Gui::EndPopup();
+			Gui::EndMenu();
 		}
 	}
 
@@ -253,7 +252,13 @@ public class Untitled : Actor
 
 		Gui::Columns(1);
 
-		RenderCreateItemPopup();
+		// Right-click on blank space in content browser panel to show create menu
+		if (Gui::BeginPopupContextWindow(0, 1, false))
+		{
+			RenderCreateItemPopup();
+
+			Gui::EndPopup();
+		}
 
 		Gui::EndChild();
 
@@ -263,10 +268,24 @@ public class Untitled : Actor
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("SCENE_HIERARCHY_ITEM"))
 			{
 				const Actor& droppedActor = *(Actor*)payload->Data;
-				VX_CONSOLE_LOG_INFO("Dropped Actor Name: {}", droppedActor.Name());
-				// Todo Create a new prefab here from the Actor's uuid
-				//SharedRef<Prefab> prefab = Prefab::Create((Project::GetProjectDirectory() / droppedActor.GetName() / ".vprefab"));
-				SharedRef<Prefab> prefab = Prefab::Create(droppedActor);
+				if (droppedActor)
+				{
+					VX_CONSOLE_LOG_INFO("Dropped Actor Name: {}", droppedActor.Name());
+
+					const std::string filename = droppedActor.Name() + ".vprefab";
+
+					// todo should we use prefabs directory or the current directory
+					const Fs::Path prefabDirectory = Project::GetAssetDirectory() / "Prefabs";
+					if (!FileSystem::Exists(prefabDirectory)) {
+						FileSystem::CreateDirectoryV(prefabDirectory);
+					}
+
+					SharedReference<Prefab> prefab = Project::GetEditorAssetManager()->CreateNewAsset<Prefab>("Prefabs", filename);
+					if (prefab)
+						prefab->Create(droppedActor);
+					else
+						VX_CONSOLE_LOG_ERROR("Failed to create prefab!");
+				}
 			}
 			Gui::EndDragDropTarget();
 		}
@@ -446,7 +465,7 @@ public class Untitled : Actor
 		char buffer[256];
 		const size_t lastSlashPos = currentPath.string().find_last_of('/\\');
 		const std::string oldFilenameWithExtension = currentPath.string().substr(lastSlashPos + 1, currentPath.string().length());
-		memcpy(buffer, oldFilenameWithExtension.c_str(), sizeof(buffer));
+		memcpy(buffer, oldFilenameWithExtension.c_str(), oldFilenameWithExtension.size());
 
 		Gui::SetKeyboardFocusHere();
 		Gui::SetNextItemWidth(m_ThumbnailSize);
@@ -594,10 +613,10 @@ public class Untitled : Actor
 			case AssetType::FontAsset:            itemIcon = EditorResources::FontIcon;                           break;
 			case AssetType::AudioAsset:           itemIcon = EditorResources::AudioFileIcon;                      break;
 			case AssetType::SceneAsset:           itemIcon = EditorResources::SceneIcon;                          break;
-			case AssetType::PrefabAsset:          break;
+			case AssetType::PrefabAsset:          itemIcon = EditorResources::PrefabIcon;
 			case AssetType::ScriptAsset:          itemIcon = EditorResources::CodeFileIcon;                       break;
 			case AssetType::TextureAsset:         itemIcon = FindTextureFromAssetManager(currentItemPath);        break;
-			case AssetType::MaterialAsset:        break;
+			case AssetType::MaterialAsset:        itemIcon = EditorResources::MaterialIcon;
 			case AssetType::AnimatorAsset:        break;
 			case AssetType::AnimationAsset:       break;
 			case AssetType::StaticMeshAsset:      itemIcon = FindMeshIcon(extension);                             break;

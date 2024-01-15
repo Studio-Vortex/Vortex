@@ -31,6 +31,32 @@ namespace Vortex {
 		WriteToRegistryFile();
 	}
 
+	bool EditorAssetManager::RemoveAsset(AssetHandle handle)
+	{
+		if (!IsHandleValid(handle))
+		{
+			return false;
+		}
+
+		if (IsMemoryOnlyAsset(handle))
+		{
+			VX_CORE_ASSERT(m_MemoryOnlyAssets.contains(handle));
+			m_MemoryOnlyAssets.erase(handle);
+		}
+		else
+		{
+			VX_CORE_ASSERT(m_LoadedAssets.contains(handle));
+			m_LoadedAssets.erase(handle);
+		}
+
+		if (m_AssetRegistry.Contains(handle))
+		{
+			m_AssetRegistry.Remove(handle);
+		}
+
+		return true;
+	}
+
 	bool EditorAssetManager::OnProjectSerialized()
 	{
 		WriteToRegistryFile();
@@ -41,7 +67,6 @@ namespace Vortex {
 	bool EditorAssetManager::OnProjectDeserialized()
 	{
 		LoadAssetRegistry();
-		ReloadAssets();
 
 		// Should we load default meshes here?
 		DefaultMesh::Init();
@@ -354,7 +379,7 @@ namespace Vortex {
 			switch (metadata.Type)
 			{
 				case AssetType::MaterialAsset: asset.As<Material>()->SetName(filename); break;
-				case AssetType::SceneAsset: asset.As<Scene>()->SetDebugName(filename); break;
+				case AssetType::SceneAsset: asset.As<Scene>()->SetName(filename); break;
 				case AssetType::ParticleAsset: asset.As<ParticleEmitter>()->SetName(filename); break;
 			}
 
@@ -376,7 +401,7 @@ namespace Vortex {
 
 	void EditorAssetManager::LoadAssetRegistry()
 	{
-		VX_CONSOLE_LOG_INFO("[Asset Manager] Loading Asset Registry");
+		//VX_CONSOLE_LOG_INFO("[Asset Manager] Loading Asset Registry");
 
 		if (!FileSystem::Exists(m_ProjectAssetRegistryPath))
 		{

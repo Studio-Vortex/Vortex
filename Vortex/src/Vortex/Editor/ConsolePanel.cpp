@@ -113,7 +113,7 @@ namespace Vortex {
 
 			m_PreviousScrollY = scrollY;
 
-			float rowHeight = 26.0f;
+			float rowHeight = 28.0f;
 			for (uint32_t i = 0; i < m_MessageBuffer.size(); i++)
 			{
 				const ConsoleMessage& msg = m_MessageBuffer[i];

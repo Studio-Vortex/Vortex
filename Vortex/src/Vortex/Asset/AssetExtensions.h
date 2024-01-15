@@ -7,12 +7,17 @@
 
 namespace Vortex {
 
-	std::unordered_map<std::string, AssetType> s_AssetExtensionMap =
+	static std::unordered_map<std::string, AssetType> s_AssetExtensionMap =
 	{
+		{ ".vortex", AssetType::SceneAsset },
+		{ ".vprefab", AssetType::PrefabAsset },
+		{ ".vparticle", AssetType::ParticleAsset },
 		{ ".vanimation", AssetType::AnimationAsset },
 		{ ".vanimator", AssetType::AnimatorAsset },
-
 		{ ".vsound", AssetType::AudioAsset },
+		{ ".vmaterial", AssetType::MaterialAsset },
+		{ ".vpm", AssetType::PhysicsMaterialAsset },
+
 		{ ".wav", AssetType::AudioAsset },
 		{ ".mp3", AssetType::AudioAsset },
 
@@ -26,9 +31,6 @@ namespace Vortex {
 		{ ".OTC", AssetType::FontAsset },
 		{ ".otf", AssetType::FontAsset },
 		{ ".OTF", AssetType::FontAsset },
-
-		{ ".vmaterial", AssetType::MaterialAsset },
-		{ ".vpm", AssetType::PhysicsMaterialAsset },
 
 		// TODO once we have skinned meshes come back to this with a specific file format
 		// if we try to do it this way right now the asset system will get confused because
@@ -56,12 +58,7 @@ namespace Vortex {
 		{ ".obj", AssetType::StaticMeshAsset },
 		{ ".OBJ", AssetType::StaticMeshAsset },
 
-		{ ".vortex", AssetType::SceneAsset },
-		{ ".vprefab", AssetType::PrefabAsset },
-
 		{ ".cs", AssetType::ScriptAsset },
-
-		{ ".vparticle", AssetType::ParticleAsset },
 
 		{ ".png", AssetType::TextureAsset },
 		{ ".jpg", AssetType::TextureAsset },

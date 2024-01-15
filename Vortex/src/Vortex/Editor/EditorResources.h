@@ -12,9 +12,6 @@ namespace Vortex {
 	class EditorResources
 	{
 	public:
-		// Note: if we ever want to use EditorResources during Runtime
-		// we need to add EditorResources::Init() to RuntimeLayer::OnAttach
-
 		static void Init();
 		static void Shutdown();
 
@@ -61,6 +58,8 @@ namespace Vortex {
 		inline static SharedReference<Texture2D> AudioFileIcon = nullptr;
 		inline static SharedReference<Texture2D> OBJIcon = nullptr;
 		inline static SharedReference<Texture2D> FBXIcon = nullptr;
+		inline static SharedReference<Texture2D> MaterialIcon = nullptr;
+		inline static SharedReference<Texture2D> PrefabIcon = nullptr;
 		inline static SharedReference<Texture2D> FontIcon = nullptr;
 		inline static SharedReference<Texture2D> CodeFileIcon = nullptr;
 		inline static SharedReference<Texture2D> SceneIcon = nullptr;

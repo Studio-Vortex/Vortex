@@ -20,6 +20,7 @@
 namespace Vortex {
 
 	class Actor;
+	class Prefab;
 	class Mesh;
 	class StaticMesh;
 	class EditorCamera;
@@ -45,16 +46,16 @@ namespace Vortex {
 		Actor CreateChildActor(Actor parent, const std::string& name = std::string(), const std::string& marker = std::string());
 		Actor CreateActorWithUUID(UUID uuid, const std::string& name = std::string(), const std::string& marker = std::string());
 
+		Actor DuplicateActor(Actor actor);
+		Actor CreatePrefabActor(Actor prefabActor, Actor parent, const Math::vec3* translation = nullptr, const Math::vec3* eulerRotation = nullptr, const Math::vec3* scale = nullptr);
+
+		Actor Instantiate(SharedReference<Prefab> prefab, const Math::vec3* translation = nullptr, const Math::vec3* eulerRotation = nullptr, const Math::vec3* scale = nullptr);
+		Actor InstantiateChild(SharedReference<Prefab> prefab, Actor parent, const Math::vec3* translation = nullptr, const Math::vec3* eulerRotation = nullptr, const Math::vec3* scale = nullptr);
+
 		void SubmitToDestroyActor(Actor actor, bool excludeChildren = false);
 
-		void ClearEntities();
+		void ClearActors();
 
-	private:
-		void DestroyActorInternal(Actor actor, bool excludeChildren = false);
-
-		void OnUpdateActorTimers(TimeStep delta);
-
-	public:
 		void OnRuntimeStart(bool muteAudio = false);
 		void OnRuntimeStop();
 
@@ -69,14 +70,8 @@ namespace Vortex {
 		void SubmitToPreUpdateQueue(const std::function<void()>& fn);
 		void SubmitToPostUpdateQueue(const std::function<void()>& fn);
 
-	private:
-		void ExecutePreUpdateQueue();
-		void ExecutePostUpdateQueue();
-
-		void OnComponentUpdate(TimeStep delta);
-		void OnSystemUpdate(TimeStep delta);
-
-	public:
+		VX_FORCE_INLINE const std::string& GetName() const { return m_Name; }
+		VX_FORCE_INLINE void SetName(const std::string& name) { m_Name = name; }
 
 		void InvokeActorOnGuiRender();
 
@@ -115,13 +110,10 @@ namespace Vortex {
 		Actor GetEnvironmentActor();
 		Actor GetSkyLightActor();
 
-		Actor DuplicateActor(Actor actor);
 
-		Actor TryGetActorWithUUID(UUID uuid);
+		Actor TryGetActorWithUUID(UUID uuid) const;
 		Actor FindActorByName(std::string_view name);
 		Actor FindActorByID(entt::entity actorID);
-
-		bool AreActorsRelated(Actor first, Actor second);
 
 		void SortActors();
 
@@ -148,11 +140,6 @@ namespace Vortex {
 			return m_Registry.view<TComponent...>();
 		}
 
-#ifndef VX_DIST
-		const std::string& GetDebugName() const { return m_DebugName; }
-		void SetDebugName(const std::string& name) { m_DebugName = name; }
-#endif
-
 		static SharedReference<Scene> Copy(SharedReference<Scene>& source);
 		static void CreateSampleScene(ProjectType type, SharedReference<Scene>& context);
 
@@ -162,6 +149,16 @@ namespace Vortex {
 		static SharedReference<Scene> Create();
 
 	private:
+		void ExecutePreUpdateQueue();
+		void ExecutePostUpdateQueue();
+
+		void OnComponentUpdate(TimeStep delta);
+		void OnSystemUpdate(TimeStep delta);
+
+		void DestroyActorInternal(Actor actor, bool excludeChildren = false);
+
+		void OnUpdateActorTimers(TimeStep delta);
+
 		void OnCameraConstruct(entt::registry& registry, entt::entity e);
 		void OnStaticMeshConstruct(entt::registry& registry, entt::entity e);
 		void OnParticleEmitterConstruct(entt::registry& registry, entt::entity e);
@@ -204,9 +201,7 @@ namespace Vortex {
 		std::mutex m_PreUpdateQueueMutex;
 		std::mutex m_PostUpdateQueueMutex;
 
-#ifndef VX_DIST
-		std::string m_DebugName;
-#endif
+		std::string m_Name;
 
 		bool m_IsRunning = false;
 		bool m_IsSimulating = false;
@@ -215,7 +210,7 @@ namespace Vortex {
 	private:
 		friend class Actor;
 		friend class Prefab;
-		friend class PrefabSerializer;
+		friend class PrefabAssetSerializer;
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 		friend class ECSDebugPanel;

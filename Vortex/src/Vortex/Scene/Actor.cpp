@@ -1,6 +1,8 @@
 #include "vxpch.h"
 #include "Actor.h"
 
+#include "Vortex/Scene/Scene.h"
+
 #include "Vortex/Physics/3D/Physics.h"
 
 #include "Vortex/Scripting/ScriptEngine.h"
@@ -21,24 +23,62 @@ namespace Vortex {
 		}
 	}
 
-	void Actor::RemoveChild(UUID childUUID) const
+	bool Actor::IsActive() const
+	{
+		return GetComponent<TagComponent>().IsActive;
+	}
+
+	UUID Actor::GetParentUUID() const
+	{
+		return GetComponent<HierarchyComponent>().ParentUUID;
+	}
+
+    Actor Actor::GetParent() const
+    {
+		UUID parentUUID = GetParentUUID();
+		return m_Scene->TryGetActorWithUUID(parentUUID);
+    }
+
+    void Actor::SetParentUUID(UUID parentUUID) const
+	{
+		GetComponent<HierarchyComponent>().ParentUUID = parentUUID;
+	}
+
+	std::vector<UUID>& Actor::Children()
+	{
+		return GetComponent<HierarchyComponent>().Children;
+	}
+
+	void Actor::AddChild(UUID childUUID) const
+	{
+		GetComponent<HierarchyComponent>().Children.push_back(childUUID);
+	}
+
+	bool Actor::HasChild(UUID childUUID) const
+	{
+		const std::vector<UUID>& children = GetComponent<HierarchyComponent>().Children;
+		auto it = std::find(children.begin(), children.end(), childUUID);
+		return it != children.end();
+	}
+
+	bool Actor::RemoveChild(UUID childUUID) const
 	{
 		std::vector<UUID>& children = GetComponent<HierarchyComponent>().Children;
 		auto it = std::find(children.begin(), children.end(), childUUID);
-		VX_CORE_ASSERT(it != children.end(), "Child UUID was not found");
-		if (it == children.end())
-		{
-			return;
+		if (it == children.end()) {
+			return false;
 		}
 		children.erase(it);
+		return true;
 	}
 
 	bool Actor::IsAncesterOf(Actor actor) const
 	{
 		const std::vector<UUID>& children = GetComponent<HierarchyComponent>().Children;
 
-		if (children.empty())
+		if (children.empty()) {
 			return false;
+		}
 
 		for (UUID childUUID : children)
 		{
@@ -86,18 +126,16 @@ namespace Vortex {
 		const bool isPhysicsActor = actor->HasComponent<RigidBodyComponent>();
 		const bool rigidbodyCreated = Physics::IsPhysicsActor(actor->GetUUID());
 
-		context->ActiveateChildren(*actor);
-
 		if (sceneRunning && actor->HasComponent<ScriptComponent>())
 		{
 			const ScriptComponent& scriptComponent = actor->GetComponent<ScriptComponent>();
 			if (scriptComponent.Enabled && !scriptComponent.Instantiated)
 			{
 				ScriptEngine::RT_InstantiateActor(*actor);
-				context->ActiveateChildren(*actor);
-				return;
 			}
 		}
+
+		context->ActiveateChildren(*actor);
 
 		// Invoke Actor.OnEnable
 		if (sceneRunning)

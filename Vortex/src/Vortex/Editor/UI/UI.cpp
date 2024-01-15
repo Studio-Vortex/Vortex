@@ -434,7 +434,7 @@ namespace Vortex::UI {
 			if (clearCallback != nullptr)
 			{
 				Gui::SameLine();
-				if (Gui::Button("Clear"))
+				if (UI::ImageButtonEx(EditorResources::ClearIcon, { 22, 22 }, { 0, 0, 0, 0 }, { 1, 1, 1, 1 }))
 				{
 					std::invoke(clearCallback);
 				}

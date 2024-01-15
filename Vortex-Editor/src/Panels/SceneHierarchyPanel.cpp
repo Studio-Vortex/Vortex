@@ -56,7 +56,6 @@ namespace Vortex {
 		for (const auto& childUUID : children)
 		{
 			const Actor child = m_ContextScene->TryGetActorWithUUID(childUUID);
-
 			if (!child)
 				continue;
 
@@ -71,6 +70,21 @@ namespace Vortex {
 
 			RecursiveActorSearch(child.GetUUID(), editorCamera, searchDepth);
 		}
+	}
+
+	bool SceneHierarchyPanel::RecursiveIsPrefabOrAncestorIsPrefab(Actor actor)
+	{
+		bool isPrefab = actor.HasComponent<PrefabComponent>();
+
+		if (!isPrefab)
+		{
+			if (!actor.HasParent())
+				return false;
+
+			isPrefab = RecursiveIsPrefabOrAncestorIsPrefab(actor.GetParent());
+		}
+
+		return isPrefab;
 	}
 
 	void SceneHierarchyPanel::SetSceneContext(SharedReference<Scene> scene)
@@ -448,6 +462,7 @@ namespace Vortex {
 			m_ContextScene->ParentActor(child, parent);
 
 			// activate parent tree node
+			// TODO this doesn't work
 			const ImGuiID parentActorTreeNodeID = Gui::GetID((void*)(uint32_t)parent);
 			Gui::ActivateItem(parentActorTreeNodeID);
 		}
@@ -811,15 +826,16 @@ namespace Vortex {
 
 		const bool isPrefab = actor.HasComponent<PrefabComponent>();
 		const bool actorInactive = !actor.IsActive();
+		const bool ancestorIsPrefab = actor.HasParent() && RecursiveIsPrefabOrAncestorIsPrefab(actor.GetParent());
 
-		if (isPrefab)
+		if (isPrefab || ancestorIsPrefab)
 			Gui::PushStyleColor(ImGuiCol_Text, ImVec4(0.32f, 0.7f, 0.87f, 1.0f));
 		if (actorInactive)
 			Gui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));
 
 		const bool opened = Gui::TreeNodeEx((void*)(uint32_t)actor, flags, tag.c_str());
 		
-		if (isPrefab)
+		if (isPrefab || ancestorIsPrefab)
 			Gui::PopStyleColor();
 		if (actorInactive)
 			Gui::PopStyleColor();
@@ -864,6 +880,20 @@ namespace Vortex {
 				Gui::CloseCurrentPopup();
 			}
 			separator();
+
+			if (isPrefab)
+			{
+				if (Gui::MenuItem("Update Prefab"))
+				{
+					AssetHandle prefabHandle = actor.GetComponent<PrefabComponent>().Prefab;
+					SharedReference<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabHandle);
+					if (prefab)
+						prefab->Create(actor);
+					else
+						VX_CONSOLE_LOG_ERROR("Prefab has invalid asset handle: {}", prefabHandle);
+				}
+				separator();
+			}
 
 			if (Gui::MenuItem("Duplicate Actor", "Ctrl+D"))
 			{
@@ -1359,10 +1389,11 @@ namespace Vortex {
 
 	void SceneHierarchyPanel::TransformComponentOnGuiRender(TransformComponent& component, Actor actor)
 	{
+		const float columnWidth = 100.0f;
 		UI::BeginPropertyGrid();
-		UI::DrawVec3Controls("Translation", component.Translation);
+		UI::DrawVec3Controls("Translation", component.Translation, 0.0f, columnWidth, -FLT_MIN, FLT_MAX);
 		Math::vec3 rotation = Math::Rad2Deg(component.GetRotationEuler());
-		UI::DrawVec3Controls("Rotation", rotation, 0.0f, 100.0f, 0.0f, 0.0f, [&]()
+		UI::DrawVec3Controls("Rotation", rotation, 0.0f, columnWidth, -FLT_MIN, FLT_MAX, [&]()
 		{
 			const float maxRotationEuler = 360.0f;
 			if (rotation.x > maxRotationEuler || rotation.x < -maxRotationEuler)
@@ -1373,7 +1404,7 @@ namespace Vortex {
 				rotation.z = 0.0f;
 			component.SetRotationEuler(Math::Deg2Rad(rotation));
 		});
-		UI::DrawVec3Controls("Scale", component.Scale, 1.0f, 100.0f, FLT_MIN);
+		UI::DrawVec3Controls("Scale", component.Scale, 1.0f, columnWidth, FLT_MIN, FLT_MAX);
 		UI::EndPropertyGrid();
 	}
 
@@ -2884,9 +2915,9 @@ namespace Vortex {
 		std::vector<const char*> actorClassNameStrings;
 		const bool scriptClassExists = ScriptEngine::ScriptClassExists(component.ClassName);
 
-		std::unordered_map<std::string, SharedReference<ScriptClass>> actorClasses = ScriptEngine::GetScriptClasses();
+		const std::unordered_map<std::string, SharedReference<ScriptClass>>& actorClasses = ScriptEngine::GetScriptClasses();
 
-		for (auto& [className, actorScriptClass] : actorClasses)
+		for (const auto& [className, actorScriptClass] : actorClasses)
 		{
 			actorClassNameStrings.push_back(className.c_str());
 		}

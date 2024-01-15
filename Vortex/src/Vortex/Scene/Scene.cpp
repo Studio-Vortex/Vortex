@@ -14,6 +14,7 @@
 #include "Vortex/Scene/Prefab.h"
 #include "Vortex/Scene/SceneRenderer.h"
 #include "Vortex/Scene/ScriptableActor.h"
+#include "Vortex/Scene/ComponentUtils.h"
 
 #include "Vortex/Audio/Audio.h"
 #include "Vortex/Audio/AudioSource.h"
@@ -44,74 +45,6 @@
 #include "Vortex/Editor/UI/UI.h"
 
 namespace Vortex {
-
-	namespace Utils {
-
-		template <typename... TComponent>
-		static void CopyComponent(entt::registry& dst, const entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
-		{
-			([&]()
-			{
-				auto view = src.view<TComponent>();
-
-				for (auto srcActor : view)
-				{
-					entt::entity dstActor = enttMap.at(src.get<IDComponent>(srcActor).ID);
-
-					const auto& srcComponent = src.get<TComponent>(srcActor);
-					dst.emplace_or_replace<TComponent>(dstActor, srcComponent);
-
-					// NOTE: when meshes are copied over after hitting play,
-					// the material values are not also set meaning the material handle wasn't set properly,
-					// or the mesh could possibly have another random modified state of the material.
-					// Either case this needs to be fixed.
-
-					/*if (src.HasComponent<StaticMeshRendererComponent>())
-					{
-						const auto& srcMesh = src.GetComponent<StaticMeshRendererComponent>();
-						auto& dstMesh = dst.GetComponent<StaticMeshRendererComponent>();
-
-						uint32_t materialCount = srcMesh.Materials->GetMaterialCount();
-						for (uint32_t i = 0; i < materialCount; i++)
-						{
-							AssetHandle materialHandle = srcMesh.Materials->GetMaterial(i);
-							if (!AssetManager::IsHandleValid(materialHandle))
-								continue;
-
-							dstMesh.Materials->SetMaterial(i, materialHandle);
-						}
-					}*/
-				}
-			}(), ...);
-		}
-
-		template<typename... Component>
-		static void CopyComponent(ComponentGroup<Component...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UUID, entt::entity>& enttMap)
-		{
-			CopyComponent<Component...>(dst, src, enttMap);
-		}
-
-		template<typename... TComponent>
-		static void CopyComponentIfExists(Actor dst, Actor src)
-		{
-			VX_PROFILE_FUNCTION();
-
-			([&]()
-			{
-				if (src.HasComponent<TComponent>())
-				{
-					dst.AddOrReplaceComponent<TComponent>(src.GetComponent<TComponent>());
-				}
-			}(), ...);
-		}
-
-		template<typename... TComponent>
-		static void CopyComponentIfExists(ComponentGroup<TComponent...>, Actor dst, Actor src)
-		{
-			CopyComponentIfExists<TComponent...>(dst, src);
-		}
-
-	}
 
 	static SceneRenderer s_SceneRenderer;
 	static Timer s_NullTimer = Timer("", 0.0f, nullptr);
@@ -202,6 +135,152 @@ namespace Vortex {
 		return actor;
 	}
 
+	Actor Scene::DuplicateActor(Actor actor)
+	{
+		VX_PROFILE_FUNCTION();
+
+		auto ParentActorFn = [&](Actor newActor) {
+			if (actor.HasParent()) {
+				ParentActor(newActor, actor.GetParent());
+			}
+		};
+
+		if (actor.HasComponent<PrefabComponent>())
+		{
+			AssetHandle prefabHandle = actor.GetComponent<PrefabComponent>().Prefab;
+			VX_CORE_ASSERT(AssetManager::IsHandleValid(prefabHandle), "invalid asset handle!");
+			const TransformComponent& transform = actor.GetTransform();
+			const Math::vec3& eulerRotation = transform.GetRotationEuler();
+			Actor prefabInstance = Instantiate(AssetManager::GetAsset<Prefab>(prefabHandle), &transform.Translation, &eulerRotation, &transform.Scale);
+			ParentActorFn(prefabInstance);
+			return prefabInstance;
+		}
+
+		VX_CORE_ASSERT(actor.HasComponent<TagComponent>(), "all actors must have a tag component!");
+
+		Actor duplicate = CreateActor(actor.Name(), actor.Marker());
+		ParentActorFn(duplicate);
+
+		// Copy components (except IDComponent and TagComponent)
+		ComponentUtils::CopyComponentIfExists(AllComponents{}, duplicate, actor);
+
+		duplicate.Children().clear();
+
+		// Copy children actors
+		// We must use an index based loop because the vector is modified below
+		const std::vector<UUID>& children = actor.Children();
+		const size_t numChildren = children.size();
+
+		for (size_t i = 0; i < numChildren; i++)
+		{
+			Actor child = TryGetActorWithUUID(children[i]);
+			if (!child)
+				continue;
+
+			Actor childDuplicate = DuplicateActor(child);
+
+			// at this point childDuplicate is a child of actor, we need to remove it from actor
+			UnparentActor(childDuplicate);
+			ParentActor(childDuplicate, duplicate);
+		}
+
+		if (duplicate.HasComponent<ScriptComponent>())
+		{
+			ScriptEngine::DuplicateScriptInstance(actor, duplicate);
+		}
+
+		return duplicate;
+	}
+
+	Actor Scene::CreatePrefabActor(Actor prefabActor, Actor parent, const Math::vec3* translation, const Math::vec3* eulerRotation, const Math::vec3* scale)
+	{
+		VX_PROFILE_FUNCTION();
+
+		VX_CORE_VERIFY(prefabActor.HasComponent<PrefabComponent>());
+
+		Actor prefabInstance = CreateActor();
+		if (parent) {
+			prefabInstance.SetParentUUID(parent.GetUUID());
+			parent.AddChild(prefabInstance.GetUUID());
+		}
+
+		prefabActor.m_Scene->CopyComponentIfExists<TagComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<TransformComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<CameraComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<SkyboxComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<LightSourceComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<MeshRendererComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<StaticMeshRendererComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<SpriteRendererComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<CircleRendererComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<ParticleEmitterComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<TextMeshComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<ButtonComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<AudioSourceComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<AudioListenerComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<RigidBodyComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<CharacterControllerComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<FixedJointComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<BoxColliderComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<SphereColliderComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<CapsuleColliderComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<MeshColliderComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<RigidBody2DComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<BoxCollider2DComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<CircleCollider2DComponent>(prefabInstance, m_Registry, prefabActor);
+		prefabActor.m_Scene->CopyComponentIfExists<ScriptComponent>(prefabInstance, m_Registry, prefabActor);
+
+		if (translation)
+			prefabInstance.GetTransform().Translation = *translation;
+		if (eulerRotation)
+			prefabInstance.GetTransform().SetRotationEuler(*eulerRotation);
+		if (scale)
+			prefabInstance.GetTransform().Scale = *scale;
+
+		for (UUID child : prefabActor.Children())
+		{
+			CreatePrefabActor(prefabActor.m_Scene->TryGetActorWithUUID(child), prefabInstance);
+		}
+
+		if (m_IsRunning)
+		{
+			if (prefabInstance.HasComponent<RigidBodyComponent>() && !Physics::IsPhysicsActor(prefabInstance.GetUUID()))
+			{
+				Physics::CreatePhysicsActor(prefabInstance);
+			}
+		}
+
+		if (prefabInstance.HasComponent<ScriptComponent>())
+		{
+			ScriptEngine::DuplicateScriptInstance(prefabActor, prefabInstance);
+		}
+
+		return prefabInstance;
+	}
+
+	Actor Scene::Instantiate(SharedReference<Prefab> prefab, const Math::vec3* translation, const Math::vec3* eulerRotation, const Math::vec3* scale)
+	{
+		return InstantiateChild(prefab, {}, translation, eulerRotation, scale);
+	}
+
+	Actor Scene::InstantiateChild(SharedReference<Prefab> prefab, Actor parent, const Math::vec3* translation, const Math::vec3* eulerRotation, const Math::vec3* scale)
+	{
+		Actor result;
+
+		// TODO we need a better way of getting the root actor
+		prefab->m_Scene->m_Registry.each([&](auto actorID) {
+			Actor actor{ actorID, prefab->m_Scene.Raw() };
+			if (!actor.HasParent()) {
+				result = CreatePrefabActor(actor, parent, translation, eulerRotation, scale);
+			}
+		});
+
+		PrefabComponent& prefabComponent = result.AddComponent<PrefabComponent>();
+		prefabComponent.Prefab = prefab->Handle;
+
+		return result;
+	}
+
 	void Scene::SubmitToDestroyActor(Actor actor, bool excludeChildren)
 	{
 		SubmitToPostUpdateQueue([=]() {
@@ -209,127 +288,9 @@ namespace Vortex {
 		});
 	}
 
-	void Scene::ClearEntities()
+	void Scene::ClearActors()
 	{
 		m_Registry.clear();
-	}
-
-	void Scene::DestroyActorInternal(Actor actor, bool excludeChildren)
-	{
-		VX_PROFILE_FUNCTION();
-
-#ifdef VX_DEBUG
-		const uint32_t garbage = 0xcccccccc;
-		uint32_t addr = (uint32_t)actor.GetContextScene();
-		if (addr == garbage)
-		{
-			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyActorInternal with invalid Scene!");
-			return;
-		}
-		addr = (uint32_t)actor.operator entt::entity();
-		if (addr == garbage)
-		{
-			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyActorInternal with invalid Actor!");
-			return;
-		}
-#endif
-
-		if (!actor || !m_ActorMap.contains(actor))
-		{
-			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyActorInternal with invalid Actor!");
-			VX_CORE_ASSERT(false, "Trying to free invalid Actor!");
-			return;
-		}
-
-		if (Actor selected = SelectionManager::GetSelectedActor(); selected == actor)
-		{
-			SelectionManager::DeselectActor();
-		}
-
-		if (m_IsRunning)
-		{
-			// Invoke Actor.OnDestroy
-			actor.CallMethod(ScriptMethod::OnDestroy);
-
-			if (actor.HasComponent<NativeScriptComponent>())
-			{
-				NativeScriptComponent& nsc = actor.GetComponent<NativeScriptComponent>();
-				nsc.Instance->OnDestroy();
-				nsc.DestroyInstanceScript(&nsc);
-			}
-
-			// Destroy physics body
-			Physics::DestroyPhysicsActor(actor);
-			Physics2D::DestroyPhysicsBody(actor);
-		}
-
-		if (Actor parent = actor.GetParent())
-		{
-			parent.RemoveChild(actor.GetUUID());
-		}
-
-		if (!excludeChildren)
-		{
-			for (size_t i = 0; i < actor.Children().size(); i++)
-			{
-				UUID childID = actor.Children()[i];
-				Actor child = TryGetActorWithUUID(childID);
-				DestroyActorInternal(child, excludeChildren);
-			}
-		}
-
-		auto it = m_ActorMap.find(actor.GetUUID());
-		VX_CORE_ASSERT(it != m_ActorMap.end(), "Enitiy was not found in Actor Map!");
-
-		if (it == m_ActorMap.end())
-		{
-			VX_CONSOLE_LOG_ERROR("Actor was not found in Actor Map!");
-			return;
-		}
-
-		// Remove the actor from our internal map
-		m_ActorMap.erase(it->first);
-		m_Registry.destroy(actor);
-
-		SortActors();
-	}
-
-	void Scene::OnUpdateActorTimers(TimeStep delta)
-	{
-		for (auto& [actor, timers] : m_Timers)
-		{
-			// update all the timers for each actor
-			for (Timer& timer : timers)
-			{
-				if (timer.IsFinished())
-				{
-					m_FinishedTimers.push_back(timer);
-					continue;
-				}
-
-				timer.OnUpdate(delta);
-			}
-
-			// remove finished timers
-			for (Timer& timer : m_FinishedTimers)
-			{
-				const std::string& timerName = timer.GetName();
-				const size_t timerCount = timers.size();
-
-				for (size_t pos = 0; pos < timerCount; pos++)
-				{
-					const std::string& potential = timers[pos].GetName();
-
-					if (!String::FastCompare(timerName, potential))
-						continue;
-
-					timers.erase(timers.begin() + pos);
-					break;
-				}
-			}
-
-			m_FinishedTimers.clear();
-		}
 	}
 
 	void Scene::OnRuntimeStart(bool muteAudio)
@@ -715,45 +676,6 @@ namespace Vortex {
 		m_PostUpdateQueue.emplace_back(fn);
 	}
 
-	void Scene::ExecutePreUpdateQueue()
-	{
-		VX_PROFILE_FUNCTION();
-
-		std::scoped_lock<std::mutex> lock(m_PreUpdateQueueMutex);
-
-		for (const auto& fn : m_PreUpdateQueue)
-		{
-			std::invoke(fn);
-		}
-
-		m_PreUpdateQueue.clear();
-	}
-
-	void Scene::ExecutePostUpdateQueue()
-	{
-		VX_PROFILE_FUNCTION();
-
-		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
-
-		for (const auto& fn : m_PostUpdateQueue)
-		{
-			std::invoke(fn);
-		}
-
-		m_PostUpdateQueue.clear();
-	}
-
-	void Scene::OnComponentUpdate(TimeStep delta)
-	{
-		OnMeshUpdateRuntime();
-	}
-
-	void Scene::OnSystemUpdate(TimeStep delta)
-	{
-		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
-		SystemManager::GetSystem<UISystem>()->OnUpdateRuntime(this);
-	}
-
 	void Scene::InvokeActorOnGuiRender()
 	{
 		VX_PROFILE_FUNCTION();
@@ -907,8 +829,10 @@ namespace Vortex {
 			UnparentActor(actor);
 		}
 
-		actor.SetParentUUID(parent);
-		parent.AddChild(actor);
+		if (parent) {
+			actor.SetParentUUID(parent.GetUUID());
+			parent.AddChild(actor.GetUUID());
+		}
 
 		ConvertToLocalSpace(actor);
 	}
@@ -1063,70 +987,16 @@ namespace Vortex {
 		return Actor{};
 	}
 
-	Actor Scene::DuplicateActor(Actor actor)
+	Actor Scene::TryGetActorWithUUID(UUID uuid) const
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (!actor)
+		if (!m_ActorMap.contains(uuid))
 		{
 			return Actor{};
 		}
 
-		if (actor.HasComponent<PrefabComponent>())
-		{
-			// TODO: handle prefabs
-			auto prefabID = actor.GetComponent<PrefabComponent>().PrefabUUID;
-		}
-		
-		VX_CORE_ASSERT(actor.HasComponent<TagComponent>(), "all actors must have a tag component!");
-
-		Actor duplicate = CreateActor(actor.Name(), actor.GetMarker());
-
-		// Copy components (except IDComponent and TagComponent)
-		Utils::CopyComponentIfExists(AllComponents{}, duplicate, actor);
-
-		// Copy children actors
-		// We must create a copy here because the vector is modified below
-		std::vector<UUID> children = actor.Children();
-
-		for (auto childID : children)
-		{
-			Actor child = TryGetActorWithUUID(childID);
-			if (!child)
-				continue;
-
-			Actor childDuplicate = DuplicateActor(child);
-
-			// at this point childDuplicate is a child of actor, we need to remove it from actor
-			UnparentActor(childDuplicate, false);
-			ParentActor(childDuplicate, duplicate);
-		}
-
-		// if the actor has a parent we can make the duplicate a child also
-		if (Actor parent = actor.GetParent())
-		{
-			ParentActor(duplicate, parent);
-		}
-
-		if (m_IsRunning && actor.HasComponent<ScriptComponent>())
-		{
-			// Create a new Script Instance for the duplicate
-			ScriptEngine::RT_InstantiateActor(duplicate);
-		}
-
-		return duplicate;
-	}
-
-	Actor Scene::TryGetActorWithUUID(UUID uuid)
-	{
-		VX_PROFILE_FUNCTION();
-
-		if (auto it = m_ActorMap.find(uuid); it != m_ActorMap.end())
-		{
-			return it->second;
-		}
-
-		return Actor{};
+		return m_ActorMap.at(uuid);
 	}
 
 	Actor Scene::FindActorByName(std::string_view name)
@@ -1152,11 +1022,11 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		m_Registry.each([&](auto e)
+		m_Registry.each([&](auto id)
 		{
-			if (e == actorID)
+			if (id == actorID)
 			{
-				return Actor{ e, this };
+				return Actor{ id, this };
 			}
 		});
 
@@ -1301,13 +1171,6 @@ namespace Vortex {
 		return m_SceneMeshes;
 	}
 
-	bool Scene::AreActorsRelated(Actor first, Actor second)
-	{
-		VX_PROFILE_FUNCTION();
-
-		return first.IsAncesterOf(second) || second.IsAncesterOf(first);
-	}
-
 	void Scene::SortActors()
 	{
 		VX_PROFILE_FUNCTION();
@@ -1429,6 +1292,163 @@ namespace Vortex {
 		m_SceneMeshes->WorldSpaceMeshTransforms.clear();
 		m_SceneMeshes->StaticMeshes.clear();
 		m_SceneMeshes->WorldSpaceStaticMeshTransforms.clear();
+	}
+
+	void Scene::ExecutePreUpdateQueue()
+	{
+		VX_PROFILE_FUNCTION();
+
+		std::scoped_lock<std::mutex> lock(m_PreUpdateQueueMutex);
+
+		for (const auto& fn : m_PreUpdateQueue)
+		{
+			std::invoke(fn);
+		}
+
+		m_PreUpdateQueue.clear();
+	}
+
+	void Scene::ExecutePostUpdateQueue()
+	{
+		VX_PROFILE_FUNCTION();
+
+		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
+
+		for (const auto& fn : m_PostUpdateQueue)
+		{
+			std::invoke(fn);
+		}
+
+		m_PostUpdateQueue.clear();
+	}
+
+	void Scene::OnComponentUpdate(TimeStep delta)
+	{
+		OnMeshUpdateRuntime();
+	}
+
+	void Scene::OnSystemUpdate(TimeStep delta)
+	{
+		SystemManager::GetAssetSystem<ParticleSystem>()->OnUpdateRuntime(this, delta);
+		SystemManager::GetSystem<UISystem>()->OnUpdateRuntime(this);
+	}
+
+	void Scene::DestroyActorInternal(Actor actor, bool excludeChildren)
+	{
+		VX_PROFILE_FUNCTION();
+
+#ifdef VX_DEBUG
+		const uint32_t garbage = 0xcccccccc;
+		uint32_t addr = (uint32_t)actor.GetContextScene();
+		if (addr == garbage)
+		{
+			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyActorInternal with invalid Scene!");
+			return;
+		}
+		addr = (uint32_t)actor.operator entt::entity();
+		if (addr == garbage)
+		{
+			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyActorInternal with invalid Actor!");
+			return;
+		}
+#endif
+
+		if (!actor || !m_ActorMap.contains(actor))
+		{
+			VX_CONSOLE_LOG_ERROR("Calling Scene::DestroyActorInternal with invalid Actor!");
+			VX_CORE_ASSERT(false, "Trying to free invalid Actor!");
+			return;
+		}
+
+		if (Actor selected = SelectionManager::GetSelectedActor(); selected == actor)
+		{
+			SelectionManager::DeselectActor();
+		}
+
+		if (m_IsRunning)
+		{
+			// Invoke Actor.OnDestroy
+			actor.CallMethod(ScriptMethod::OnDestroy);
+
+			if (actor.HasComponent<NativeScriptComponent>())
+			{
+				NativeScriptComponent& nsc = actor.GetComponent<NativeScriptComponent>();
+				nsc.Instance->OnDestroy();
+				nsc.DestroyInstanceScript(&nsc);
+			}
+
+			// Destroy physics body
+			Physics::DestroyPhysicsActor(actor);
+			Physics2D::DestroyPhysicsBody(actor);
+		}
+
+		if (Actor parent = actor.GetParent())
+		{
+			parent.RemoveChild(actor.GetUUID());
+		}
+
+		if (!excludeChildren)
+		{
+			for (size_t i = 0; i < actor.Children().size(); i++)
+			{
+				UUID childID = actor.Children()[i];
+				Actor child = TryGetActorWithUUID(childID);
+				DestroyActorInternal(child, excludeChildren);
+			}
+		}
+
+		auto it = m_ActorMap.find(actor.GetUUID());
+		VX_CORE_ASSERT(it != m_ActorMap.end(), "Enitiy was not found in Actor Map!");
+
+		if (it == m_ActorMap.end())
+		{
+			VX_CONSOLE_LOG_ERROR("Actor was not found in Actor Map!");
+			return;
+		}
+
+		// Remove the actor from our internal map
+		m_ActorMap.erase(it->first);
+		m_Registry.destroy(actor);
+
+		SortActors();
+	}
+
+	void Scene::OnUpdateActorTimers(TimeStep delta)
+	{
+		for (auto& [actor, timers] : m_Timers)
+		{
+			// update all the timers for each actor
+			for (Timer& timer : timers)
+			{
+				if (timer.IsFinished())
+				{
+					m_FinishedTimers.push_back(timer);
+					continue;
+				}
+
+				timer.OnUpdate(delta);
+			}
+
+			// remove finished timers
+			for (Timer& timer : m_FinishedTimers)
+			{
+				const std::string& timerName = timer.GetName();
+				const size_t timerCount = timers.size();
+
+				for (size_t pos = 0; pos < timerCount; pos++)
+				{
+					const std::string& potential = timers[pos].GetName();
+
+					if (!String::FastCompare(timerName, potential))
+						continue;
+
+					timers.erase(timers.begin() + pos);
+					break;
+				}
+			}
+
+			m_FinishedTimers.clear();
+		}
 	}
 
 	void Scene::OnCameraConstruct(entt::registry& registry, entt::entity e)
@@ -1616,7 +1636,7 @@ namespace Vortex {
 		}
 
 		// Copy all components (except IDComponent and TagComponent)
-		Utils::CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
+		ComponentUtils::CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		destination->SortActors();
 

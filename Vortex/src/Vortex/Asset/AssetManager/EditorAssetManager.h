@@ -85,6 +85,8 @@ namespace Vortex {
 			return asset;
 		}
 
+		bool RemoveAsset(AssetHandle handle);
+
 		bool OnProjectSerialized();
 		bool OnProjectDeserialized();
 

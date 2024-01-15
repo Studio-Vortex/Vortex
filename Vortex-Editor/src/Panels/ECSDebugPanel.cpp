@@ -64,7 +64,7 @@ namespace Vortex {
 			Gui::TableNextColumn();
 			Gui::Text("Marker");
 			Gui::TableNextColumn();
-			Gui::Text(selectedActor.GetMarker().c_str());
+			Gui::Text(selectedActor.Marker().c_str());
 
 			Gui::TableNextColumn();
 			Gui::Text("UUID");
@@ -91,7 +91,7 @@ namespace Vortex {
 			Gui::TableNextColumn();
 			Gui::Text("Scene Name");
 			Gui::TableNextColumn();
-			Gui::Text("%s", selectedActor.GetContextScene()->GetDebugName().c_str());
+			Gui::Text("%s", selectedActor.GetContextScene()->GetName().c_str());
 		});
 		
 		const auto& children = selectedActor.Children();

@@ -99,7 +99,7 @@ namespace Vortex {
 			s_Data->AssemblyReloadPending = true;
 
 			// Add reload to main thread queue
-			Application::Get().SubmitToPreUpdateFrameMainThreadQueue([]()
+			Application::Get().SubmitToPreUpdateMainThreadQueue([]()
 			{
 				s_Data->AppAssemblyFilewatcher.reset();
 
@@ -504,7 +504,7 @@ namespace Vortex {
 		VX_CORE_ASSERT(ScriptInstanceExists(actor), "Actor script instance not instantiated properly!");
 
 		// Invoke Actor.OnAwake, Actor.OnCreate
-		ScriptMethod methods[] = { ScriptMethod::OnAwake, ScriptMethod::OnEnable, ScriptMethod::OnCreate };
+		ScriptMethod methods[] = { ScriptMethod::OnAwake, ScriptMethod::OnCreate };
 		const size_t methodCount = VX_ARRAYSIZE(methods);
 
 		for (size_t i = 0; i < methodCount; i++)
@@ -687,6 +687,20 @@ namespace Vortex {
 		return s_Data->ActorInstances[uuid];
 	}
 
+    void ScriptEngine::DuplicateScriptInstance(Actor src, Actor dst)
+    {
+		if (GetContextScene() && GetContextScene()->IsRunning())
+		{
+			// Instantiate the script instance for the new actor
+			ScriptEngine::RT_InstantiateActor(dst);
+		}
+		else
+		{
+			// Copy field values
+			ScriptEngine::CopyFieldValues(src, dst);
+		}
+    }
+
 	SharedReference<ScriptInstance> ScriptEngine::GetFirstInstanceOfScriptClass(SharedReference<ScriptClass> scriptClass)
 	{
 		VX_PROFILE_FUNCTION();
@@ -715,7 +729,7 @@ namespace Vortex {
 		return s_Data->ActorClasses[className];
 	}
 
-	std::unordered_map<std::string, SharedReference<ScriptClass>> ScriptEngine::GetScriptClasses()
+	const std::unordered_map<std::string, SharedReference<ScriptClass>>& ScriptEngine::GetScriptClasses()
 	{
 		return s_Data->ActorClasses;
 	}
@@ -743,6 +757,19 @@ namespace Vortex {
 		VX_CORE_ASSERT(actor, "Actor was invalid!");
 
 		return s_Data->ActorScriptFields[actor.GetUUID()];
+	}
+
+	void ScriptEngine::CopyFieldValues(Actor src, Actor dst)
+	{
+		VX_PROFILE_FUNCTION();
+
+		const ScriptFieldMap& srcFields = GetScriptFieldMap(src);
+		ScriptFieldMap& dstFields = ScriptEngine::GetMutableScriptFieldMap(dst);
+
+		for (const auto& [name, fieldInstance] : srcFields)
+		{
+			dstFields[name] = fieldInstance;
+		}
 	}
 
 	MonoObject* ScriptEngine::TryGetManagedInstance(UUID uuid)

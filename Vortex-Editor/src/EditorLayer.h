@@ -181,9 +181,9 @@ namespace Vortex {
 		uint32_t m_TransformationMode = 0; // Local mode
 
 		float m_SceneViewportBorderFadeLengthInSeconds = 3.0f;
-		float m_SceneViewportBorderFadeTimer;
+		float m_SceneViewportBorderFadeTimer = 0.0f;
 		float m_SceneViewportBorderSize = 3.0f;
-		Math::vec4 m_SceneViewportBorderFadeColor;
+		Math::vec4 m_SceneViewportBorderFadeColor = ColorToVec4(Color::White);
 		Math::vec4 m_SceneViewportOnPlayBorderColor = ColorToVec4(Color::Red);
 		Math::vec4 m_SceneViewportOnSimulateBorderColor = ColorToVec4(Color::Green);
 

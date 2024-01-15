@@ -148,16 +148,16 @@ namespace Vortex {
 		}
 	}
 
-	void Application::SubmitToPreUpdateFrameMainThreadQueue(const std::function<void()>& func)
+	void Application::SubmitToPreUpdateMainThreadQueue(const std::function<void()>& func)
 	{
-		std::scoped_lock<std::mutex> lock(m_PreUpdateFrameMainThreadQueueMutex);
+		std::scoped_lock<std::mutex> lock(m_PreUpdateMainThreadQueueMutex);
 
-		m_PreUpdateFrameMainThreadQueue.emplace_back(func);
+		m_PreUpdateMainThreadQueue.emplace_back(func);
 	}
 
-	void Application::SubmitToPostUpdateFrameMainThreadQueue(const std::function<void()>& func)
+	void Application::SubmitToPostUpdateMainThreadQueue(const std::function<void()>& func)
 	{
-		std::scoped_lock<std::mutex> lock(m_PostUpdateFrameMainThreadQueueMutex);
+		std::scoped_lock<std::mutex> lock(m_PostUpdateMainThreadQueueMutex);
 	}
 
 	void Application::AddModule(const SubModule& submodule)
@@ -176,28 +176,28 @@ namespace Vortex {
 		return m_ModuleLibrary;
 	}
 
-	void Application::ExecutePreUpdateFrameMainThreadQueue()
+	void Application::ExecutePreUpdateMainThreadQueue()
 	{
-		std::scoped_lock<std::mutex> lock(m_PreUpdateFrameMainThreadQueueMutex);
+		std::scoped_lock<std::mutex> lock(m_PreUpdateMainThreadQueueMutex);
 
-		for (const auto& fn : m_PreUpdateFrameMainThreadQueue)
+		for (const auto& fn : m_PreUpdateMainThreadQueue)
 		{
 			std::invoke(fn);
 		}
 
-		m_PreUpdateFrameMainThreadQueue.clear();
+		m_PreUpdateMainThreadQueue.clear();
 	}
 
-	void Application::ExecutePostUpdateFrameMainThreadQueue()
+	void Application::ExecutePostUpdateMainThreadQueue()
 	{
-		std::scoped_lock<std::mutex> lock(m_PostUpdateFrameMainThreadQueueMutex);
+		std::scoped_lock<std::mutex> lock(m_PostUpdateMainThreadQueueMutex);
 
-		for (const auto& fn : m_PostUpdateFrameMainThreadQueue)
+		for (const auto& fn : m_PostUpdateMainThreadQueue)
 		{
 			std::invoke(fn);
 		}
 
-		m_PostUpdateFrameMainThreadQueue.clear();
+		m_PostUpdateMainThreadQueue.clear();
 	}
 
 	void Application::Run()
@@ -215,7 +215,7 @@ namespace Vortex {
 			Time::SetDeltaTime(m_FrameTime.DeltaTime);
 			m_LastFrameTimeStamp = currentTime;
 
-			ExecutePreUpdateFrameMainThreadQueue();
+			ExecutePreUpdateMainThreadQueue();
 
 			if (!m_ApplicationMinimized)
 			{
@@ -247,7 +247,7 @@ namespace Vortex {
 
 			m_Window->OnUpdate();
 
-			ExecutePostUpdateFrameMainThreadQueue();
+			ExecutePostUpdateMainThreadQueue();
 		}
 	}
 

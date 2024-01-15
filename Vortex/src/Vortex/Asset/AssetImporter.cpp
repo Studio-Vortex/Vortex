@@ -2,7 +2,7 @@
 #include "AssetImporter.h"
 
 #include "Vortex/Project/Project.h"
-#include "Vortex/Scene/PrefabSerializer.h"
+
 #include "Vortex/Serialization/SceneSerializer.h"
 
 namespace Vortex {

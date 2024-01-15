@@ -82,8 +82,8 @@ namespace Vortex {
 
 		void Close();
 
-		void SubmitToPreUpdateFrameMainThreadQueue(const std::function<void()>& func);
-		void SubmitToPostUpdateFrameMainThreadQueue(const std::function<void()>& func);
+		void SubmitToPreUpdateMainThreadQueue(const std::function<void()>& func);
+		void SubmitToPostUpdateMainThreadQueue(const std::function<void()>& func);
 
 		// TODO: think of a better place to put these
 		VX_FORCE_INLINE std::string GetEditorBinaryPath() const { return "Vortex-Editor.exe"; }
@@ -97,8 +97,8 @@ namespace Vortex {
 		VX_FORCE_INLINE FrameTime& GetFrameTime() { return m_FrameTime; }
 
 	private:
-		void ExecutePreUpdateFrameMainThreadQueue();
-		void ExecutePostUpdateFrameMainThreadQueue();
+		void ExecutePreUpdateMainThreadQueue();
+		void ExecutePostUpdateMainThreadQueue();
 		
 		void Run();
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
@@ -116,11 +116,11 @@ namespace Vortex {
 
 		ModuleLibrary m_ModuleLibrary;
 
-		std::vector<std::function<void()>> m_PreUpdateFrameMainThreadQueue;
-		std::vector<std::function<void()>> m_PostUpdateFrameMainThreadQueue;
+		std::vector<std::function<void()>> m_PreUpdateMainThreadQueue;
+		std::vector<std::function<void()>> m_PostUpdateMainThreadQueue;
 
-		std::mutex m_PreUpdateFrameMainThreadQueueMutex;
-		std::mutex m_PostUpdateFrameMainThreadQueueMutex;
+		std::mutex m_PreUpdateMainThreadQueueMutex;
+		std::mutex m_PostUpdateMainThreadQueueMutex;
 
 		float m_LastFrameTimeStamp = 0.0f;
 

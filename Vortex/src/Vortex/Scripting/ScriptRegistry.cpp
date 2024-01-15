@@ -717,7 +717,7 @@ namespace Vortex {
 				return nullptr;
 			}
 
-			ManagedString mstring(actor.GetMarker());
+			ManagedString mstring(actor.Marker());
 
 			return mstring.GetAddressOf();
 		}
@@ -5378,10 +5378,11 @@ namespace Vortex {
 			}
 
 			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
-			if (!audioSource)
+			if (!audioSource) {
 				return 0.0f;
+			}
 
-			audioSource->GetPlaybackDevice().GetSound().GetCurrentFadeVolume();
+			return audioSource->GetPlaybackDevice().GetSound().GetCurrentFadeVolume();
 		}
 
 		void AudioSourceComponent_PlayOneShot(UUID actorUUID)
@@ -5658,10 +5659,11 @@ namespace Vortex {
 			}
 
 			SharedReference<AudioSource> audioSource = AssetManager::GetAsset<AudioSource>(asc.AudioHandle);
-			if (!audioSource)
+			if (!audioSource) {
 				return 0.0f;
+			}
 
-			audioSource->GetPlaybackDevice().GetSound().GetLengthInSeconds();
+			return audioSource->GetPlaybackDevice().GetSound().GetLengthInSeconds();
 		}
 
 #pragma endregion
@@ -9345,7 +9347,11 @@ namespace Vortex {
 
 	bool ScriptRegistry::TransitionQueued()
 	{
-		return s_Data.TransitionQueued;
+		bool queued = s_Data.TransitionQueued;
+		if (queued) {
+			s_Data.TransitionQueued = false;
+		}
+		return queued;
 	}
 
 	std::string ScriptRegistry::GetNextSceneByName()

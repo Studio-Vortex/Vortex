@@ -168,6 +168,18 @@ namespace Vortex {
 			out << YAML::EndMap; // TagComponent
 		}
 
+		if (actor.HasComponent<PrefabComponent>())
+		{
+			out << YAML::Key << "PrefabComponent" << YAML::Value << YAML::BeginMap; // PrefabComponent
+
+			const PrefabComponent& prefabComponent = actor.GetComponent<PrefabComponent>();
+
+			VX_SERIALIZE_PROPERTY(Prefab, prefabComponent.Prefab, out);
+			VX_SERIALIZE_PROPERTY(Actor, prefabComponent.ActorUUID, out);
+
+			out << YAML::EndMap; // PrefabComponent
+		}
+
 		if (actor.HasComponent<TransformComponent>())
 		{
 			out << YAML::Key << "TransformComponent" << YAML::Value << YAML::BeginMap; // TransformComponent
@@ -175,7 +187,8 @@ namespace Vortex {
 			const TransformComponent& transformComponent = actor.GetComponent<TransformComponent>();
 
 			VX_SERIALIZE_PROPERTY(Translation, transformComponent.Translation, out);
-			VX_SERIALIZE_PROPERTY(Rotation, transformComponent.GetRotationEuler(), out);
+			VX_SERIALIZE_PROPERTY(RotationEuler, transformComponent.GetRotationEuler(), out);
+			VX_SERIALIZE_PROPERTY(Rotation, transformComponent.GetRotation(), out);
 			VX_SERIALIZE_PROPERTY(Scale, transformComponent.Scale, out);
 
 			out << YAML::EndMap; // TransformComponent
@@ -818,13 +831,30 @@ namespace Vortex {
 				}
 			}
 
+			const YAML::Node prefabComponentData = actor["PrefabComponent"];
+			if (prefabComponentData)
+			{
+				PrefabComponent& prefabComponent = deserializedActor.AddComponent<PrefabComponent>();
+
+				prefabComponent.Prefab = prefabComponentData["Prefab"].as<uint64_t>();
+				prefabComponent.ActorUUID = prefabComponentData["Actor"].as<uint64_t>();
+			}
+
 			const YAML::Node transformComponentData = actor["TransformComponent"];
 			if (transformComponentData)
 			{
 				// All Entities have a transform
 				TransformComponent& transformComponent = deserializedActor.GetComponent<TransformComponent>();
 				transformComponent.Translation = transformComponentData["Translation"].as<Math::vec3>();
-				transformComponent.SetRotationEuler(transformComponentData["Rotation"].as<Math::vec3>());
+				// for backwards compatibility
+				if (transformComponentData["RotationEuler"])
+				{
+					transformComponent.SetRotation(transformComponentData["Rotation"].as<Math::quaternion>());
+				}
+				else
+				{
+					transformComponent.SetRotationEuler(transformComponentData["Rotation"].as<Math::vec3>());
+				}
 				transformComponent.Scale = transformComponentData["Scale"].as<Math::vec3>();
 			}
 

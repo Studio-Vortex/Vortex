@@ -43,6 +43,7 @@ namespace Vortex {
 		float m_ThumbnailPadding = 16.0f;
 
 		bool m_ConfirmDeletionPopupOpen = false;
+		bool m_ShowCreateItemMenu = false;
 
 		ImGuiTextFilter m_SearchInputTextFilter;
 	};
