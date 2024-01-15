@@ -712,8 +712,11 @@ public class Untitled : Actor
 			{
 				Fs::Path path = Project::GetEditorAssetManager()->GetRelativePath(currentPath);
 				VX_CONSOLE_LOG_INFO("{} deleted from asset directory.", path.string());
+				SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentPath);
+				if (asset) {
+					Project::GetEditorAssetManager()->RemoveAsset(asset->Handle);
+				}
 				FileSystem::Remove(currentPath);
-				// TODO we need to remove the asset from the asset manager
 				Gui::CloseCurrentPopup();
 			}
 			Gui::SameLine();
