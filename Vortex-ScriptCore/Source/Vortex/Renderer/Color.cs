@@ -2,31 +2,33 @@
 
 	public static class Color
 	{
-		public static Color4 Red4          { get => new Color4(1.0f, 0.0f, 0.0f, 1.0f); }
-		public static Color4 Green4        { get => new Color4(0.0f, 1.0f, 0.0f, 1.0f); }
-		public static Color4 Blue4         { get => new Color4(0.0f, 0.0f, 1.0f, 1.0f); }
-		public static Color4 Purple4       { get => new Color4(0.6f, 0.1f, 0.9f, 1.0f); }
-		public static Color4 Yellow4       { get => new Color4(1.0f, 1.0f, 0.0f, 1.0f); }
-		public static Color4 Orange4       { get => new Color4(1.0f, 0.4f, 0.0f, 1.0f); }
-		public static Color4 White4        { get => new Color4(1.0f, 1.0f, 1.0f, 1.0f); }
-		public static Color4 Black4        { get => new Color4(0.0f, 0.0f, 0.0f, 1.0f); }
-		public static Color4 LightRed4     { get => new Color4(0.8f, 0.2f, 0.2f, 1.0f); }
-		public static Color4 LightGreen4   { get => new Color4(0.2f, 0.8f, 0.2f, 1.0f); }
-		public static Color4 LightBlue4    { get => new Color4(0.2f, 0.2f, 0.8f, 1.0f); }
-		public static Color4 LightYellow4  { get => new Color4(0.8f, 0.8f, 0.2f, 1.0f); }
+		public static Color4 Red4          => new Color4(1.0f, 0.0f, 0.0f, 1.0f);
+		public static Color4 Green4        => new Color4(0.0f, 1.0f, 0.0f, 1.0f);
+		public static Color4 Blue4         => new Color4(0.0f, 0.0f, 1.0f, 1.0f);
+		public static Color4 Purple4       => new Color4(0.6f, 0.1f, 0.9f, 1.0f);
+		public static Color4 Yellow4       => new Color4(1.0f, 1.0f, 0.0f, 1.0f);
+		public static Color4 Orange4       => new Color4(1.0f, 0.4f, 0.0f, 1.0f);
+		public static Color4 White4        => new Color4(1.0f, 1.0f, 1.0f, 1.0f);
+		public static Color4 Black4        => new Color4(0.0f, 0.0f, 0.0f, 1.0f);
+		public static Color4 LightRed4     => new Color4(0.8f, 0.2f, 0.2f, 1.0f);
+		public static Color4 LightGreen4   => new Color4(0.2f, 0.8f, 0.2f, 1.0f);
+		public static Color4 LightBlue4    => new Color4(0.2f, 0.2f, 0.8f, 1.0f);
+		public static Color4 LightYellow4  => new Color4(0.8f, 0.8f, 0.2f, 1.0f);
 
-		public static Color3 Red           { get => new Color3(1.0f, 0.0f, 0.0f); }
-		public static Color3 Green         { get => new Color3(0.0f, 1.0f, 0.0f); }
-		public static Color3 Blue          { get => new Color3(0.0f, 0.0f, 1.0f); }
-		public static Color3 Purple        { get => new Color3(0.6f, 0.1f, 0.9f); }
-		public static Color3 Yellow        { get => new Color3(1.0f, 1.0f, 0.0f); }
-		public static Color3 Orange        { get => new Color3(1.0f, 0.4f, 0.0f); }
-		public static Color3 White         { get => new Color3(1.0f, 1.0f, 1.0f); }
-		public static Color3 Black         { get => new Color3(0.0f, 0.0f, 0.0f); }
-		public static Color3 LightRed      { get => new Color3(0.8f, 0.2f, 0.2f); }
-		public static Color3 LightGreen    { get => new Color3(0.2f, 0.8f, 0.2f); }
-		public static Color3 LightBlue     { get => new Color3(0.2f, 0.2f, 0.8f); }
-		public static Color3 LightYellow   { get => new Color3(0.8f, 0.8f, 0.2f); }
+		public static Color3 Red           => new Color3(1.0f, 0.0f, 0.0f);
+		public static Color3 Green         => new Color3(0.0f, 1.0f, 0.0f);
+		public static Color3 Blue          => new Color3(0.0f, 0.0f, 1.0f);
+		public static Color3 Purple        => new Color3(0.6f, 0.1f, 0.9f);
+		public static Color3 Yellow        => new Color3(1.0f, 1.0f, 0.0f);
+		public static Color3 Orange        => new Color3(1.0f, 0.4f, 0.0f);
+		public static Color3 White         => new Color3(1.0f, 1.0f, 1.0f);
+		public static Color3 Black         => new Color3(0.0f, 0.0f, 0.0f);
+		public static Color3 LightRed      => new Color3(0.8f, 0.2f, 0.2f);
+		public static Color3 LightGreen    => new Color3(0.2f, 0.8f, 0.2f);
+		public static Color3 LightBlue     => new Color3(0.2f, 0.2f, 0.8f);
+		public static Color3 LightYellow   => new Color3(0.8f, 0.8f, 0.2f);
+
+		public static Color3 Random => new Color3(Vortex.Random.Value, Vortex.Random.Value, Vortex.Random.Value);
 	}
 
 	public struct Color2
