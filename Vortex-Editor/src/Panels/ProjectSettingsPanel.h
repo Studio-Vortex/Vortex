@@ -9,7 +9,7 @@ namespace Vortex {
 	class ProjectSettingsPanel : public EditorPanel
 	{
 	public:
-		ProjectSettingsPanel(SharedReference<Project> project);
+		ProjectSettingsPanel();
 		~ProjectSettingsPanel() override = default;
 
 		void OnGuiRender() override;

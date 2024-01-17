@@ -67,6 +67,8 @@ namespace Vortex {
 	bool EditorAssetManager::OnProjectDeserialized()
 	{
 		LoadAssetRegistry();
+		// TODO do we have to call reload assets here?
+		ReloadAssets();
 
 		// Should we load default meshes here?
 		DefaultMesh::Init();

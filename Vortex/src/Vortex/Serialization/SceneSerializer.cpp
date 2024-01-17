@@ -119,6 +119,8 @@ namespace Vortex {
 
 		DeserializeActors(actors, m_Scene);
 
+		m_Scene->SetName(sceneName);
+
 		return true;
 	}
 

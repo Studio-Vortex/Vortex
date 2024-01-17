@@ -2,8 +2,8 @@
 
 namespace Vortex {
 
-	ProjectSettingsPanel::ProjectSettingsPanel(SharedReference<Project> project)
-		: m_ProjectProperties(project->GetProperties())
+	ProjectSettingsPanel::ProjectSettingsPanel()
+		: m_ProjectProperties(Project::GetActive()->GetProperties())
 	{
 		m_CallbackPanels = std::vector<std::function<void()>>
 		{

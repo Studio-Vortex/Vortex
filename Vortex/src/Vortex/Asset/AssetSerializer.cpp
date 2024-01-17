@@ -257,14 +257,28 @@ namespace Vortex {
 
 	void SceneAssetSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
 	{
+		SharedReference<Scene> scene = asset.Is<Scene>();
+		if (!scene)
+		{
+			VX_CONSOLE_LOG_ERROR("[Asset Serializer] Attempting to serialize invalid scene asset!");
+			return;
+		}
 
+		const Fs::Path fullPath = Project::GetAssetDirectory() / metadata.Filepath;
+
+		SceneSerializer serializer(scene);
+		serializer.Serialize(fullPath.string());
 	}
 
 	bool SceneAssetSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		asset = Scene::Create();
+		asset->Handle = metadata.Handle;
 
-		return false;
+		const Fs::Path fullPath = Project::GetAssetDirectory() / metadata.Filepath;
+
+		SceneSerializer serializer(asset.As<Scene>());
+		return serializer.Deserialize(fullPath.string());
 	}
 
 	void PrefabAssetSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)

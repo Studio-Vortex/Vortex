@@ -446,26 +446,11 @@ namespace Vortex {
 		OnMainMenuBarRender();
 
 		// Render Panels if the scene isn't maximized
-		if (!m_SceneViewportMaximized)
+		// we also need to wait until the project is open before rendering panels
+		const bool projectOpen = Project::GetActive();
+		if (projectOpen && !m_SceneViewportMaximized)
 		{
-			m_PanelManager->OnGuiRender<PhysicsMaterialEditorPanel>();
-			m_PanelManager->OnGuiRender<PhysicsStatisticsPanel>();
-			m_PanelManager->OnGuiRender<ProjectSettingsPanel>();
-			m_PanelManager->OnGuiRender<NetworkManagerPanel>();
-			m_PanelManager->GetPanel<SceneHierarchyPanel>()->OnGuiRender(m_HoveredActor, m_EditorCamera);
-			m_PanelManager->OnGuiRender<ContentBrowserPanel>();
-			m_PanelManager->OnGuiRender<ScriptRegistryPanel>();
-			m_PanelManager->OnGuiRender<MaterialEditorPanel>();
-			m_PanelManager->OnGuiRender<SceneRendererPanel>();
-			m_PanelManager->OnGuiRender<AssetRegistryPanel>();
-			m_PanelManager->OnGuiRender<BuildSettingsPanel>();
-			m_PanelManager->OnGuiRender<SystemManagerPanel>();
-			m_PanelManager->OnGuiRender<ShaderEditorPanel>();
-			m_PanelManager->OnGuiRender<AudioMixerPanel>();
-			m_PanelManager->OnGuiRender<SubModulesPanel>();
-			m_PanelManager->OnGuiRender<ECSDebugPanel>();
-			m_PanelManager->OnGuiRender<ConsolePanel>();
-			m_PanelManager->OnGuiRender<AboutPanel>();
+			OnPanelsRender();
 		}
 
 		// Always render if open
@@ -508,6 +493,28 @@ namespace Vortex {
 		}
 
 		Gui::End();
+	}
+
+	void EditorLayer::OnPanelsRender()
+	{
+		m_PanelManager->OnGuiRender<PhysicsMaterialEditorPanel>();
+		m_PanelManager->OnGuiRender<PhysicsStatisticsPanel>();
+		m_PanelManager->OnGuiRender<ProjectSettingsPanel>();
+		m_PanelManager->OnGuiRender<NetworkManagerPanel>();
+		m_PanelManager->GetPanel<SceneHierarchyPanel>()->OnGuiRender(m_HoveredActor, m_EditorCamera);
+		m_PanelManager->OnGuiRender<ContentBrowserPanel>();
+		m_PanelManager->OnGuiRender<ScriptRegistryPanel>();
+		m_PanelManager->OnGuiRender<MaterialEditorPanel>();
+		m_PanelManager->OnGuiRender<SceneRendererPanel>();
+		m_PanelManager->OnGuiRender<AssetRegistryPanel>();
+		m_PanelManager->OnGuiRender<BuildSettingsPanel>();
+		m_PanelManager->OnGuiRender<SystemManagerPanel>();
+		m_PanelManager->OnGuiRender<ShaderEditorPanel>();
+		m_PanelManager->OnGuiRender<AudioMixerPanel>();
+		m_PanelManager->OnGuiRender<SubModulesPanel>();
+		m_PanelManager->OnGuiRender<ECSDebugPanel>();
+		m_PanelManager->OnGuiRender<ConsolePanel>();
+		m_PanelManager->OnGuiRender<AboutPanel>();
 	}
 
 	void EditorLayer::OnMainMenuBarRender()
@@ -979,8 +986,7 @@ namespace Vortex {
 
 				const AssetType assetType = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath);
 
-				if (assetType == AssetType::None)
-				{
+				if (assetType == AssetType::None) {
 					VX_CONSOLE_LOG_ERROR("[Editor] Could not load asset with AssetType of none!");
 					Gui::EndDragDropTarget();
 					return;
@@ -988,43 +994,42 @@ namespace Vortex {
 
 				switch (assetType)
 				{
-					case AssetType::FontAsset:
-					{
+					case AssetType::FontAsset: {
 						break;
 					}
-					case AssetType::AudioAsset:
-					{
+					case AssetType::AudioAsset: {
 						break;
 					}
-					case AssetType::SceneAsset:
-					{
-						OpenScene(filepath);
+					case AssetType::SceneAsset: {
+						const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(filepath);
+						if (!AssetManager::IsHandleValid(metadata.Handle)) {
+							VX_CONSOLE_LOG_ERROR("[Editor] Failed to open scene, metadata was invalid!");
+							break;
+						}
+
+						OpenScene(metadata);
 
 						break;
 					}
-					case AssetType::PrefabAsset:
-					{
+					case AssetType::PrefabAsset: {
 						AssetHandle prefabHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
-						if (AssetManager::IsHandleValid(prefabHandle))
-						{
-							EditorCamera* editorCamera = GetCurrentEditorCamera();
-							if (editorCamera) {
-								const Math::vec3 translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
-								SharedReference<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabHandle);
-								Actor prefabInstance = m_ActiveScene->Instantiate(prefab, &translation);
-								SelectionManager::SetSelectedActor(prefabInstance);
-								m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnActorName(true);
-							}
+						if (!AssetManager::IsHandleValid(prefabHandle)) {
+							VX_CONSOLE_LOG_ERROR("[Editor] Failed to instantiate prefab, asset handle was invalid!");
+							break;
 						}
-						else
-						{
-							VX_CONSOLE_LOG_ERROR("[Editor] Failed to instantiate prefab!");
+
+						EditorCamera* editorCamera = GetCurrentEditorCamera();
+						if (editorCamera) {
+							const Math::vec3 translation = editorCamera->GetFocalPoint() + editorCamera->GetForwardDirection();
+							SharedReference<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabHandle);
+							Actor prefabInstance = m_ActiveScene->Instantiate(prefab, &translation);
+							SelectionManager::SetSelectedActor(prefabInstance);
+							m_PanelManager->GetPanel<SceneHierarchyPanel>()->FocusOnActorName(true);
 						}
 
 						break;
 					}
-					case AssetType::ScriptAsset:
-					{
+					case AssetType::ScriptAsset: {
 						if (!m_HoveredActor)
 							m_HoveredActor = GetHoveredMeshActorFromRaycast();
 						if (!m_HoveredActor)
@@ -1050,126 +1055,114 @@ namespace Vortex {
 
 						break;
 					}
-					case AssetType::TextureAsset:
-					{
+					case AssetType::TextureAsset: {
 						if (!m_HoveredActor)
 							m_HoveredActor = GetHoveredMeshActorFromRaycast();
 						if (!m_HoveredActor || !m_HoveredActor.HasAny<SpriteRendererComponent, StaticMeshRendererComponent, MeshRendererComponent>())
 							break;
 
-						const Fs::Path textureFilepath = filepath;
-
-						AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(textureFilepath);
-
-						if (AssetManager::IsHandleValid(textureHandle))
+						AssetHandle textureHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
+						if (!AssetManager::IsHandleValid(textureHandle))
 						{
-							SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(textureHandle);
-
-							if (m_HoveredActor.HasComponent<SpriteRendererComponent>())
-							{
-								m_HoveredActor.GetComponent<SpriteRendererComponent>().Texture = textureHandle;
-							}
-							else if (m_HoveredActor.HasComponent<StaticMeshRendererComponent>())
-							{
-								StaticMeshRendererComponent& staticMeshRendererComponent = m_HoveredActor.GetComponent<StaticMeshRendererComponent>();
-								AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
-
-								SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
-
-								if (AssetManager::IsHandleValid(staticMeshHandle))
-								{
-									std::string filename = textureFilepath.filename().string();
-									// TODO this should be dynamic
-									AssetHandle materialHandle = materialTable->GetMaterial(0);
-
-									if (AssetManager::IsHandleValid(materialHandle))
-									{
-										SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-
-										if (material)
-										{
-											if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
-												material->SetTexture("u_AlbedoMap", textureHandle);
-											else if (filename.find("normal") != std::string::npos)
-												material->SetTexture("u_NormalMap", textureHandle);
-											else if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
-												material->SetTexture("u_MetallicMap", textureHandle);
-											else if (filename.find("roughness") != std::string::npos)
-												material->SetTexture("u_RoughnessMap", textureHandle);
-											else if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
-												material->SetTexture("u_EmissionMap", textureHandle);
-											else if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
-												material->SetTexture("u_ParallaxOcclusionMap", textureHandle);
-											else if (filename.find("ao") != std::string::npos)
-												material->SetTexture("u_AmbientOcclusionMap", textureHandle);
-											else
-												material->SetTexture("u_AlbedoMap", textureHandle);
-										}
-									}
-								}
-							}
+							VX_CONSOLE_LOG_WARN("[Editor] Failed to load texture, asset handle was invalid!");
+							break;
 						}
-						else
+
+						if (m_HoveredActor.HasComponent<SpriteRendererComponent>())
 						{
-							VX_CONSOLE_LOG_WARN("Could not load texture - {}", textureFilepath.filename().string());
+							m_HoveredActor.GetComponent<SpriteRendererComponent>().Texture = textureHandle;
+						}
+						else if (m_HoveredActor.HasComponent<StaticMeshRendererComponent>())
+						{
+							StaticMeshRendererComponent& staticMeshRendererComponent = m_HoveredActor.GetComponent<StaticMeshRendererComponent>();
+							AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
+
+							SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
+
+							if (!AssetManager::IsHandleValid(staticMeshHandle)) {
+								VX_CONSOLE_LOG_ERROR("[Editor] Failed to set material texture, static mesh asset handle was invalid!");
+								break;
+							}
+
+							const std::string filename = filepath.filename().string();
+
+							// TODO this should be dynamic
+							AssetHandle materialHandle = materialTable->GetMaterial(0);
+							if (!AssetManager::IsHandleValid(materialHandle)) {
+								VX_CONSOLE_LOG_ERROR("[Editor] Failed to set material texture, asset handle was invalid!");
+								break;
+							}
+
+							SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+							if (!material) {
+								break;
+							}
+
+							if (filename.find("albedo") != std::string::npos || filename.find("diffuse") != std::string::npos || filename.find("base_color") != std::string::npos)
+								material->SetTexture("u_AlbedoMap", textureHandle);
+							else if (filename.find("normal") != std::string::npos)
+								material->SetTexture("u_NormalMap", textureHandle);
+							else if (filename.find("metallic") != std::string::npos || filename.find("specular") != std::string::npos)
+								material->SetTexture("u_MetallicMap", textureHandle);
+							else if (filename.find("roughness") != std::string::npos)
+								material->SetTexture("u_RoughnessMap", textureHandle);
+							else if (filename.find("emissive") != std::string::npos || filename.find("emission") != std::string::npos)
+								material->SetTexture("u_EmissionMap", textureHandle);
+							else if (filename.find("height") != std::string::npos || filename.find("displacement") != std::string::npos)
+								material->SetTexture("u_ParallaxOcclusionMap", textureHandle);
+							else if (filename.find("ao") != std::string::npos)
+								material->SetTexture("u_AmbientOcclusionMap", textureHandle);
+							else
+								material->SetTexture("u_AlbedoMap", textureHandle);
 						}
 
 						break;
 					}
-					case AssetType::MaterialAsset:
-					{
+					case AssetType::MaterialAsset: {
 						m_HoveredActor = GetHoveredMeshActorFromRaycast();
 						if (!m_HoveredActor || !m_HoveredActor.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
 							break;
 
-						const Fs::Path materialFilepath = filepath;
-
-						AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(materialFilepath);
-
-						if (AssetManager::IsHandleValid(materialHandle))
-						{
-							SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-
-							if (material)
-							{
-								// TODO we should be able to set an actual index here eventually instead of being hardcoded
-
-								if (m_HoveredActor.HasComponent<MeshRendererComponent>())
-								{
-									MeshRendererComponent& meshRendererComponent = m_HoveredActor.GetComponent<MeshRendererComponent>();
-									SharedReference<MaterialTable> materialTable = meshRendererComponent.Materials;
-
-									materialTable->SetMaterial(0, materialHandle);
-								}
-								else if (m_HoveredActor.HasComponent<StaticMeshRendererComponent>())
-								{
-									StaticMeshRendererComponent& staticMeshRendererComponent = m_HoveredActor.GetComponent<StaticMeshRendererComponent>();
-									SharedReference<MaterialTable>& materialTable = staticMeshRendererComponent.Materials;
-
-									materialTable->SetMaterial(0, materialHandle);
-								}
-
-								material->SetName(FileSystem::RemoveFileExtension(materialFilepath));
-							}
+						AssetHandle materialHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
+						if (!AssetManager::IsHandleValid(materialHandle)) {
+							VX_CONSOLE_LOG_WARN("[Editor] Failed to load material, asset handle was invalid!");
+							break;
 						}
-						else
-						{
-							VX_CONSOLE_LOG_WARN("Could not load material - {}", materialFilepath.filename().string());
+
+						SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+						if (!material) {
+							break;
 						}
+
+						// TODO we should be able to set an actual index here eventually instead of being hardcoded
+
+						if (m_HoveredActor.HasComponent<MeshRendererComponent>())
+						{
+							MeshRendererComponent& meshRendererComponent = m_HoveredActor.GetComponent<MeshRendererComponent>();
+							SharedReference<MaterialTable> materialTable = meshRendererComponent.Materials;
+
+							materialTable->SetMaterial(0, materialHandle);
+						}
+						else if (m_HoveredActor.HasComponent<StaticMeshRendererComponent>())
+						{
+							StaticMeshRendererComponent& staticMeshRendererComponent = m_HoveredActor.GetComponent<StaticMeshRendererComponent>();
+							SharedReference<MaterialTable>& materialTable = staticMeshRendererComponent.Materials;
+
+							materialTable->SetMaterial(0, materialHandle);
+						}
+
+						material->SetName(FileSystem::RemoveFileExtension(filepath));
 
 						break;
 					}
-					case AssetType::AnimatorAsset:
-					{
+					case AssetType::AnimatorAsset: {
 						break;
 					}
-					case AssetType::AnimationAsset:
-					{
+					case AssetType::AnimationAsset: {
 						break;
 					}
 					case AssetType::MeshAsset: // Fallthrough
-					case AssetType::StaticMeshAsset:
-					{
+					case AssetType::StaticMeshAsset: {
 						m_HoveredActor = GetHoveredMeshActorFromRaycast();
 						if (!m_HoveredActor || !m_HoveredActor.HasAny<MeshRendererComponent, StaticMeshRendererComponent>())
 							break;
@@ -1182,23 +1175,24 @@ namespace Vortex {
 
 						break;
 					}
-					case AssetType::EnvironmentAsset:
-					{
-						Fs::Path environmentPath = filepath;
-						AssetHandle environmentHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(environmentPath);
+					case AssetType::EnvironmentAsset: {
+						AssetHandle environmentHandle = Project::GetEditorAssetManager()->GetAssetHandleFromFilepath(filepath);
 						if (!AssetManager::IsHandleValid(environmentHandle))
 							break;
 
-						if (Actor environmentActor = m_ActiveScene->GetEnvironmentActor())
-						{
-							SkyboxComponent& skyboxComponent = environmentActor.GetComponent<SkyboxComponent>();
-							skyboxComponent.Skybox = environmentHandle;
+						Actor environmentActor = m_ActiveScene->GetEnvironmentActor();
+						// TODO should we create one if one doesn't exist?
+						if (!environmentActor) {
+							VX_CONSOLE_LOG_ERROR("[Editor] Failed to load environment map, no actor with a skybox component was found in the scene!");
+							break;
 						}
+
+						SkyboxComponent& skyboxComponent = environmentActor.GetComponent<SkyboxComponent>();
+						skyboxComponent.Skybox = environmentHandle;
 
 						break;
 					}
-					case AssetType::PhysicsMaterialAsset:
-					{
+					case AssetType::PhysicsMaterialAsset: {
 						break;
 					}
 				}
@@ -2999,9 +2993,7 @@ namespace Vortex {
 	bool EditorLayer::OpenExistingProject()
 	{
 		const std::string filepath = FileDialogue::OpenFileDialog("Vortex Project (*.vxproject)\0*.vxproject\0");
-
-		if (filepath.empty())
-		{
+		if (filepath.empty()) {
 			return false;
 		}
 
@@ -3023,14 +3015,18 @@ namespace Vortex {
 			return false;
 		}
 
-		SharedReference<EditorAssetManager> assetManager = Project::GetEditorAssetManager();
-		const Fs::Path startScenePath = Project::GetActive()->GetProperties().General.StartScene;
-		const AssetMetadata& sceneMetadata = assetManager->GetMetadata(startScenePath);
+		SharedReference<Project> project = Project::GetActive();
+		const ProjectProperties& properties = project->GetProperties();
 
-		const Fs::Path relativePath = assetManager->GetFileSystemPath(sceneMetadata);
-		OpenScene(relativePath);
+		const Fs::Path startScenePath = properties.General.StartScene;
+		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(startScenePath);
+		if (!AssetManager::IsHandleValid(metadata.Handle)) {
+			return false;
+		}
 
-		m_PanelManager->AddPanel<ProjectSettingsPanel>(Project::GetActive());
+		OpenScene(metadata);
+
+		m_PanelManager->AddPanel<ProjectSettingsPanel>();
 		m_PanelManager->AddPanel<ContentBrowserPanel>(Project::GetAssetDirectory())->IsOpen = true;
 
 		return true;
@@ -3051,8 +3047,7 @@ namespace Vortex {
 
 	void EditorLayer::CloseProject()
 	{
-		if (m_ActiveScene->IsRunning())
-		{
+		if (m_ActiveScene->IsRunning()) {
 			OnSceneStop();
 		}
 
@@ -3075,20 +3070,18 @@ namespace Vortex {
 
 	void EditorLayer::CreateNewScene()
 	{
-		if (!InEditSceneState())
-		{
+		if (!InEditSceneState()) {
 			return;
 		}
 
-		m_EditorSceneFilepath = ""; // No scene on disk yet
+		m_EditorSceneMetadata = {}; // No scene on disk yet
 
-		m_ActiveScene = Scene::Create(m_Framebuffer);
+		m_EditorScene = Scene::Create(m_Framebuffer);
+		SetSceneContext(m_EditorScene);
 
-		SetSceneContext(m_ActiveScene);
+		m_ActiveScene = m_EditorScene;
 
 		ResetEditorCameras();
-
-		m_EditorScene = m_ActiveScene;
 
 		// TODO are we going to store the project type in the project?
 		ProjectType type = ProjectType::e3D;
@@ -3100,44 +3093,45 @@ namespace Vortex {
 	void EditorLayer::OpenExistingScene()
 	{
 		const std::string filepath = FileDialogue::OpenFileDialog("Vortex Scene (*.vortex)\0*.vortex\0");
-
-		if (filepath.empty())
-		{
+		if (filepath.empty()) {
 			return;
 		}
 
-		OpenScene(filepath);
+		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(filepath);
+		if (!AssetManager::IsHandleValid(metadata.Handle)) {
+			VX_CONSOLE_LOG_ERROR("[Editor] Failed to open scene: {}", filepath);
+			return;
+		}
+
+		OpenScene(metadata);
 	}
 
-	void EditorLayer::OpenScene(const Fs::Path& filepath)
+	void EditorLayer::OpenScene(const AssetMetadata& metadata)
 	{
-		if (!InEditSceneState())
-		{
+		if (!InEditSceneState()) {
 			OnSceneStop();
 		}
 
-		m_HoveredActor = Actor{}; // Prevent an invalid actor from being used elsewhere in the editor
-
-		const std::string sceneFilename = FileSystem::RemoveFileExtension(filepath.filename());
-
-		if (filepath.extension() != ".vortex")
-		{
-			VX_CORE_WARN("Could not load {} - not a scene file", sceneFilename);
+		if (metadata.Type != AssetType::SceneAsset) {
+			VX_CONSOLE_LOG_WARN("[Editor] Failed to open scene, metadata was invalid!");
 			return;
 		}
+
+		m_HoveredActor = Actor{}; // Prevent an invalid actor from being used elsewhere in the editor
+		SelectionManager::DeselectActor();
+
+		const Fs::Path fullPath = Project::GetAssetDirectory() / metadata.Filepath;
+		const std::string filename = FileSystem::RemoveFileExtension(fullPath);
 
 		SharedReference<Scene> newScene = Scene::Create(m_Framebuffer);
 		SceneSerializer serializer(newScene);
-		newScene->OnViewportResize((uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y);
 
-		const std::string timerName = std::format("{} Scene Load Time", sceneFilename);
-		InstrumentationTimer timer(timerName.c_str());
-
-		if (!serializer.Deserialize(filepath.string()))
-		{
-			VX_CORE_WARN("Failed to deserialize scene - {}", sceneFilename);
+		if (!serializer.Deserialize(fullPath.string())) {
+			VX_CONSOLE_LOG_ERROR("[Editor] Failed to deserialize scene - {}", filename);
 			return;
 		}
+
+		newScene->OnViewportResize((uint32_t)m_ViewportPanelSize.x, (uint32_t)m_ViewportPanelSize.y);
 
 		m_EditorScene = newScene;
 		SetSceneContext(m_EditorScene);
@@ -3145,11 +3139,11 @@ namespace Vortex {
 		ResetEditorCameras();
 
 		m_ActiveScene = m_EditorScene;
-		m_EditorSceneFilepath = filepath;
+		m_EditorSceneMetadata = metadata;
 
-		SetWindowTitle(sceneFilename);
+		SetWindowTitle(filename);
 
-		m_ActiveScene->SetName(sceneFilename);
+		m_ActiveScene->SetName(filename);
 	}
 
 	void EditorLayer::SaveSceneAs()
@@ -3160,11 +3154,19 @@ namespace Vortex {
 		{
 			ReplaceSceneFileExtensionIfNeeded(filepath);
 
-			m_EditorSceneFilepath = filepath;
+			const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(filepath);
+			if (!AssetManager::IsHandleValid(metadata.Handle)) {
+				VX_CONSOLE_LOG_WARN("[Editor] Failed to save scene, metadata was invalid!");
+				return;
+			}
 
-			SerializeScene(m_ActiveScene, m_EditorSceneFilepath);
+			m_EditorSceneMetadata = metadata;
 
-			SetWindowTitle(FileSystem::RemoveFileExtension(m_EditorSceneFilepath.filename()));
+			SerializeScene();
+
+			const Fs::Path fullPath = Project::GetAssetDirectory() / metadata.Filepath;
+			const std::string filename = FileSystem::RemoveFileExtension(fullPath.filename());
+			SetWindowTitle(filename);
 		}
 	}
 
@@ -3172,9 +3174,9 @@ namespace Vortex {
 	{
 		m_ActiveScene->SortActors();
 
-		if (!m_EditorSceneFilepath.empty())
+		if (AssetManager::IsHandleValid(m_EditorSceneMetadata.Handle))
 		{
-			SerializeScene(m_ActiveScene, m_EditorSceneFilepath);
+			SerializeScene();
 		}
 		else
 		{
@@ -3186,16 +3188,25 @@ namespace Vortex {
 		properties.EditorProps.EditorCameraProps.Translation = m_EditorCamera->GetPosition();
 	}
 
-	void EditorLayer::SerializeScene(SharedReference<Scene>& scene, const Fs::Path& filepath)
+	void EditorLayer::SerializeScene()
 	{
-		SceneSerializer serializer(scene);
-		serializer.Serialize(filepath.string());
+		VX_CORE_VERIFY(Project::GetActive());
+		VX_CORE_VERIFY(InEditSceneState());
+
+		if (!AssetManager::IsHandleValid(m_EditorSceneMetadata.Handle)) {
+			VX_CONSOLE_LOG_ERROR("[Editor] Failed to serialize scene, metadata was invalid!");
+			return;
+		}
+
+		const Fs::Path fullPath = Project::GetAssetDirectory() / m_EditorSceneMetadata.Filepath;
+
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.Serialize(fullPath.string());
 	}
 
 	void EditorLayer::OnScenePlay()
 	{
-		if (!InEditSceneState())
-		{
+		if (!InEditSceneState()) {
 			OnSceneStop();
 		}
 
@@ -3246,13 +3257,11 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "Scene must be running!");
 
-		if (InEditSceneState())
-		{
+		if (InEditSceneState()) {
 			return;
 		}
 
-		if (InPlaySceneState() && m_ActiveScene->IsPaused())
-		{
+		if (InPlaySceneState() && m_ActiveScene->IsPaused()) {
 			return;
 		}
 
@@ -3263,13 +3272,11 @@ namespace Vortex {
 	{
 		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "Scene must be running!");
 
-		if (InEditSceneState())
-		{
+		if (InEditSceneState()) {
 			return;
 		}
 
-		if (InPlaySceneState() && !m_ActiveScene->IsPaused())
-		{
+		if (InPlaySceneState() && !m_ActiveScene->IsPaused()) {
 			return;
 		}
 
@@ -3309,8 +3316,7 @@ namespace Vortex {
 
 		SwitchSceneState(SceneState::Edit);
 
-		if (properties.EditorProps.MaximizeOnPlay)
-		{
+		if (properties.EditorProps.MaximizeOnPlay) {
 			// we need to minimize the scene viewport
 			ToggleSceneViewportMaximized();
 		}
@@ -3323,9 +3329,8 @@ namespace Vortex {
 		// Reset the mouse cursor in case a script turned it off
 		Input::SetCursorMode(CursorMode::Normal);
 
-		if (m_TransitionedFromStartScene)
-		{
-			OpenScene(m_StartSceneFilepath);
+		if (m_TransitionedFromStartScene) {
+			OpenScene(m_StartSceneMetadata);
 			m_TransitionedFromStartScene = false;
 		}
 	}
@@ -3335,23 +3340,25 @@ namespace Vortex {
 		VX_CORE_ASSERT(InPlaySceneState(), "active scene must be in play state!");
 
 		UUID selectedUUID = 0;
-		if (Actor selected = SelectionManager::GetSelectedActor())
-		{
+		if (Actor selected = SelectionManager::GetSelectedActor()) {
 			selectedUUID = selected.GetUUID();
 		}
 
 		OnScenePlay();
 
-		if (Actor selected = m_ActiveScene->TryGetActorWithUUID(selectedUUID))
-		{
+		// try to select the actor again in the new copy of the scene
+		if (selectedUUID == 0) {
+			return;
+		}
+
+		if (Actor selected = m_ActiveScene->TryGetActorWithUUID(selectedUUID)) {
 			SelectionManager::SetSelectedActor(selected);
 		}
 	}
 
 	void EditorLayer::OnSceneSimulate()
 	{
-		if (!InEditSceneState())
-		{
+		if (!InEditSceneState()) {
 			OnSceneStop();
 		}
 
@@ -3386,17 +3393,42 @@ namespace Vortex {
 
 		Application::Get().SubmitToPreUpdateMainThreadQueue([=]()
 		{
-			m_StartSceneFilepath = m_EditorSceneFilepath;
+			if (!m_TransitionedFromStartScene) {
+				m_StartSceneMetadata = m_EditorSceneMetadata;
+			}
 
-			const std::string filename = sceneName + Project::GetEditorAssetManager()->GetExtensionFromAssetType(AssetType::SceneAsset);
-			const Fs::Path relativePath = Project::GetEditorAssetManager()->GetRelativePath(filename);
-			const Fs::Path assetDirectory = Project::GetAssetDirectory();
-			const Fs::Path nextSceneFilepath = assetDirectory / "Scenes" / relativePath;
+			bool opened = false;
 
-			OpenScene(nextSceneFilepath);
-			OnScenePlay();
+			std::unordered_set<AssetHandle> scenes = Project::GetEditorAssetManager()->GetAllAssetsWithType(AssetType::SceneAsset);
 
-			m_TransitionedFromStartScene = true;
+			for (AssetHandle handle : scenes)
+			{
+				if (!AssetManager::IsHandleValid(handle))
+					continue;
+
+				SharedReference<Scene> scene = AssetManager::GetAsset<Scene>(handle);
+				const std::string& name = scene->GetName();
+				if (String::FastCompare(sceneName, name) == 0)
+					continue;
+
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(handle);
+				if (!AssetManager::IsHandleValid(metadata.Handle))
+					continue;
+
+				// play the scene
+				OpenScene(metadata);
+				OnScenePlay();
+				opened = true;
+			}
+
+			if (!opened) {
+				VX_CONSOLE_LOG_ERROR("[Editor] Failed to queue scene transition, failed to locate scene with name: {}", sceneName);
+				return;
+			}
+
+			if (!m_TransitionedFromStartScene) {
+				m_TransitionedFromStartScene = true;
+			}
 		});
 	}
 	
@@ -3496,12 +3528,14 @@ namespace Vortex {
 
 	void EditorLayer::ReplaceSceneFileExtensionIfNeeded(std::string& filepath)
 	{
-		Fs::Path copy = filepath;
+		Fs::Path path = filepath;
 
-		if (copy.extension() != ".vortex" || copy.extension().empty())
+		const std::string sceneExtension = Project::GetEditorAssetManager()->GetExtensionFromAssetType(AssetType::SceneAsset);
+
+		if (path.extension() != sceneExtension || path.extension().empty())
 		{
-			FileSystem::ReplaceExtension(copy, ".vortex");
-			filepath = copy.string();
+			FileSystem::ReplaceExtension(path, sceneExtension);
+			filepath = path.string();
 		}
 	}
 

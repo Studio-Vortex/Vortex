@@ -23,6 +23,7 @@ namespace Vortex {
 
 		void OnUpdate(TimeStep ts) override;
 		void OnGuiRender() override;
+		void OnPanelsRender();
 		void OnMainMenuBarRender();
 		void OnScenePanelRender();
 		void UIHandleAssetDrop();
@@ -67,11 +68,11 @@ namespace Vortex {
 
 		void CreateNewScene();
 		void OpenExistingScene();
-		void OpenScene(const Fs::Path& filepath);
+		void OpenScene(const AssetMetadata& metadata);
 		void SaveSceneAs();
 		void SaveScene();
 
-		void SerializeScene(SharedReference<Scene>& scene, const Fs::Path& filepath);
+		void SerializeScene();
 
 		void OnScenePlay();
 		void OnScenePause();
@@ -157,8 +158,8 @@ namespace Vortex {
 		SharedReference<Scene> m_ActiveScene = nullptr;
 		SharedReference<Scene> m_EditorScene = nullptr;
 		
-		Fs::Path m_EditorSceneFilepath;
-		Fs::Path m_StartSceneFilepath;
+		AssetMetadata m_EditorSceneMetadata;
+		AssetMetadata m_StartSceneMetadata;
 		Fs::Path m_RuntimeAppFilepath;
 
 		Actor m_HoveredActor;
