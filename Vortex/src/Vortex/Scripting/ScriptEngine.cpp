@@ -98,13 +98,13 @@ namespace Vortex {
 		{
 			s_Data->AssemblyReloadPending = true;
 
-			// Add reload to main thread queue
-			Application::Get().SubmitToPreUpdateMainThreadQueue([]()
-			{
+			auto fn = []() {
 				s_Data->AppAssemblyFilewatcher.reset();
-
 				ScriptEngine::ReloadAssembly();
-			});
+			};
+
+			// Add reload to main thread queue
+			Application::Get().GetPreUpdateFunctionQueue().queue(fn);
 		}
 	}
 

@@ -148,18 +148,6 @@ namespace Vortex {
 		}
 	}
 
-	void Application::SubmitToPreUpdateMainThreadQueue(const std::function<void()>& func)
-	{
-		std::scoped_lock<std::mutex> lock(m_PreUpdateMainThreadQueueMutex);
-
-		m_PreUpdateMainThreadQueue.emplace_back(func);
-	}
-
-	void Application::SubmitToPostUpdateMainThreadQueue(const std::function<void()>& func)
-	{
-		std::scoped_lock<std::mutex> lock(m_PostUpdateMainThreadQueueMutex);
-	}
-
 	void Application::AddModule(const SubModule& submodule)
 	{
 		m_ModuleLibrary.Add(submodule);
@@ -176,33 +164,11 @@ namespace Vortex {
 		return m_ModuleLibrary;
 	}
 
-	void Application::ExecutePreUpdateMainThreadQueue()
-	{
-		std::scoped_lock<std::mutex> lock(m_PreUpdateMainThreadQueueMutex);
-
-		for (const auto& fn : m_PreUpdateMainThreadQueue)
-		{
-			std::invoke(fn);
-		}
-
-		m_PreUpdateMainThreadQueue.clear();
-	}
-
-	void Application::ExecutePostUpdateMainThreadQueue()
-	{
-		std::scoped_lock<std::mutex> lock(m_PostUpdateMainThreadQueueMutex);
-
-		for (const auto& fn : m_PostUpdateMainThreadQueue)
-		{
-			std::invoke(fn);
-		}
-
-		m_PostUpdateMainThreadQueue.clear();
-	}
-
-	void Application::Run()
+	i32 Application::Run()
 	{
 		VX_PROFILE_FUNCTION();
+
+		i32 exitCode = 0;
 
 		while (m_Running)
 		{
@@ -215,7 +181,11 @@ namespace Vortex {
 			Time::SetDeltaTime(m_FrameTime.DeltaTime);
 			m_LastFrameTimeStamp = currentTime;
 
-			ExecutePreUpdateMainThreadQueue();
+			if (!m_MainThreadPreUpdateFunctionQueue.empty())
+			{
+				m_MainThreadPreUpdateFunctionQueue.execute();
+				m_MainThreadPreUpdateFunctionQueue.clear();
+			}
 
 			if (!m_ApplicationMinimized)
 			{
@@ -247,8 +217,14 @@ namespace Vortex {
 
 			m_Window->OnUpdate();
 
-			ExecutePostUpdateMainThreadQueue();
+			if (!m_MainThreadPostUpdateFunctionQueue.empty())
+			{
+				m_MainThreadPostUpdateFunctionQueue.execute();
+				m_MainThreadPostUpdateFunctionQueue.clear();
+			}
 		}
+
+		return exitCode;
 	}
 
 	bool Application::OnWindowCloseEvent(WindowCloseEvent& e)

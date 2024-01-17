@@ -283,9 +283,11 @@ namespace Vortex {
 
 	void Scene::SubmitToDestroyActor(Actor actor, bool excludeChildren)
 	{
-		SubmitToPostUpdateQueue([=]() {
+		auto fn = [=]() {
 			DestroyActorInternal(actor, excludeChildren);
-		});
+		};
+
+		GetPostUpdateFunctionQueue().queue(fn);
 	}
 
 	void Scene::ClearActors()
@@ -446,7 +448,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		ExecutePreUpdateQueue();
+		FlushPreUpdateQueue();
 
 		const bool updateCurrentFrame = !m_IsPaused || m_StepFrames > 0;
 
@@ -560,14 +562,14 @@ namespace Vortex {
 			});
 		}
 
-		ExecutePostUpdateQueue();
+		FlushPostUpdateQueue();
 	}
 
 	void Scene::OnUpdateSimulation(TimeStep delta, EditorCamera* camera)
 	{
 		VX_PROFILE_FUNCTION();
 
-		ExecutePreUpdateQueue();
+		FlushPreUpdateQueue();
 
 		const bool updateCurrentFrame = !m_IsPaused || m_StepFrames > 0;
 
@@ -616,14 +618,14 @@ namespace Vortex {
 		OnComponentUpdate(delta);
 		OnSystemUpdate(delta);
 
-		ExecutePostUpdateQueue();
+		FlushPostUpdateQueue();
 	}
 
 	void Scene::OnUpdateEditor(TimeStep delta, EditorCamera* camera)
 	{
 		VX_PROFILE_FUNCTION();
 
-		ExecutePreUpdateQueue();
+		FlushPreUpdateQueue();
 
 		// Update Animators
 		OnAnimatorUpdateRuntime(delta);
@@ -659,21 +661,7 @@ namespace Vortex {
 		OnComponentUpdate(delta);
 		OnSystemUpdate(delta);
 
-		ExecutePostUpdateQueue();
-	}
-
-	void Scene::SubmitToPreUpdateQueue(const std::function<void()>& fn)
-	{
-		std::scoped_lock<std::mutex> lock(m_PreUpdateQueueMutex);
-
-		m_PreUpdateQueue.emplace_back(fn);
-	}
-
-	void Scene::SubmitToPostUpdateQueue(const std::function<void()>& fn)
-	{
-		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
-
-		m_PostUpdateQueue.emplace_back(fn);
+		FlushPostUpdateQueue();
 	}
 
 	void Scene::InvokeActorOnGuiRender()
@@ -1294,32 +1282,20 @@ namespace Vortex {
 		m_SceneMeshes->WorldSpaceStaticMeshTransforms.clear();
 	}
 
-	void Scene::ExecutePreUpdateQueue()
+	void Scene::FlushPreUpdateQueue()
 	{
 		VX_PROFILE_FUNCTION();
 
-		std::scoped_lock<std::mutex> lock(m_PreUpdateQueueMutex);
-
-		for (const auto& fn : m_PreUpdateQueue)
-		{
-			std::invoke(fn);
-		}
-
-		m_PreUpdateQueue.clear();
+		m_PreUpdateFunctionQueue.execute();
+		m_PreUpdateFunctionQueue.clear();
 	}
 
-	void Scene::ExecutePostUpdateQueue()
+	void Scene::FlushPostUpdateQueue()
 	{
 		VX_PROFILE_FUNCTION();
 
-		std::scoped_lock<std::mutex> lock(m_PostUpdateQueueMutex);
-
-		for (const auto& fn : m_PostUpdateQueue)
-		{
-			std::invoke(fn);
-		}
-
-		m_PostUpdateQueue.clear();
+		m_PostUpdateFunctionQueue.execute();
+		m_PostUpdateFunctionQueue.clear();
 	}
 
 	void Scene::OnComponentUpdate(TimeStep delta)

@@ -27,7 +27,7 @@ namespace Vortex {
 		void CloseProject();
 		bool OpenScene(const AssetMetadata& metadata);
 
-		void QueueSceneTransition();
+		void QueueSceneTransition(const std::string& sceneName);
 
 	private:
 		SharedReference<Framebuffer> m_Framebuffer = nullptr;

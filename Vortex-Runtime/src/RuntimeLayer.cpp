@@ -99,6 +99,11 @@ namespace Vortex {
 			postProcessProps.StageCount = VX_ARRAYSIZE(stages);
 			Renderer::BeginPostProcessingStages(postProcessProps);
 		}
+
+		if (ScriptRegistry::TransitionQueued())
+		{
+			QueueSceneTransition(ScriptRegistry::GetNextSceneByName());
+		}
 	}
 
 	void RuntimeLayer::OnGuiRender()
@@ -242,23 +247,45 @@ namespace Vortex {
 		return true;
 	}
 
-	void RuntimeLayer::QueueSceneTransition()
+	void RuntimeLayer::QueueSceneTransition(const std::string& sceneName)
 	{
 		VX_PROFILE_FUNCTION();
 
-		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "Scene must be running to queue transition!");
+		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "runtime scene must be running to queue transition!");
 
-		Application::Get().SubmitToPreUpdateMainThreadQueue([=]()
-		{
-			// TODO
-			const Fs::Path assetDirectory = Project::GetAssetDirectory();
-			const Fs::Path nextSceneFilepath = assetDirectory / "";
+		auto fn = [=]() {
+			bool opened = false;
 
-			// TODO this will change eventually
-			const AssetMetadata& sceneMetadata = Project::GetEditorAssetManager()->GetMetadata(nextSceneFilepath);
+			std::unordered_set<AssetHandle> scenes = Project::GetEditorAssetManager()->GetAllAssetsWithType(AssetType::SceneAsset);
 
-			OpenScene(sceneMetadata);
-		});
+			for (AssetHandle handle : scenes)
+			{
+				if (!AssetManager::IsHandleValid(handle))
+					continue;
+
+				SharedReference<Scene> scene = AssetManager::GetAsset<Scene>(handle);
+				const std::string& entry = scene->GetName();
+				if (String::FastCompare(sceneName, entry) == 0)
+					continue;
+
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(handle);
+				if (!AssetManager::IsHandleValid(metadata.Handle))
+					continue;
+
+				// play the scene
+				OpenScene(metadata);
+				OnScenePlay();
+				opened = true;
+			}
+
+			if (!opened) {
+				// todo what should we do if we can't find the scene?
+				Application::Get().Close();
+				return;
+			}
+		};
+
+		Application::Get().GetPreUpdateFunctionQueue().queue(fn);
 	}
 
 }

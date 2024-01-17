@@ -13,6 +13,8 @@
 
 #include "Vortex/Gui/GuiLayer.h"
 
+#include "Vortex/stl/function_queue.h"
+
 int main(int argc, char** argv);
 
 namespace Vortex {
@@ -82,8 +84,8 @@ namespace Vortex {
 
 		void Close();
 
-		void SubmitToPreUpdateMainThreadQueue(const std::function<void()>& func);
-		void SubmitToPostUpdateMainThreadQueue(const std::function<void()>& func);
+		VX_FORCE_INLINE vxstl::function_queue<void>& GetPreUpdateFunctionQueue() const { return m_MainThreadPreUpdateFunctionQueue; }
+		VX_FORCE_INLINE vxstl::function_queue<void>& GetPostUpdateFunctionQueue() const { return m_MainThreadPostUpdateFunctionQueue; }
 
 		// TODO: think of a better place to put these
 		VX_FORCE_INLINE std::string GetEditorBinaryPath() const { return "Vortex-Editor.exe"; }
@@ -97,10 +99,8 @@ namespace Vortex {
 		VX_FORCE_INLINE FrameTime& GetFrameTime() { return m_FrameTime; }
 
 	private:
-		void ExecutePreUpdateMainThreadQueue();
-		void ExecutePostUpdateMainThreadQueue();
-		
-		void Run();
+		i32 Run();
+
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
 
@@ -116,11 +116,8 @@ namespace Vortex {
 
 		ModuleLibrary m_ModuleLibrary;
 
-		std::vector<std::function<void()>> m_PreUpdateMainThreadQueue;
-		std::vector<std::function<void()>> m_PostUpdateMainThreadQueue;
-
-		std::mutex m_PreUpdateMainThreadQueueMutex;
-		std::mutex m_PostUpdateMainThreadQueueMutex;
+		mutable vxstl::function_queue<void> m_MainThreadPreUpdateFunctionQueue;
+		mutable vxstl::function_queue<void> m_MainThreadPostUpdateFunctionQueue;
 
 		float m_LastFrameTimeStamp = 0.0f;
 

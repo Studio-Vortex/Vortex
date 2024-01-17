@@ -3389,10 +3389,9 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "active scene must be running to queue transition");
+		VX_CORE_ASSERT(m_ActiveScene->IsRunning(), "active scene must be running to queue transition!");
 
-		Application::Get().SubmitToPreUpdateMainThreadQueue([=]()
-		{
+		auto fn = [=]() {
 			if (!m_TransitionedFromStartScene) {
 				m_StartSceneMetadata = m_EditorSceneMetadata;
 			}
@@ -3407,8 +3406,8 @@ namespace Vortex {
 					continue;
 
 				SharedReference<Scene> scene = AssetManager::GetAsset<Scene>(handle);
-				const std::string& name = scene->GetName();
-				if (String::FastCompare(sceneName, name) == 0)
+				const std::string& entry = scene->GetName();
+				if (String::FastCompare(sceneName, entry) == 0)
 					continue;
 
 				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(handle);
@@ -3429,7 +3428,9 @@ namespace Vortex {
 			if (!m_TransitionedFromStartScene) {
 				m_TransitionedFromStartScene = true;
 			}
-		});
+		};
+
+		Application::Get().GetPreUpdateFunctionQueue().queue(fn);
 	}
 	
 	void EditorLayer::SetWindowTitle(const std::string& sceneName)

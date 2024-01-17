@@ -12,6 +12,8 @@
 
 #include "Vortex/Renderer/Framebuffer.h"
 
+#include "Vortex/stl/function_queue.h"
+
 #include <unordered_map>
 #include <vector>
 
@@ -67,8 +69,8 @@ namespace Vortex {
 		void OnUpdateSimulation(TimeStep delta, EditorCamera* camera);
 		void OnUpdateEditor(TimeStep delta, EditorCamera* camera);
 
-		void SubmitToPreUpdateQueue(const std::function<void()>& fn);
-		void SubmitToPostUpdateQueue(const std::function<void()>& fn);
+		VX_FORCE_INLINE vxstl::function_queue<void>& GetPreUpdateFunctionQueue() const { return m_PreUpdateFunctionQueue; }
+		VX_FORCE_INLINE vxstl::function_queue<void>& GetPostUpdateFunctionQueue() const { return m_PostUpdateFunctionQueue; }
 
 		VX_FORCE_INLINE const std::string& GetName() const { return m_Name; }
 		VX_FORCE_INLINE void SetName(const std::string& name) { m_Name = name; }
@@ -110,7 +112,6 @@ namespace Vortex {
 		Actor GetEnvironmentActor();
 		Actor GetSkyLightActor();
 
-
 		Actor TryGetActorWithUUID(UUID uuid) const;
 		Actor FindActorByName(std::string_view name);
 		Actor FindActorByID(entt::entity actorID);
@@ -149,8 +150,8 @@ namespace Vortex {
 		static SharedReference<Scene> Create();
 
 	private:
-		void ExecutePreUpdateQueue();
-		void ExecutePostUpdateQueue();
+		void FlushPreUpdateQueue();
+		void FlushPostUpdateQueue();
 
 		void OnComponentUpdate(TimeStep delta);
 		void OnSystemUpdate(TimeStep delta);
@@ -195,11 +196,8 @@ namespace Vortex {
 		std::unordered_map<UUID, std::vector<Timer>> m_Timers;
 		std::vector<Timer> m_FinishedTimers;
 
-		std::vector<std::function<void()>> m_PreUpdateQueue;
-		std::vector<std::function<void()>> m_PostUpdateQueue;
-
-		std::mutex m_PreUpdateQueueMutex;
-		std::mutex m_PostUpdateQueueMutex;
+		mutable vxstl::function_queue<void> m_PreUpdateFunctionQueue;
+		mutable vxstl::function_queue<void> m_PostUpdateFunctionQueue;
 
 		std::string m_Name;
 
