@@ -274,7 +274,6 @@ namespace Vortex {
 
 				// play the scene
 				OpenScene(metadata);
-				OnScenePlay();
 				opened = true;
 			}
 
