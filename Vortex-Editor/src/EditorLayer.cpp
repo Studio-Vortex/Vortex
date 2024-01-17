@@ -3330,8 +3330,8 @@ namespace Vortex {
 		Input::SetCursorMode(CursorMode::Normal);
 
 		if (m_TransitionedFromStartScene) {
-			OpenScene(m_StartSceneMetadata);
 			m_TransitionedFromStartScene = false;
+			OpenScene(m_StartSceneMetadata);
 		}
 	}
 

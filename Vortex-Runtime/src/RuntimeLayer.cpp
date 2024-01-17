@@ -235,11 +235,10 @@ namespace Vortex {
 			return false;
 		}
 
-		SceneSerializer serializer(m_RuntimeScene);
+		const Fs::Path fullPath = Project::GetAssetDirectory() / metadata.Filepath;
 
-		const Fs::Path assetDirectory = Project::GetAssetDirectory();
-		std::string fullyQualifedScenePath = (assetDirectory / metadata.Filepath).string();
-		if (serializer.Deserialize(fullyQualifedScenePath))
+		SceneSerializer serializer(m_RuntimeScene);
+		if (serializer.Deserialize(fullPath.string()))
 		{
 			OnScenePlay();
 		}
