@@ -1124,16 +1124,15 @@ namespace Vortex::UI {
 			options.push_back(filepaths[i].c_str());
 		}
 
-		PushID();
-
 		auto OnClearedFn = [&] {
 			assetHandle = 0;
 			modified = true;
 			Gui::CloseCurrentPopup();
 		};
 
+		PushID();
+
 		std::string current = filepath;
-		BeginPropertyGrid();
 		if (PropertyDropdownSearch(label, options.data(), options.size(), current, s_TextFilters[s_UIContextID - 1], OnClearedFn, desc))
 		{
 			size_t pos = 0;
@@ -1150,10 +1149,10 @@ namespace Vortex::UI {
 			modified = true;
 			Gui::CloseCurrentPopup();
 		}
-		EndPropertyGrid();
 
 		PopID();
 
+		EndPropertyGrid();
 		if (Gui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -1169,6 +1168,7 @@ namespace Vortex::UI {
 
 			Gui::EndDragDropTarget();
 		}
+		BeginPropertyGrid();
 
 		return modified;
 	}

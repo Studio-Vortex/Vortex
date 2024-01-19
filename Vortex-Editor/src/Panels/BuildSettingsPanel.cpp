@@ -7,8 +7,11 @@ namespace Vortex {
 
 	void BuildSettingsPanel::OnPanelAttach()
 	{
-		m_ProjectPath = Project::GetProjectFilepath();
-		m_StartupScene = Project::GetActive()->GetProperties().General.StartScene;
+		SharedReference<Project> project = Project::GetActive();
+		const ProjectProperties& properties = project->GetProperties();
+
+		m_ProjectPath = project->GetProjectFilepath();
+		m_StartupScene = properties.General.StartScene;
 	}
 
 	void BuildSettingsPanel::OnPanelDetach() { }
@@ -24,52 +27,61 @@ namespace Vortex {
 
 		std::string projectPath = m_ProjectPath.string();
 		UI::Property("Project Location", projectPath, true);
+		
+		SharedReference<Project> project = Project::GetActive();
+		ProjectProperties& properties = project->GetProperties();
 
-		std::string startScenePath = m_StartupScene.string();
-		std::vector<std::string> sceneFilepathStrings;
-		std::vector<const char*> sceneFilepaths;
+		auto OnSceneSelectedFn = [&](const Fs::Path& filepath) {
+			properties.General.StartScene = m_StartupScene = filepath;
+		};
 
-		const AssetRegistry& assetRegistry = Project::GetEditorAssetManager()->GetAssetRegistry();
-		for (const auto& [assetHandle, metadata] : assetRegistry)
+		auto OnSceneDroppedFn = [&](const Fs::Path& filepath) {
+			AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath);
+			if (type == AssetType::SceneAsset)
+			{
+				OnSceneSelectedFn(Project::GetEditorAssetManager()->GetMetadata(filepath).Filepath);
+			}
+			else
+			{
+				VX_CONSOLE_LOG_ERROR("[Editor] Trying to set start scene with invalid asset type: {}", Utils::StringFromAssetType(type));
+			}
+		};
+
+		const std::string startScenePath = m_StartupScene.string();
+		AssetHandle selectedHandle = 0;
+		if (UI::PropertyAssetReference<Scene>("Start Scene", startScenePath, selectedHandle, OnSceneDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry()))
 		{
-			if (metadata.Type != AssetType::SceneAsset)
-				continue;
-
-			std::string sceneFilepath = metadata.Filepath.string();
-			sceneFilepathStrings.push_back(sceneFilepath);
-			sceneFilepaths.push_back(sceneFilepathStrings.back().c_str());
-		}
-
-		if (UI::PropertyDropdownSearch("Start Scene", sceneFilepaths.data(), sceneFilepaths.size(), startScenePath, m_StartSceneSearchTextFilter))
-		{
-			Project::GetActive()->GetProperties().General.StartScene = m_StartupScene = Fs::Path(startScenePath);
+			const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(selectedHandle);
+			if (AssetManager::IsHandleValid(metadata.Handle))
+			{
+				OnSceneSelectedFn(metadata.Filepath);
+			}
 		}
 
 		UI::EndPropertyGrid();
-
-		SharedReference<Project> project = Project::GetActive();
-		ProjectProperties& properties = project->GetProperties();
 
 		if (UI::PropertyGridHeader("Window", false))
 		{
 			UI::BeginPropertyGrid();
 
-			if (!properties.BuildProps.Window.Maximized)
+			bool& maximized = properties.BuildProps.Window.Maximized;
+			if (!maximized)
 			{
 				UI::Property("Size", properties.BuildProps.Window.Size);
 			}
 
-			if (UI::Property("Force 16:9 Aspect Ratio", properties.BuildProps.Window.ForceSixteenByNine))
+			bool& forceSixteenByNine = properties.BuildProps.Window.ForceSixteenByNine;
+			if (UI::Property("Force 16:9 Aspect Ratio", forceSixteenByNine))
 			{
-				if (properties.BuildProps.Window.ForceSixteenByNine)
-				{
+				if (forceSixteenByNine)
 					FindAndSetBestSize();
-				}
 			}
 
-			UI::Property("Maximized", properties.BuildProps.Window.Maximized);
-			UI::Property("Decorated", properties.BuildProps.Window.Decorated);
-			UI::Property("Resizeable", properties.BuildProps.Window.Resizeable);
+			bool& decorated = properties.BuildProps.Window.Decorated;
+			bool& resizeable = properties.BuildProps.Window.Resizeable;
+			UI::Property("Maximized", maximized);
+			UI::Property("Decorated", decorated);
+			UI::Property("Resizeable", resizeable);
 
 			UI::EndPropertyGrid();
 			UI::EndTreeNode();
