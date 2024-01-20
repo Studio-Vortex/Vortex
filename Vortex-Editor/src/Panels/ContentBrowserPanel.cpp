@@ -8,7 +8,19 @@
 namespace Vortex {
 
 	ContentBrowserPanel::ContentBrowserPanel(const Fs::Path& assetDir)
-		: m_BaseDirectory(assetDir), m_CurrentDirectory(m_BaseDirectory) { }
+		: m_BaseDirectory(assetDir), m_CurrentDirectory(m_BaseDirectory)
+	{
+		if (!FileSystem::Exists(assetDir))
+		{
+			VX_CONSOLE_LOG_ERROR("[Editor] Failed to setup content browser, asset directory was invalid!");
+			return;
+		}
+
+		m_ThumbnailGenerator = SharedReference<ThumbnailGenerator>::Create();
+		m_ThumbnailGenerator->Init();
+
+		ProcessAssetDirectory(assetDir);
+	}
 
 	void ContentBrowserPanel::OnGuiRender()
 	{
@@ -77,6 +89,20 @@ namespace Vortex {
 		Gui::EndGroup();
 
 		Gui::End();
+	}
+
+	void ContentBrowserPanel::ProcessAssetDirectory(const Fs::Path& assetDir)
+	{
+		// setup base asset directory
+		Directory baseDirectory;
+		baseDirectory.Path = assetDir;
+		baseDirectory.Stem = assetDir.stem().string();
+		baseDirectory.Parent = nullptr; // this is the root dir
+
+		RecursiveProcessDirectory(&baseDirectory);
+		ProcessFilesInDirectory(&baseDirectory);
+
+		m_AssetDirectory = SharedReference<ProjectAssetDirectory>::Create(baseDirectory);
 	}
 
 	void ContentBrowserPanel::RenderCreateItemPopup()
@@ -737,6 +763,57 @@ public class Untitled : Actor
 			}
 
 			Gui::EndPopup();
+		}
+	}
+
+	void ContentBrowserPanel::RecursiveProcessDirectory(Directory* current) const
+	{
+		for (const auto& entry : std::filesystem::recursive_directory_iterator(current->Path))
+		{
+			if (!entry.is_directory())
+				continue;
+
+			const Fs::Path path = entry.path();
+			const std::string stem = path.stem().string();
+			if (stem.starts_with('.'))
+				continue;
+
+			Directory directoryEntry;
+			directoryEntry.Path = path;
+			directoryEntry.Stem = stem;
+			directoryEntry.Parent = current;
+
+			std::vector<Directory>& children = current->Children;
+
+			children.push_back(directoryEntry);
+			Directory* last = &children.back();
+
+			RecursiveProcessDirectory(last);
+			ProcessFilesInDirectory(last);
+		}
+	}
+
+	void ContentBrowserPanel::ProcessFilesInDirectory(Directory* current) const
+	{
+		for (const auto& entry : std::filesystem::directory_iterator(current->Path))
+		{
+			if (entry.is_directory())
+				continue;
+
+			const Fs::Path path = entry.path();
+			if (!path.has_extension())
+				continue;
+
+			const Fs::Path ext = path.extension();
+			const bool valid = Project::GetEditorAssetManager()->IsValidAssetExtension(ext);
+			if (!valid)
+				continue;
+
+			AssetEntry assetEntry;
+			assetEntry.Metadata = Project::GetEditorAssetManager()->GetMetadata(path);
+			assetEntry.Location = current;
+
+			current->Files.push_back(assetEntry);
 		}
 	}
 

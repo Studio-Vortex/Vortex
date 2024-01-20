@@ -4,6 +4,9 @@
 
 #include <Vortex/Editor/EditorPanel.h>
 
+#include "ContentBrowser/ProjectAssetDirectory.h"
+#include "ContentBrowser/Thumbnail/ThumbnailGenerator.h"
+
 namespace Vortex {
 
 	class ContentBrowserPanel : public EditorPanel
@@ -14,9 +17,14 @@ namespace Vortex {
 		
 		void OnGuiRender() override;
 		
+		VX_FORCE_INLINE SharedReference<ProjectAssetDirectory> GetAssetDirectory() const { return m_AssetDirectory; }
+		VX_FORCE_INLINE SharedReference<ThumbnailGenerator> GetThumbnailGenerator() { return m_ThumbnailGenerator; }
+
 		EDITOR_PANEL_TYPE(ContentBrowser)
 
 	private:
+		void ProcessAssetDirectory(const Fs::Path& assetDir);
+
 		void RenderCreateItemPopup();
 		void RenderFileExplorer();
 		void RenderMenuBar();
@@ -34,10 +42,16 @@ namespace Vortex {
 		void UIOnPopupRender(const std::string& currentFilename, const Fs::Path& currentPath);
 		void OnConfirmDeletionPopupRender(const std::string& currentFilename, const Fs::Path& currentPath);
 
+		void RecursiveProcessDirectory(Directory* current) const;
+		void ProcessFilesInDirectory(Directory* current) const;
+
 	private:
 		Fs::Path m_BaseDirectory;
 		Fs::Path m_CurrentDirectory;
 		Fs::Path m_ItemPathToRename;
+
+		SharedReference<ProjectAssetDirectory> m_AssetDirectory = nullptr;
+		SharedReference<ThumbnailGenerator> m_ThumbnailGenerator = nullptr;
 
 		float m_ThumbnailSize = 96.0f;
 		float m_ThumbnailPadding = 16.0f;
