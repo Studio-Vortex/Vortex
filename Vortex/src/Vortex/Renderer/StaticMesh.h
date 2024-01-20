@@ -2,6 +2,8 @@
 
 #include "Vortex/Asset/Asset.h"
 
+#include "Vortex/ReferenceCounting/SharedRef.h"
+
 #include "Vortex/Math/Math.h"
 #include "Vortex/Math/AABB.h"
 
@@ -14,7 +16,7 @@
 #include "Vortex/Renderer/MeshImportOptions.h"
 #include "Vortex/Renderer/VertexTypes.h"
 
-#include "Vortex/ReferenceCounting/SharedRef.h"
+#include "Vortex/Utils/FileSystem.h"
 
 #include <vector>
 #include <string>
@@ -96,7 +98,7 @@ namespace Vortex {
 		void ProcessNode(uint32_t& submeshIndex, const std::string& filepath, aiNode* node, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
 		StaticSubmesh ProcessMesh(uint32_t& submeshIndex, const std::string& filepath, aiMesh* mesh, const aiScene* scene, const MeshImportOptions& importOptions, const int entityID);
 		void ProcessVertex(aiMesh* mesh, StaticVertex& vertex, const Math::mat4& transform, uint32_t index);
-		AssetHandle GetMaterialTexture(aiMaterial* material, const std::filesystem::path& directory, uint32_t textureType, uint32_t index);
+		AssetHandle GetMaterialTexture(aiMaterial* material, const Fs::Path& directory, uint32_t textureType, uint32_t index);
 
 		void CreateBoundingBoxFromSubmeshes();
 

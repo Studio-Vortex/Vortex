@@ -1,13 +1,12 @@
 #include "vxpch.h"
 #include "StaticMesh.h"
 
-#include "Vortex/Renderer/Texture.h"
-#include "Vortex/Renderer/Renderer.h"
 #include "Vortex/Project/Project.h"
 
 #include "Vortex/Asset/AssetManager.h"
 
-#include "Vortex/Utils/FileSystem.h"
+#include "Vortex/Renderer/Texture.h"
+#include "Vortex/Renderer/Renderer.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>

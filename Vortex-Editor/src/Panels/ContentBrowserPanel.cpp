@@ -160,17 +160,18 @@ public class Untitled : Actor
 		Gui::Spacing();
 		UI::Draw::Underline();
 
+		const ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
 		const float cellSize = m_ThumbnailSize + m_ThumbnailPadding;
-		const float panelWidth = Gui::GetContentRegionAvail().x;
+		const float panelWidth = contentRegionAvail.x;
 
 		int columnCount = (int)(panelWidth / cellSize);
 		if (columnCount < 1)
 		{
 			columnCount = 1;
 		}
-		
+
 		//                                                leave some space for the thumbnail size slider
-		Gui::BeginChild("##FileExplorer", ImVec2(0, Gui::GetContentRegionAvail().y - 45.0f), false);
+		Gui::BeginChild("##FileExplorer", ImVec2(0, contentRegionAvail.y - 45.0f), false);
 
 		Gui::Columns(columnCount, 0, false);
 
@@ -307,17 +308,17 @@ public class Untitled : Actor
 
 		Gui::SameLine();
 
-		const Fs::Path fullyQualifiedAssetDirectory = m_BaseDirectory;
-		const size_t lastSlashPos = fullyQualifiedAssetDirectory.string().find_last_of("/\\") + 1;
-		const std::string relativeProjectAssetDirectory = fullyQualifiedAssetDirectory.string().substr(lastSlashPos, fullyQualifiedAssetDirectory.string().size());
+		const std::string assetDirectory = m_BaseDirectory.string();
+		const size_t lastSlashPos = assetDirectory.find_last_of("/\\") + 1;
+		const std::string relativeAssetDirectory = assetDirectory.substr(lastSlashPos, assetDirectory.size());
 
 		if (FileSystem::Equivalent(m_CurrentDirectory, Project::GetAssetDirectory()))
 		{
-			Gui::Text(relativeProjectAssetDirectory.c_str());
+			Gui::Text(relativeAssetDirectory.c_str());
 		}
 		else
 		{
-			if (Gui::Button(relativeProjectAssetDirectory.c_str()))
+			if (Gui::Button(relativeAssetDirectory.c_str()))
 			{
 				m_CurrentDirectory = m_BaseDirectory;
 			}
@@ -328,14 +329,17 @@ public class Untitled : Actor
 		RenderCurrentWorkingDirectory();
 
 		// Search Bar + Filtering
-		const float inputTextSize = Gui::GetWindowWidth() / 3.0f;
-		UI::ShiftCursorX(Gui::GetContentRegionAvail().x - inputTextSize);
+		const ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
+		const float inputTextSize = (Gui::GetWindowWidth() / 2.0f) * 0.85f;
+
+		UI::ShiftCursor(contentRegionAvail.x - inputTextSize - 1.0f, 1.0f);
 		Gui::SetNextItemWidth(inputTextSize);
 		const bool isSearching = Gui::InputTextWithHint("##ItemAssetSearch", "Search...", m_SearchInputTextFilter.InputBuf, IM_ARRAYSIZE(m_SearchInputTextFilter.InputBuf));
-		if (isSearching)
-		{
+		if (isSearching) {
 			m_SearchInputTextFilter.Build();
 		}
+
+		UI::DrawItemActivityOutline();
 	}
 
 	void ContentBrowserPanel::RenderCurrentWorkingDirectory()
@@ -491,7 +495,7 @@ public class Untitled : Actor
 			if (!validRename)
 			{
 				return;
-  			}
+			}
 
 			// Now we need to rename the asset
 			SharedReference<Asset> asset = Project::GetEditorAssetManager()->GetAssetFromFilepath(currentPath);
@@ -554,7 +558,7 @@ public class Untitled : Actor
 				// We didn't find the class name, move on to next line
 				if (line.find(oldClassName) == std::string::npos)
 					continue;
-				
+
 				// Get the new name of the file to rename the C# class
 				const std::string newPath = newFilepath.filename().string();
 				const size_t lastDotPos = newPath.find_first_of('.');
@@ -580,14 +584,14 @@ public class Untitled : Actor
 
 	void ContentBrowserPanel::RenderThumbnailSlider()
 	{
-		Gui::PushItemWidth(-1);
+		UI::BeginPropertyGrid();
 
-		if (Gui::SliderFloat("##Thumbnail Size", &m_ThumbnailSize, 64.0f, 512.0f, "%.0f"))
+		if (UI::PropertySlider("Thumbnail Size", m_ThumbnailSize, 64.0f, 512.0f, " % .0f"))
 		{
 			m_ThumbnailPadding = m_ThumbnailSize / 6.0f;
 		}
 
-		Gui::PopItemWidth();
+		UI::EndPropertyGrid();
 	}
 
 	SharedReference<Texture2D> ContentBrowserPanel::FindSuitableItemIcon(const std::filesystem::directory_entry& directoryEntry, const Fs::Path& currentItemPath)
@@ -613,15 +617,15 @@ public class Untitled : Actor
 			case AssetType::FontAsset:            itemIcon = EditorResources::FontIcon;                           break;
 			case AssetType::AudioAsset:           itemIcon = EditorResources::AudioFileIcon;                      break;
 			case AssetType::SceneAsset:           itemIcon = EditorResources::SceneIcon;                          break;
-			case AssetType::PrefabAsset:          itemIcon = EditorResources::PrefabIcon;
+			case AssetType::PrefabAsset:          itemIcon = EditorResources::PrefabIcon;                         break;
 			case AssetType::ScriptAsset:          itemIcon = EditorResources::CodeFileIcon;                       break;
 			case AssetType::TextureAsset:         itemIcon = FindTextureFromAssetManager(currentItemPath);        break;
-			case AssetType::MaterialAsset:        itemIcon = EditorResources::MaterialIcon;
-			case AssetType::AnimatorAsset:        break;
-			case AssetType::AnimationAsset:       break;
+			case AssetType::MaterialAsset:        itemIcon = EditorResources::MaterialIcon;                       break;
+			case AssetType::AnimatorAsset:                                                                        break;
+			case AssetType::AnimationAsset:                                                                       break;
 			case AssetType::StaticMeshAsset:      itemIcon = FindMeshIcon(extension);                             break;
 			case AssetType::EnvironmentAsset:     itemIcon = FindEnvironmentMapFromAssetManager(currentItemPath); break;
-			case AssetType::PhysicsMaterialAsset: break;
+			case AssetType::PhysicsMaterialAsset:                                                                 break;
 		}
 
 		return itemIcon;

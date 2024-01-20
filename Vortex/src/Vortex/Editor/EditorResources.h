@@ -1,15 +1,14 @@
 #pragma once
 
-#include "Vortex/Renderer/Texture.h"
-#include "Vortex/Renderer/StaticMesh.h"
+#include "Vortex/Core/Base.h"
 
-#include "Vortex/ReferenceCounting/SharedRef.h"
+#include "Vortex/Renderer/Texture.h"
 
 #include <vector>
 
 namespace Vortex {
 
-	class EditorResources
+	class VORTEX_API EditorResources
 	{
 	public:
 		static void Init();
