@@ -5,12 +5,6 @@
 #include <unordered_map>
 #include <string>
 
-namespace YAML {
-
-	class Emitter;
-
-}
-
 namespace Vortex {
 
 	class VORTEX_API PlayerPrefsSerializer
@@ -37,8 +31,6 @@ namespace Vortex {
 		bool NoData() const;
 
 	private:
-		mutable YAML::Emitter* m_Serializer = nullptr;
-
 		std::unordered_map<std::string, char> m_ByteData;
 
 		std::unordered_map<std::string, float> m_F32Data;
