@@ -10,7 +10,7 @@ namespace Vortex {
 
 	void DefaultMesh::Init()
 	{
-		std::string sourcePaths[] =
+		static const std::string sourcePaths[] =
 		{
 			"Resources/Meshes/Default/Cube.fbx",
 			"Resources/Meshes/Default/Sphere.fbx",
