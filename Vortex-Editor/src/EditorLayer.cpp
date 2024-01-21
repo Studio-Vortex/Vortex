@@ -3148,26 +3148,17 @@ namespace Vortex {
 
 	void EditorLayer::SaveSceneAs()
 	{
-		std::string filepath = FileDialogue::SaveFileDialog("Vortex Scene (*.vortex)\0*.vortex\0");
+		const std::string filepath = FileDialogue::SaveFileDialog("Vortex Scene (*.vortex)\0*.vortex\0");
 
-		if (!filepath.empty())
-		{
-			ReplaceSceneFileExtensionIfNeeded(filepath);
-
-			const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(filepath);
-			if (!AssetManager::IsHandleValid(metadata.Handle)) {
-				VX_CONSOLE_LOG_WARN("[Editor] Failed to save scene, metadata was invalid!");
-				return;
-			}
-
-			m_EditorSceneMetadata = metadata;
-
-			SerializeScene();
-
-			const Fs::Path fullPath = Project::GetAssetDirectory() / metadata.Filepath;
-			const std::string filename = FileSystem::RemoveFileExtension(fullPath.filename());
-			SetWindowTitle(filename);
+		if (filepath.empty()) {
+			return;
 		}
+
+		std::string filename = FileSystem::RemoveFileExtension(filepath);
+		SetWindowTitle(filename);
+		ReplaceSceneFileExtensionIfNeeded(filename);
+
+		m_EditorSceneMetadata = Project::GetEditorAssetManager()->ImportLoadedAsset(m_ActiveScene, "Scenes", filename);
 	}
 
 	void EditorLayer::SaveScene()

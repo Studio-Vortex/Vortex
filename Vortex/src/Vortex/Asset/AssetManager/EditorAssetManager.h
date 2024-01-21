@@ -85,6 +85,8 @@ namespace Vortex {
 			return asset;
 		}
 
+		const AssetMetadata& ImportLoadedAsset(SharedReference<Asset> asset, const std::string& directory, const std::string& filename);
+
 		bool RemoveAsset(AssetHandle handle);
 
 		bool OnProjectSerialized();

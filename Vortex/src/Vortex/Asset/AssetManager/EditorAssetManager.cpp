@@ -31,7 +31,35 @@ namespace Vortex {
 		WriteToRegistryFile();
 	}
 
-	bool EditorAssetManager::RemoveAsset(AssetHandle handle)
+    const AssetMetadata& EditorAssetManager::ImportLoadedAsset(SharedReference<Asset> asset, const std::string& directory, const std::string& filename)
+    {
+		if (!asset) {
+			return s_NullMetadata;
+		}
+
+		AssetMetadata metadata;
+		metadata.Handle = AssetHandle();
+		if (directory.empty() || directory == ".")
+			metadata.Filepath = filename;
+		else
+			metadata.Filepath = GetRelativePath(directory + "/" + filename);
+		metadata.IsDataLoaded = true;
+		metadata.Type = asset->GetAssetType();
+
+		m_AssetRegistry[metadata.Handle] = metadata;
+
+		WriteToRegistryFile();
+
+		asset->Handle = metadata.Handle;
+		m_LoadedAssets[metadata.Handle] = asset;
+		AssetImporter::Serialize(asset);
+
+		VX_CONSOLE_LOG_INFO("New Asset Imported: Handle: '{}', Path: '{}'", metadata.Handle, metadata.Filepath.string());
+
+		return m_AssetRegistry.Get(metadata.Handle);
+    }
+
+    bool EditorAssetManager::RemoveAsset(AssetHandle handle)
 	{
 		if (!IsHandleValid(handle))
 		{
