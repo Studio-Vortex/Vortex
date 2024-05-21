@@ -233,6 +233,60 @@ namespace Vortex {
 			Renderer::SetSceneGamma(gamma);
 		}
 
+		float SceneRenderer_GetMaxReflectionLOD()
+		{
+			Scene* contextScene = GetContextScene();
+
+			return 0.0f;
+		}
+
+		void SceneRenderer_SetMaxReflectionLOD(float lod)
+		{
+			Scene* contextScene = GetContextScene();
+		}
+
+		bool SceneRenderer_GetFogEnabled()
+		{
+			Scene* contextScene = GetContextScene();
+
+			return Renderer::GetFogEnabled();
+		}
+
+		void SceneRenderer_SetFogEnabled(bool fogEnabled)
+		{
+			Scene* contextScene = GetContextScene();
+
+			Renderer::SetFogEnabled(fogEnabled);
+		}
+
+		float SceneRenderer_GetFogDensity()
+		{
+			Scene* contextScene = GetContextScene();
+
+			return Renderer::GetFogDensity();
+		}
+
+		void SceneRenderer_SetFogDensity(float density)
+		{
+			Scene* contextScene = GetContextScene();
+
+			Renderer::SetFogDensity(density);
+		}
+
+		float SceneRenderer_GetFogGradient()
+		{
+			Scene* contextScene = GetContextScene();
+
+			return Renderer::GetFogGradient();
+		}
+
+		void SceneRenderer_SetFogGradient(float gradient)
+		{
+			Scene* contextScene = GetContextScene();
+
+			Renderer::SetFogGradient(gradient);
+		}
+
 #pragma endregion
 
 #pragma region DebugRenderer
@@ -9378,6 +9432,14 @@ namespace Vortex {
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_SetExposure);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_GetGamma);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_SetGamma);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_GetMaxReflectionLOD);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_SetMaxReflectionLOD);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_GetFogEnabled);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_SetFogEnabled);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_GetFogDensity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_SetFogDensity);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_GetFogGradient);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneRenderer_SetFogGradient);
 
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_GetLineWidth);
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(DebugRenderer_SetLineWidth);

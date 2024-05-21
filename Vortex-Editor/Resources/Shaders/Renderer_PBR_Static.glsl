@@ -35,6 +35,8 @@ out DATA
 	vec2       TexScale;
 	flat int   EntityID;
 
+	float      Visibility;
+
 	vec4       FragPosLight;
 
 	mat3       TBN;
@@ -42,7 +44,9 @@ out DATA
 
 uniform mat4 u_Model;
 uniform mat4 u_ViewProjection;
+uniform mat4 u_View;
 uniform mat4 u_SkyLightProjection;
+uniform vec2 u_FogProperties; // (Density, Gradient)
 
 void main()
 {
@@ -54,6 +58,11 @@ void main()
 	vertexOut.TexCoord = a_TexCoord;
 	vertexOut.TexScale = a_TexScale;
 	vertexOut.EntityID = a_EntityID;
+
+	// Fog Calculation
+	vec4 positionRelativeToCam = u_View * vec4(vertexOut.Position, 1.0);
+	float distance = length(positionRelativeToCam.xyz);
+	vertexOut.Visibility = clamp(exp(-pow(distance * u_FogProperties.x, u_FogProperties.y)), 0, 1);
 
 	vertexOut.FragPosLight = u_SkyLightProjection * vec4(vertexOut.Position, 1.0);
 
@@ -82,6 +91,8 @@ in DATA
 	vec2       TexCoord;
 	vec2       TexScale;
 	flat int   EntityID;
+
+	float      Visibility;
 
 	vec4       FragPosLight;
 
@@ -198,12 +209,16 @@ uniform EmissiveMesh    u_EmissiveMeshes[MAX_EMISSIVE_MESHES];
 uniform SceneProperties u_SceneProperties;
 uniform samplerCube     u_PointLightShadowMaps[MAX_POINT_LIGHTS];
 uniform sampler2D       u_SpotLightShadowMaps[MAX_SPOT_LIGHTS];
+uniform float           u_MaxReflectionLOD = 4.0;
+uniform bool            u_FogEnabled;
+uniform bool            u_ShowNormals;
+
+const vec3 skyColor = vec3((38.0 / 255.0), (44.0 / 255.0), (60.0 / 255.0));
 
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);
 const float PI = 3.14159265359;
 const float EPSILON = 0.0001;
-const float MAX_REFLECTION_LOD = 4.0;
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float gaSchlickG1(float cosTheta, float k);
@@ -417,7 +432,7 @@ void main()
 
 	// sample both the pre-filter map and the BRDF lut and combine them together
 	// as per the Split-Sum approximation to get the IBL specular part.
-	const vec3 prefilteredColor = textureLod(u_SceneProperties.PrefilterMap, R, properties.Roughness * MAX_REFLECTION_LOD).rgb;
+	const vec3 prefilteredColor = textureLod(u_SceneProperties.PrefilterMap, R, properties.Roughness * u_MaxReflectionLOD).rgb;
 	const vec2 brdf = texture(u_SceneProperties.BRDFLut, vec2(NdotV, properties.Roughness)).rg;
 	const vec3 specular = prefilteredColor * (F * brdf.x + brdf.y) * u_SceneProperties.SkyboxIntensity;
 
@@ -438,7 +453,19 @@ void main()
 
 	const vec4 result = vec4(mapped, alpha);
 
-	o_Color = result;
+	if (u_ShowNormals)
+	{
+		o_Color = vec4(properties.Normal, 1.0);
+	}
+	else
+	{
+		o_Color = result;
+		if (u_FogEnabled)
+		{
+			o_Color = mix(vec4(skyColor, 1.0), o_Color, fragmentIn.Visibility); 
+		}
+	}
+
 	o_EntityID = fragmentIn.EntityID;
 
 	// check whether fragment output is higher than threshold,

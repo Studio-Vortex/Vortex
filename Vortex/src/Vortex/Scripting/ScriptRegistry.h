@@ -77,6 +77,14 @@ namespace Vortex {
 		void SceneRenderer_SetExposure(float exposure);
 		float SceneRenderer_GetGamma();
 		void SceneRenderer_SetGamma(float gamma);
+		float SceneRenderer_GetMaxReflectionLOD();
+		void SceneRenderer_SetMaxReflectionLOD(float lod);
+		bool SceneRenderer_GetFogEnabled();
+		void SceneRenderer_SetFogEnabled(bool fogEnabled);
+		float SceneRenderer_GetFogDensity();
+		void SceneRenderer_SetFogDensity(float density);
+		float SceneRenderer_GetFogGradient();
+		void SceneRenderer_SetFogGradient(float gradient);
 
 #pragma endregion
 

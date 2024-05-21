@@ -134,9 +134,10 @@ namespace Vortex {
 
 		static float GetSceneExposure();
 		static void SetSceneExposure(float exposure);
-
 		static float GetSceneGamma();
 		static void SetSceneGamma(float gamma);
+		static float GetMaxReflectionLOD();
+		static void SetMaxReflectionLOD(float lod);
 
 		static Math::vec3 GetBloomSettings();
 		static void SetBloomSettings(const Math::vec3& threshold);
@@ -146,6 +147,16 @@ namespace Vortex {
 
 		static uint32_t GetBloomSampleSize();
 		static void SetBloomSampleSize(uint32_t samples);
+
+		static float GetFogDensity();
+		static void SetFogDensity(float density);
+		static float GetFogGradient();
+		static void SetFogGradient(float gradient);
+		static bool GetFogEnabled();
+		static void SetFogEnabled(bool fogEnabled);
+
+		static bool GetShowNormals();
+		static void SetShowNormals(bool showNormals);
 
 		static uint32_t GetFlags();
 		static void SetFlags(uint32_t flags);

@@ -220,6 +220,48 @@ namespace Vortex {
 				Renderer::SetSceneGamma(gamma);
 			}
 
+			float maxReflectionLOD = Renderer::GetMaxReflectionLOD();
+			if (UI::Property("Max Reflection LOD", maxReflectionLOD, 1.0f, FLT_MIN, FLT_MAX))
+			{
+				Renderer::SetMaxReflectionLOD(maxReflectionLOD);
+			}
+
+			UI::EndPropertyGrid();
+
+			if (UI::PropertyGridHeader("Fog", false))
+			{
+				UI::BeginPropertyGrid();
+
+				bool fogEnabled = Renderer::GetFogEnabled();
+				if (UI::Property("Fog Enabled", fogEnabled))
+				{
+					Renderer::SetFogEnabled(fogEnabled);
+				}
+
+				float fogDensity = Renderer::GetFogDensity();
+				if (UI::Property("Density", fogDensity, 0.001f, FLT_MIN, FLT_MAX))
+				{
+					Renderer::SetFogDensity(fogDensity);
+				}
+
+				float fogGradient = Renderer::GetFogGradient();
+				if (UI::Property("Gradient", fogGradient, 0.01f, FLT_MIN, FLT_MAX))
+				{
+					Renderer::SetFogGradient(fogGradient);
+				}
+
+				UI::EndPropertyGrid();
+				UI::EndTreeNode();
+			}
+
+			UI::BeginPropertyGrid();
+
+			bool showNormals = Renderer::GetShowNormals();
+			if (UI::Property("Show Normals", showNormals))
+			{
+				Renderer::SetShowNormals(showNormals);
+			}
+
 			static bool wireframeMode = false;
 			if (UI::Property("Show Wireframe", wireframeMode))
 			{

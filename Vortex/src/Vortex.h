@@ -19,6 +19,7 @@
 /// Vortex STL
 #include "Vortex/stl/option.h"
 #include "Vortex/stl/result.h"
+#include "Vortex/stl/function_queue.h"
 /// ---------------------------------------------------
 
 /// Events

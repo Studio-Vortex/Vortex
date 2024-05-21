@@ -13,6 +13,17 @@
 			get => InternalCalls.SceneRenderer_GetGamma();
 			set => InternalCalls.SceneRenderer_SetGamma(value);
 		}
+
+		public static float MaxReflectionLOD
+		{
+			get => InternalCalls.SceneRenderer_GetMaxReflectionLOD();
+			set => InternalCalls.SceneRenderer_SetMaxReflectionLOD(value);
+		}
+
+		public static FogProperties Fog
+		{
+			get => new FogProperties();
+		}
 	}
 
 }

@@ -48,6 +48,7 @@ namespace Vortex {
 		float ShadowMapResolution = 1024.0f;
 		float SceneExposure = 1.0f;
 		float SceneGamma = 2.2f;
+		float MaxReflectionLOD = 4.0f;
 
 		BloomRenderPass BloomRenderPass;
 		struct BloomSettings
@@ -57,6 +58,12 @@ namespace Vortex {
 			float Intensity = 0.0722f;
 		} BloomSettings;
 		uint32_t BloomSampleSize = 5;
+
+		float FogDensity = 0.01f;
+		float FogGradient = 3.0f;
+		bool FogEnabled = true;
+
+		bool ShowNormals = false;
 
 		RenderStatistics RendererStatistics;
 		RenderTime RenderTime;
@@ -780,10 +787,14 @@ namespace Vortex {
 
 			shader->Enable();
 			shader->SetMat4("u_ViewProjection", viewProjection);
+			shader->SetMat4("u_View", view);
 			shader->SetFloat3("u_SceneProperties.CameraPosition", cameraTranslation);
 			shader->SetFloat("u_SceneProperties.Exposure", s_Data.SceneExposure);
 			shader->SetFloat("u_SceneProperties.Gamma", s_Data.SceneGamma);
 			shader->SetFloat3("u_SceneProperties.BloomThreshold", bloomSettings);
+			shader->SetBool("u_FogEnabled", s_Data.FogEnabled);
+			shader->SetFloat2("u_FogProperties", Math::vec2(s_Data.FogDensity, s_Data.FogGradient));
+			shader->SetBool("u_ShowNormals", s_Data.ShowNormals);
 		}
 
 		s_Data.SceneLightDesc.HasSkyLight = false;
@@ -1154,14 +1165,16 @@ namespace Vortex {
 		s_Data.ShadowMapResolution = props.ShadowMapResolution;
 		s_Data.SceneExposure = props.Exposure;
 		s_Data.SceneGamma = props.Gamma;
+		s_Data.MaxReflectionLOD = props.MaxReflectionLOD;
 		s_Data.BloomSettings.Threshold = props.BloomThreshold.x;
 		s_Data.BloomSettings.Knee = props.BloomThreshold.y;
 		s_Data.BloomSettings.Intensity = props.BloomThreshold.z;
 		s_Data.BloomSampleSize = props.BloomSampleSize;
+		s_Data.FogEnabled = props.FogEnabled;
+		s_Data.FogDensity = props.FogDensity;
+		s_Data.FogGradient = props.FogGradient;
 
-		s_Data.RenderFlags = 0;
-		ClearFlags();
-		s_Data.RenderFlags = props.RenderFlags;
+		SetFlags(props.RenderFlags);
 
 		Application::Get().GetWindow().SetVSync(props.UseVSync);
 
@@ -1227,6 +1240,16 @@ namespace Vortex {
 		s_Data.SceneGamma = gamma;
 	}
 
+	float Renderer::GetMaxReflectionLOD()
+	{
+		return s_Data.MaxReflectionLOD;
+	}
+
+	void Renderer::SetMaxReflectionLOD(float lod)
+	{
+		s_Data.MaxReflectionLOD = lod;
+	}
+
 	Math::vec3 Renderer::GetBloomSettings()
 	{
 		return { s_Data.BloomSettings.Threshold, s_Data.BloomSettings.Knee, s_Data.BloomSettings.Intensity };
@@ -1262,6 +1285,46 @@ namespace Vortex {
 	void Renderer::SetBloomSampleSize(uint32_t samples)
 	{
 		s_Data.BloomSampleSize = samples;
+	}
+
+	float Renderer::GetFogDensity()
+	{
+		return s_Data.FogDensity;
+	}
+
+	void Renderer::SetFogDensity(float density)
+	{
+		s_Data.FogDensity = density;
+	}
+
+	float Renderer::GetFogGradient()
+	{
+		return s_Data.FogGradient;
+	}
+
+	void Renderer::SetFogGradient(float gradient)
+	{
+		s_Data.FogGradient = gradient;
+	}
+
+	bool Renderer::GetFogEnabled()
+	{
+		return s_Data.FogEnabled;
+	}
+
+	void Renderer::SetFogEnabled(bool fogEnabled)
+	{
+		s_Data.FogEnabled = fogEnabled;
+	}
+
+	bool Renderer::GetShowNormals()
+	{
+		return s_Data.ShowNormals;
+	}
+
+	void Renderer::SetShowNormals(bool showNormals)
+	{
+		s_Data.ShowNormals = showNormals;
 	}
 
 	uint32_t Renderer::GetFlags()

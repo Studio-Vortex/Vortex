@@ -60,6 +60,30 @@ namespace Vortex {
 		[MethodImpl(MethodImplOptions.InternalCall)]
 		internal extern static void SceneRenderer_SetGamma(float gamma);
 
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetMaxReflectionLOD();
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetMaxReflectionLOD(float lod);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool SceneRenderer_GetFogEnabled();
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetFogEnabled(bool fogEnabled);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetFogDensity();
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetFogDensity(float density);
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static float SceneRenderer_GetFogGradient();
+		
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void SceneRenderer_SetFogGradient(float gradient);
+
 		#endregion
 
 		#region DebugRenderer

@@ -111,8 +111,12 @@ namespace Vortex {
 				out << YAML::Key << "ShadowMapResolution" << YAML::Value << Renderer::GetShadowMapResolution();
 				out << YAML::Key << "Exposure" << YAML::Value << Renderer::GetSceneExposure();
 				out << YAML::Key << "Gamma" << YAML::Value << Renderer::GetSceneGamma();
+				out << YAML::Key << "MaxReflectionLOD" << YAML::Value << Renderer::GetMaxReflectionLOD();
 				out << YAML::Key << "BloomThreshold" << YAML::Value << Renderer::GetBloomSettings();
 				out << YAML::Key << "BloomSampleSize" << YAML::Value << Renderer::GetBloomSampleSize();
+				out << YAML::Key << "FogEnabled" << YAML::Value << Renderer::GetFogEnabled();
+				out << YAML::Key << "FogDensity" << YAML::Value << Renderer::GetFogDensity();
+				out << YAML::Key << "FogGradient" << YAML::Value << Renderer::GetFogGradient();
 				out << YAML::Key << "RenderFlags" << YAML::Value << Renderer::GetFlags();
 				out << YAML::Key << "UseVSync" << YAML::Value << Application::Get().GetWindow().IsVSyncEnabled();
 				out << YAML::Key << "DisplaySceneIconsInEditor" << YAML::Value << props.RendererProps.DisplaySceneIconsInEditor;
@@ -273,8 +277,12 @@ namespace Vortex {
 			props.RendererProps.ShadowMapResolution = rendererData["ShadowMapResolution"].as<float>();
 			props.RendererProps.Exposure = rendererData["Exposure"].as<float>();
 			props.RendererProps.Gamma = rendererData["Gamma"].as<float>();
+			props.RendererProps.MaxReflectionLOD = rendererData["MaxReflectionLOD"].as<float>();
 			props.RendererProps.BloomThreshold = rendererData["BloomThreshold"].as<Math::vec3>();
 			props.RendererProps.BloomSampleSize = rendererData["BloomSampleSize"].as<uint32_t>();
+			props.RendererProps.FogEnabled = rendererData["FogEnabled"].as<bool>();
+			props.RendererProps.FogDensity = rendererData["FogDensity"].as<float>();
+			props.RendererProps.FogGradient = rendererData["FogGradient"].as<float>();
 			props.RendererProps.RenderFlags = rendererData["RenderFlags"].as<uint32_t>();
 			props.RendererProps.UseVSync = rendererData["UseVSync"].as<bool>();
 			props.RendererProps.DisplaySceneIconsInEditor = rendererData["DisplaySceneIconsInEditor"].as<bool>();
