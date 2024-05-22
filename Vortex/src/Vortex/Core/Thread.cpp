@@ -23,4 +23,19 @@ namespace Vortex {
 		m_Thread.join();
 	}
 
+    void Thread::Detach()
+    {
+		m_Thread.detach();
+    }
+
+	Thread::ID Thread::GetID() const
+	{
+		return m_Thread.get_id();
+	}
+
+	SharedReference<Thread> Thread::Create(const LaunchFn& fn)
+	{
+		return SharedReference<Thread>::Create(fn);
+	}
+
 }

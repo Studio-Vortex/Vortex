@@ -23,8 +23,8 @@ namespace Vortex::Utils {
 		switch (family)
 		{
 			case AddressFamily::None:         return 0;
-			case AddressFamily::InternetIPv4: return AF_INET;
-			case AddressFamily::InternetIPv6: return AF_INET6;
+			case AddressFamily::InetIPv4: return AF_INET;
+			case AddressFamily::InetIPv6: return AF_INET6;
 		}
 
 		VX_CORE_ASSERT(false, "Unknown address family");

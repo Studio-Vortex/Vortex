@@ -2,7 +2,13 @@
 
 #include "Vortex/Core/Base.h"
 
+#include "Vortex/Core/Thread.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
+
 #include "Vortex/Network/Server.h"
+
+#include <unordered_map>
 
 namespace Vortex {
 
@@ -14,23 +20,35 @@ namespace Vortex {
 		WindowsServer(const ServerProperties& serverProps);
 		~WindowsServer() override;
 
-		void Shutdown() override;
+		bool Launch() override;
+		void Stop() override;
 
-		void Bind() override;
-		void Listen() override;
+		bool IsRunning() const override { return m_IsRunning; }
 
-		void Accept() override;
-		void Connect() override;
+		const ServerProperties& GetProperties() const override { return m_Properties; }
 
-		void Receive() override;
-		void Send() override;
+	private:
+		bool Shutdown() override;
 
-		const IpAddress& GetIpAddr() const override { return m_Properties.IpAddr; }
-		Port GetPort() const override { return m_Properties.PortAddr; }
+		void Run();
+
+		bool Bind() override;
+		bool Listen() override;
+
+		SharedReference<Socket> Accept() override;
+		bool Connect() override;
+
+		bool Receive(Buffer& recvPacket) override;
+		bool Send(const Buffer& sendPacket) override;
 
 	private:
 		ServerProperties m_Properties;
-		SharedReference<Socket> m_Socket = nullptr;
+		SharedReference<Socket> m_ServerSocket = nullptr;
+
+		SharedReference<Thread> m_ServerThread;
+		std::unordered_map<UUID, SharedReference<Socket>> m_ConnectedClients;
+
+		bool m_IsRunning = false;
 	};
 
 }

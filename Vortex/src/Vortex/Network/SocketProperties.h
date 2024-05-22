@@ -2,6 +2,8 @@
 
 #include "Vortex/Core/Base.h"
 
+#include "Vortex/Network/IpAddress.h"
+#include "Vortex/Network/Port.h"
 #include "Vortex/Network/NetworkTypes.h"
 
 namespace Vortex {
@@ -11,6 +13,9 @@ namespace Vortex {
 		AddressFamily AF;
 		ConnectionType Type;
 		NetworkProtocol Protocol;
+
+		IpAddress IpAddr;
+		Port PortAddr;
 	};
 
 }

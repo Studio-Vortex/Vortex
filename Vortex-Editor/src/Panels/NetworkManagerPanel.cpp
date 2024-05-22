@@ -4,11 +4,11 @@ namespace Vortex {
 
 	void NetworkManagerPanel::OnPanelAttach()
 	{
-		m_ServerInfo.SocketOptions.AF = AddressFamily::InternetIPv4;
+		m_ServerInfo.SocketOptions.AF = AddressFamily::InetIPv4;
 		m_ServerInfo.SocketOptions.Type = ConnectionType::Udp;
 		m_ServerInfo.SocketOptions.Protocol = NetworkProtocol::Udp;
-		m_ServerInfo.IpAddr = IpAddress::GetLoopbackAddr();
-		m_ServerInfo.PortAddr = Port(27999);
+		m_ServerInfo.SocketOptions.IpAddr = IpAddress::GetLoopbackAddr();
+		m_ServerInfo.SocketOptions.PortAddr = Port(27999);
 	}
 
 	void NetworkManagerPanel::OnGuiRender()
@@ -28,23 +28,23 @@ namespace Vortex {
 
 		{
 			UI::BeginPropertyGrid();
-			std::string addrStr = m_ServerInfo.IpAddr.ToString();
+			std::string addrStr = m_ServerInfo.SocketOptions.IpAddr.ToString();
 			if (UI::Property("IP Address", addrStr))
 			{
 				std::vector<std::string> parts = String::SplitString(std::string_view(addrStr.c_str(), addrStr.length()), '.');
 				const bool lastPartEmpty = parts[parts.size() - 1].empty();
 				if (parts.size() == 4 && !lastPartEmpty)
 				{
-					m_ServerInfo.IpAddr.AddressBuf[0] = (uint8_t)std::stoi(parts[0].c_str());
-					m_ServerInfo.IpAddr.AddressBuf[1] = (uint8_t)std::stoi(parts[1].c_str());
-					m_ServerInfo.IpAddr.AddressBuf[2] = (uint8_t)std::stoi(parts[2].c_str());
-					m_ServerInfo.IpAddr.AddressBuf[3] = (uint8_t)std::stoi(parts[3].c_str());
+					m_ServerInfo.SocketOptions.IpAddr.AddressBuf[0] = (uint8_t)std::stoi(parts[0].c_str());
+					m_ServerInfo.SocketOptions.IpAddr.AddressBuf[1] = (uint8_t)std::stoi(parts[1].c_str());
+					m_ServerInfo.SocketOptions.IpAddr.AddressBuf[2] = (uint8_t)std::stoi(parts[2].c_str());
+					m_ServerInfo.SocketOptions.IpAddr.AddressBuf[3] = (uint8_t)std::stoi(parts[3].c_str());
 				}
 			}
-			uint16_t port = m_ServerInfo.PortAddr.Address;
+			uint16_t port = m_ServerInfo.SocketOptions.PortAddr.Address;
 			if (UI::Property("Port", port))
 			{
-				m_ServerInfo.PortAddr.Address = port;
+				m_ServerInfo.SocketOptions.PortAddr.Address = port;
 			}
 			UI::EndPropertyGrid();
 		}
@@ -57,6 +57,7 @@ namespace Vortex {
 
 				VX_CONSOLE_LOG_INFO("Debug server starting...");
 				m_Server = Server::Create(m_ServerInfo);
+				m_Server->Launch();
 			}
 			Gui::EndDisabled();
 		}
@@ -70,7 +71,7 @@ namespace Vortex {
 				m_ServerRunning = false;
 
 				VX_CONSOLE_LOG_INFO("Debug server shutting down...");
-				m_Server->Shutdown();
+				m_Server->Stop();
 				m_Server.Reset();
 			}
 			Gui::EndDisabled();

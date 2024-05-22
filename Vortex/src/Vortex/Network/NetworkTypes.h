@@ -19,8 +19,8 @@ namespace Vortex {
 	enum class VORTEX_API AddressFamily
 	{
 		None = 0,
-		InternetIPv4,
-		InternetIPv6,
+		InetIPv4,
+		InetIPv6,
 	};
 
 	enum class VORTEX_API ConnectionType

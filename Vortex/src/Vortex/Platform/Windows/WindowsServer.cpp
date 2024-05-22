@@ -10,56 +10,93 @@ namespace Vortex {
 	WindowsServer::WindowsServer(const ServerProperties& serverProps)
 		: m_Properties(serverProps)
 	{
-		m_Socket = Socket::Create(m_Properties.SocketOptions);
+	}
+
+	WindowsServer::~WindowsServer()
+	{
+		if (m_IsRunning)
+		{
+			Shutdown();
+		}
+	}
+
+	bool WindowsServer::Launch()
+	{
+		m_ServerSocket = Socket::Create(m_Properties.SocketOptions);
+		m_IsRunning = true;
+
+		m_ServerThread = Thread::Create(VX_BIND_CALLBACK(Run));
+		m_ServerThread->Detach();
+		return true;
+	}
+
+	void WindowsServer::Stop()
+	{
+		m_IsRunning = false;
+	}
+
+	bool WindowsServer::Shutdown()
+	{
+		bool result = m_ServerSocket->Disconnect(NetworkChannel::Both);
 
 #ifdef DEBUG_CONFIG
-		std::string addrStr = m_Properties.IpAddr.ToString();
-		uint16_t port = m_Properties.PortAddr.Address;
-		VX_CONSOLE_LOG_INFO("Server started at '{}' on port '{}'", addrStr, port);
+		std::string addrStr = m_Properties.SocketOptions.IpAddr.ToString();
+		VX_CONSOLE_LOG_INFO("Server shutting down @ '{}:{}'", addrStr, m_Properties.SocketOptions.PortAddr.Address);
 #endif // DEBUG_CONFIG
+
+		return result;
 	}
 
-	WindowsServer::~WindowsServer() { }
-
-	void WindowsServer::Shutdown()
+	void WindowsServer::Run()
 	{
-		m_Socket->Disconnect(NetworkChannel::Both);
+		Listen();
 
 #ifdef DEBUG_CONFIG
-		std::string addrStr = m_Properties.IpAddr.ToString();
-		uint16_t port = m_Properties.PortAddr.Address;
-		VX_CONSOLE_LOG_INFO("Server shutting down at '{}' on port '{}'", addrStr, port);
+		std::string addrStr = m_Properties.SocketOptions.IpAddr.ToString();
+		VX_CONSOLE_LOG_INFO("Server listening @ '{}:{}'", addrStr, m_Properties.SocketOptions.PortAddr.Address);
 #endif // DEBUG_CONFIG
+
+		while (m_IsRunning)
+		{
+			SharedReference<Socket> clientSocket = Accept();
+			if (clientSocket == nullptr)
+			{
+				continue;
+			}
+
+			VX_CONSOLE_LOG_INFO("Client({}) connected", clientSocket->GetUUID());
+			// TODO
+		}
 	}
 
-	void WindowsServer::Bind()
+	bool WindowsServer::Bind()
 	{
-		m_Socket->Bind(m_Properties.PortAddr, m_Properties.IpAddr);
+		return m_ServerSocket->Bind();
 	}
 
-	void WindowsServer::Listen()
+	bool WindowsServer::Listen()
 	{
-		m_Socket->Listen();
+		return m_ServerSocket->Listen();
 	}
 
-	void WindowsServer::Accept()
+	SharedReference<Socket> WindowsServer::Accept()
 	{
-		m_Socket->Accept();
+		return m_ServerSocket->Accept();
 	}
 
-	void WindowsServer::Connect()
+	bool WindowsServer::Connect()
 	{
-		m_Socket->Connect();
+		return m_ServerSocket->Connect();
 	}
 
-	void WindowsServer::Receive()
+	bool WindowsServer::Receive(Buffer& recvPacket)
 	{
-		m_Socket->Receive();
+		return m_ServerSocket->Receive(recvPacket);
 	}
 
-	void WindowsServer::Send()
+	bool WindowsServer::Send(const Buffer& sendPacket)
 	{
-		m_Socket->Send();
+		return m_ServerSocket->Send(sendPacket);
 	}
 
 }

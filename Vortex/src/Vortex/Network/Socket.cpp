@@ -7,10 +7,10 @@
 
 namespace Vortex {
 
-	SharedReference<Socket> Vortex::Socket::Create(const SocketProperties& socketProps)
+	SharedReference<Socket> Socket::Create(const SocketProperties& socketProps, UUID socketID)
 	{
 #ifdef VX_PLATFORM_WINDOWS
-		return SharedReference<WindowsSocket>::Create(socketProps);
+		return SharedReference<WindowsSocket>::Create(socketProps, socketID);
 #endif // VX_PLATFORM_WINDOWS
 	}
 
