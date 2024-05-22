@@ -3,10 +3,20 @@
 
 namespace Vortex {
 
+	bool PanelManager::HasPanel(EditorPanelType type) const
+	{
+		if (type == EditorPanelType::None)
+		{
+			return false;
+		}
+
+		return m_Panels.contains(type);
+	}
+
 	bool PanelManager::RemovePanel(EditorPanelType type)
 	{
-		VX_CORE_ASSERT(m_Panels.contains(type), "Invalid panel type");
-		if (!m_Panels.contains(type))
+		VX_CORE_ASSERT(HasPanel(type), "Invalid panel type");
+		if (!HasPanel(type))
 		{
 			return false;
 		}
@@ -15,50 +25,54 @@ namespace Vortex {
 		return true;
 	}
 
-    SharedReference<EditorPanel> PanelManager::GetPanel(EditorPanelType type)
+    SharedReference<EditorPanel> PanelManager::GetPanel(EditorPanelType type) const
     {
-		VX_CORE_ASSERT(m_Panels.contains(type), "Invalid panel type");
-		if (!m_Panels.contains(type))
+		VX_CORE_ASSERT(HasPanel(type), "Invalid panel type");
+		if (!HasPanel(type))
 		{
 			return nullptr;
 		}
 
-		return m_Panels[type];
+		return m_Panels.at(type);
     }
 
-    void PanelManager::OnEditorAttach()
+    void PanelManager::OnEditorAttach() const
     {
-		ForEach([](SharedReference<EditorPanel> panel) {
-			panel->OnEditorAttach();
+		ForEach([](SharedReference<EditorPanel> panel)
+		{
+			panel->OnPanelAttach();
 		});
     }
 
-    void PanelManager::OnEditorDetach()
+    void PanelManager::OnEditorDestroy() const
     {
-		ForEach([](SharedReference<EditorPanel> panel) {
-			panel->OnEditorDetach();
+		ForEach([](SharedReference<EditorPanel> panel)
+		{
+			panel->OnPanelDetach();
 		});
     }
 
-	void PanelManager::SetProjectContext(SharedReference<Project> project)
+	void PanelManager::SetProjectContext(SharedReference<Project> project) const
 	{
-		ForEach([&](SharedReference<EditorPanel> panel) {
+		ForEach([&](SharedReference<EditorPanel> panel)
+		{
 			panel->SetProjectContext(project);
 		});
 	}
 
-	void PanelManager::SetSceneContext(SharedReference<Scene> scene)
+	void PanelManager::SetSceneContext(SharedReference<Scene> scene) const
 	{
-		ForEach([&](SharedReference<EditorPanel> panel) {
+		ForEach([&](SharedReference<EditorPanel> panel)
+		{
 			panel->SetSceneContext(scene);
 		});
 	}
 
-	void PanelManager::ForEach(const EditorPanelFn& func)
+	void PanelManager::ForEach(const EditorPanelFn& fn) const
 	{
-		for (auto& [type, panel] : m_Panels)
+		for (const auto& [type, panel] : m_Panels)
 		{
-			func(panel);
+			std::invoke(fn, panel);
 		}
 	}
 

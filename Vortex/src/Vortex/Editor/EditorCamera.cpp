@@ -1,22 +1,18 @@
 #include "vxpch.h"
 #include "EditorCamera.h"
 
-#include "Vortex/Core/Input/Input.h"
+#include "Vortex/Utils/Time.h"
+
+#include "Vortex/Input/Input.h"
 
 #include "Vortex/Editor/UI/UI.h"
 
 namespace Vortex {
 
-	EditorCamera::EditorCamera(const float degFOV, const float width, const float height, const float nearP, const float farP)
-		: Camera(Math::PerspectiveFOV(Math::Deg2Rad(degFOV), width, height, farP, nearP), Math::PerspectiveFOV(Math::Deg2Rad(degFOV), width, height, nearP, farP)), m_FocalPoint(0.0f), m_VerticalFOV(Math::Deg2Rad(degFOV)), m_NearClip(nearP), m_FarClip(farP)
+	EditorCamera::EditorCamera(const EditorCameraProperties& params)
+		: Camera(params)
 	{
-		Init();
-	}
-
-	void EditorCamera::Init()
-	{
-		constexpr Math::vec3 position = { -5, 5, 5 };
-		m_Distance = Math::Distance(position, m_FocalPoint);
+		m_Distance = Math::Distance(params.Translation, m_FocalPoint);
 
 		m_Yaw = 3.0f * Math::PI / 4.0f;
 		m_Pitch = Math::PI / 4.0f;
@@ -55,65 +51,90 @@ namespace Vortex {
 			return;
 		}
 
-		if (Input::IsMouseButtonDown(MouseButton::Right) && !Input::IsKeyDown(KeyCode::LeftAlt))
+		const bool isPerspective = IsPerspective();
+		const bool isOrthographic = IsOrthographic();
+
+		if (Input::IsKeyDown(KeyCode::LeftAlt))
 		{
-			m_CameraMode = CameraMode::FlyCam;
-			DisableMouse();
-			const float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
-
-			const float speed = GetCameraSpeed();
-
-			if (Input::IsKeyDown(KeyCode::Q))
-				m_PositionDelta -= ts.GetDeltaTimeMs() * speed * Math::vec3{ 0.f, yawSign, 0.f };
-			if (Input::IsKeyDown(KeyCode::E))
-				m_PositionDelta += ts.GetDeltaTimeMs() * speed * Math::vec3{ 0.f, yawSign, 0.f };
-			if (Input::IsKeyDown(KeyCode::S))
-				m_PositionDelta -= ts.GetDeltaTimeMs() * speed * m_Direction;
-			if (Input::IsKeyDown(KeyCode::W))
-				m_PositionDelta += ts.GetDeltaTimeMs() * speed * m_Direction;
-			if (Input::IsKeyDown(KeyCode::A))
-				m_PositionDelta -= ts.GetDeltaTimeMs() * speed * m_RightDirection;
-			if (Input::IsKeyDown(KeyCode::D))
-				m_PositionDelta += ts.GetDeltaTimeMs() * speed * m_RightDirection;
-
-			constexpr float maxRate{ 0.12f };
-			m_YawDelta += Math::Clamp(yawSign * delta.x * RotationSpeed(), -maxRate, maxRate);
-			m_PitchDelta += Math::Clamp(delta.y * RotationSpeed(), -maxRate, maxRate);
-
-			m_RightDirection = Math::Cross(m_Direction, Math::vec3{ 0.f, yawSign, 0.f });
-
-			m_Direction = Math::Rotate(
-				Math::Normalize(Math::Cross(Math::AngleAxis(-m_PitchDelta, m_RightDirection),
-				Math::AngleAxis(-m_YawDelta, Math::vec3{ 0.f, yawSign, 0.f }))), m_Direction
-			);
-
-			const float distance = Math::Distance(m_FocalPoint, m_Position);
-			m_FocalPoint = m_Position + GetForwardDirection() * distance;
-			m_Distance = distance;
-		}
-		else if (Input::IsKeyDown(KeyCode::LeftAlt))
-		{
-			m_CameraMode = CameraMode::ArcBall;
+			if (isPerspective)
+				m_CameraMode = CameraMode::ArcBall;
 
 			if (Input::IsMouseButtonDown(MouseButton::Middle))
 			{
 				DisableMouse();
-				MousePan(delta);
+				if (isPerspective)
+					MousePan(delta);
+				else if (isOrthographic)
+					OrthoPan(delta);
 			}
 			else if (Input::IsMouseButtonDown(MouseButton::Left))
 			{
-				DisableMouse();
-				MouseRotate(delta);
+				if (isPerspective)
+				{
+					DisableMouse();
+					MouseRotate(delta);
+				}
 			}
 			else if (Input::IsMouseButtonDown(MouseButton::Right))
 			{
+				const float zoom = (delta.x + delta.y) * 0.1f;
 				DisableMouse();
-				MouseZoom((delta.x + delta.y) * 0.1f);
+				if (isPerspective)
+					MouseZoom(zoom);
+				else if (isOrthographic)
+					OrthoZoom(zoom);
 			}
 			else
 			{
 				EnableMouse();
 			}
+		}
+		else if (Input::IsMouseButtonDown(MouseButton::Right))
+		{
+			m_CameraMode = CameraMode::FlyCam;
+			
+			if (isPerspective)
+			{
+				DisableMouse();
+			}
+			
+			const float upSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
+			const Math::vec3 yawSign{ 0.0f, upSign, 0.0f };
+			const float speed = GetCameraSpeed();
+
+			const float deltaTime = ts.GetDeltaTimeMs();
+
+			if (Input::IsKeyDown(KeyCode::Q))
+				m_PositionDelta -= deltaTime * speed * yawSign;
+			else if (Input::IsKeyDown(KeyCode::E))
+				m_PositionDelta += deltaTime * speed * yawSign;
+			if (Input::IsKeyDown(KeyCode::W))
+			{
+				if (isOrthographic)
+					OrthoZoom(deltaTime * speed * 0.1f);
+				else
+					m_PositionDelta += deltaTime * speed * m_Direction;
+			}
+			else if (Input::IsKeyDown(KeyCode::S))
+			{
+				if (isOrthographic)
+					OrthoZoom(-deltaTime * speed * 0.1f);
+				else
+					m_PositionDelta -= deltaTime * speed * m_Direction;
+			}
+			if (Input::IsKeyDown(KeyCode::A))
+				m_PositionDelta -= deltaTime * speed * m_RightDirection;
+			else if (Input::IsKeyDown(KeyCode::D))
+				m_PositionDelta += deltaTime * speed * m_RightDirection;
+
+			if (isPerspective)
+			{
+				constexpr float rotateRate{ 0.12f };
+				m_YawDelta += Math::Clamp(upSign * delta.x * RotationSpeed(), -rotateRate, rotateRate);
+				m_PitchDelta += Math::Clamp(delta.y * RotationSpeed(), -rotateRate, rotateRate);
+			}
+
+			CalculateFocalPoint();
 		}
 		else
 		{
@@ -122,17 +143,17 @@ namespace Vortex {
 
 		m_InitialMousePosition = mouse;
 		m_Position += m_PositionDelta;
-		m_Yaw += m_YawDelta;
-		m_Pitch += m_PitchDelta;
 
-		if (m_Use2DView)
+		if (isPerspective)
 		{
-			m_Yaw = m_Pitch = 0.0f;
+			m_Yaw += m_YawDelta;
+			m_Pitch += m_PitchDelta;
 		}
-		else if (m_UseTopDownView)
+		else if (isOrthographic)
 		{
-			m_Yaw = 0.0f;
-			m_Pitch = Math::Deg2Rad(90.0f);
+			m_Yaw = m_Pitch = m_Distance = 0.0f;
+			m_Position.z = 0.1f;
+			m_CameraMode = CameraMode::FlyCam;
 		}
 
 		if (m_CameraMode == CameraMode::ArcBall)
@@ -143,20 +164,51 @@ namespace Vortex {
 		UpdateCameraView();
 	}
 
+	void EditorCamera::SetDistance(float distance)
+	{
+		if (IsPerspective())
+		{
+			m_Distance = distance;
+		}
+		else if (IsOrthographic())
+		{
+			m_OrthographicSize = distance;
+			m_IsDirty = true;
+		}
+	}
+
 	float EditorCamera::GetCameraSpeed() const
 	{
-		float speed = m_NormalSpeed;
+		float speed = m_Speed;
 
 		if (Input::IsKeyDown(KeyCode::LeftControl))
 		{
-			speed /= 2 - Math::Log(m_NormalSpeed);
+			speed /= 2 - Math::Log(m_Speed);
 		}
-		if (Input::IsKeyDown(KeyCode::LeftShift))
+		else if (Input::IsKeyDown(KeyCode::LeftShift))
 		{
-			speed *= 2 - Math::Log(m_NormalSpeed);
+			speed *= 2 - Math::Log(m_Speed);
 		}
 
 		return Math::Clamp(speed, MIN_SPEED, MAX_SPEED);
+	}
+
+	void EditorCamera::CalculateFocalPoint()
+	{
+		const float upSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
+		const Math::vec3 yawSign{ 0.0f, upSign, 0.0f };
+
+		m_RightDirection = Math::Cross(m_Direction, yawSign);
+
+		m_Direction = Math::Rotate(
+			Math::Normalize(Math::Cross(Math::AngleAxis(-m_PitchDelta, m_RightDirection),
+				Math::AngleAxis(-m_YawDelta, yawSign))),
+			m_Direction
+		);
+
+		const float distance = Math::Distance(m_FocalPoint, m_Position);
+		m_FocalPoint = m_Position + GetForwardDirection() * distance;
+		m_Distance = distance;
 	}
 
 	void EditorCamera::UpdateCameraView()
@@ -176,34 +228,48 @@ namespace Vortex {
 		m_ViewMatrix = Math::LookAt(m_Position, lookAt, Math::vec3{ 0.f, yawSign, 0.f });
 
 		//damping for smooth camera
-		m_YawDelta *= 0.6f;
-		m_PitchDelta *= 0.6f;
-		m_PositionDelta *= 0.8f;
+		const float yawDamp = 0.6f;
+		const float pitchDamp = 0.6f;
+		const float posDamp = 0.6f;
+
+		m_YawDelta *= yawDamp;
+		m_PitchDelta *= pitchDamp;
+		m_PositionDelta *= posDamp;
 	}
 
 	void EditorCamera::Focus(const Math::vec3& focusPoint)
 	{
-		m_FocalPoint = focusPoint;
 		m_CameraMode = CameraMode::FlyCam;
+		m_FocalPoint = focusPoint;
 
-		if (m_Distance > m_MinFocusDistance)
+		if (IsOrthographic())
 		{
-			m_Distance -= m_Distance - m_MinFocusDistance;
-			m_Position = m_FocalPoint - GetForwardDirection() * m_Distance;
+			m_FocalPoint.z = 0.0f;
+			m_Position = m_FocalPoint;
+			SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 		}
+		else if (IsPerspective())
+		{
+			if (m_Distance > m_MinFocusDistance)
+			{
+				m_Distance -= m_Distance - m_MinFocusDistance;
+				m_Position = m_FocalPoint - GetForwardDirection() * m_Distance;
+			}
 
-		m_Position = m_FocalPoint - GetForwardDirection() * m_Distance;
-
-		UpdateCameraView();
+			m_Position = m_FocalPoint - GetForwardDirection() * m_Distance;
+			UpdateCameraView();
+		}
 	}
 
 	std::pair<float, float> EditorCamera::PanSpeed() const
 	{
-		const float x = Math::Min(float(m_ViewportWidth) / 1000.0f, 2.4f); // max = 2.4f
-		const float xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.3021f;
+		const float x = Math::Min(m_ViewportSize.x / 1000.0f, 2.4f); // max = 2.4f
+		const float sqrtX = x * x;
+		const float xFactor = 0.0366f * sqrtX - 0.1778f * x + 0.3021f;
 
-		const float y = Math::Min(float(m_ViewportHeight) / 1000.0f, 2.4f); // max = 2.4f
-		const float yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
+		const float y = Math::Min(m_ViewportSize.y / 1000.0f, 2.4f); // max = 2.4f
+		const float sqrtY = y * y;
+		const float yFactor = 0.0366f * sqrtY - 0.1778f * y + 0.3021f;
 
 		return { xFactor, yFactor };
 	}
@@ -223,6 +289,14 @@ namespace Vortex {
 		return speed;
 	}
 
+	float EditorCamera::OrthoZoomSpeed() const
+	{
+		const float dt = Time::GetDeltaTime();
+		const float currentSize = m_OrthographicSize;
+		const float targetSize = m_OrthographicSize + (dt * 2.0f);
+		return Math::Lerp(currentSize, targetSize, dt);
+	}
+
 	void EditorCamera::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);
@@ -231,18 +305,28 @@ namespace Vortex {
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
-		if (Input::IsMouseButtonDown(MouseButton::Right))
+		const bool rightMouseButtonDown = Input::IsMouseButtonDown(MouseButton::Right);
+		const bool flyCam = m_CameraMode == CameraMode::FlyCam;
+
+		if (flyCam && rightMouseButtonDown)
 		{
-			m_NormalSpeed += e.GetYOffset() * 0.03f * m_NormalSpeed;
-			m_NormalSpeed = std::clamp(m_NormalSpeed, MIN_SPEED, MAX_SPEED);
+			m_Speed += e.GetYOffset() * Time::GetDeltaTime() * 0.027f;
+			m_Speed = std::clamp(m_Speed, MIN_SPEED, MAX_SPEED);
+			return false;
 		}
-		else
+		
+		if (IsPerspective())
 		{
 			MouseZoom(e.GetYOffset() * 0.1f);
 			UpdateCameraView();
 		}
 
-		return true;
+		if (IsOrthographic())
+		{
+			OrthoZoom(e.GetYOffset() * 0.1f);
+		}
+
+		return false;
 	}
 
 	void EditorCamera::MousePan(const Math::vec2& delta)
@@ -250,6 +334,13 @@ namespace Vortex {
 		auto [xSpeed, ySpeed] = PanSpeed();
 		m_FocalPoint -= GetRightDirection() * delta.x * xSpeed * m_Distance;
 		m_FocalPoint += GetUpDirection() * delta.y * ySpeed * m_Distance;
+	}
+
+	void EditorCamera::OrthoPan(const Math::vec2& delta)
+	{
+		auto [xSpeed, ySpeed] = PanSpeed();
+		m_Position -= GetRightDirection() * delta.x * xSpeed * m_OrthographicSize;
+		m_Position += GetUpDirection() * delta.y * ySpeed * m_OrthographicSize;
 	}
 
 	void EditorCamera::MouseRotate(const Math::vec2& delta)
@@ -272,6 +363,12 @@ namespace Vortex {
 		}
 
 		m_PositionDelta += delta * ZoomSpeed() * forwardDir;
+	}
+
+	void EditorCamera::OrthoZoom(float delta)
+	{
+		m_OrthographicSize -= delta * OrthoZoomSpeed();
+		SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 	}
 
 	Math::vec3 EditorCamera::GetUpDirection() const
@@ -297,12 +394,6 @@ namespace Vortex {
 	Math::quaternion EditorCamera::GetOrientation() const
 	{
 		return Math::quaternion(Math::vec3(-m_Pitch - m_PitchDelta, -m_Yaw - m_YawDelta, 0.0f));
-	}
-
-	void EditorCamera::SetVerticalFOV(float degFOV)
-	{
-		m_VerticalFOV = Math::Deg2Rad(degFOV);
-		SetPerspectiveProjectionMatrix(m_VerticalFOV, m_ViewportWidth, m_ViewportHeight, m_NearClip, m_FarClip);
 	}
 
 }

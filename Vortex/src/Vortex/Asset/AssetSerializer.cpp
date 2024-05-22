@@ -3,6 +3,8 @@
 
 #include "Vortex/Project/Project.h"
 
+#include "Vortex/Scene/Prefab.h"
+
 #include "Vortex/Audio/AudioSource.h"
 #include "Vortex/Audio/AudioTypes.h"
 #include "Vortex/Audio/AudioUtils.h"
@@ -14,6 +16,8 @@
 #include "Vortex/Renderer/Texture.h"
 #include "Vortex/Renderer/Font/Font.h"
 #include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
+
+#include "Vortex/Serialization/SceneSerializer.h"
 
 #include "Vortex/Utils/YAML_SerializationUtils.h"
 #include "Vortex/Utils/FileSystem.h"
@@ -29,7 +33,7 @@ namespace Vortex {
 
 	bool MeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		asset = Mesh::Create(relativePath, TransformComponent(), MeshImportOptions());
 		asset->Handle = metadata.Handle;
@@ -44,7 +48,7 @@ namespace Vortex {
 
 	bool FontSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		asset = Font::Create(relativePath);
 		asset->Handle = metadata.Handle;
@@ -69,7 +73,7 @@ namespace Vortex {
 		SharedReference<AudioSource> audioSource = asset.Is<AudioSource>();
 		if (!audioSource)
 		{
-			VX_CONSOLE_LOG_ERROR("Attempting to serialize invalid audio source asset!");
+			VX_CONSOLE_LOG_ERROR("[Asset Serializer] Attempting to serialize invalid audio source asset!");
 			return;
 		}
 
@@ -145,10 +149,6 @@ namespace Vortex {
 
 			const float volume = device.GetSound().GetVolume();
 			VX_SERIALIZE_PROPERTY(Volume, volume, out);
-
-			// TODO: come back when Wave has PlayOneShot and potentially PlayOnStart
-			//VX_SERIALIZE_PROPERTY(PlayOnStart, deviceProperties.PlayOnStart, out);
-			//VX_SERIALIZE_PROPERTY(PlayOneShot, deviceProperties.PlayOneShot, out);
 			
 			const bool spacialized = device.GetSound().IsSpacialized();
 			VX_SERIALIZE_PROPERTY(Spacialized, spacialized, out);
@@ -160,7 +160,7 @@ namespace Vortex {
 		out << YAML::EndMap;
 		out << YAML::EndMap;
 
-		std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 		std::ofstream fout(outputFile);
 		VX_CORE_ASSERT(fout.is_open(), "Failed to open file!");
 
@@ -171,24 +171,24 @@ namespace Vortex {
 
 	bool AudioSerializer::DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		YAML::Node audioData = YAML::LoadFile(relativePath);
 		if (!audioData)
 			return false;
 
-		std::string trackName = audioData["AudioSource"].as<std::string>();
+		const std::string trackName = audioData["AudioSource"].as<std::string>();
 
 		auto properties = audioData["Properties"];
 
-		std::string filepath = properties["Filepath"].as<std::string>();
+		const std::string filepath = properties["Filepath"].as<std::string>();
 
 		auto deviceProps = properties["DeviceProperties"];
 
 		if (!deviceProps)
 			return false;
 
-		std::string fullPath = (Project::GetAssetDirectory() / filepath).string();
+		const std::string fullPath = (Project::GetAssetDirectory() / filepath).string();
 		asset = AudioSource::Create(fullPath);
 		asset->Handle = metadata.Handle;
 
@@ -218,16 +218,16 @@ namespace Vortex {
 		float maxGain = deviceProps["MaxGain"].as<float>();
 		sound.SetMaxGain(maxGain);
 
-		std::string attModelStr = deviceProps["AttenuationModel"].as<std::string>();
+		const std::string attModelStr = deviceProps["AttenuationModel"].as<std::string>();
 		sound.SetAttenuationModel(Utils::ToWaveAttenuationModel(Utils::AttenuationModelTypeFromString(attModelStr)));
 
 		float pan = deviceProps["Pan"].as<float>();
 		sound.SetPan(pan);
 
-		std::string panModeStr = deviceProps["PanMode"].as<std::string>();
+		const std::string panModeStr = deviceProps["PanMode"].as<std::string>();
 		sound.SetPanMode(Utils::ToWavePanMode(Utils::PanModeTypeFromString(panModeStr)));
 
-		std::string positioningModeStr = deviceProps["PositioningMode"].as<std::string>();
+		const std::string positioningModeStr = deviceProps["PositioningMode"].as<std::string>();
 		sound.SetPositioning(Utils::ToWavePositioningMode(Utils::PositioningModeTypeFromString(positioningModeStr)));
 
 		float falloff = deviceProps["Falloff"].as<float>();
@@ -247,9 +247,6 @@ namespace Vortex {
 		float volume = deviceProps["Volume"].as<float>();
 		sound.SetVolume(volume);
 
-		// TODO: ditto
-		//data.PlayOnStart = deviceProps["PlayOnStart"].as<bool>();
-		//data.PlayOneShot = deviceProps["PlayOneShot"].as<bool>();
 		bool spacialized = deviceProps["Spacialized"].as<bool>();
 		sound.SetSpacialized(spacialized);
 		bool isLooping = deviceProps["Loop"].as<bool>();
@@ -260,26 +257,91 @@ namespace Vortex {
 
 	void SceneAssetSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
 	{
+		SharedReference<Scene> scene = asset.Is<Scene>();
+		if (!scene)
+		{
+			VX_CONSOLE_LOG_ERROR("[Asset Serializer] Attempting to serialize invalid scene asset!");
+			return;
+		}
 
+		const Fs::Path fullPath = Project::GetAssetDirectory() / metadata.Filepath;
+
+		SceneSerializer serializer(scene);
+		serializer.Serialize(fullPath.string());
 	}
 
 	bool SceneAssetSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		asset = Scene::Create();
+		asset->Handle = metadata.Handle;
 
-		return false;
+		const Fs::Path fullPath = Project::GetAssetDirectory() / metadata.Filepath;
+
+		SceneSerializer serializer(asset.As<Scene>());
+		return serializer.Deserialize(fullPath.string());
 	}
 
 	void PrefabAssetSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
 	{
-
+		SerializeToYAML(metadata, asset);
 	}
 
 	bool PrefabAssetSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		return DeserializeFromYAML(metadata, asset);
+	}
 
-		return false;
+	void PrefabAssetSerializer::SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
+	{
+		YAML::Emitter out;
+
+		SharedReference<Prefab> prefab = asset.Is<Prefab>();
+		if (!prefab)
+		{
+			VX_CONSOLE_LOG_ERROR("[Asset Serializer] Attempting to serialize invalid prefab asset!");
+			return;
+		}
+
+		out << YAML::BeginMap;
+		out << YAML::Key << "Prefab";
+		out << YAML::Value << YAML::BeginSeq;
+
+		prefab->m_Scene->m_Registry.each([&](auto actorID) {
+			Actor actor = { actorID, prefab->m_Scene.Raw() };
+			if (!actor || !actor.HasComponent<IDComponent>())
+				return;
+
+			SceneSerializer::SerializeActor(out, actor);
+		});
+
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
+
+		const std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		std::ofstream fout(outputFile);
+		VX_CORE_ASSERT(fout.is_open(), "Failed to open file!");
+
+		fout << out.c_str();
+
+		fout.close();
+	}
+
+	bool PrefabAssetSerializer::DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset)
+	{
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+
+		asset = SharedReference<Prefab>::Create();
+		asset->Handle = metadata.Handle;
+
+		YAML::Node prefabData = YAML::LoadFile(relativePath);
+		if (!prefabData)
+			return false;
+
+		const YAML::Node prefabNode = prefabData["Prefab"];
+
+		SceneSerializer::DeserializeActors(prefabNode, asset.As<Prefab>()->m_Scene);
+
+		return true;
 	}
 
 	void ScriptSerializer::Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset)
@@ -289,7 +351,7 @@ namespace Vortex {
 
 	bool ScriptSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		return false;
 	}
@@ -301,7 +363,7 @@ namespace Vortex {
 
 	bool TextureSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		TextureProperties imageProps;
 		imageProps.Filepath = relativePath;
@@ -320,9 +382,6 @@ namespace Vortex {
 
 	bool ParticleEmitterSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		asset = ParticleEmitter::Create({});
-		asset->Handle = metadata.Handle;
-
 		return DeserializeFromYAML(metadata, asset);
 	}
 
@@ -333,7 +392,7 @@ namespace Vortex {
 		SharedReference<ParticleEmitter> particleEmitter = asset.Is<ParticleEmitter>();
 		if (!particleEmitter)
 		{
-			VX_CONSOLE_LOG_ERROR("Attempting to serialize invalid particle emitter asset!");
+			VX_CONSOLE_LOG_ERROR("[Asset Serializer] Attempting to serialize invalid particle emitter asset!");
 			return;
 		}
 
@@ -362,7 +421,7 @@ namespace Vortex {
 		out << YAML::EndMap;
 		out << YAML::EndMap;
 
-		std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 		std::ofstream fout(outputFile);
 		VX_CORE_ASSERT(fout.is_open(), "Failed to open file!");
 
@@ -373,33 +432,41 @@ namespace Vortex {
 
 	bool ParticleEmitterSerializer::DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		YAML::Node emitterData = YAML::LoadFile(relativePath);
 		if (!emitterData)
 			return false;
 
-		std::string emitterName = emitterData["ParticleEmitter"].as<std::string>();
+		const std::string emitterName = emitterData["ParticleEmitter"].as<std::string>();
+
+		auto properties = emitterData["Properties"];
+
+		if (!properties)
+			return false;
+
+		asset = ParticleEmitter::Create({});
+		asset->Handle = metadata.Handle;
 
 		SharedReference<ParticleEmitter> particleEmitter = asset.Is<ParticleEmitter>();
 		particleEmitter->SetName(emitterName);
 
-		ParticleEmitterProperties& emitterProperties = particleEmitter->GetProperties();
+		ParticleEmitterProperties emitterProperties;
 
-		auto emitterProps = emitterData["Properties"];
+		VX_DESERIALIZE_PROPERTY(ColorBegin, Math::vec4, emitterProperties.ColorBegin, properties);
+		VX_DESERIALIZE_PROPERTY(ColorEnd, Math::vec4, emitterProperties.ColorEnd, properties);
+		VX_DESERIALIZE_PROPERTY(LifeTime, float, emitterProperties.LifeTime, properties);
+		VX_DESERIALIZE_PROPERTY(Position, Math::vec3, emitterProperties.Position, properties);
+		VX_DESERIALIZE_PROPERTY(Offset, Math::vec3, emitterProperties.Offset, properties);
+		VX_DESERIALIZE_PROPERTY(Rotation, float, emitterProperties.Rotation, properties);
+		VX_DESERIALIZE_PROPERTY(SizeBegin, Math::vec2, emitterProperties.SizeBegin, properties);
+		VX_DESERIALIZE_PROPERTY(SizeEnd, Math::vec2, emitterProperties.SizeEnd, properties);
+		VX_DESERIALIZE_PROPERTY(SizeVariation, Math::vec2, emitterProperties.SizeVariation, properties);
+		VX_DESERIALIZE_PROPERTY(Velocity, Math::vec3, emitterProperties.Velocity, properties);
+		VX_DESERIALIZE_PROPERTY(VelocityVariation, Math::vec3, emitterProperties.VelocityVariation, properties);
+		VX_DESERIALIZE_PROPERTY(GenerateRandomColors, bool, emitterProperties.GenerateRandomColors, properties);
 
-		VX_DESERIALIZE_PROPERTY(ColorBegin, Math::vec4, emitterProperties.ColorBegin, emitterProps);
-		VX_DESERIALIZE_PROPERTY(ColorEnd, Math::vec4, emitterProperties.ColorEnd, emitterProps);
-		VX_DESERIALIZE_PROPERTY(LifeTime, float, emitterProperties.LifeTime, emitterProps);
-		VX_DESERIALIZE_PROPERTY(Position, Math::vec3, emitterProperties.Position, emitterProps);
-		VX_DESERIALIZE_PROPERTY(Offset, Math::vec3, emitterProperties.Offset, emitterProps);
-		VX_DESERIALIZE_PROPERTY(Rotation, float, emitterProperties.Rotation, emitterProps);
-		VX_DESERIALIZE_PROPERTY(SizeBegin, Math::vec2, emitterProperties.SizeBegin, emitterProps);
-		VX_DESERIALIZE_PROPERTY(SizeEnd, Math::vec2, emitterProperties.SizeEnd, emitterProps);
-		VX_DESERIALIZE_PROPERTY(SizeVariation, Math::vec2, emitterProperties.SizeVariation, emitterProps);
-		VX_DESERIALIZE_PROPERTY(Velocity, Math::vec3, emitterProperties.Velocity, emitterProps);
-		VX_DESERIALIZE_PROPERTY(VelocityVariation, Math::vec3, emitterProperties.VelocityVariation, emitterProps);
-		VX_DESERIALIZE_PROPERTY(GenerateRandomColors, bool, emitterProperties.GenerateRandomColors, emitterProps);
+		particleEmitter->SetProperties(emitterProperties);
 
 		return true;
 	}
@@ -424,14 +491,14 @@ namespace Vortex {
 		SharedReference<Material> material = asset.Is<Material>();
 		if (!material)
 		{
-			VX_CONSOLE_LOG_ERROR("Attempting to serialize invalid material asset!");
+			VX_CONSOLE_LOG_ERROR("[Asset Serializer] Attempting to serialize invalid material asset!");
 			return;
 		}
 
 		const std::string& materialName = material->GetName();
 		if (materialName.empty())
 		{
-			VX_CONSOLE_LOG_ERROR("Failed to serialize material with no name!");
+			VX_CONSOLE_LOG_ERROR("[Asset Serializer] Attempting to serialize material with no name!");
 			return;
 		}
 
@@ -442,17 +509,17 @@ namespace Vortex {
 		{
 			VX_SERIALIZE_PROPERTY(AssetHandle, material->Handle, out);
 			VX_SERIALIZE_PROPERTY(Albedo, material->GetAlbedo(), out);
-			VX_SERIALIZE_PROPERTY(AlbedoMap, material->GetAlbedoMap(), out);
-			VX_SERIALIZE_PROPERTY(NormalMap, material->GetNormalMap(), out);
+			VX_SERIALIZE_PROPERTY(AlbedoMap, material->GetTexture("u_AlbedoMap"), out);
+			VX_SERIALIZE_PROPERTY(NormalMap, material->GetTexture("u_NormalMap"), out);
 			VX_SERIALIZE_PROPERTY(Metallic, material->GetMetallic(), out);
-			VX_SERIALIZE_PROPERTY(MetallicMap, material->GetMetallicMap(), out);
+			VX_SERIALIZE_PROPERTY(MetallicMap, material->GetTexture("u_MetallicMap"), out);
 			VX_SERIALIZE_PROPERTY(Roughness, material->GetRoughness(), out);
-			VX_SERIALIZE_PROPERTY(RoughnessMap, material->GetRoughnessMap(), out);
+			VX_SERIALIZE_PROPERTY(RoughnessMap, material->GetTexture("u_RoughnessMap"), out);
 			VX_SERIALIZE_PROPERTY(Emission, material->GetEmission(), out);
-			VX_SERIALIZE_PROPERTY(EmissionMap, material->GetEmissionMap(), out);
+			VX_SERIALIZE_PROPERTY(EmissionMap, material->GetTexture("u_EmissionMap"), out);
 			VX_SERIALIZE_PROPERTY(ParallaxHeightScale, material->GetParallaxHeightScale(), out);
-			VX_SERIALIZE_PROPERTY(ParallaxOcclusionMap, material->GetParallaxOcclusionMap(), out);
-			VX_SERIALIZE_PROPERTY(AmbientOcclusionMap, material->GetAmbientOcclusionMap(), out);
+			VX_SERIALIZE_PROPERTY(ParallaxOcclusionMap, material->GetTexture("u_ParallaxOcclusionMap"), out);
+			VX_SERIALIZE_PROPERTY(AmbientOcclusionMap, material->GetTexture("u_AmbientOcclusionMap"), out);
 			VX_SERIALIZE_PROPERTY(UV, material->GetUV(), out);
 			VX_SERIALIZE_PROPERTY(Opacity, material->GetOpacity(), out);
 			VX_SERIALIZE_PROPERTY(Flags, material->GetFlags(), out);
@@ -460,7 +527,7 @@ namespace Vortex {
 		out << YAML::EndMap;
 		out << YAML::EndMap;
 
-		std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string outputFile = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 		std::ofstream fout(outputFile);
 		VX_CORE_ASSERT(fout.is_open(), "Failed to open file!");
 		
@@ -471,13 +538,13 @@ namespace Vortex {
 
 	bool MaterialSerializer::DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 		
 		YAML::Node materialData = YAML::LoadFile(relativePath);
 		if (!materialData)
 			return false;
 
-		std::string materialName = materialData["Material"].as<std::string>();
+		const std::string materialName = materialData["Material"].as<std::string>();
 
 		auto materialProperties = materialData["Properties"];
 		if (!materialProperties)
@@ -487,17 +554,17 @@ namespace Vortex {
 
 		material->SetName(materialName);
 		material->SetAlbedo(materialProperties["Albedo"].as<Math::vec3>());
-		material->SetAlbedoMap(materialProperties["AlbedoMap"].as<uint64_t>());
-		material->SetNormalMap(materialProperties["NormalMap"].as<uint64_t>());
+		material->SetTexture("u_AlbedoMap", materialProperties["AlbedoMap"].as<uint64_t>());
+		material->SetTexture("u_NormalMap", materialProperties["NormalMap"].as<uint64_t>());
 		material->SetMetallic(materialProperties["Metallic"].as<float>());
-		material->SetMetallicMap(materialProperties["MetallicMap"].as<uint64_t>());
+		material->SetTexture("u_MetallicMap", materialProperties["MetallicMap"].as<uint64_t>());
 		material->SetRoughness(materialProperties["Roughness"].as<float>());
-		material->SetRoughnessMap(materialProperties["RoughnessMap"].as<uint64_t>());
+		material->SetTexture("u_RoughnessMap", materialProperties["RoughnessMap"].as<uint64_t>());
 		material->SetEmission(materialProperties["Emission"].as<float>());
-		material->SetEmissionMap(materialProperties["EmissionMap"].as<uint64_t>());
+		material->SetTexture("u_EmissionMap", materialProperties["EmissionMap"].as<uint64_t>());
 		material->SetParallaxHeightScale(materialProperties["ParallaxHeightScale"].as<float>());
-		material->SetParallaxOcclusionMap(materialProperties["ParallaxOcclusionMap"].as<uint64_t>());
-		material->SetAmbientOcclusionMap(materialProperties["AmbientOcclusionMap"].as<uint64_t>());
+		material->SetTexture("u_ParallaxOcclusionMap", materialProperties["ParallaxOcclusionMap"].as<uint64_t>());
+		material->SetTexture("u_AmbientOcclusionMap", materialProperties["AmbientOcclusionMap"].as<uint64_t>());
 		material->SetUV(materialProperties["UV"].as<Math::vec2>());
 		material->SetOpacity(materialProperties["Opacity"].as<float>());
 		material->SetFlags(materialProperties["Flags"].as<uint32_t>());
@@ -512,7 +579,7 @@ namespace Vortex {
 
 	bool AnimatorSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		return false;
 	}
@@ -524,7 +591,7 @@ namespace Vortex {
 
 	bool AnimationSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		return false;
 	}
@@ -536,7 +603,7 @@ namespace Vortex {
 
 	bool StaticMeshSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		asset = StaticMesh::Create(relativePath, TransformComponent(), MeshImportOptions());
 		asset->Handle = metadata.Handle;
@@ -551,7 +618,7 @@ namespace Vortex {
 
 	bool EnvironmentSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		asset = Skybox::Create(relativePath);
 		asset->Handle = metadata.Handle;
@@ -575,7 +642,7 @@ namespace Vortex {
 
 	bool AudioListenerSerializer::DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		return false;
 	}
@@ -587,7 +654,7 @@ namespace Vortex {
 
 	bool PhysicsMaterialSerializer::TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset)
 	{
-		std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
+		const std::string relativePath = Project::GetEditorAssetManager()->GetFileSystemPath(metadata).string();
 
 		return false;
 	}

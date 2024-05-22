@@ -12,8 +12,9 @@
 namespace Vortex {
 
 	class AssetRegistryPanel;
+	class ContentBrowserPanel;
 
-	class EditorAssetManager : public IAssetManager
+	class VORTEX_API EditorAssetManager : public IAssetManager
 	{
 	public:
 		EditorAssetManager();
@@ -32,25 +33,26 @@ namespace Vortex {
 
 		const AssetRegistry& GetAssetRegistry() const;
 
-		std::filesystem::path GetRelativePath(const std::filesystem::path& filepath);
+		Fs::Path GetRelativePath(const Fs::Path& filepath);
 
-		SharedReference<Asset> GetAssetFromFilepath(const std::filesystem::path& filepath);
-		AssetHandle GetAssetHandleFromFilepath(const std::filesystem::path& filepath);
+		SharedReference<Asset> GetAssetFromFilepath(const Fs::Path& filepath);
+		AssetHandle GetAssetHandleFromFilepath(const Fs::Path& filepath);
 		AssetType GetAssetTypeFromExtension(const std::string& extension);
-		AssetType GetAssetTypeFromFilepath(const std::filesystem::path& filepath);
+		std::string GetExtensionFromAssetType(AssetType type);
+		AssetType GetAssetTypeFromFilepath(const Fs::Path& filepath);
 
-		bool IsValidAssetExtension(const std::filesystem::path& extension);
+		bool IsValidAssetExtension(const Fs::Path& extension);
 
-		const AssetMetadata& GetMetadata(const std::filesystem::path& filepath);
+		const AssetMetadata& GetMetadata(const Fs::Path& filepath);
 		const AssetMetadata& GetMetadata(AssetHandle handle);
 		const AssetMetadata& GetMetadata(SharedReference<Asset> asset);
 		AssetMetadata& GetMutableMetadata(AssetHandle handle);
 
-		std::filesystem::path GetFileSystemPath(const AssetMetadata& metadata);
+		Fs::Path GetFileSystemPath(const AssetMetadata& metadata);
 
-		AssetHandle ImportAsset(const std::filesystem::path& filepath);
+		AssetHandle ImportAsset(const Fs::Path& filepath);
 
-		bool RenameAsset(SharedReference<Asset>& asset, const std::string& newName);
+		bool RenameAsset(SharedReference<Asset>& asset, const Fs::Path& newFilepath);
 
 		AssetHandle GetDefaultStaticMesh(DefaultMesh::StaticMeshType defaultMesh);
 		bool IsDefaultStaticMesh(AssetHandle assetHandle);
@@ -83,12 +85,16 @@ namespace Vortex {
 			return asset;
 		}
 
+		const AssetMetadata& ImportLoadedAsset(SharedReference<Asset> asset, const std::string& directory, const std::string& filename);
+
+		bool RemoveAsset(AssetHandle handle);
+
 		bool OnProjectSerialized();
 		bool OnProjectDeserialized();
 
 	private:
 		void LoadAssetRegistry();
-		void ProcessDirectory(const std::filesystem::path& directory);
+		void ProcessDirectory(const Fs::Path& directory);
 		void ReloadAssets();
 		void WriteToRegistryFile();
 
@@ -100,12 +106,12 @@ namespace Vortex {
 
 		AssetRegistry m_AssetRegistry;
 
-		// used only to prevent crashing when closing the editor
-		std::filesystem::path m_ProjectAssetDirectory;
-		std::filesystem::path m_ProjectAssetRegistryPath;
+		Fs::Path m_ProjectAssetDirectory;
+		Fs::Path m_ProjectAssetRegistryPath;
 
 	private:
 		friend AssetRegistryPanel;
+		friend ContentBrowserPanel;
 	};
 
 }

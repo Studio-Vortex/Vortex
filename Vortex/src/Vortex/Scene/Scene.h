@@ -1,13 +1,18 @@
 #pragma once
 
+#include "Vortex/Asset/Asset.h"
+
 #include "Vortex/Core/UUID.h"
+#include "Vortex/Core/Timer.h"
 #include "Vortex/Core/TimeStep.h"
 
-#include "Vortex/Asset/Asset.h"
+#include "Vortex/Project/ProjectType.h"
 
 #include "Vortex/Scene/Components.h"
 
 #include "Vortex/Renderer/Framebuffer.h"
+
+#include "Vortex/stl/function_queue.h"
 
 #include <unordered_map>
 #include <vector>
@@ -16,50 +21,43 @@
 
 namespace Vortex {
 
-	class Entity;
+	class Actor;
+	class Prefab;
 	class Mesh;
 	class StaticMesh;
 	class EditorCamera;
 
-	class Scene : public Asset
+	struct VORTEX_API SceneGeometry : public RefCounted
 	{
-	public:
-		struct QueueFreeData
-		{
-			UUID EntityUUID = 0;
-			float WaitTime = 0.0f;
-			bool ExcludeChildren = false;
-		};
+		std::vector<SharedReference<Mesh>> Meshes;
+		std::vector<Math::mat4> WorldSpaceMeshTransforms;
+		std::vector<Actor> MeshEntities;
 
-		struct SceneGeometry : public RefCounted
-		{
-			std::vector<SharedReference<Mesh>> Meshes;
-			std::vector<Math::mat4> WorldSpaceMeshTransforms;
-			std::vector<Entity> MeshEntities;
+		std::vector<SharedReference<StaticMesh>> StaticMeshes;
+		std::vector<Math::mat4> WorldSpaceStaticMeshTransforms;
+	};
 
-			std::vector<SharedReference<StaticMesh>> StaticMeshes;
-			std::vector<Math::mat4> WorldSpaceStaticMeshTransforms;
-		};
-
+	class VORTEX_API Scene : public Asset
+	{
 	public:
 		Scene() = default;
 		Scene(SharedReference<Framebuffer>& targetFramebuffer);
 		~Scene() override;
 
-		Entity CreateEntity(const std::string& name = std::string(), const std::string& marker = std::string());
-		Entity CreateChildEntity(Entity parent, const std::string& name = std::string(), const std::string& marker = std::string());
-		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = std::string(), const std::string& marker = std::string());
+		Actor CreateActor(const std::string& name = std::string(), const std::string& marker = std::string());
+		Actor CreateChildActor(Actor parent, const std::string& name = std::string(), const std::string& marker = std::string());
+		Actor CreateActorWithUUID(UUID uuid, const std::string& name = std::string(), const std::string& marker = std::string());
 
-		void SubmitToDestroyEntity(Entity entity, bool excludeChildren = false);
-		void SubmitToDestroyEntity(const QueueFreeData& queueFreeData);
+		Actor DuplicateActor(Actor actor);
+		Actor CreatePrefabActor(Actor prefabActor, Actor parent, const Math::vec3* translation = nullptr, const Math::vec3* eulerRotation = nullptr, const Math::vec3* scale = nullptr);
 
-	private:
-		void DestroyEntityInternal(Entity entity, bool excludeChildren = false);
-		void DestroyEntityInternal(const QueueFreeData& queueFreeData);
+		Actor Instantiate(SharedReference<Prefab> prefab, const Math::vec3* translation = nullptr, const Math::vec3* eulerRotation = nullptr, const Math::vec3* scale = nullptr);
+		Actor InstantiateChild(SharedReference<Prefab> prefab, Actor parent, const Math::vec3* translation = nullptr, const Math::vec3* eulerRotation = nullptr, const Math::vec3* scale = nullptr);
 
-		void UpdateQueueFreeTimers(TimeStep delta);
+		void SubmitToDestroyActor(Actor actor, bool excludeChildren = false);
 
-	public:
+		void ClearActors();
+
 		void OnRuntimeStart(bool muteAudio = false);
 		void OnRuntimeStop();
 
@@ -71,58 +69,64 @@ namespace Vortex {
 		void OnUpdateSimulation(TimeStep delta, EditorCamera* camera);
 		void OnUpdateEditor(TimeStep delta, EditorCamera* camera);
 
-		void SubmitToPostUpdateQueue(const std::function<void()>& func);
-		void ExecutePostUpdateQueue();
+		VX_FORCE_INLINE vxstl::function_queue<void>& GetPreUpdateFunctionQueue() const { return m_PreUpdateFunctionQueue; }
+		VX_FORCE_INLINE vxstl::function_queue<void>& GetPostUpdateFunctionQueue() const { return m_PostUpdateFunctionQueue; }
 
-		void OnUpdateEntityGui();
+		VX_FORCE_INLINE const std::string& GetName() const { return m_Name; }
+		VX_FORCE_INLINE void SetName(const std::string& name) { m_Name = name; }
+
+		void InvokeActorOnGuiRender();
 
 		VX_FORCE_INLINE SharedReference<Framebuffer> GetTargetFramebuffer() const { return m_TargetFramebuffer; }
 		VX_FORCE_INLINE void SetTargetFramebuffer(SharedReference<Framebuffer> target) { m_TargetFramebuffer = target; }
 
 		VX_FORCE_INLINE bool IsRunning() const { return m_IsRunning; }
+		VX_FORCE_INLINE bool IsSimulating() const { return m_IsSimulating; }
 		VX_FORCE_INLINE bool IsPaused() const { return m_IsPaused; }
 		void SetPaused(bool paused);
 
 		VX_FORCE_INLINE Math::uvec2 GetViewportSize() const { return Math::uvec2(m_ViewportWidth, m_ViewportHeight); }
 		VX_FORCE_INLINE const ViewportBounds& GetViewportBounds() const { return m_ViewportBounds; }
 		VX_FORCE_INLINE void SetViewportBounds(const ViewportBounds& viewportBounds) { m_ViewportBounds = viewportBounds; }
-		VX_FORCE_INLINE size_t GetEntityCount() const { return m_Registry.alive(); }
+
+		VX_FORCE_INLINE size_t GetActorCount() const { return m_Registry.alive(); }
+		size_t GetScriptActorCount();
 
 		void Step(uint32_t frames = 1) { m_StepFrames = frames; }
 
 		void OnViewportResize(uint32_t width, uint32_t height);
 
-		void ParentEntity(Entity entity, Entity parent);
-		void UnparentEntity(Entity entity, bool convertToWorldSpace = true);
+		const Timer& TryGetTimerByName(Actor actor, const std::string& name);
+		Timer& TryGetMutableTimerByName(Actor actor, const std::string& name);
+		void EmplaceOrReplaceTimer(Actor actor, Timer&& timer);
 
-		void ActiveateChildren(Entity entity);
-		void DeactiveateChildren(Entity entity);
+		void ParentActor(Actor actor, Actor parent);
+		void UnparentActor(Actor actor, bool convertToWorldSpace = true);
 
-		Entity GetRootEntityInHierarchy(Entity child) const;
-		Entity TryGetEntityWithUUID(UUID uuid);
+		void ActiveateChildren(Actor actor);
+		void DeactiveateChildren(Actor actor);
 
-		Entity GetPrimaryCameraEntity();
-		Entity GetEnvironmentEntity();
-		Entity GetSkyLightEntity();
+		Actor GetRootActorInHierarchy(Actor child) const;
 
-		Entity DuplicateEntity(Entity entity);
+		Actor GetPrimaryCameraActor();
+		Actor GetEnvironmentActor();
+		Actor GetSkyLightActor();
 
-		Entity FindEntityByName(std::string_view name);
-		Entity FindEntityWithID(entt::entity entity);
+		Actor TryGetActorWithUUID(UUID uuid) const;
+		Actor FindActorByName(std::string_view name);
+		Actor FindActorByID(entt::entity actorID);
 
-		bool AreEntitiesRelated(Entity first, Entity second);
+		void SortActors();
 
-		void SortEntities();
-
-		void ConvertToLocalSpace(Entity entity);
-		void ConvertToWorldSpace(Entity entity);
-		Math::mat4 GetWorldSpaceTransformMatrix(Entity entity);
-		TransformComponent GetWorldSpaceTransform(Entity entity);
+		void ConvertToLocalSpace(Actor actor);
+		void ConvertToWorldSpace(Actor actor);
+		Math::mat4 GetWorldSpaceTransformMatrix(Actor actor);
+		TransformComponent GetWorldSpaceTransform(Actor actor);
 
 		SharedReference<SceneGeometry>& GetSceneMeshes();
 
 		template <typename TComponent>
-		VX_FORCE_INLINE void CopyComponentIfExists(entt::entity dst, entt::registry& dstRegistry, entt::entity src)
+		VX_FORCE_INLINE void CopyComponentIfExists(entt::entity dst, entt::registry& dstRegistry, entt::entity src) const
 		{
 			if (m_Registry.all_of<TComponent>(src))
 			{
@@ -132,33 +136,30 @@ namespace Vortex {
 		}
 
 		template <typename... TComponent>
-		VX_FORCE_INLINE auto GetAllEntitiesWith()
+		VX_FORCE_INLINE auto GetAllActorsWith()
 		{
 			return m_Registry.view<TComponent...>();
 		}
 
-#ifndef VX_DIST
-		const std::string& GetDebugName() const { return m_DebugName; }
-		void SetDebugName(const std::string& name) { m_DebugName = name; }
-#endif
-
-		static void SubmitSceneToBuild(const std::string& sceneFilePath);
-		static void RemoveIndexFromBuild(uint32_t buildIndex);
-		static const std::map<uint32_t, std::string>& GetScenesInBuild();
-
-		static uint32_t GetActiveSceneBuildIndex();
-		static void SetActiveSceneBuildIndex(uint32_t buildIndex);
-
 		static SharedReference<Scene> Copy(SharedReference<Scene>& source);
-		static void Create2DSampleScene(SharedReference<Scene>& context);
-		static void Create3DSampleScene(SharedReference<Scene>& context);
+		static void CreateSampleScene(ProjectType type, SharedReference<Scene>& context);
 
 		ASSET_CLASS_TYPE(SceneAsset)
 
-		static SharedReference<Scene> Create(SharedReference<Framebuffer>& targetFramebuffer);
+		static SharedReference<Scene> Create(SharedReference<Framebuffer> targetFramebuffer);
 		static SharedReference<Scene> Create();
 
 	private:
+		void FlushPreUpdateQueue();
+		void FlushPostUpdateQueue();
+
+		void OnComponentUpdate(TimeStep delta);
+		void OnSystemUpdate(TimeStep delta);
+
+		void DestroyActorInternal(Actor actor, bool excludeChildren = false);
+
+		void OnUpdateActorTimers(TimeStep delta);
+
 		void OnCameraConstruct(entt::registry& registry, entt::entity e);
 		void OnStaticMeshConstruct(entt::registry& registry, entt::entity e);
 		void OnParticleEmitterConstruct(entt::registry& registry, entt::entity e);
@@ -171,7 +172,7 @@ namespace Vortex {
 		void OnAudioListenerConstruct(entt::registry& registry, entt::entity e);
 		void OnAudioListenerDestruct(entt::registry& registry, entt::entity e);
 
-		void SetSceneCameraViewportSize();
+		void ResizePrimaryCamera();
 
 		void StopAnimatorsRuntime();
 
@@ -182,36 +183,32 @@ namespace Vortex {
 
 	private:
 		SharedReference<Framebuffer> m_TargetFramebuffer = nullptr;
-		SharedReference<SceneGeometry> m_SceneMeshes = nullptr;
+		mutable SharedReference<SceneGeometry> m_SceneMeshes = nullptr;
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
 		ViewportBounds m_ViewportBounds;
 		uint32_t m_StepFrames = 0;
 
-		inline static uint32_t s_ActiveBuildIndex = 0;
+		using ActorMap = std::unordered_map<UUID, Actor>;
+		ActorMap m_ActorMap;
 
-		using EntityMap = std::unordered_map<UUID, Entity>;
-		EntityMap m_EntityMap;
+		std::unordered_map<UUID, std::vector<Timer>> m_Timers;
+		std::vector<Timer> m_FinishedTimers;
 
-		using QueueFreeMap = std::unordered_map<UUID, QueueFreeData>;
-		QueueFreeMap m_QueueFreeMap;
-		std::vector<UUID> m_EntitiesToBeRemovedFromQueue;
+		mutable vxstl::function_queue<void> m_PreUpdateFunctionQueue;
+		mutable vxstl::function_queue<void> m_PostUpdateFunctionQueue;
 
-		std::vector<std::function<void()>> m_PostUpdateQueue;
-		std::mutex m_PostUpdateQueueMutex;
-
-#ifndef VX_DIST
-		std::string m_DebugName;
-#endif
+		std::string m_Name;
 
 		bool m_IsRunning = false;
+		bool m_IsSimulating = false;
 		bool m_IsPaused = false;
 
 	private:
-		friend class Entity;
+		friend class Actor;
 		friend class Prefab;
-		friend class PrefabSerializer;
+		friend class PrefabAssetSerializer;
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 		friend class ECSDebugPanel;

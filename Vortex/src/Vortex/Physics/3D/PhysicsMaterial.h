@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Vortex/Core/Base.h"
 #include "Vortex/Asset/Asset.h"
-#include "Vortex/Physics/3D/PhysXTypes.h"
+
+#include "Vortex/Physics/3D/PhysicsTypes.h"
 
 #include <string>
 
 namespace Vortex {
 
-	class PhysicsMaterial : public Asset
+	class VORTEX_API PhysicsMaterial : public Asset
 	{
 	public:
 		std::string Name = "";

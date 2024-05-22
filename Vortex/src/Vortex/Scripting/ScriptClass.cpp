@@ -4,6 +4,8 @@
 #include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Scripting/ScriptUtils.h"
 
+#include "Vortex/Core/String.h"
+
 #include <mono/jit/jit.h>
 
 namespace Vortex {
@@ -11,16 +13,23 @@ namespace Vortex {
 	ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore)
 		: m_ClassNamespace(classNamespace), m_ClassName(className)
 	{
-		MonoImage* assemblyImage = isCore ? ScriptEngine::GetCoreAssemblyImage() : ScriptEngine::GetAppAssemblyImage();
-		m_MonoClass = mono_class_from_name(assemblyImage, classNamespace.c_str(), className.c_str());
+		MonoImage* assemblyImage = isCore ? ScriptEngine::GetScriptCoreAssemblyImage() : ScriptEngine::GetAppAssemblyImage();
+		m_MonoClass = ScriptUtils::GetClassFromAssemblyImageByName(assemblyImage, classNamespace, className);
 	}
 
-	MonoObject* ScriptClass::Instantiate()
+    bool ScriptClass::operator==(const ScriptClass& other)
+    {
+		return String::FastCompare(m_ClassName, other.m_ClassName)
+			&& String::FastCompare(m_ClassNamespace, other.m_ClassNamespace)
+			&& m_MonoClass == other.m_MonoClass;
+    }
+
+    MonoObject* ScriptClass::Instantiate()
 	{
-		return ScriptUtils::InstantiateClass(m_MonoClass);
+		return ScriptUtils::InstantiateManagedClass(m_MonoClass);
 	}
 
-	MonoMethod* ScriptClass::GetMethod(const std::string& name, int parameterCount)
+	MonoMethod* ScriptClass::GetMethod(const std::string& name, uint32_t parameterCount)
 	{
 		return ScriptUtils::GetManagedMethodFromName(m_MonoClass, name.c_str(), parameterCount);
 	}

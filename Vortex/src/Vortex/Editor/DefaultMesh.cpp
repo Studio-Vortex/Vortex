@@ -10,7 +10,7 @@ namespace Vortex {
 
 	void DefaultMesh::Init()
 	{
-		std::string sourcePaths[] =
+		static const std::string sourcePaths[] =
 		{
 			"Resources/Meshes/Default/Cube.fbx",
 			"Resources/Meshes/Default/Sphere.fbx",
@@ -24,6 +24,7 @@ namespace Vortex {
 		SharedReference<EditorAssetManager> editorAssetManager = Project::GetEditorAssetManager();
 
 		bool firstIteration = true;
+		uint32_t i = 0;
 
 		for (const auto& sourcePath : sourcePaths)
 		{
@@ -36,6 +37,7 @@ namespace Vortex {
 
 			SharedReference<StaticMesh> staticMesh = StaticMesh::Create(sourcePath, TransformComponent(), importOptions);
 			
+			// Nasty hack to set the default material handle
 			if (firstIteration) {
 				AssetHandle defaultMaterialHandle = staticMesh->m_MaterialHandles[0];
 				Material::SetDefaultMaterialHandle(defaultMaterialHandle);
@@ -44,6 +46,9 @@ namespace Vortex {
 
 			// Should we generate a handle here?
 			staticMesh->Handle = AssetHandle();
+
+			VX_CORE_ASSERT(!s_StaticMeshTypes.contains(staticMesh->Handle), "default static mesh was already created with assest handle!");
+			s_StaticMeshTypes[staticMesh->Handle] = (StaticMeshType)i++;
 
 			editorAssetManager->AddMemoryOnlyAsset(staticMesh);
 			AssetMetadata& metadata = editorAssetManager->GetMutableMetadata(staticMesh->Handle);
@@ -63,5 +68,13 @@ namespace Vortex {
 
 		return false;
 	}
+
+    DefaultMesh::StaticMeshType DefaultMesh::GetStaticMeshType(AssetHandle assetHandle)
+    {
+		VX_CORE_ASSERT(IsDefaultStaticMesh(assetHandle), "expected default static mesh!");
+		VX_CORE_ASSERT(s_StaticMeshTypes.contains(assetHandle), "invalid asset handle!");
+
+		return s_StaticMeshTypes[assetHandle];
+    }
 
 }

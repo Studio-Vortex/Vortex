@@ -1,19 +1,23 @@
 #pragma once
 
 #include "Vortex/Core/UUID.h"
+
 #include "Vortex/Asset/Asset.h"
 
 #include "Vortex/Scene/SceneCamera.h"
 
 #include "Vortex/Renderer/Material.h"
+#include "Vortex/Renderer/Color.h"
 
-#include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsTypes.h"
+
+#include <vector>
 
 namespace Vortex {
 
-#pragma region Core Components
-
-	class Prefab;
+	class Animator;
+	class Animation;
+	class ScriptableActor;
 
 	struct VORTEX_API IDComponent
 	{
@@ -27,7 +31,7 @@ namespace Vortex {
 
 	struct VORTEX_API TagComponent
 	{
-		inline static std::vector<std::string> Markers = { "Untagged", "Start", "Finish", "Player", "MainCamera" };
+		VX_FORCE_INLINE static std::vector<std::string> Markers = { "Untagged", "Start", "Finish", "Player", "MainCamera" };
 
 		std::string Tag = "";
 		std::string Marker = Markers[0];
@@ -38,24 +42,24 @@ namespace Vortex {
 		TagComponent(const std::string& tag)
 			: Tag(tag) { }
 
-		inline static void AddMarker(const std::string& marker)
+		VX_FORCE_INLINE static void AddMarker(const std::string& marker)
 		{
 			Markers.push_back(marker);
 			s_AddedMarkers.push_back(marker);
 		}
 
-		inline static void ResetAddedMarkers()
+		VX_FORCE_INLINE static void ResetAddedMarkers()
 		{
 			s_AddedMarkers.clear();
 		}
 
-		inline static const auto& GetAddedMarkers()
+		VX_FORCE_INLINE static const auto& GetAddedMarkers()
 		{
 			return s_AddedMarkers;
 		}
 
 	private:
-		inline static std::vector<std::string> s_AddedMarkers;
+		VX_FORCE_INLINE static std::vector<std::string> s_AddedMarkers;
 	};
 
 	struct VORTEX_API HierarchyComponent
@@ -84,12 +88,14 @@ namespace Vortex {
 		TransformComponent(const Math::vec3& translation, const Math::vec3& rotation, const Math::vec3& scale)
 			: Translation(translation), Rotation(rotation), Scale(scale) { }
 
-		inline Math::mat4 GetTransform() const
+		VX_FORCE_INLINE Math::mat4 GetTransform() const
 		{
-			return Math::Translate(Translation) * Math::ToMat4(Rotation) * Math::Scale(Scale);
+			return Math::Translate(Translation)
+				* Math::ToMat4(Rotation)
+				* Math::Scale(Scale);
 		}
 
-		inline void SetTransform(const Math::mat4& transform)
+		VX_FORCE_INLINE void SetTransform(const Math::mat4& transform)
 		{
 			Math::vec3 skew;
 			Math::vec4 perspective;
@@ -97,56 +103,81 @@ namespace Vortex {
 			RotationEuler = Math::EulerAngles(Rotation);
 		}
 
-		inline Math::quaternion GetRotation() const
-		{
-			return Rotation;
-		}
+		VX_FORCE_INLINE Math::quaternion GetRotation() const { return Rotation; }
 
-		inline void SetRotation(const Math::quaternion& rotation)
+		VX_FORCE_INLINE void SetRotation(const Math::quaternion& rotation)
 		{
+			const Math::vec3 originalEuler = RotationEuler;
 			Rotation = rotation;
 			RotationEuler = Math::EulerAngles(Rotation);
+
+			// Attempt to avoid 180deg flips in the Euler angles when we SetRotation(quat)
+			if (
+				(fabs(RotationEuler.x - originalEuler.x) == Math::PI) &&
+				(fabs(RotationEuler.z - originalEuler.z) == Math::PI)
+				)
+			{
+				RotationEuler.x = originalEuler.x;
+				RotationEuler.y = Math::PI - RotationEuler.y;
+				RotationEuler.z = originalEuler.z;
+			}
 		}
 
-		inline Math::vec3 GetRotationEuler() const
-		{
-			return RotationEuler;
-		}
+		VX_FORCE_INLINE Math::vec3 GetRotationEuler() const { return RotationEuler; }
 
-		inline void SetRotationEuler(const Math::vec3& euler)
+		VX_FORCE_INLINE void SetRotationEuler(const Math::vec3& euler)
 		{
 			RotationEuler = euler;
 			Rotation = Math::quaternion(RotationEuler);
 		}
 
+		VX_FORCE_INLINE Math::vec3 CalculateForward() const { return CalculateDirection({ 0.0f, 0.0f, -1.0f }); }
+		VX_FORCE_INLINE Math::vec3 CalculateBackward() const { return CalculateDirection({ 0.0f, 0.0f, 1.0f }); }
+		VX_FORCE_INLINE Math::vec3 CalculateUp() const { return CalculateDirection({ 0.0f, 1.0f, 0.0f }); }
+		VX_FORCE_INLINE Math::vec3 CalculateDown() const { return CalculateDirection({ 0.0f, -1.0f, 0.0f }); }
+		VX_FORCE_INLINE Math::vec3 CalculateRight() const { return CalculateDirection({ 1.0f, 0.0f, 0.0f }); }
+		VX_FORCE_INLINE Math::vec3 CalculateLeft() const { return CalculateDirection({ -1.0f, 0.0f, 0.0f }); }
+
 	private:
-		Math::vec3 RotationEuler = Math::vec3(0.0f);
+		VX_FORCE_INLINE Math::vec3 CalculateDirection(const Math::vec3& direction) const
+		{
+			return Math::Rotate(Rotation, direction);
+		}
+
+	private:
+		Math::vec3 RotationEuler = Math::vec3(0.0f, 0.0f, 0.0f);
 		Math::quaternion Rotation = Math::quaternion(1.0f, 0.0f, 0.0f, 0.0f);
 	};
 
 	struct VORTEX_API PrefabComponent
 	{
-		AssetHandle PrefabAsset = 0;
-		UUID PrefabUUID = 0;
-		UUID EntityUUID = 0;
+		AssetHandle Prefab = 0;
+		UUID ActorUUID = 0;
 
 		PrefabComponent() = default;
 		PrefabComponent(const PrefabComponent&) = default;
 	};
 
-#pragma endregion
-
-#pragma region Rendering Components
-
-	class Animator;
-	class Animation;
-
 	struct VORTEX_API CameraComponent
 	{
 		SceneCamera Camera;
 		Math::vec3 ClearColor = Math::vec3((38.0f / 255.0f), (44.0f / 255.0f), (60.0f / 255.0f)); // Dark blue
+		
 		bool Primary = true;
 		bool FixedAspectRatio = false;
+
+		struct PostProcessInfo
+		{
+			struct BloomInfo
+			{
+				float Threshold = 0.2126f;
+				float Knee = 0.7152f;
+				float Intensity = 0.0722f;
+				bool Enabled = false;
+			} Bloom;
+
+			bool Enabled = false;
+		} PostProcessing;
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
@@ -204,6 +235,7 @@ namespace Vortex {
 		AssetHandle Mesh = 0;
 		SharedReference<MaterialTable> Materials = SharedReference<MaterialTable>::Create();
 		bool Visible = true;
+		bool CastShadows = true;
 
 		MeshRendererComponent() = default;
 		MeshRendererComponent(const MeshRendererComponent&) = default;
@@ -217,6 +249,7 @@ namespace Vortex {
 		MeshType Type = MeshType::Cube;
 		SharedReference<MaterialTable> Materials = SharedReference<MaterialTable>::Create();
 		bool Visible = true;
+		bool CastShadows = true;
 
 		StaticMeshRendererComponent() = default;
 		StaticMeshRendererComponent(const StaticMeshRendererComponent&) = default;
@@ -249,29 +282,10 @@ namespace Vortex {
 	struct VORTEX_API ParticleEmitterComponent
 	{
 		AssetHandle EmitterHandle = 0;
+		bool IsActive = false;
 
 		ParticleEmitterComponent() = default;
 		ParticleEmitterComponent(const ParticleEmitterComponent&) = default;
-	};
-
-	struct VORTEX_API TextMeshComponent
-	{
-		AssetHandle FontAsset = 0;
-		std::string TextString = "";
-		size_t TextHash = 0;
-		bool Visible = true;
-
-		// Font
-		Math::vec4 Color = Math::vec4(1.0f);
-		Math::vec4 BgColor = Math::vec4(0.0f);
-		float LineSpacing = 0.0f;
-		float Kerning = 0.0f;
-
-		// Layout
-		float MaxWidth = 10.0f;
-
-		TextMeshComponent() = default;
-		TextMeshComponent(const TextMeshComponent&) = default;
 	};
 
 	struct VORTEX_API AnimatorComponent
@@ -290,13 +304,70 @@ namespace Vortex {
 		AnimationComponent(const AnimationComponent&) = default;
 	};
 
-#pragma endregion
+	struct VORTEX_API TextMeshComponent
+	{
+		AssetHandle FontAsset = 0;
+		std::string TextString = "";
+		size_t TextHash = 0;
+		bool Visible = true;
 
-#pragma region Audio Components
+		// Font
+		Math::vec4 Color = ColorToVec4(Color::White);
+		Math::vec4 BackgroundColor = Math::vec4(0.0f); // TODO this needs some work
+		float LineSpacing = 0.0f;
+		float Kerning = 0.0f;
+
+		// Layout
+		float MaxWidth = 10.0f;
+
+		struct DropShadowInfo
+		{
+			Math::vec4 Color = ColorToVec4(Color::Black);
+			Math::vec2 ShadowDistance = Math::vec2(0.05f, -0.05f);
+			float ShadowScale = 1.0f;
+
+			bool Enabled = false;
+		} DropShadow;
+
+		TextMeshComponent() = default;
+		TextMeshComponent(const TextMeshComponent&) = default;
+	};
+
+	struct VORTEX_API ButtonComponent
+	{
+		UUID UI_ID = 0; // TODO are we gonna use this?
+		bool Visible = true;
+
+		Math::vec4 BackgroundColor = Math::vec4(0.2f, 0.2f, 0.2f, 1.0f);
+		Math::vec4 OnClickedColor = Math::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+
+		struct FontInfo
+		{
+			AssetHandle FontAsset = 0;
+			std::string TextString = "";
+			size_t TextHash = 0;
+
+			Math::vec4 Color = ColorToVec4(Color::White);
+			Math::vec4 BackgroundColor = Math::vec4(0.0f);
+			Math::vec2 Offset = Math::vec2(0.0f);
+			Math::vec2 Scale = Math::vec2(0.25f);
+
+			float LineSpacing = 0.0f;
+			float Kerning = 0.0f;
+
+			// Layout
+			float MaxWidth = 10.0f;
+		} Font;
+
+		ButtonComponent() = default;
+		ButtonComponent(const ButtonComponent&) = default;
+	};
 
 	struct VORTEX_API AudioSourceComponent
 	{
 		AssetHandle AudioHandle = 0;
+		bool PlayOnStart = false;
+		bool PlayOneShot = false;
 
 		AudioSourceComponent() = default;
 		AudioSourceComponent(const AudioSourceComponent&) = default;
@@ -309,10 +380,6 @@ namespace Vortex {
 		AudioListenerComponent() = default;
 		AudioListenerComponent(const AudioListenerComponent&) = default;
 	};
-
-#pragma endregion
-
-#pragma region Physics Components
 
 	enum class RigidBodyType { None = -1, Static, Dynamic };
 
@@ -361,7 +428,7 @@ namespace Vortex {
 
 	struct VORTEX_API FixedJointComponent
 	{
-		UUID ConnectedEntity;
+		UUID ConnectedActor;
 
 		bool IsBreakable = true;
 		float BreakForce = 100.0f;
@@ -487,10 +554,6 @@ namespace Vortex {
 		CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
 	};
 
-#pragma endregion
-
-#pragma region AI Components
-
 	struct VORTEX_API NavMeshAgentComponent
 	{
 		uint64_t Unknown = 0;
@@ -499,15 +562,11 @@ namespace Vortex {
 		NavMeshAgentComponent(const NavMeshAgentComponent&) = default;
 	};
 
-#pragma endregion
-
-#pragma region Script Components
-
-	class ScriptableEntity;
-
 	struct VORTEX_API ScriptComponent
 	{
 		std::string ClassName;
+		bool Enabled = true;
+		bool Instantiated = false;
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent&) = default;
@@ -515,20 +574,18 @@ namespace Vortex {
 
 	struct VORTEX_API NativeScriptComponent
 	{
-		ScriptableEntity* Instance = nullptr;
+		ScriptableActor* Instance = nullptr;
 
-		ScriptableEntity* (*InstantiateScript)() = nullptr;
+		ScriptableActor* (*InstantiateScript)() = nullptr;
 		void (*DestroyInstanceScript)(NativeScriptComponent*) = nullptr;
 
 		template <typename T>
 		void Bind()
 		{
-			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
+			InstantiateScript = []() { return static_cast<ScriptableActor*>(new T()); };
 			DestroyInstanceScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 		}
 	};
-
-#pragma endregion
 
 	template<typename... Component>
 	struct ComponentGroup { };
@@ -542,7 +599,10 @@ namespace Vortex {
 		// Rendering
 		CameraComponent, SkyboxComponent, LightSourceComponent, MeshRendererComponent, StaticMeshRendererComponent,
 		SpriteRendererComponent, CircleRendererComponent, ParticleEmitterComponent,
-		TextMeshComponent, AnimatorComponent, AnimationComponent,
+		AnimatorComponent, AnimationComponent,
+
+		// UI
+		TextMeshComponent, ButtonComponent,
 
 		// Audio
 		AudioSourceComponent, AudioListenerComponent,

@@ -32,14 +32,14 @@
 			set => InternalCalls.Physics2D_SetWorldVelocityIterations(value);
 		}
 
-		public static Entity Raycast(Vector2 start, Vector2 end, out RaycastHit2D hit, bool drawDebugLine = false)
+		public static Actor Raycast(Vector2 start, Vector2 end, out RaycastHit2D hit, bool drawDebugLine = false)
 		{
 			ulong entityID = InternalCalls.Physics2D_Raycast(ref start, ref end, out hit, drawDebugLine);
 
 			if (entityID == 0)
 				return null;
 
-			return new Entity(entityID);
+			return new Actor(entityID);
 		}
 	}
 

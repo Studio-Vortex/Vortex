@@ -2,33 +2,27 @@
 
 #include "Vortex/Core/Base.h"
 
-#include "Vortex/Core/Math/Math.h"
+#include "Vortex/Math/Math.h"
 
 #include "Vortex/Renderer/Color.h"
-#include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsTypes.h"
+
+#include "Vortex/Editor/EditorCamera.h"
 
 #include "Vortex/Utils/FileSystem.h"
 
 #include <string>
-#include <map>
 
 namespace Vortex {
-
-	enum class VORTEX_API ProjectType : int32_t
-	{
-		e2D, e3D
-	};
-
-	using VORTEX_API BuildIndexMap = std::map<uint32_t, std::string>;
 
 	struct VORTEX_API ProjectProperties
 	{
 		struct VORTEX_API GeneralProperties
 		{
 			std::string Name = "Untitled";
-			std::filesystem::path AssetDirectory = "";
-			std::filesystem::path AssetRegistryPath = "AssetRegistry.vxr";
-			std::filesystem::path StartScene = "";
+			Fs::Path AssetDirectory = "";
+			Fs::Path AssetRegistryPath = "AssetRegistry.vxr";
+			Fs::Path StartScene = "";
 		} General;
 
 		struct VORTEX_API BuildProperties
@@ -41,14 +35,20 @@ namespace Vortex {
 				bool Decorated = true;
 				bool Resizeable = true;
 			} Window;
-
-			BuildIndexMap BuildIndices;
 		} BuildProps;
 
 		struct VORTEX_API EditorProperties
 		{
 			uint32_t FrameStepCount = 1;
-			float EditorCameraFOV = 45.0f;
+
+			struct EditorCameraProperties
+			{
+				float FOVdegrees = 45.0f;
+				float Speed = EditorCamera::DEFAULT_SPEED;
+				Math::vec3 Translation = { -5, 5, 5 };
+				Camera::ProjectionType ProjectionType = Camera::ProjectionType::Perspective;
+			} EditorCameraProps;
+
 			bool DrawEditorGrid = true;
 			bool DrawEditorAxes = true;
 			bool MaximizeOnPlay = false;
@@ -77,8 +77,12 @@ namespace Vortex {
 			float ShadowMapResolution = 1024.0f;
 			float Exposure = 1.0f;
 			float Gamma = 2.2f;
+			float MaxReflectionLOD = 4.0f;
 			Math::vec3 BloomThreshold = Math::vec3(0.2126f, 0.7152f, 0.0722f);
 			uint32_t BloomSampleSize = 5;
+			bool FogEnabled = true;
+			float FogDensity = 0.01f;
+			float FogGradient = 3.0f;
 			uint32_t RenderFlags = 0;
 			bool UseVSync = true;
 			bool DisplaySceneIconsInEditor = true;
@@ -106,7 +110,7 @@ namespace Vortex {
 
 		struct VORTEX_API ScriptingProperties
 		{
-			std::filesystem::path ScriptBinaryPath = "";
+			Fs::Path ScriptBinaryPath = "";
 			uint32_t DebugListenerPort = 2550;
 			bool EnableMonoDebugging = false;
 			bool ReloadAssemblyOnPlay = false;

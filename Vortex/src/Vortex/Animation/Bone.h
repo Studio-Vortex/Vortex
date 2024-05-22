@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vortex/Core/Math/Math.h"
+#include "Vortex/Math/Math.h"
 
 struct aiNodeAnim;
 

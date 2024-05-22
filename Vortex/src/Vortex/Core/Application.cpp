@@ -1,8 +1,7 @@
 #include "vxpch.h"
 #include "Application.h"
 
-#include "Vortex/Core/Input/Input.h"
-#include "Vortex/Core/Thread/ThreadPool.h"
+#include "Vortex/Input/Input.h"
 
 #include "Vortex/Events/KeyEvent.h"
 
@@ -17,6 +16,8 @@
 
 #include "Vortex/Network/Networking.h"
 
+#include "Vortex/UI/UISystem.h"
+
 #include "Vortex/System/SystemManager.h"
 
 #include "Vortex/Utils/FileSystem.h"
@@ -27,8 +28,6 @@ extern bool g_ApplicationRunning;
 
 namespace Vortex {
 
-	Application* Application::s_Instance = nullptr;
-
 	Application::Application(const ApplicationProperties& props)
 		: m_Properties(props)
 	{
@@ -36,32 +35,6 @@ namespace Vortex {
 
 		VX_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
-
-		SetWorkingDirectory();
-		CreateWindowV();
-		InitializeSubModules();
-
-		m_Running = true;
-	}
-
-	Application::~Application()
-	{
-		VX_PROFILE_FUNCTION();
-
-		// Note:
-		// We have to explicitly destroy the layer stack before
-		// the engine's submodules are shutdown. This is mainly because
-		// the Audio system needs to outlive the lifetime of the layer stack.
-		// It is also just a good idea to destroy all the layers before submodules
-		// get shutdown because something in the layers code may rely on a submodule
-		m_Layers.~LayerStack();
-
-		ShutdownSubModules();
-	}
-
-	void Application::SetWorkingDirectory()
-	{
-		VX_PROFILE_FUNCTION();
 
 		if (!m_Properties.WorkingDirectory.empty())
 		{
@@ -71,11 +44,6 @@ namespace Vortex {
 		{
 			m_Properties.WorkingDirectory = FileSystem::GetWorkingDirectory().string();
 		}
-	}
-
-	void Application::CreateWindowV()
-	{
-		VX_PROFILE_FUNCTION();
 
 		WindowProperties windowProps;
 		windowProps.Size.x = m_Properties.WindowWidth;
@@ -97,15 +65,10 @@ namespace Vortex {
 		}
 
 		m_Window->SetEventCallback(VX_BIND_CALLBACK(Application::OnEvent));
-	}
 
-	void Application::InitializeSubModules()
-	{
-		VX_PROFILE_FUNCTION();
-
-		// ThreadPool::Init();
 		Networking::Init();
 		Renderer::Init();
+		SystemManager::RegisterSystem<UISystem>();
 		SystemManager::RegisterAssetSystem<ParticleSystem>();
 		Physics::Init();
 		SystemManager::RegisterAssetSystem<AudioSystem>();
@@ -118,20 +81,30 @@ namespace Vortex {
 			m_GuiLayer = new GuiLayer();
 			PushOverlay(m_GuiLayer);
 		}
+
+		m_Running = true;
 	}
 
-	void Application::ShutdownSubModules()
+	Application::~Application()
 	{
 		VX_PROFILE_FUNCTION();
 
+		// Note:
+		// We have to explicitly destroy the layer stack before
+		// the engine's submodules are shutdown. This is mainly because
+		// the Audio system needs to outlive the lifetime of the layer stack.
+		// It is also just a good idea to destroy all the layers before submodules
+		// get shutdown because something in the layers code may rely on a submodule
+		m_Layers.~LayerStack();
+
 		Input::Shutdown();
+		SystemManager::UnRegisterSystem<UISystem>();
 		SystemManager::UnRegisterAssetSystem<AudioSystem>();
 		Physics::Shutdown();
 		Font::Shutdown();
 		SystemManager::UnRegisterAssetSystem<ParticleSystem>();
 		Renderer::Shutdown();
 		Networking::Shutdown();
-		// ThreadPool::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -175,13 +148,6 @@ namespace Vortex {
 		}
 	}
 
-	void Application::SubmitToMainThreadQueue(const std::function<void()>& func)
-	{
-		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
-
-		m_MainThreadQueue.emplace_back(func);
-	}
-
 	void Application::AddModule(const SubModule& submodule)
 	{
 		m_ModuleLibrary.Add(submodule);
@@ -198,32 +164,28 @@ namespace Vortex {
 		return m_ModuleLibrary;
 	}
 
-	void Application::ExecuteMainThreadQueue()
-	{
-		std::scoped_lock<std::mutex> lock(m_MainThreadQueueMutex);
-
-		for (const auto& func : m_MainThreadQueue)
-		{
-			func();
-		}
-
-		m_MainThreadQueue.clear();
-	}
-
-	void Application::Run()
+	i32 Application::Run()
 	{
 		VX_PROFILE_FUNCTION();
+
+		i32 exitCode = 0;
 
 		while (m_Running)
 		{
 			VX_PROFILE_SCOPE("Application Loop");
 
-			float currentTime = Time::GetTime();
-			TimeStep deltaTime = currentTime - m_LastFrameTimeStamp;
-			Time::SetDeltaTime(deltaTime);
+			m_FrameTime.Clear();
+
+			const float currentTime = Time::GetTime();
+			m_FrameTime.DeltaTime = currentTime - m_LastFrameTimeStamp;
+			Time::SetDeltaTime(m_FrameTime.DeltaTime);
 			m_LastFrameTimeStamp = currentTime;
 
-			ExecuteMainThreadQueue();
+			if (!m_MainThreadPreUpdateFunctionQueue.empty())
+			{
+				m_MainThreadPreUpdateFunctionQueue.execute();
+				m_MainThreadPreUpdateFunctionQueue.clear();
+			}
 
 			if (!m_ApplicationMinimized)
 			{
@@ -231,7 +193,7 @@ namespace Vortex {
 
 				for (Layer* layer : m_Layers)
 				{
-					layer->OnUpdate(deltaTime);
+					layer->OnUpdate(m_FrameTime.DeltaTime);
 				}
 			}
 
@@ -254,7 +216,15 @@ namespace Vortex {
 			Input::ResetChangesForNextFrame();
 
 			m_Window->OnUpdate();
+
+			if (!m_MainThreadPostUpdateFunctionQueue.empty())
+			{
+				m_MainThreadPostUpdateFunctionQueue.execute();
+				m_MainThreadPostUpdateFunctionQueue.clear();
+			}
 		}
+
+		return exitCode;
 	}
 
 	bool Application::OnWindowCloseEvent(WindowCloseEvent& e)
@@ -268,13 +238,14 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (e.GetWidth() == 0 || e.GetHeight() == 0)
+		const bool zeroWidth = e.GetWidth() == 0;
+		const bool zeroHeight = e.GetHeight() == 0;
+		
+		m_ApplicationMinimized = zeroWidth || zeroHeight;
+		if (m_ApplicationMinimized)
 		{
-			m_ApplicationMinimized = true;
 			return false;
 		}
-
-		m_ApplicationMinimized = false;
 
 		Viewport viewport;
 		viewport.TopLeftXPos = 0;

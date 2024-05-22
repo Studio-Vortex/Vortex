@@ -4,7 +4,7 @@
 
 namespace Vortex {
 
-	class RuntimeAssetManager : public IAssetManager
+	class VORTEX_API RuntimeAssetManager : public IAssetManager
 	{
 	public:
 		RuntimeAssetManager();

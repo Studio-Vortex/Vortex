@@ -1,12 +1,14 @@
 #include "vxpch.h"
 #include "SceneRenderer.h"
 
+#include "Vortex/Core/Thread.h"
+
 #include "Vortex/Asset/AssetManager.h"
 
 #include "Vortex/Project/Project.h"
 
 #include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 #include "Vortex/Scene/Components.h"
 
 #include "Vortex/Animation/Animation.h"
@@ -37,84 +39,61 @@ namespace Vortex {
 		OnRenderScene3D(renderPacket);
 	}
 
-	void SceneRenderer::BeginSceneRenderer2D(const SceneRenderPacket& renderPacket)
-	{
-		if (renderPacket.EditorScene)
-		{
-			Renderer2D::BeginScene((EditorCamera*)renderPacket.MainCamera);
-		}
-		else
-		{
-			Renderer2D::BeginScene((SceneCamera&)*renderPacket.MainCamera, renderPacket.MainCameraViewMatrix);
-		}
-	}
-
-	void SceneRenderer::EndSceneRenderer2D()
-	{
-		Renderer2D::EndScene();
-	}
-
-	void SceneRenderer::BeginSceneRenderer(const SceneRenderPacket& renderPacket)
-	{
-		if (renderPacket.EditorScene)
-		{
-			Renderer::BeginScene((EditorCamera*)renderPacket.MainCamera, renderPacket.TargetFramebuffer);
-		}
-		else
-		{
-			Renderer::BeginScene((SceneCamera&)*renderPacket.MainCamera, renderPacket.MainCameraViewMatrix, renderPacket.MainCameraWorldSpaceTranslation, renderPacket.TargetFramebuffer);
-		}
-	}
-
-	void SceneRenderer::EndSceneRenderer()
-	{
-		Renderer::EndScene();
-	}
-
 	void SceneRenderer::OnRenderScene2D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
-		Camera activeCamera = *renderPacket.MainCamera;
-		Math::mat4 cameraView = renderPacket.MainCameraViewMatrix;
-
-		SharedReference<Project> activeProject = Project::GetActive();
-		const ProjectProperties& projectProps = activeProject->GetProperties();
-
-		BeginSceneRenderer2D(renderPacket);
+		BeginScene2D(renderPacket);
 
 		LightPass2D(renderPacket);
 
-		SpritePass(renderPacket);
+		SpritePass2D(renderPacket);
 
-		ParticlePass(renderPacket);
+		ParticlePass2D(renderPacket);
 
-		TextPass(renderPacket);
+		TextPass2D(renderPacket);
 
-		// Scene Icons
-		if (renderPacket.EditorScene && projectProps.RendererProps.DisplaySceneIconsInEditor)
+		if (renderPacket.IsEditorScene)
 		{
-			SceneIconPass(renderPacket);
+			SharedReference<Project> project = Project::GetActive();
+			const ProjectProperties& properties = project->GetProperties();
+
+			if (properties.RendererProps.DisplaySceneIconsInEditor)
+			{
+				SceneGizmosPass2D(renderPacket);
+			}
+		}
+		else
+		{
+			DebugRenderPass2D(renderPacket);
 		}
 
-		EndSceneRenderer2D();
+		EndScene2D();
 	}
 
 	void SceneRenderer::OnRenderScene3D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
-		Math::mat4* view = (Math::mat4*)&renderPacket.MainCameraViewMatrix;
-		Math::mat4* projection = (Math::mat4*)&renderPacket.MainCameraProjectionMatrix;
+		std::map<float, Actor> sortedGeometry;
+
+		Thread sortThread([&]() {
+			SortMeshGeometry(renderPacket, sortedGeometry);
+		});
+
+		const Math::mat4* view = (const Math::mat4*)&renderPacket.PrimaryCameraViewMatrix;
+		const Math::mat4* projection = (const Math::mat4*)&renderPacket.PrimaryCameraProjectionMatrix;
 
 		SkyboxComponent skyboxComponent;
 		SharedReference<Skybox> environment = nullptr;
 
 		FindCurrentEnvironment(renderPacket, skyboxComponent, environment);
 
-		BeginSceneRenderer(renderPacket);
+		BeginScene(renderPacket);
 
-		const bool hasEnvironment = s_EnvironmentHandle != 0 && view && projection && environment;
+		const bool foundEnvironment = environment != nullptr;
+		const bool hasSceneCamera = (view != nullptr && projection != nullptr);
+		const bool hasEnvironment = hasSceneCamera && foundEnvironment;
 
 		if (hasEnvironment)
 		{
@@ -125,13 +104,39 @@ namespace Vortex {
 			ClearEnvironment();
 		}
 
-		LightPass3D(renderPacket);
+		LightPass(renderPacket);
 
-		const std::map<float, Entity>& sortedEntities = SortMeshGeometry(renderPacket);
+		EmissiveMeshPass(renderPacket);
 
-		GeometryPass(renderPacket, sortedEntities);
+		if (sortThread.Joinable()) {
+			sortThread.Join();
+		}
 
-		EndSceneRenderer();
+		GeometryPass(renderPacket, sortedGeometry);
+
+		EndScene();
+	}
+
+	void SceneRenderer::BeginScene2D(const SceneRenderPacket& renderPacket)
+	{
+		if (renderPacket.IsEditorScene)
+		{
+			EditorCamera* camera = (EditorCamera*)renderPacket.PrimaryCamera;
+
+			Renderer2D::BeginScene(camera);
+		}
+		else
+		{
+			const SceneCamera& camera = (const SceneCamera&)*renderPacket.PrimaryCamera;
+			const Math::mat4& view = renderPacket.PrimaryCameraViewMatrix;
+
+			Renderer2D::BeginScene(camera, view);
+		}
+	}
+
+	void SceneRenderer::EndScene2D()
+	{
+		Renderer2D::EndScene();
 	}
 
 	void SceneRenderer::LightPass2D(const SceneRenderPacket& renderPacket)
@@ -140,21 +145,21 @@ namespace Vortex {
 
 		Scene* scene = renderPacket.Scene;
 
-		auto view = scene->GetAllEntitiesWith<TransformComponent, LightSource2DComponent>();
+		auto view = scene->GetAllActorsWith<TransformComponent, LightSource2DComponent>();
 
 		for (const auto e : view)
 		{
-			Entity entity{ e, scene };
+			Actor actor{ e, scene };
 			const auto [transformComponent, lightSource2DComponent] = view.get<TransformComponent, LightSource2DComponent>(e);
 
-			if (!entity.IsActive())
+			if (!actor.IsActive())
 				continue;
 
 			Renderer2D::RenderLightSource(transformComponent, lightSource2DComponent);
 		}
 	}
 
-	void SceneRenderer::SpritePass(const SceneRenderPacket& renderPacket)
+	void SceneRenderer::SpritePass2D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -162,14 +167,14 @@ namespace Vortex {
 
 		// Sprite Pass 2D
 		{
-			auto view = scene->GetAllEntitiesWith<TransformComponent, SpriteRendererComponent>();
+			auto view = scene->GetAllActorsWith<TransformComponent, SpriteRendererComponent>();
 
 			for (const auto e : view)
 			{
-				Entity entity{ e, scene };
+				Actor actor{ e, scene };
 				const auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteRendererComponent>(e);
 
-				if (!entity.IsActive())
+				if (!actor.IsActive())
 					continue;
 
 				if (!spriteRendererComponent.Visible)
@@ -182,7 +187,7 @@ namespace Vortex {
 					texture = AssetManager::GetAsset<Texture2D>(textureHandle);
 
 				Renderer2D::DrawSprite(
-					scene->GetWorldSpaceTransformMatrix(entity),
+					scene->GetWorldSpaceTransformMatrix(actor),
 					spriteRendererComponent,
 					texture,
 					(int)(entt::entity)e
@@ -192,21 +197,21 @@ namespace Vortex {
 
 		// Circle Pass 2D
 		{
-			auto group = scene->GetAllEntitiesWith<TransformComponent, CircleRendererComponent>();
+			auto view = scene->GetAllActorsWith<TransformComponent, CircleRendererComponent>();
 
-			for (const auto e : group)
+			for (const auto e : view)
 			{
-				Entity entity{ e, scene };
-				const auto [transformComponent, circleRendererComponent] = group.get<TransformComponent, CircleRendererComponent>(e);
+				Actor actor{ e, scene };
+				const auto [transformComponent, circleRendererComponent] = view.get<TransformComponent, CircleRendererComponent>(e);
 
-				if (!entity.IsActive())
+				if (!actor.IsActive())
 					continue;
 
 				if (!circleRendererComponent.Visible)
 					continue;
 
 				Renderer2D::DrawCircle(
-					scene->GetWorldSpaceTransformMatrix(entity),
+					scene->GetWorldSpaceTransformMatrix(actor),
 					circleRendererComponent.Color,
 					circleRendererComponent.Thickness,
 					circleRendererComponent.Fade,
@@ -216,22 +221,22 @@ namespace Vortex {
 		}
 	}
 
-	void SceneRenderer::ParticlePass(const SceneRenderPacket& renderPacket)
+	void SceneRenderer::ParticlePass2D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
 		Scene* scene = renderPacket.Scene;
-		Math::mat4 cameraView = renderPacket.MainCameraViewMatrix;
+		const Math::mat4& cameraView = renderPacket.PrimaryCameraViewMatrix;
 
-		auto view = scene->GetAllEntitiesWith<TransformComponent, ParticleEmitterComponent>();
+		auto view = scene->GetAllActorsWith<TransformComponent, ParticleEmitterComponent>();
 
 		for (const auto e : view)
 		{
-			Entity entity{ e, scene };
-			if (!entity.IsActive())
+			Actor actor{ e, scene };
+			if (!actor.IsActive())
 				continue;
 
-			const auto& pmc = entity.GetComponent<ParticleEmitterComponent>();
+			const ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 				continue;
 
@@ -239,7 +244,7 @@ namespace Vortex {
 			if (!particleEmitter)
 				continue;
 
-			const auto& particles = particleEmitter->GetParticles();
+			const std::vector<Particle>& particles = particleEmitter->GetParticles();
 			const bool random = particleEmitter->GetProperties().GenerateRandomColors;
 
 			// Render the particles in reverse to blend correctly
@@ -250,51 +255,65 @@ namespace Vortex {
 				if (!particle.Active)
 					continue;
 
-				const float life = particle.LifeRemaining / particle.LifeTime;
-				Math::vec2 size = Math::Lerp(particle.SizeEnd, particle.SizeBegin, life);
+				const float particleLife = particle.LifeRemaining / particle.LifeTime;
+				const Math::vec2 size = Math::Lerp(particle.SizeEnd, particle.SizeBegin, particleLife);
 				Math::vec4 color;
 
 				if (random)
+				{
 					color = particle.RandomColor;
+				}
 				else
-					color = Math::Lerp(particle.ColorEnd, particle.ColorBegin, life);
+				{
+					color = Math::Lerp(particle.ColorEnd, particle.ColorBegin, particleLife);
+				}
 
-				Renderer2D::DrawQuadBillboard(cameraView, particle.Position, size, color);
+				Renderer2D::DrawQuadBillboard(
+					cameraView,
+					particle.Position,
+					size,
+					color,
+					(int)(entt::entity)e
+				);
 			}
 		}
 	}
 
-	void SceneRenderer::TextPass(const SceneRenderPacket& renderPacket)
+	void SceneRenderer::TextPass2D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
 		Scene* scene = renderPacket.Scene;
 
-		auto view = scene->GetAllEntitiesWith<TransformComponent, TextMeshComponent>();
+		auto view = scene->GetAllActorsWith<TransformComponent, TextMeshComponent>();
 
 		RendererAPI::TriangleCullMode originalCullMode = Renderer2D::GetCullMode();
 		Renderer2D::SetCullMode(RendererAPI::TriangleCullMode::None);
 
 		for (const auto e : view)
 		{
-			Entity entity{ e, scene };
+			Actor actor{ e, scene };
 			const auto [transformComponent, textMeshComponent] = view.get<TransformComponent, TextMeshComponent>(e);
 
-			if (!entity.IsActive())
+			if (!actor.IsActive())
 				continue;
 
 			if (!textMeshComponent.Visible)
 				continue;
 
-			AssetHandle fontAssetHandle = textMeshComponent.FontAsset;
+			const AssetHandle fontHandle = textMeshComponent.FontAsset;
 			SharedReference<Font> font = nullptr;
 
-			if (AssetManager::IsHandleValid(fontAssetHandle))
-				font = AssetManager::GetAsset<Font>(fontAssetHandle);
+			if (AssetManager::IsHandleValid(fontHandle))
+			{
+				font = AssetManager::GetAsset<Font>(fontHandle);
+			}
 			else
+			{
 				font = Font::GetDefaultFont();
+			}
 
-			Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+			const Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(actor);
 
 			Renderer2D::DrawString(
 				textMeshComponent.TextString,
@@ -302,7 +321,25 @@ namespace Vortex {
 				worldSpaceTransform,
 				textMeshComponent.MaxWidth,
 				textMeshComponent.Color,
-				textMeshComponent.BgColor,
+				textMeshComponent.BackgroundColor,
+				textMeshComponent.LineSpacing,
+				textMeshComponent.Kerning,
+				(int)(entt::entity)e
+			);
+
+			if (!textMeshComponent.DropShadow.Enabled)
+				continue;
+
+			const Math::mat4 shadowOffset = Math::Translate({ textMeshComponent.DropShadow.ShadowDistance, -0.01f })
+				* Math::Scale(Math::vec3(textMeshComponent.DropShadow.ShadowScale));
+
+			Renderer2D::DrawString(
+				textMeshComponent.TextString,
+				font,
+				worldSpaceTransform * shadowOffset,
+				textMeshComponent.MaxWidth,
+				textMeshComponent.DropShadow.Color,
+				textMeshComponent.BackgroundColor,
 				textMeshComponent.LineSpacing,
 				textMeshComponent.Kerning,
 				(int)(entt::entity)e
@@ -312,55 +349,78 @@ namespace Vortex {
 		Renderer2D::SetCullMode(originalCullMode);
 	}
 
-	void SceneRenderer::SceneIconPass(const SceneRenderPacket& renderPacket)
+	void SceneRenderer::DebugRenderPass2D(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
-		VX_CORE_ASSERT(renderPacket.EditorScene, "Scene Icons can only be rendered in a Editor Scene!");
+		VX_CORE_ASSERT(!renderPacket.IsEditorScene, "DebugRenderPass2D can only be called in a non Editor Scene!");
 
 		Scene* scene = renderPacket.Scene;
-		Math::mat4 cameraView = renderPacket.MainCameraViewMatrix;
+
+		// Invoke Actor.OnDebugRender
+		auto view = scene->GetAllActorsWith<ScriptComponent>();
+		for (const auto e : view)
+		{
+			Actor actor{ e, scene };
+
+			if (!actor.IsActive())
+				continue;
+
+			actor.CallMethod(ScriptMethod::OnDebugRender);
+		}
+	}
+
+	void SceneRenderer::SceneGizmosPass2D(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
+
+		VX_CORE_ASSERT(renderPacket.IsEditorScene, "Scene Gizmos can only be rendered in a Editor Scene!");
+
+		Scene* scene = renderPacket.Scene;
+		const Math::mat4& cameraView = renderPacket.PrimaryCameraViewMatrix;
 
 		const ProjectProperties& projectProps = Project::GetActive()->GetProperties();
+		const Math::vec2 gizmoSize = Math::vec2(projectProps.GizmoProps.GizmoSize);
+		const Math::vec4 gizmoColor = ColorToVec4(Color::White);
 
-		// Camera Icons
+		// Camera Gizmos
 		{
-			auto view = scene->GetAllEntitiesWith<TransformComponent, CameraComponent>();
+			auto view = scene->GetAllActorsWith<TransformComponent, CameraComponent>();
 
 			for (const auto e : view)
 			{
-				Entity entity{ e, scene };
+				Actor actor{ e, scene };
 				const auto [transformComponent, cameraComponent] = view.get<TransformComponent, CameraComponent>(e);
 
-				if (!entity.IsActive())
+				if (!actor.IsActive())
 					continue;
 
-				const TransformComponent& transform = scene->GetWorldSpaceTransform(entity);
+				const TransformComponent& transform = scene->GetWorldSpaceTransform(actor);
 
 				Renderer2D::DrawQuadBillboard(
 					cameraView,
 					transform.Translation,
 					EditorResources::CameraIcon,
-					Math::vec2(projectProps.GizmoProps.GizmoSize),
-					ColorToVec4(Color::White),
+					gizmoSize,
+					gizmoColor,
 					(int)(entt::entity)e
 				);
 			}
 		}
 
-		// Light Icons
+		// Light Gizmos
 		{
-			auto view = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
+			auto view = scene->GetAllActorsWith<TransformComponent, LightSourceComponent>();
 
 			for (const auto e : view)
 			{
-				Entity entity{ e, scene };
+				Actor actor{ e, scene };
 				const auto [transformComponent, lightSourceComponent] = view.get<TransformComponent, LightSourceComponent>(e);
 
-				if (!entity.IsActive())
+				if (!actor.IsActive())
 					continue;
 
-				const TransformComponent& transform = scene->GetWorldSpaceTransform(entity);
+				const TransformComponent& transform = scene->GetWorldSpaceTransform(actor);
 
 				static const SharedReference<Texture2D> icons[3] =
 				{
@@ -373,95 +433,221 @@ namespace Vortex {
 					cameraView,
 					transform.Translation,
 					icons[(uint32_t)lightSourceComponent.Type],
-					Math::vec2(projectProps.GizmoProps.GizmoSize),
-					ColorToVec4(Color::White),
+					gizmoSize,
+					gizmoColor,
 					(int)(entt::entity)e
 				);
 			}
 		}
 
-		// Audio Icons
+		// Audio Gizmos
 		{
-			auto view = scene->GetAllEntitiesWith<TransformComponent, AudioSourceComponent>();
+			auto view = scene->GetAllActorsWith<TransformComponent, AudioSourceComponent>();
 
 			for (const auto e : view)
 			{
-				Entity entity{ e, scene };
+				Actor actor{ e, scene };
 				const auto [transformComponent, audioSourceComponent] = view.get<TransformComponent, AudioSourceComponent>(e);
 
-				if (!entity.IsActive())
+				if (!actor.IsActive())
 					continue;
 
-				const TransformComponent& transform = scene->GetWorldSpaceTransform(entity);
+				const TransformComponent& transform = scene->GetWorldSpaceTransform(actor);
 
 				Renderer2D::DrawQuadBillboard(
 					cameraView,
 					transform.Translation,
 					EditorResources::AudioSourceIcon,
-					Math::vec2(projectProps.GizmoProps.GizmoSize),
-					ColorToVec4(Color::White),
+					gizmoSize,
+					gizmoColor,
 					(int)(entt::entity)e
 				);
 			}
 		}
 	}
 
-	void SceneRenderer::FindCurrentEnvironment(const SceneRenderPacket& renderPacket, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
+	void SceneRenderer::BeginScene(const SceneRenderPacket& renderPacket)
 	{
-		Scene* scene = renderPacket.Scene;
+		SharedReference<Framebuffer> framebuffer = renderPacket.TargetFramebuffer;
 
-		auto skyboxView = scene->GetAllEntitiesWith<SkyboxComponent>();
+		PreparePostProcess(renderPacket);
 
-		// Only render one environment per scene
-		for (const auto e : skyboxView)
+		if (renderPacket.IsEditorScene)
 		{
-			Entity entity{ e, scene };
+			EditorCamera* camera = (EditorCamera*)renderPacket.PrimaryCamera;
 
-			if (!entity.IsActive())
-				continue;
+			Renderer::BeginScene(camera, framebuffer);
+		}
+		else
+		{
+			const SceneCamera& camera = (const SceneCamera&)*renderPacket.PrimaryCamera;
+			const Math::mat4& view = renderPacket.PrimaryCameraViewMatrix;
+			const Math::vec3& translation = renderPacket.PrimaryCameraWorldSpaceTranslation;
 
-			skyboxComponent = entity.GetComponent<SkyboxComponent>();
-			AssetHandle environmentHandle = skyboxComponent.Skybox;
-			if (!AssetManager::IsHandleValid(environmentHandle))
-				continue;
-
-			environment = AssetManager::GetAsset<Skybox>(environmentHandle);
-			if (!environment)
-				continue;
-
-			if (environmentHandle != s_EnvironmentHandle)
-			{
-				SetEnvironment(environmentHandle, skyboxComponent, environment);
-			}
-
-			return;
+			Renderer::BeginScene(camera, view, translation, framebuffer);
 		}
 	}
 
-	void SceneRenderer::LightPass3D(const SceneRenderPacket& renderPacket)
+	void SceneRenderer::EndScene()
+	{
+		Renderer::EndScene();
+	}
+
+	void SceneRenderer::PreparePostProcess(const SceneRenderPacket& renderPacket)
+	{
+		Scene* scene = renderPacket.Scene;
+		Actor primaryCamera = scene->GetPrimaryCameraActor();
+
+		if (!primaryCamera)
+		{
+			return;
+		}
+
+		const CameraComponent& cameraComponent = primaryCamera.GetComponent<CameraComponent>();
+		const CameraComponent::PostProcessInfo& postProcessInfo = cameraComponent.PostProcessing;
+
+		if (postProcessInfo.Enabled)
+		{
+			const CameraComponent::PostProcessInfo::BloomInfo& bloomInfo = postProcessInfo.Bloom;
+
+			if (bloomInfo.Enabled)
+			{
+				if (!Renderer::IsFlagSet(RenderFlag::EnableBloom))
+				{
+					Renderer::SetFlag(RenderFlag::EnableBloom);
+				}
+
+				Renderer::SetBloomThreshold(bloomInfo.Threshold);
+				Renderer::SetBloomKnee(bloomInfo.Knee);
+				Renderer::SetBloomIntensity(bloomInfo.Intensity);
+			}
+			else
+			{
+				if (Renderer::IsFlagSet(RenderFlag::EnableBloom))
+				{
+					Renderer::DisableFlag(RenderFlag::EnableBloom);
+				}
+			}
+		}
+	}
+
+	void SceneRenderer::LightPass(const SceneRenderPacket& renderPacket)
 	{
 		VX_PROFILE_FUNCTION();
 
 		Scene* scene = renderPacket.Scene;
 
-		auto lightSourceView = scene->GetAllEntitiesWith<TransformComponent, LightSourceComponent>();
+		auto lightSourceView = scene->GetAllActorsWith<TransformComponent, LightSourceComponent>();
 
 		for (const auto e : lightSourceView)
 		{
-			Entity entity{ e, scene };
-			const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
+			Actor actor{ e, scene };
+			const LightSourceComponent& lsc = actor.GetComponent<LightSourceComponent>();
 
-			if (!entity.IsActive())
+			if (!actor.IsActive())
 				continue;
 
-			if (!lightSourceComponent.Visible)
+			if (!lsc.Visible)
 				continue;
 
-			Renderer::RenderLightSource(scene->GetWorldSpaceTransform(entity), lightSourceComponent);
+			TransformComponent transform = scene->GetWorldSpaceTransform(actor);
+
+			Renderer::RenderLightSource(transform, lsc);
 		}
 	}
 
-	std::map<float, Entity> SceneRenderer::SortMeshGeometry(const SceneRenderPacket& renderPacket)
+	void SceneRenderer::EmissiveMeshPass(const SceneRenderPacket& renderPacket)
+	{
+		VX_PROFILE_FUNCTION();
+
+		Scene* scene = renderPacket.Scene;
+
+		auto meshView = scene->GetAllActorsWith<TransformComponent, MeshRendererComponent>();
+
+		for (const auto e : meshView)
+		{
+			Actor actor{ e, scene };
+			const MeshRendererComponent& mrc = actor.GetComponent<MeshRendererComponent>();
+
+			if (!actor.IsActive())
+				continue;
+
+			if (!AssetManager::IsHandleValid(mrc.Mesh))
+				continue;
+
+			SharedReference<MaterialTable> materialTable = mrc.Materials;
+			VX_CORE_ASSERT(materialTable, "invalid material table!");
+			const uint32_t materialCount = materialTable->GetMaterialCount();
+
+			const Math::vec3 translation = scene->GetWorldSpaceTransform(actor).Translation;
+
+			for (uint32_t i = 0; i < materialCount; i++)
+			{
+				AssetHandle materialHandle = materialTable->GetMaterial(i);
+				if (!AssetManager::IsHandleValid(materialHandle))
+					continue;
+
+				SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+				if (material == nullptr)
+					continue;
+
+				const float emission = material->GetEmission();
+
+				// emission should never be less than zero but this is just in case
+				if (emission <= 0.0f)
+					continue;
+
+				const Math::vec3& radiance = material->GetAlbedo();
+				const float intensity = emission;
+
+				Renderer::RenderEmissiveMaterial(translation, radiance, intensity);
+			}
+		}
+
+		auto staticMeshView = scene->GetAllActorsWith<TransformComponent, StaticMeshRendererComponent>();
+
+		for (const auto e : staticMeshView)
+		{
+			Actor actor{ e, scene };
+			const StaticMeshRendererComponent& smrc = actor.GetComponent<StaticMeshRendererComponent>();
+
+			if (!actor.IsActive())
+				continue;
+
+			if (!AssetManager::IsHandleValid(smrc.StaticMesh))
+				continue;
+
+			SharedReference<MaterialTable> materialTable = smrc.Materials;
+			VX_CORE_ASSERT(materialTable, "invalid material table!");
+			const uint32_t materialCount = materialTable->GetMaterialCount();
+
+			const Math::vec3 translation = scene->GetWorldSpaceTransform(actor).Translation;
+
+			for (uint32_t i = 0; i < materialCount; i++)
+			{
+				AssetHandle materialHandle = materialTable->GetMaterial(i);
+				if (!AssetManager::IsHandleValid(materialHandle))
+					continue;
+
+				SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+				if (material == nullptr)
+					continue;
+
+				const float emission = material->GetEmission();
+
+				// emission should never be less than zero but this is just in case
+				if (emission <= 0.0f)
+					continue;
+
+				const Math::vec3& radiance = material->GetAlbedo();
+				const float intensity = emission;
+
+				Renderer::RenderEmissiveMaterial(translation, radiance, intensity);
+			}
+		}
+	}
+
+	void SceneRenderer::SortMeshGeometry(const SceneRenderPacket& renderPacket, std::map<float, Actor>& sortedGeometry)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -469,40 +655,37 @@ namespace Vortex {
 		Scene* scene = renderPacket.Scene;
 
 		// Sort All Meshes by distance from camera
-		std::map<float, Entity> sortedEntities;
-
-		// Sort Meshes
 		{
-			auto meshRendererView = scene->GetAllEntitiesWith<TransformComponent, MeshRendererComponent>();
+			auto meshRendererView = scene->GetAllActorsWith<TransformComponent, MeshRendererComponent>();
 			uint32_t i = 0;
 
 			for (const auto e : meshRendererView)
 			{
-				Entity entity{ e, scene };
-				const auto& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+				Actor actor{ e, scene };
+				const MeshRendererComponent& mrc = actor.GetComponent<MeshRendererComponent>();
 
-				if (!entity.IsActive())
+				if (!actor.IsActive())
 					continue;
 
-				if (!meshRendererComponent.Visible)
+				if (!mrc.Visible)
 					continue;
 
-				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
+				const Math::vec3 worldSpaceTranslation = scene->GetWorldSpaceTransform(actor).Translation;
 
-				if (renderPacket.EditorScene)
+				if (renderPacket.IsEditorScene)
 				{
-					EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
-					Math::vec3 cameraPosition = editorCamera->GetPosition();
-					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+					const EditorCamera* editorCamera = (EditorCamera*)renderPacket.PrimaryCamera;
+					const Math::vec3& cameraPosition = editorCamera->GetPosition();
+					const float distance = Math::Distance(cameraPosition, worldSpaceTranslation);
 
-					SortEntityByDistance(sortedEntities, distance, entity, i);
+					SortActorByDistance(sortedGeometry, distance, actor, i);
 				}
 				else
 				{
-					Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTranslation;
-					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+					const Math::vec3& cameraPosition = renderPacket.PrimaryCameraWorldSpaceTranslation;
+					const float distance = Math::Distance(cameraPosition, worldSpaceTranslation);
 
-					SortEntityByDistance(sortedEntities, distance, entity, i);
+					SortActorByDistance(sortedGeometry, distance, actor, i);
 				}
 
 				i++;
@@ -511,36 +694,36 @@ namespace Vortex {
 
 		// Sort Static Meshes
 		{
-			auto staticMeshRendererView = scene->GetAllEntitiesWith<TransformComponent, StaticMeshRendererComponent>();
+			auto staticMeshRendererView = scene->GetAllActorsWith<TransformComponent, StaticMeshRendererComponent>();
 			uint32_t i = 0;
 
 			for (const auto e : staticMeshRendererView)
 			{
-				Entity entity{ e, scene };
-				const auto& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+				Actor actor{ e, scene };
+				const StaticMeshRendererComponent& smrc = actor.GetComponent<StaticMeshRendererComponent>();
 
-				if (!entity.IsActive())
+				if (!actor.IsActive())
 					continue;
 
-				if (!staticMeshRendererComponent.Visible)
+				if (!smrc.Visible)
 					continue;
 
-				Math::vec3 entityWorldSpaceTranslation = scene->GetWorldSpaceTransform(entity).Translation;
+				const Math::vec3 worldSpaceTranslation = scene->GetWorldSpaceTransform(actor).Translation;
 
-				if (renderPacket.EditorScene)
+				if (renderPacket.IsEditorScene)
 				{
-					EditorCamera* editorCamera = (EditorCamera*)renderPacket.MainCamera;
-					Math::vec3 cameraPosition = editorCamera->GetPosition();
-					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+					const EditorCamera* editorCamera = (EditorCamera*)renderPacket.PrimaryCamera;
+					const Math::vec3& cameraPosition = editorCamera->GetPosition();
+					const float distance = Math::Distance(cameraPosition, worldSpaceTranslation);
 
-					SortEntityByDistance(sortedEntities, distance, entity, i);
+					SortActorByDistance(sortedGeometry, distance, actor, i);
 				}
 				else
 				{
-					Math::vec3 cameraPosition = renderPacket.MainCameraWorldSpaceTranslation;
-					float distance = Math::Distance(cameraPosition, entityWorldSpaceTranslation);
+					const Math::vec3& cameraPosition = renderPacket.PrimaryCameraWorldSpaceTranslation;
+					const float distance = Math::Distance(cameraPosition, worldSpaceTranslation);
 
-					SortEntityByDistance(sortedEntities, distance, entity, i);
+					SortActorByDistance(sortedGeometry, distance, actor, i);
 				}
 
 				i++;
@@ -549,23 +732,22 @@ namespace Vortex {
 
 		RenderTime& renderTime = Renderer::GetRenderTime();
 		renderTime.PreGeometryPassSortTime += timer.ElapsedMS();
-
-		return sortedEntities;
 	}
 
-	void SceneRenderer::SortEntityByDistance(std::map<float, Entity>& sortedEntities, float distance, Entity entity, uint32_t offset)
+	void SceneRenderer::SortActorByDistance(std::map<float, Actor>& sortedActors, float distance, Actor actor, uint32_t offset)
 	{
-		if (sortedEntities.find(distance) == sortedEntities.end())
+		std::scoped_lock<std::mutex> lock(m_GeometrySortMutex);
+		if (sortedActors.find(distance) == sortedActors.end())
 		{
-			sortedEntities[distance] = entity;
+			sortedActors[distance] = actor;
 			return;
 		}
 
 		// slightly modify the distance
-		sortedEntities[distance + (0.01f * offset)] = entity;
+		sortedActors[distance + (0.01f * offset)] = actor;
 	}
 
-	void SceneRenderer::GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Entity>& sortedEntities)
+	void SceneRenderer::GeometryPass(const SceneRenderPacket& renderPacket, const std::map<float, Actor>& sortedGeometry)
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -575,19 +757,23 @@ namespace Vortex {
 		SceneLightDescription sceneLightDesc = Renderer::GetSceneLightDescription();
 		
 		// Render in reverse to blend correctly
-		for (auto it = sortedEntities.crbegin(); it != sortedEntities.crend(); it++)
+		for (auto it = sortedGeometry.crbegin(); it != sortedGeometry.crend(); it++)
 		{
-			Entity entity = it->second;
-			
-			VX_CORE_ASSERT(entity.HasComponent<MeshRendererComponent>() || entity.HasComponent<StaticMeshRendererComponent>(), "Entity doesn't have mesh component!");
+			Actor actor = it->second;
 
-			if (entity.HasComponent<MeshRendererComponent>())
+			if (!actor)
+				continue;
+			
+			const bool hasRequiredComponent = actor.HasAny<MeshRendererComponent, StaticMeshRendererComponent>();
+			VX_CORE_ASSERT(hasRequiredComponent, "Actor doesn't have mesh component!");
+
+			if (actor.HasComponent<MeshRendererComponent>())
 			{
-				RenderMesh(scene, entity, sceneLightDesc);
+				RenderMesh(scene, actor, sceneLightDesc);
 			}
-			else if (entity.HasComponent<StaticMeshRendererComponent>())
+			else if (actor.HasComponent<StaticMeshRendererComponent>())
 			{
-				RenderStaticMesh(scene, entity, sceneLightDesc);
+				RenderStaticMesh(scene, actor, sceneLightDesc);
 			}
 		}
 
@@ -595,25 +781,25 @@ namespace Vortex {
 		renderTime.GeometryPassRenderTime += timer.ElapsedMS();
 	}
 
-	void SceneRenderer::RenderMesh(Scene* scene, Entity entity, const SceneLightDescription& sceneLightDesc)
+	void SceneRenderer::RenderMesh(Scene* scene, Actor actor, const SceneLightDescription& sceneLightDesc)
 	{
 		VX_PROFILE_FUNCTION();
 
-		const MeshRendererComponent& meshRendererComponent = entity.GetComponent<MeshRendererComponent>();
+		const MeshRendererComponent& meshRendererComponent = actor.GetComponent<MeshRendererComponent>();
 
 		AssetHandle meshHandle = meshRendererComponent.Mesh;
 		if (!AssetManager::IsHandleValid(meshHandle))
 			return;
 
 		SharedReference<Mesh> mesh = AssetManager::GetAsset<Mesh>(meshHandle);
-		if (!mesh)
+		if (mesh == nullptr)
 			return;
 
-		Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
-		auto& submesh = mesh->GetSubmesh();
+		const Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(actor);
+		const auto& submesh = mesh->GetSubmesh();
 
 		SharedReference<Material> material = submesh.GetMaterial();
-		if (!material)
+		if (material == nullptr)
 			return;
 
 		SetMaterialFlags(material);
@@ -624,52 +810,53 @@ namespace Vortex {
 		shader->SetBool("u_SceneProperties.HasSkyLight", sceneLightDesc.HasSkyLight);
 		shader->SetInt("u_SceneProperties.ActivePointLights", sceneLightDesc.ActivePointLights);
 		shader->SetInt("u_SceneProperties.ActiveSpotLights", sceneLightDesc.ActiveSpotLights);
+		shader->SetInt("u_SceneProperties.ActiveEmissiveMeshes", sceneLightDesc.ActiveEmissiveMeshes);
 		shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
 
 		Renderer::BindSkyLightDepthMap();
 		Renderer::BindPointLightDepthMaps();
 		Renderer::BindSpotLightDepthMaps();
 
-		if (mesh->HasAnimations() && entity.HasComponent<AnimatorComponent>() && entity.HasComponent<AnimationComponent>())
+		const bool isAnimated = mesh->HasAnimations();
+		const bool hasRequiredComponents = actor.HasComponent<AnimatorComponent, AnimationComponent>();
+
+		shader->SetBool("u_HasAnimations", isAnimated);
+
+		if (isAnimated && hasRequiredComponents)
 		{
-			shader->SetBool("u_HasAnimations", true);
-
-			const AnimatorComponent& animatorComponent = entity.GetComponent<AnimatorComponent>();
+			const AnimatorComponent& animatorComponent = actor.GetComponent<AnimatorComponent>();
 			const std::vector<Math::mat4>& transforms = animatorComponent.Animator->GetFinalBoneMatrices();
+			const uint32_t size = transforms.size();
 
-			for (uint32_t i = 0; i < transforms.size(); i++)
+			for (uint32_t i = 0; i < size; i++)
 			{
 				shader->SetMat4("u_FinalBoneMatrices[" + std::to_string(i) + "]", transforms[i]);
 			}
 		}
-		else
-		{
-			shader->SetBool("u_HasAnimations", false);
-		}
 
 		submesh.Render();
 
-		ResetAllMaterialFlags();
+		ResetMaterialFlags();
 	}
 
-	void SceneRenderer::RenderStaticMesh(Scene* scene, Entity entity, const SceneLightDescription& sceneLightDesc)
+	void SceneRenderer::RenderStaticMesh(Scene* scene, Actor actor, const SceneLightDescription& sceneLightDesc)
 	{
 		VX_PROFILE_FUNCTION();
 
-		const StaticMeshRendererComponent& staticMeshRendererComponent = entity.GetComponent<StaticMeshRendererComponent>();
+		const StaticMeshRendererComponent& staticMeshRendererComponent = actor.GetComponent<StaticMeshRendererComponent>();
 
 		AssetHandle staticMeshHandle = staticMeshRendererComponent.StaticMesh;
 		if (!AssetManager::IsHandleValid(staticMeshHandle))
 			return;
 
 		SharedReference<StaticMesh> staticMesh = AssetManager::GetAsset<StaticMesh>(staticMeshHandle);
-		if (!staticMesh)
+		if (staticMesh == nullptr)
 			return;
 
-		Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(entity);
+		const Math::mat4 worldSpaceTransform = scene->GetWorldSpaceTransformMatrix(actor);
 		const auto& submeshes = staticMesh->GetSubmeshes();
 
-		auto& materialTable = staticMeshRendererComponent.Materials;
+		SharedReference<MaterialTable> materialTable = staticMeshRendererComponent.Materials;
 
 		// render each submesh
 		for (const auto& [submeshIndex, submesh] : submeshes)
@@ -681,7 +868,7 @@ namespace Vortex {
 				continue;
 
 			SharedReference<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-			if (!material)
+			if (material == nullptr)
 				continue;
 
 			SetMaterialFlags(material);
@@ -692,6 +879,7 @@ namespace Vortex {
 			shader->SetBool("u_SceneProperties.HasSkyLight", sceneLightDesc.HasSkyLight);
 			shader->SetInt("u_SceneProperties.ActivePointLights", sceneLightDesc.ActivePointLights);
 			shader->SetInt("u_SceneProperties.ActiveSpotLights", sceneLightDesc.ActiveSpotLights);
+			shader->SetInt("u_SceneProperties.ActiveEmissiveMeshes", sceneLightDesc.ActiveEmissiveMeshes);
 			shader->SetMat4("u_Model", worldSpaceTransform); // should be submesh world transform
 
 			Renderer::BindSkyLightDepthMap();
@@ -700,7 +888,39 @@ namespace Vortex {
 
 			submesh.Render(materialHandle);
 
-			ResetAllMaterialFlags();
+			ResetMaterialFlags();
+		}
+	}
+
+	void SceneRenderer::FindCurrentEnvironment(const SceneRenderPacket& renderPacket, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment)
+	{
+		Scene* scene = renderPacket.Scene;
+
+		auto skyboxView = scene->GetAllActorsWith<SkyboxComponent>();
+
+		// Only render one environment per scene
+		for (const auto e : skyboxView)
+		{
+			Actor actor{ e, scene };
+
+			if (!actor.IsActive())
+				continue;
+
+			skyboxComponent = actor.GetComponent<SkyboxComponent>();
+			AssetHandle environmentHandle = skyboxComponent.Skybox;
+			if (!AssetManager::IsHandleValid(environmentHandle))
+				continue;
+
+			environment = AssetManager::GetAsset<Skybox>(environmentHandle);
+			if (!environment)
+				continue;
+
+			const bool consistent = environmentHandle == s_EnvironmentHandle;
+			if (consistent)
+				continue;
+			
+			SetEnvironment(environmentHandle, skyboxComponent, environment);
+			break;
 		}
 	}
 
@@ -709,6 +929,7 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		s_EnvironmentHandle = environmentHandle;
+
 		Renderer::CreateEnvironmentMap(skyboxComponent, environment);
 		Renderer::SetEnvironment(environment);
 	}
@@ -717,8 +938,8 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		Renderer::SetEnvironment(s_EmptyEnvironment);
 		s_EnvironmentHandle = 0;
+		Renderer::SetEnvironment(s_EmptyEnvironment);
 	}
 
 	void SceneRenderer::RenderEnvironment(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent* skyboxComponent, SharedReference<Skybox>& environment)
@@ -730,6 +951,8 @@ namespace Vortex {
 
 	void SceneRenderer::SetMaterialFlags(const SharedReference<Material>& material)
 	{
+		m_LastCullMode = Renderer::GetCullMode();
+
 		if (material->HasFlag(MaterialFlag::NoDepthTest))
 		{
 			RenderCommand::DisableDepthTest();
@@ -737,11 +960,10 @@ namespace Vortex {
 		}
 	}
 
-	void SceneRenderer::ResetAllMaterialFlags()
+	void SceneRenderer::ResetMaterialFlags()
 	{
-		RendererAPI::TriangleCullMode cullMode = Renderer::GetCullMode();
+		RenderCommand::SetCullMode(m_LastCullMode);
 		RenderCommand::EnableDepthTest();
-		RenderCommand::SetCullMode(cullMode);
 	}
 
 }

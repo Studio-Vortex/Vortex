@@ -88,7 +88,6 @@ namespace Vortex {
 		std::replace(fp.begin(), fp.end(), '\\', '/');
 		return fp;
 	}
-#pragma optimize("", on)
 
 	void FileDialogue::OpenInFileExplorer(const char* directoryName)
 	{

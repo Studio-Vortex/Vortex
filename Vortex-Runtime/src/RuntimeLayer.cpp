@@ -1,7 +1,5 @@
 #include "RuntimeLayer.h"
 
-#include <Vortex/Scene/Scene.h>
-
 #include <Vortex/Project/ProjectLoader.h>
 
 #include <Vortex/Serialization/SceneSerializer.h>
@@ -16,8 +14,8 @@ namespace Vortex {
 
 	void RuntimeLayer::OnAttach()
 	{
-		const auto& appProps = Application::Get().GetProperties();
-		const auto& commandLineArgs = appProps.CommandLineArgs;
+		const Application& app = Application::Get();
+		const ApplicationProperties& applicationProperties = app.GetProperties();
 
 		FramebufferProperties framebufferProps{};
 		framebufferProps.Attachments = {
@@ -26,21 +24,23 @@ namespace Vortex {
 			ImageFormat::RGBA16F,
 			ImageFormat::Depth
 		};
-		framebufferProps.Width = appProps.WindowWidth;
-		framebufferProps.Height = appProps.WindowHeight;
+		framebufferProps.Width = applicationProperties.WindowWidth;
+		framebufferProps.Height = applicationProperties.WindowHeight;
 
 		m_Framebuffer = Framebuffer::Create(framebufferProps);
 
-		m_ViewportSize = Math::vec2((float)appProps.WindowWidth, (float)appProps.WindowHeight);
+		m_ViewportSize = Math::vec2((float)applicationProperties.WindowWidth, (float)applicationProperties.WindowHeight);
 
 		m_RuntimeScene = Scene::Create();
 		m_RuntimeScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
-		if (commandLineArgs.Count > 1)
+		const ApplicationCommandLineArgs& arguments = applicationProperties.CommandLineArgs;
+		if (arguments.Count > 1)
 		{
-			const auto& projectFilepath = commandLineArgs[1];
-
-			OpenProject(std::filesystem::path(projectFilepath));
+			const char* arg1 = arguments[1];
+			const Fs::Path projectFilepath = Fs::Path(arg1);
+			const bool success = OpenProject(projectFilepath);
+			VX_CORE_ASSERT(success, "Failed to open project!");
 		}
 		else
 		{
@@ -56,10 +56,10 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		// Shadow pass
-		if (Entity skyLightEntity = m_RuntimeScene->GetSkyLightEntity())
+		if (Actor skyLightEntity = m_RuntimeScene->GetSkyLightActor())
 		{
-			const auto& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
-			if (lsc.CastShadows)
+			const LightSourceComponent& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
+			if (lsc.Visible && lsc.CastShadows)
 			{
 				Renderer::RenderToDepthMap(m_RuntimeScene);
 			}
@@ -84,43 +84,25 @@ namespace Vortex {
 		// Update Scene
 		m_RuntimeScene->OnUpdateRuntime(delta);
 
-		// Scene Viewport Entity Selection
-		{
-			auto [mx, my] = Gui::GetMousePos();
-			my = m_ViewportSize.y - my;
-
-			int mouseX = (int)mx;
-			int mouseY = (int)my;
-
-			if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)m_ViewportSize.x && mouseY < (int)m_ViewportSize.y)
-			{
-				int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-				m_HoveredEntity = pixelData == -1 ? Entity() : Entity{ (entt::entity)pixelData, m_RuntimeScene.Raw() };
-				ScriptRegistry::SetHoveredEntity(m_HoveredEntity);
-			}
-		}
-
 		m_Framebuffer->Unbind();
 		
 		// Bloom pass
-		if (Entity primaryCamera = m_RuntimeScene->GetPrimaryCameraEntity())
+		if (Actor primaryCamera = m_RuntimeScene->GetPrimaryCameraActor())
 		{
 			PostProcessProperties postProcessProps{};
 			postProcessProps.TargetFramebuffer = m_Framebuffer;
-
 			Math::vec3 cameraPos = primaryCamera.GetTransform().Translation;
 			postProcessProps.CameraPosition = cameraPos;
-			postProcessProps.ViewportSize = Viewport{ 0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y };
+			postProcessProps.ViewportInfo = Viewport{ 0, 0, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y };
 			PostProcessStage stages[] = { PostProcessStage::Bloom };
 			postProcessProps.Stages = stages;
-			postProcessProps.StageCount = VX_ARRAYCOUNT(stages);
+			postProcessProps.StageCount = VX_ARRAYSIZE(stages);
 			Renderer::BeginPostProcessingStages(postProcessProps);
 		}
 
-		const bool pendingTransition = ScriptRegistry::HasPendingTransitionQueued();
-		if (pendingTransition)
+		if (ScriptRegistry::TransitionQueued())
 		{
-			QueueSceneTransition();
+			QueueSceneTransition(ScriptRegistry::GetNextSceneByName());
 		}
 	}
 
@@ -143,9 +125,9 @@ namespace Vortex {
 		uint32_t flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus;
 		Gui::Begin("##ApplicationViewport", nullptr, flags);
 
-		const auto viewportMinRegion = Gui::GetWindowContentRegionMin();
-		const auto viewportMaxRegion = Gui::GetWindowContentRegionMax();
-		const auto viewportOffset = Gui::GetWindowPos();
+		const ImVec2 viewportMinRegion = Gui::GetWindowContentRegionMin();
+		const ImVec2 viewportMaxRegion = Gui::GetWindowContentRegionMax();
+		const ImVec2 viewportOffset = Gui::GetWindowPos();
 
 		m_ViewportBounds.MinBound = Math::vec2(viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y);
 		m_ViewportBounds.MaxBound = Math::vec2(viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y);
@@ -157,11 +139,8 @@ namespace Vortex {
 		
 		Gui::End();
 
-		// Update Engine System Gui
-		SystemManager::OnGuiRender();
-
-		// Update Application Gui
-		m_RuntimeScene->OnUpdateEntityGui();
+		// Render Application Gui
+		m_RuntimeScene->InvokeActorOnGuiRender();
 	}
 
 	void RuntimeLayer::OnEvent(Event& e)
@@ -171,18 +150,18 @@ namespace Vortex {
 		dispatcher.Dispatch<WindowCloseEvent>(VX_BIND_CALLBACK(RuntimeLayer::OnWindowCloseEvent));
 	}
 
-	void RuntimeLayer::OnRuntimeScenePlay()
+	void RuntimeLayer::OnScenePlay()
 	{
 		VX_PROFILE_FUNCTION();
 
-		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "Scene must not be running!");
-
-		m_RuntimeScene->OnRuntimeStart();
+		VX_CORE_ASSERT(m_RuntimeScene, "Invalid scene!");
 
 		ScriptRegistry::SetSceneStartTime(Time::GetTime());
+
+		m_RuntimeScene->OnRuntimeStart();
 	}
 
-	void RuntimeLayer::OnRuntimeSceneStop()
+	void RuntimeLayer::OnSceneStop()
 	{
 		VX_PROFILE_FUNCTION();
 
@@ -210,93 +189,101 @@ namespace Vortex {
 		VX_PROFILE_FUNCTION();
 
 		// TODO this should be changed to LoadRuntimeProject in the future
-		const bool success = ProjectLoader::LoadEditorProject(filepath);
-		if (!success)
+		if (!ProjectLoader::LoadEditorProject(filepath))
+		{
 			return false;
+		}
 
-		const AssetMetadata& sceneMetadata = Project::GetEditorAssetManager()->GetMetadata(Project::GetActive()->GetProperties().General.StartScene);
-		VX_CORE_VERIFY(sceneMetadata.IsValid());
+		const Fs::Path& startScenePath = Project::GetActive()->GetProperties().General.StartScene;
+		const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(startScenePath);
+		VX_CORE_VERIFY(metadata.IsValid());
 
-		return OpenScene(sceneMetadata);
+		return OpenScene(metadata);
 	}
 
 	void RuntimeLayer::CloseProject()
 	{
 		if (m_RuntimeScene->IsRunning())
-			OnRuntimeSceneStop();
+		{
+			// Invoke Actor.OnApplicationQuit
+			m_RuntimeScene->GetAllActorsWith<ScriptComponent>().each([=](auto actorID, auto& sc)
+			{
+				Actor actor{ actorID, m_RuntimeScene.Raw() };
+
+				actor.CallMethod(ScriptMethod::OnApplicationQuit);
+			});
+
+			OnSceneStop();
+		}
 
 		ScriptEngine::Shutdown();
 	}
 
-	bool RuntimeLayer::OpenScene(const AssetMetadata& sceneMetadata)
+	bool RuntimeLayer::OpenScene(const AssetMetadata& metadata)
 	{
 		VX_PROFILE_FUNCTION();
 
 		if (m_RuntimeScene->IsRunning())
 		{
-			OnRuntimeSceneStop();
+			OnSceneStop();
 		}
 
-		if (!sceneMetadata.IsValid() || sceneMetadata.Type != AssetType::SceneAsset || !AssetManager::IsHandleValid(sceneMetadata.Handle))
+		if (!metadata.IsValid() || metadata.Type != AssetType::SceneAsset || !AssetManager::IsHandleValid(metadata.Handle))
 		{
-			VX_CORE_FATAL("Could not load {} - not a scene file", sceneMetadata.Filepath.filename().string());
+			VX_CORE_FATAL("Could not load {} - not a scene file", metadata.Filepath.filename().string());
 			Application::Get().Close();
 			return false;
 		}
 
+		const Fs::Path fullPath = Project::GetAssetDirectory() / metadata.Filepath;
+
 		SceneSerializer serializer(m_RuntimeScene);
-
-		std::string fullyQualifedScenePath = (Project::GetAssetDirectory() / sceneMetadata.Filepath).string();
-		if (serializer.Deserialize(fullyQualifedScenePath))
+		if (serializer.Deserialize(fullPath.string()))
 		{
-			SetSceneBuildIndexFromMetadata(sceneMetadata);
-
-			OnRuntimeScenePlay();
+			OnScenePlay();
 		}
 
 		return true;
 	}
 
-	void RuntimeLayer::SetSceneBuildIndexFromMetadata(const AssetMetadata& sceneMetadata)
-	{
-		std::string filename = sceneMetadata.Filepath.filename().string();
-		std::string sceneName = filename.substr(0, filename.find('.'));
-
-		const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
-
-		for (const auto& [buildIndex, sceneFilepath] : buildIndices)
-		{
-			if (sceneFilepath.find(sceneMetadata.Filepath.string()) == std::string::npos)
-				continue;
-
-			Scene::SetActiveSceneBuildIndex(buildIndex);
-
-			break;
-		}
-	}
-
-	void RuntimeLayer::QueueSceneTransition()
+	void RuntimeLayer::QueueSceneTransition(const std::string& sceneName)
 	{
 		VX_PROFILE_FUNCTION();
 
-		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "Scene must be running to queue transition!");
+		VX_CORE_ASSERT(m_RuntimeScene->IsRunning(), "runtime scene must be running to queue transition!");
 
-		Application::Get().SubmitToMainThreadQueue([=]()
-		{
-			const BuildIndexMap& buildIndices = Scene::GetScenesInBuild();
-			const uint32_t nextBuildIndex = ScriptRegistry::GetNextBuildIndex();
+		auto fn = [=]() {
+			bool opened = false;
 
-			std::filesystem::path scenePath = buildIndices.at(nextBuildIndex);
-			std::filesystem::path assetDirectory = Project::GetAssetDirectory();
-			std::filesystem::path nextSceneFilepath = assetDirectory / scenePath;
+			std::unordered_set<AssetHandle> scenes = Project::GetEditorAssetManager()->GetAllAssetsWithType(AssetType::SceneAsset);
 
-			// TODO fix this
-			const AssetMetadata& sceneMetadata = Project::GetEditorAssetManager()->GetMetadata(nextSceneFilepath);
+			for (AssetHandle handle : scenes)
+			{
+				if (!AssetManager::IsHandleValid(handle))
+					continue;
 
-			OpenScene(sceneMetadata);
+				SharedReference<Scene> scene = AssetManager::GetAsset<Scene>(handle);
+				const std::string& entry = scene->GetName();
+				if (String::FastCompare(sceneName, entry) == 0)
+					continue;
 
-			ScriptRegistry::ResetBuildIndex();
-		});
+				const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(handle);
+				if (!AssetManager::IsHandleValid(metadata.Handle))
+					continue;
+
+				// play the scene
+				OpenScene(metadata);
+				opened = true;
+			}
+
+			if (!opened) {
+				// todo what should we do if we can't find the scene?
+				Application::Get().Close();
+				return;
+			}
+		};
+
+		Application::Get().GetPreUpdateFunctionQueue().queue(fn);
 	}
 
 }

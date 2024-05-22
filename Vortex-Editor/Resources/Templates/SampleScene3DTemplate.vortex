@@ -1,0 +1,82 @@
+Scene: SampleScene
+Entities:
+  - Entity: 12508139220412756372
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Cube
+      Marker: Untagged
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    StaticMeshRendererComponent:
+      MeshHandle: 9715166157075099107
+      MeshType: Cube
+      Visible: true
+      Submeshes:
+        - Name: Cube.003
+          MaterialHandle: 16002839098891988817
+    RigidbodyComponent:
+      Mass: 1
+      BodyType: Static
+      AngularDrag: 0.0500000007
+      MaxAngularVelocity: 100
+      AngularVelocity: [0, 0, 0]
+      DisableGravity: false
+      IsKinematic: false
+      LinearDrag: 0.00999999978
+      MaxLinearVelocity: 100
+      LinearVelocity: [0, 0, 0]
+      CollisionDetectionType: Discrete
+      ActorLockFlags: 0
+    BoxColliderComponent:
+      HalfSize: [0.5, 0.5, 0.5]
+      Offset: [0, 0, 0]
+      IsTrigger: false
+  - Entity: 5585830357517352990
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Sky Light
+      Marker: Untagged
+    TransformComponent:
+      Translation: [-3, 5, 3]
+      Rotation: [0.0174532924, -0.994837642, -0.0174532924]
+      Scale: [1, 1, 1]
+    LightSourceComponent:
+      Visible: true
+      LightType: Directional
+      Radiance: [1, 1, 1]
+      Intensity: 1
+      ShadowBias: 0
+      CastShadows: true
+      SoftShadows: true
+  - Entity: 8339095017162007159
+    Active: true
+    Parent: 0
+    Children:
+      []
+    TagComponent:
+      Tag: Primary Camera
+      Marker: Untagged
+    TransformComponent:
+      Translation: [-4, 3, 4]
+      Rotation: [-0.436332315, -0.785398185, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 1
+        PerspectiveFar: 10
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 79
+      ClearColor: [0.149019614, 0.172549024, 0.235294119]
+      Primary: true
+      FixedAspectRatio: false

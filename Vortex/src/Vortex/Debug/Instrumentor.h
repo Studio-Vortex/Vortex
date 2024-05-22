@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include <algorithm>
 #include <chrono>
 #include <fstream>
@@ -7,13 +9,13 @@
 #include <string>
 #include <thread>
 
-#define VX_PROFILE 0
+#define VX_ENABLE_PROFILING 0
 
 namespace Vortex {
 
-	using FloatingPointMicroseconds = std::chrono::duration<double, std::micro>;
+	using VORTEX_API FloatingPointMicroseconds = std::chrono::duration<double, std::micro>;
 
-	struct ProfileResult
+	struct VORTEX_API ProfileResult
 	{
 		std::string Name;
 
@@ -22,164 +24,53 @@ namespace Vortex {
 		std::thread::id ThreadID;
 	};
 
-	struct InstrumentationSession
+	struct VORTEX_API InstrumentationSession
 	{
 		std::string Name;
 	};
 
-	class Instrumentor
+	class VORTEX_API Instrumentor
 	{
 	public:
 		Instrumentor(const Instrumentor&) = delete;
 		Instrumentor(Instrumentor&&) = delete;
 
-		void BeginSession(const std::string& name, const std::string& filepath = "results.json")
-		{
-			std::lock_guard lock(m_Mutex);
-			if (m_CurrentSession)
-			{
-				// If there is already a current session, then close it before beginning new one.
-				// Subsequent profiling output meant for the original session will end up in the
-				// newly opened session instead.  That's better than having badly formatted
-				// profiling output.
-				if (Log::GetCoreLogger()) // Edge case: BeginSession() might be before Log::Init()
-				{
-					VX_CORE_ERROR_TAG("Timer", "Instrumentor::BeginSession('{0}') when session '{1}' already open.", name, m_CurrentSession->Name);
-				}
-				InternalEndSession();
-			}
-			m_OutputStream.open(filepath);
+		void BeginSession(const std::string& name, const std::string& filepath = "results.json");
+		void EndSession();
 
-			if (m_OutputStream.is_open())
-			{
-				m_CurrentSession = new InstrumentationSession({ name });
-				WriteHeader();
-			}
-			else
-			{
-				if (Log::GetCoreLogger()) // Edge case: BeginSession() might be before Log::Init()
-				{
-					VX_CORE_ERROR_TAG("Timer", "Instrumentor could not open results file '{0}'.", filepath);
-				}
-			}
-		}
+		void WriteProfile(const ProfileResult& result);
 
-		void EndSession()
-		{
-			std::lock_guard lock(m_Mutex);
-			InternalEndSession();
-		}
+		static Instrumentor& Get();
 
-		void WriteProfile(const ProfileResult& result)
-		{
-			std::stringstream json;
-
-			json << std::setprecision(3) << std::fixed;
-			json << ",{";
-			json << "\"cat\":\"function\",";
-			json << "\"dur\":" << (result.ElapsedTime.count()) << ',';
-			json << "\"name\":\"" << result.Name << "\",";
-			json << "\"ph\":\"X\",";
-			json << "\"pid\":0,";
-			json << "\"tid\":" << result.ThreadID << ",";
-			json << "\"ts\":" << result.Start.count();
-			json << "}";
-
-			std::lock_guard lock(m_Mutex);
-			if (m_CurrentSession)
-			{
-				m_OutputStream << json.str();
-				m_OutputStream.flush();
-			}
-		}
-
-		static Instrumentor& Get()
-		{
-			static Instrumentor instance;
-			return instance;
-		}
 	private:
-		Instrumentor()
-			: m_CurrentSession(nullptr)
-		{
-		}
+		Instrumentor();
+		~Instrumentor();
 
-		~Instrumentor()
-		{
-			EndSession();
-		}
-
-		void WriteHeader()
-		{
-			m_OutputStream << "{\"otherData\": {},\"traceEvents\":[{}";
-			m_OutputStream.flush();
-		}
-
-		void WriteFooter()
-		{
-			m_OutputStream << "]}";
-			m_OutputStream.flush();
-		}
+		void WriteHeader();
+		void WriteFooter();
 
 		// Note: you must already own lock on m_Mutex before
 		// calling InternalEndSession()
-		void InternalEndSession()
-		{
-			if (m_CurrentSession)
-			{
-				WriteFooter();
-				m_OutputStream.close();
-				delete m_CurrentSession;
-				m_CurrentSession = nullptr;
-			}
-		}
+		void InternalEndSession();
+
 	private:
 		std::mutex m_Mutex;
 		InstrumentationSession* m_CurrentSession;
 		std::ofstream m_OutputStream;
 	};
 
-	class InstrumentationTimer
+	class VORTEX_API InstrumentationTimer
 	{
 	public:
-		InstrumentationTimer(const char* name)
-			: m_Name(name), m_Stopped(false)
-		{
-			m_StartTimepoint = std::chrono::steady_clock::now();
-		}
+		InstrumentationTimer(const char* name);
+		~InstrumentationTimer();
 
-		~InstrumentationTimer()
-		{
-			if (!m_Stopped)
-				Stop();
-		}
-
-		float ElapsedMS()
-		{
-			auto endTimepoint = std::chrono::steady_clock::now();
-			auto highResStart = FloatingPointMicroseconds{ m_StartTimepoint.time_since_epoch() };
-			auto elapsedTime = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch() - std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimepoint).time_since_epoch();
-
-			Instrumentor::Get().WriteProfile({ m_Name, highResStart, elapsedTime, std::this_thread::get_id() });
-
-			m_Stopped = true;
-			return elapsedTime.count() / 1000.0f;
-		}
-
-		void Stop()
-		{
-			auto endTimepoint = std::chrono::steady_clock::now();
-			auto highResStart = FloatingPointMicroseconds{ m_StartTimepoint.time_since_epoch() };
-			auto elapsedTime = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch() - std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimepoint).time_since_epoch();
-
-			Instrumentor::Get().WriteProfile({ m_Name, highResStart, elapsedTime, std::this_thread::get_id() });
-			//VX_CONSOLE_LOG_INFO("Timer: {} - {} ms ({} us)", m_Name, elapsedTime.count() / 1000.0f, elapsedTime.count());
-			m_Stopped = true;
-		}
+		float ElapsedMS();
+		void Stop();
 
 	private:
-		const char* m_Name;
 		std::chrono::time_point<std::chrono::steady_clock> m_StartTimepoint;
+		const char* m_Name;
 		bool m_Stopped;
 	};
 
@@ -213,7 +104,7 @@ namespace Vortex {
 	}
 }
 
-#if VX_PROFILE
+#if VX_ENABLE_PROFILING
 // Resolve which function signature macro will be used. Note that this only
 // is resolved when the (pre)compiler starts, so the syntax highlighting
 // could mark the wrong one in your editor!
@@ -232,7 +123,7 @@ namespace Vortex {
 	#elif defined(__cplusplus) && (__cplusplus >= 201103)
 		#define VX_FUNC_SIG __func__
 	#else
-		#define VX_FUNC_SIG "SP_FUNC_SIG unknown!"
+		#define VX_FUNC_SIG "VX_FUNC_SIG unknown!"
 	#endif
 
 	#define VX_PROFILE_BEGIN_SESSION(name, filepath) ::Vortex::Instrumentor::Get().BeginSession(name, filepath)
@@ -243,6 +134,7 @@ namespace Vortex {
 	#define VX_PROFILE_SCOPE(name) VX_PROFILE_SCOPE_LINE(name, __LINE__)
 	#define VX_PROFILE_FUNCTION() VX_PROFILE_SCOPE(VX_FUNC_SIG)
 #else
+	#define VX_FUNC_SIG
 	#define VX_PROFILE_BEGIN_SESSION(name, filepath)
 	#define VX_PROFILE_END_SESSION()
 	#define VX_PROFILE_SCOPE(name)

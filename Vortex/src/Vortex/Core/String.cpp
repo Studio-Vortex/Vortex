@@ -3,7 +3,19 @@
 
 namespace Vortex {
 
-	std::vector<std::string> String::SplitString(const std::string_view string, const std::string_view& delimiters)
+    bool String::FastCompare(const std::string_view& lhs, const std::string_view& rhs)
+    {
+		// if the sizes are different they definitely aren't the same
+		if (lhs.size() != rhs.size())
+		{
+			return false;
+		}
+
+		// we have no choice but to perform an equality check
+		return lhs == rhs;
+    }
+    
+	std::vector<std::string> String::SplitString(const std::string_view& string, const std::string_view& delimiters)
 	{
 		size_t first = 0;
 
@@ -25,7 +37,7 @@ namespace Vortex {
 		return result;
 	}
 
-	std::vector<std::string> String::SplitString(const std::string_view string, const char delimiter)
+	std::vector<std::string> String::SplitString(const std::string_view& string, const char delimiter)
 	{
 		return SplitString(string, std::string(1, delimiter));
 	}

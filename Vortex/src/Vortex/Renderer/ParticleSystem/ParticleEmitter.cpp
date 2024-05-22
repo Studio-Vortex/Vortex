@@ -1,7 +1,7 @@
 #include "vxpch.h"
 #include "ParticleEmitter.h"
 
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 #include "Vortex/Utils/Random.h"
 
 namespace Vortex {
@@ -18,16 +18,6 @@ namespace Vortex {
 		m_ParticlePool.resize(s_MaxParticles);
 	}
 
-	void ParticleEmitter::Start()
-	{
-		m_IsActive = true;
-	}
-
-	void ParticleEmitter::Stop()
-	{
-		m_IsActive = false;
-	}
-
 	void ParticleEmitter::OnUpdate(TimeStep delta)
 	{
 		for (auto& particle : m_ParticlePool)
@@ -42,7 +32,7 @@ namespace Vortex {
 			}
 
 			particle.LifeRemaining -= delta;
-			particle.Position += particle.Velocity * (float)delta;
+			particle.Position += particle.Velocity * delta.GetDeltaTime();
 			particle.Rotation += m_Properties.Rotation * delta;
 		}
 	}
@@ -51,12 +41,17 @@ namespace Vortex {
 	{
 		Particle& particle = m_ParticlePool[m_PoolIndex];
 		particle.Active = true;
-		particle.Position = m_Properties.Position + m_Properties.Offset;
+		const Math::vec3 position = m_Properties.Position + m_Properties.Offset;
+		particle.Position = position;
 
 		if (m_Properties.Rotation != 0.0f)
+		{
 			particle.Rotation = Random::Float() * 2.0f * Math::PI;
+		}
 		else
+		{
 			particle.Rotation = 0.0f;
+		}
 
 		// Velocity
 		particle.Velocity = m_Properties.Velocity;
@@ -69,7 +64,9 @@ namespace Vortex {
 		particle.ColorEnd = m_Properties.ColorEnd;
 		
 		if (m_Properties.GenerateRandomColors)
+		{
 			particle.RandomColor = Math::vec4(Random::Float(), Random::Float(), Random::Float(), 1.0f);
+		}
 
 		particle.LifeTime = m_Properties.LifeTime;
 		particle.LifeRemaining = m_Properties.LifeTime;

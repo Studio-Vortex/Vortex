@@ -2,13 +2,13 @@
 
 #include "Vortex/Core/Base.h"
 
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
-
 #include "Vortex/Network/Port.h"
 #include "Vortex/Network/IpAddress.h"
 #include "Vortex/Network/NetworkTypes.h"
 #include "Vortex/Network/SocketProperties.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
+#include "Vortex/ReferenceCounting/RefCounted.h"
 
 namespace Vortex {
 

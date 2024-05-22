@@ -2,10 +2,12 @@
 
 #include "Vortex/Core/Base.h"
 
-#include "Vortex/Core/Math/Math.h"
-#include "Vortex/Core/LibraryBase.h"
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+#include "Vortex/Math/Math.h"
+
+#include "Vortex/ReferenceCounting/RefCounted.h"
+#include "Vortex/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/Collections/ILibraryMap.h"
 
 #include <unordered_map>
 #include <string>
@@ -43,20 +45,20 @@ namespace Vortex {
 	};
 
 
-	class VORTEX_API ShaderLibrary : public LibraryMapBase<SharedReference<Shader>, std::string>
+	class VORTEX_API ShaderLibrary : public ILibraryMap<std::string, SharedReference<Shader>>
 	{
 	public:
 		ShaderLibrary() = default;
 		~ShaderLibrary() override = default;
 
-		void Add(const std::string& name, const SharedReference<Shader>& shader);
-		void Add(const SharedReference<Shader>& shader) override;
-		uint8_t Remove(const std::string& name) override;
+		void Add(const Key& name, const Value& shader);
+		virtual void Add(const Value& shader) override;
+		virtual uint8_t Remove(const Key& name) override;
 
-		SharedReference<Shader> Load(const std::string& filepath);
-		SharedReference<Shader> Load(const std::string& name, const std::string& filepath);
+		const Value& Get(const Key& identifier) const override;
+		Value& Get(const Key& identifier) override;
 
-		SharedReference<Shader>& Get(const std::string& name) override;
-		const SharedReference<Shader>& Get(const std::string& name) const override;
+		SharedReference<Shader> Load(const Key& filepath);
+		SharedReference<Shader> Load(const std::string& name, const Key& filepath);
 	};
 }

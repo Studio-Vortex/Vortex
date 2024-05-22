@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/Math/Math.h"
 
 #include "Vortex/Audio/AudioTypes.h"
+
+#include "Vortex/Math/Math.h"
 
 #include <Wave/Wave.h>
 

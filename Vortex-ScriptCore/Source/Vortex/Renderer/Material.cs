@@ -28,55 +28,10 @@
 			set => InternalCalls.Material_SetAlbedo(ref m_Handle, ref value);
 		}
 
-		public Texture2D AlbedoMap
-		{
-			get
-			{
-				return InternalCalls.Material_GetAlbedoMap(ref m_Handle, out AssetHandle textureHandle)
-					? new Texture2D(textureHandle) : null;
-			}
-
-			set
-			{
-				AssetHandle textureHandle = value.Handle;
-				InternalCalls.Material_SetAlbedoMap(ref m_Handle, ref textureHandle);
-			}
-		}
-
-		public Texture2D NormalMap
-		{
-			get
-			{
-				return InternalCalls.Material_GetNormalMap(ref m_Handle, out AssetHandle textureHandle)
-					? new Texture2D(textureHandle) : null;
-			}
-
-			set
-			{
-				AssetHandle textureHandle = value.Handle;
-				InternalCalls.Material_SetNormalMap(ref m_Handle, ref textureHandle);
-			}
-		}
-
 		public float Metallic
 		{
 			get => InternalCalls.Material_GetMetallic(ref m_Handle);
 			set => InternalCalls.Material_SetMetallic(ref m_Handle, value);
-		}
-
-		public Texture2D MetallicMap
-		{
-			get
-			{
-				return InternalCalls.Material_GetMetallicMap(ref m_Handle, out AssetHandle textureHandle)
-					? new Texture2D(textureHandle) : null;
-			}
-
-			set
-			{
-				AssetHandle textureHandle = value.Handle;
-				InternalCalls.Material_SetMetallicMap(ref m_Handle, ref textureHandle);
-			}
 		}
 
 		public float Roughness
@@ -85,55 +40,10 @@
 			set => InternalCalls.Material_SetRoughness(ref m_Handle, value);
 		}
 
-		public Texture2D RoughnessMap
-		{
-			get
-			{
-				return InternalCalls.Material_GetRoughnessMap(ref m_Handle, out AssetHandle textureHandle)
-					? new Texture2D(textureHandle) : null;
-			}
-
-			set
-			{
-				AssetHandle textureHandle = value.Handle;
-				InternalCalls.Material_SetRoughnessMap(ref m_Handle, ref textureHandle);
-			}
-		}
-
 		public float Emission
 		{
 			get => InternalCalls.Material_GetEmission(ref m_Handle);
 			set => InternalCalls.Material_SetEmission(ref m_Handle, value);
-		}
-
-		public Texture2D EmissionMap
-		{
-			get
-			{
-				return InternalCalls.Material_GetEmissionMap(ref m_Handle, out AssetHandle textureHandle)
-					? new Texture2D(textureHandle) : null;
-			}
-
-			set
-			{
-				AssetHandle textureHandle = value.Handle;
-				InternalCalls.Material_SetEmissionMap(ref m_Handle, ref textureHandle);
-			}
-		}
-
-		public Texture2D AmbientOcclusionMap
-		{
-			get
-			{
-				return InternalCalls.Material_GetAmbientOcclusionMap(ref m_Handle, out AssetHandle textureHandle)
-					? new Texture2D(textureHandle) : null;
-			}
-
-			set
-			{
-				AssetHandle textureHandle = value.Handle;
-				InternalCalls.Material_SetAmbientOcclusionMap(ref m_Handle, ref textureHandle);
-			}
 		}
 
 		public Vector2 UV
@@ -151,6 +61,20 @@
 		{
 			get => InternalCalls.Material_GetOpacity(ref m_Handle);
 			set => InternalCalls.Material_SetOpacity(ref m_Handle, value);
+		}
+
+		public bool HasTexture(string name) => InternalCalls.Material_HasTexture(ref m_Handle, name);
+
+		public Texture2D GetTexture(string name)
+		{
+			return InternalCalls.Material_GetTexture(ref m_Handle, name, out AssetHandle textureHandle)
+					? new Texture2D(textureHandle) : null;
+		}
+
+		public void SetTexture(string name, Texture2D texture)
+		{
+			AssetHandle textureHandle = texture.Handle;
+			InternalCalls.Material_SetTexture(ref m_Handle, name, ref textureHandle);
 		}
 
 		public bool IsFlagSet(MaterialFlag flag) => InternalCalls.Material_IsFlagSet(ref m_Handle, flag);

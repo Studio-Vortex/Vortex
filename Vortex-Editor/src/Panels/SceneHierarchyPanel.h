@@ -10,40 +10,40 @@ namespace Vortex {
 	class SceneHierarchyPanel : public EditorPanel
 	{
 	public:
-		SceneHierarchyPanel() = default;
-		SceneHierarchyPanel(const SharedReference<Scene>& context);
+		SceneHierarchyPanel();
 		~SceneHierarchyPanel() override = default;
 
-		void OnGuiRender(Entity hoveredEntity, const EditorCamera* editorCamera);
+		void OnGuiRender(Actor hoveredActor, const EditorCamera* editorCamera);
 		void OnGuiRender() override {}
 		void SetSceneContext(SharedReference<Scene> scene) override;
 
-		inline bool IsEditingEntityName() const { return m_IsEditingEntityName; }
-		inline void EditSelectedEntityName(bool enabled) { m_EntityShouldBeRenamed = enabled; }
+		inline bool IsFocusedOnActorName() const { return m_IsEditingActorName; }
+		void FocusOnActorName(bool shouldFocus);
 
-		void DisplayCreateEntityMenu(const EditorCamera* editorCamera);
+		void DisplayCreateActorMenu(const EditorCamera* editorCamera, Actor parent = {});
 
 		inline bool& IsInspectorOpen() { return s_ShowInspectorPanel; }
 
 		EDITOR_PANEL_TYPE(SceneHierarchy)
 
 	private:
-		void DisplayInsectorPanel(Entity hoveredEntity);
+		void RenderSceneHierarchy(Actor hoveredActor, const EditorCamera* editorCamera);
+		void RenderInsectorPanel(Actor hoveredActor);
 
 		template <typename TComponent>
 		void DisplayAddComponentMenuItem(const std::string& name, const char* icon, bool drawUnderline = true)
 		{
-			Entity& selectedEntity = SelectionManager::GetSelectedEntity();
+			Actor& selectedActor = SelectionManager::GetSelectedActor();
 
-			if (!selectedEntity.HasComponent<TComponent>())
+			if (!selectedActor.HasComponent<TComponent>())
 			{
 				Gui::Text(icon);
 				Gui::SameLine();
 				Gui::AlignTextToFramePadding();
 
-				if (Gui::MenuItem(name.c_str()))
+				if (Gui::MenuItem(name.c_str()) || (Gui::IsItemFocused() && Gui::IsKeyPressed(ImGuiKey_Enter)))
 				{
-					selectedEntity.AddComponent<TComponent>();
+					selectedActor.AddComponent<TComponent>();
 					Gui::CloseCurrentPopup();
 				}
 
@@ -59,38 +59,42 @@ namespace Vortex {
 
 		void DisplayAddMarkerPopup(TagComponent& tagComponent);
 
-		void DrawEntityNode(Entity entity, const EditorCamera* editorCamera);
-		void DrawComponents(Entity entity);
+		void DrawActorNode(Actor actor, const EditorCamera* editorCamera);
+		void DrawComponents(Actor actor);
 
-		void RecursiveEntitySearch(UUID topEntity, const EditorCamera* editorCamera, uint32_t& searchDepth);
+		void RecursiveActorSearch(UUID rootActor, const EditorCamera* editorCamera, uint32_t& searchDepth);
+
+		bool RecursiveIsPrefabOrAncestorIsPrefab(Actor actor);
 
 	private:
-		void TransformComponentOnGuiRender(TransformComponent& component, Entity entity);
-		void CameraComponentOnGuiRender(CameraComponent& component, Entity entity);
-		void SkyboxComponentOnGuiRender(SkyboxComponent& component, Entity entity);
-		void LightSourceComponentOnGuiRender(LightSourceComponent& component, Entity entity);
-		void MeshRendererComponentOnGuiRender(MeshRendererComponent& component, Entity entity);
-		void StaticMeshRendererComponentOnGuiRender(StaticMeshRendererComponent& component, Entity entity);
-		void SpriteRendererComponentOnGuiRender(SpriteRendererComponent& component, Entity entity);
-		void CircleRendererComponentOnGuiRender(CircleRendererComponent& component, Entity entity);
-		void ParticleEmitterComponentOnGuiRender(ParticleEmitterComponent& component, Entity entity);
-		void TextMeshComponentOnGuiRender(TextMeshComponent& component, Entity entity);
-		void AnimatorComponentOnGuiRender(AnimatorComponent& component, Entity entity);
-		void AnimationComponentOnGuiRender(AnimationComponent& component, Entity entity);
-		void AudioSourceComponentOnGuiRender(AudioSourceComponent& component, Entity entity);
-		void AudioListenerComponentOnGuiRender(AudioListenerComponent& component, Entity entity);
-		void RigidBodyComponentOnGuiRender(RigidBodyComponent& component, Entity entity);
-		void CharacterControllerComponentOnGuiRender(CharacterControllerComponent& component, Entity entity);
-		void FixedJointComponentOnGuiRender(FixedJointComponent& component, Entity entity);
-		void BoxColliderComponentOnGuiRender(BoxColliderComponent& component, Entity entity);
-		void SphereColliderComponentOnGuiRender(SphereColliderComponent& component, Entity entity);
-		void CapsuleColliderComponentOnGuiRender(CapsuleColliderComponent& component, Entity entity);
-		void MeshColliderComponentOnGuiRender(MeshColliderComponent& component, Entity entity);
-		void RigidBody2DComponentOnGuiRender(RigidBody2DComponent& component, Entity entity);
-		void BoxCollider2DComponentOnGuiRender(BoxCollider2DComponent& component, Entity entity);
-		void CircleCollider2DComponentOnGuiRender(CircleCollider2DComponent& component, Entity entity);
-		void NavMeshAgentComponentOnGuiRender(NavMeshAgentComponent& component, Entity entity);
-		void ScriptComponentOnGuiRender(ScriptComponent& component, Entity entity);
+		void TagComponentOnGuiRender(TagComponent& component, Actor actor);
+		void TransformComponentOnGuiRender(TransformComponent& component, Actor actor);
+		void CameraComponentOnGuiRender(CameraComponent& component, Actor actor);
+		void SkyboxComponentOnGuiRender(SkyboxComponent& component, Actor actor);
+		void LightSourceComponentOnGuiRender(LightSourceComponent& component, Actor actor);
+		void MeshRendererComponentOnGuiRender(MeshRendererComponent& component, Actor actor);
+		void StaticMeshRendererComponentOnGuiRender(StaticMeshRendererComponent& component, Actor actor);
+		void SpriteRendererComponentOnGuiRender(SpriteRendererComponent& component, Actor actor);
+		void CircleRendererComponentOnGuiRender(CircleRendererComponent& component, Actor actor);
+		void ParticleEmitterComponentOnGuiRender(ParticleEmitterComponent& component, Actor actor);
+		void AnimatorComponentOnGuiRender(AnimatorComponent& component, Actor actor);
+		void AnimationComponentOnGuiRender(AnimationComponent& component, Actor actor);
+		void TextMeshComponentOnGuiRender(TextMeshComponent& component, Actor actor);
+		void ButtonComponentOnGuiRender(ButtonComponent& component, Actor actor);
+		void AudioSourceComponentOnGuiRender(AudioSourceComponent& component, Actor actor);
+		void AudioListenerComponentOnGuiRender(AudioListenerComponent& component, Actor actor);
+		void RigidBodyComponentOnGuiRender(RigidBodyComponent& component, Actor actor);
+		void CharacterControllerComponentOnGuiRender(CharacterControllerComponent& component, Actor actor);
+		void FixedJointComponentOnGuiRender(FixedJointComponent& component, Actor actor);
+		void BoxColliderComponentOnGuiRender(BoxColliderComponent& component, Actor actor);
+		void SphereColliderComponentOnGuiRender(SphereColliderComponent& component, Actor actor);
+		void CapsuleColliderComponentOnGuiRender(CapsuleColliderComponent& component, Actor actor);
+		void MeshColliderComponentOnGuiRender(MeshColliderComponent& component, Actor actor);
+		void RigidBody2DComponentOnGuiRender(RigidBody2DComponent& component, Actor actor);
+		void BoxCollider2DComponentOnGuiRender(BoxCollider2DComponent& component, Actor actor);
+		void CircleCollider2DComponentOnGuiRender(CircleCollider2DComponent& component, Actor actor);
+		void NavMeshAgentComponentOnGuiRender(NavMeshAgentComponent& component, Actor actor);
+		void ScriptComponentOnGuiRender(ScriptComponent& component, Actor actor);
 
 	private:
 		inline static bool s_ShowInspectorPanel = true;
@@ -99,17 +103,17 @@ namespace Vortex {
 		SharedReference<Scene> m_ContextScene = nullptr;
 		
 		SharedReference<Scene> m_CopyScene = nullptr;
-		Entity m_CopyEntity = {};
+		Actor m_CopyActor = {};
 
-		ImGuiTextFilter m_EntitySearchInputTextFilter;
+		ImGuiTextFilter m_ActorSearchInputTextFilter;
 		ImGuiTextFilter m_ComponentSearchInputTextFilter;
-		ImGuiTextFilter m_EntityClassNameInputTextFilter;
-		ImGuiTextFilter m_EntityFieldSearchInputTextFilter;
+		ImGuiTextFilter m_ActorClassNameInputTextFilter;
+		ImGuiTextFilter m_ActorFieldSearchInputTextFilter;
 		ImGuiTextFilter m_MaterialSearchInputTextFilter;
 
-		bool m_EntityShouldBeRenamed = false;
-		bool m_IsEditingEntityName = false;
-		bool m_EntityShouldBeDestroyed = false;
+		bool m_ActorShouldBeRenamed = false;
+		bool m_IsEditingActorName = false;
+		bool m_ActorShouldBeDestroyed = false;
 		bool m_DisplayAddMarkerPopup = false;
 	};
 

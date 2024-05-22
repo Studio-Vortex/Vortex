@@ -1,8 +1,6 @@
 #include "vxpch.h"
 #include "EditorResources.h"
 
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
-
 namespace Vortex {
 
 	void EditorResources::Init()
@@ -46,6 +44,8 @@ namespace Vortex {
 		OBJIcon = LoadTexture("Resources/Icons/ContentBrowser/OBJIcon.png");
 		FBXIcon = LoadTexture("Resources/Icons/ContentBrowser/FBXIcon.png");
 		FontIcon = LoadTexture("Resources/Icons/ContentBrowser/FontIcon.png");
+		MaterialIcon = LoadTexture("Resources/Icons/ContentBrowser/MaterialIcon.png");
+		PrefabIcon = LoadTexture("Resources/Icons/ContentBrowser/PrefabIcon.png");
 		CodeFileIcon = LoadTexture("Resources/Icons/ContentBrowser/CodeFileIcon.png");
 		SceneIcon = LoadTexture("Resources/Icons/ContentBrowser/SceneIcon.png");
 		FileIcon = LoadTexture("Resources/Icons/ContentBrowser/FileIcon.png");
@@ -92,6 +92,8 @@ namespace Vortex {
 		OBJIcon.Reset();
 		FBXIcon.Reset();
 		FontIcon.Reset();
+		MaterialIcon.Reset();
+		PrefabIcon.Reset();
 		CodeFileIcon.Reset();
 		SceneIcon.Reset();
 		FileIcon.Reset();

@@ -1,164 +1,187 @@
 #include "vxpch.h"
 #include "ScriptInstance.h"
 
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 
-#include "Vortex/Scripting/ScriptEngine.h"
 #include "Vortex/Scripting/ScriptUtils.h"
 
 namespace Vortex {
 
-	ScriptInstance::ScriptInstance(SharedReference<ScriptClass>& scriptClass, Entity entity)
-		: m_ScriptClass(scriptClass)
+	ScriptInstance::ScriptInstance(UUID actorUUID, SharedReference<ScriptClass>& scriptClass)
+		: m_ActorUUID(actorUUID), m_ScriptClass(scriptClass)
 	{
 		m_Instance = m_ScriptClass->Instantiate();
 
-		m_ManagedMethods[ManagedMethod::OnAwake] = m_ScriptClass->GetMethod("OnAwake", 0);
-		m_ManagedMethods[ManagedMethod::OnCreate] = m_ScriptClass->GetMethod("OnCreate", 0);
-		m_ManagedMethods[ManagedMethod::OnUpdateDelta] = m_ScriptClass->GetMethod("OnUpdate", 1);
-		m_ManagedMethods[ManagedMethod::OnUpdate] = m_ScriptClass->GetMethod("OnUpdate", 0);
-		m_ManagedMethods[ManagedMethod::OnDestroy] = m_ScriptClass->GetMethod("OnDestroy", 0);
-		m_ManagedMethods[ManagedMethod::OnCollisionEnter] = m_ScriptClass->GetMethod("OnCollisionEnter", 1);
-		m_ManagedMethods[ManagedMethod::OnCollisionExit] = m_ScriptClass->GetMethod("OnCollisionExit", 1);
-		m_ManagedMethods[ManagedMethod::OnTriggerEnter] = m_ScriptClass->GetMethod("OnTriggerEnter", 1);
-		m_ManagedMethods[ManagedMethod::OnTriggerExit] = m_ScriptClass->GetMethod("OnTriggerExit", 1);
-		m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected] = m_ScriptClass->GetMethod("OnFixedJointDisconnected", 2);
-		m_ManagedMethods[ManagedMethod::OnEnabled] = m_ScriptClass->GetMethod("OnEnabled", 0);
-		m_ManagedMethods[ManagedMethod::OnDisabled] = m_ScriptClass->GetMethod("OnDisabled", 0);
-		m_ManagedMethods[ManagedMethod::OnGui] = m_ScriptClass->GetMethod("OnGui", 0);
-
-		// Call C# Entity constructor
-		ScriptEngine::EntityConstructorRuntime(entity.GetUUID(), m_Instance);
+		m_ScriptMethods[ScriptMethod::OnAwake] = m_ScriptClass->GetMethod("OnAwake", 0);
+		m_ScriptMethods[ScriptMethod::OnEnable] = m_ScriptClass->GetMethod("OnEnable", 0);
+		m_ScriptMethods[ScriptMethod::OnReset] = m_ScriptClass->GetMethod("OnReset", 0);
+		m_ScriptMethods[ScriptMethod::OnCreate] = m_ScriptClass->GetMethod("OnCreate", 0);
+		m_ScriptMethods[ScriptMethod::OnUpdate] = m_ScriptClass->GetMethod("OnUpdate", 0);
+		m_ScriptMethods[ScriptMethod::OnPostUpdate] = m_ScriptClass->GetMethod("OnPostUpdate", 0);
+		m_ScriptMethods[ScriptMethod::OnApplicationPause] = m_ScriptClass->GetMethod("OnApplicationPause", 0);
+		m_ScriptMethods[ScriptMethod::OnApplicationResume] = m_ScriptClass->GetMethod("OnApplicationResume", 0);
+		m_ScriptMethods[ScriptMethod::OnCollisionEnter] = m_ScriptClass->GetMethod("OnCollisionEnter", 1);
+		m_ScriptMethods[ScriptMethod::OnCollisionExit] = m_ScriptClass->GetMethod("OnCollisionExit", 1);
+		m_ScriptMethods[ScriptMethod::OnTriggerEnter] = m_ScriptClass->GetMethod("OnTriggerEnter", 1);
+		m_ScriptMethods[ScriptMethod::OnTriggerExit] = m_ScriptClass->GetMethod("OnTriggerExit", 1);
+		m_ScriptMethods[ScriptMethod::OnFixedJointDisconnected] = m_ScriptClass->GetMethod("OnFixedJointDisconnected", 2);
+		m_ScriptMethods[ScriptMethod::OnApplicationQuit] = m_ScriptClass->GetMethod("OnApplicationQuit", 0);
+		m_ScriptMethods[ScriptMethod::OnDisable] = m_ScriptClass->GetMethod("OnDisable", 0);
+		m_ScriptMethods[ScriptMethod::OnDestroy] = m_ScriptClass->GetMethod("OnDestroy", 0);
+		m_ScriptMethods[ScriptMethod::OnDebugRender] = m_ScriptClass->GetMethod("OnDebugRender", 0);
+		m_ScriptMethods[ScriptMethod::OnGuiRender] = m_ScriptClass->GetMethod("OnGuiRender", 0);
 	}
 
-	void ScriptInstance::InvokeOnAwake()
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnAwake()
 	{
-		if (!MethodExists(ManagedMethod::OnAwake))
-			return;
-
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnAwake]);
+		ScriptMethod method = ScriptMethod::OnAwake;
+		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	void ScriptInstance::InvokeOnCreate()
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnEnable()
 	{
-		if (!MethodExists(ManagedMethod::OnCreate))
-			return;
-
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCreate]);
+		ScriptMethod method = ScriptMethod::OnEnable;
+		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	void ScriptInstance::InvokeOnUpdate(TimeStep delta)
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnReset()
 	{
-		MonoMethod* onUpdateMethod = nullptr;
-		void* param = nullptr;
-
-		if (MethodExists(ManagedMethod::OnUpdateDelta))
-		{
-			float dt = delta.GetDeltaTime();
-			param = &dt;
-			onUpdateMethod = m_ManagedMethods[ManagedMethod::OnUpdateDelta];
-		}
-		else if (MethodExists(ManagedMethod::OnUpdate))
-		{
-			onUpdateMethod = m_ManagedMethods[ManagedMethod::OnUpdate];
-		}
-
-		// No OnUpdate method was found so just leave
-		if (onUpdateMethod == nullptr)
-		{
-			return;
-		}
-
-		ScriptUtils::InvokeMethod(m_Instance, onUpdateMethod, &param);
+		ScriptMethod method = ScriptMethod::OnReset;
+		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	void ScriptInstance::InvokeOnDestroy()
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCreate()
 	{
-		if (!MethodExists(ManagedMethod::OnDestroy))
-			return;
-
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnDestroy]);
+		ScriptMethod method = ScriptMethod::OnCreate;
+		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	void ScriptInstance::InvokeOnCollisionEnter(const Collision& collision)
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnUpdate()
 	{
-		if (!MethodExists(ManagedMethod::OnCollisionEnter))
-			return;
-
-		void* param = (void*)&collision;
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCollisionEnter], &param);
+		ScriptMethod method = ScriptMethod::OnUpdate;
+		return InvokeParameteredMethodInternal(method, nullptr);
 	}
 
-	void ScriptInstance::InvokeOnCollisionExit(const Collision& collision)
-	{
-		if (!MethodExists(ManagedMethod::OnCollisionExit))
-			return;
-
-		void* param = (void*)&collision;
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnCollisionExit], &param);
-	}
-
-	void ScriptInstance::InvokeOnTriggerEnter(const Collision& collision)
-	{
-		if (!MethodExists(ManagedMethod::OnTriggerEnter))
-			return;
-
-		void* param = (void*)&collision;
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnTriggerEnter], &param);
-	}
-
-	void ScriptInstance::InvokeOnTriggerExit(const Collision& collision)
-	{
-		if (!MethodExists(ManagedMethod::OnTriggerExit))
-			return;
-
-		void* param = (void*)&collision;
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnTriggerExit], &param);
-	}
-
-	void ScriptInstance::InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
-	{
-		if (!MethodExists(ManagedMethod::OnFixedJointDisconnected))
-			return;
-
-		void* params[] = { (void*)&forceAndTorque.first, (void*)&forceAndTorque.second };
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnFixedJointDisconnected], params);
-	}
-
-	void ScriptInstance::InvokeOnEnabled()
-	{
-		if (!MethodExists(ManagedMethod::OnEnabled))
-			return;
-
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnEnabled]);
-	}
-
-	void ScriptInstance::InvokeOnDisabled()
-	{
-		if (!MethodExists(ManagedMethod::OnDisabled))
-			return;
-
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnDisabled]);
-	}
-
-	void ScriptInstance::InvokeOnGui()
-	{
-		if (!MethodExists(ManagedMethod::OnGui))
-			return;
-
-		ScriptUtils::InvokeMethod(m_Instance, m_ManagedMethods[ManagedMethod::OnGui]);
-	}
-
-	bool ScriptInstance::MethodExists(ManagedMethod method) const
-	{
-		const bool contained = m_ManagedMethods.contains(method);
-		const bool ptr = (bool)m_ManagedMethods.at(method);
-		return contained && ptr;
+    vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnPostUpdate()
+    {
+		ScriptMethod method = ScriptMethod::OnPostUpdate;
+		return InvokeParameteredMethodInternal(method, nullptr);
     }
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnApplicationPause()
+	{
+		ScriptMethod method = ScriptMethod::OnApplicationPause;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnApplicationResume()
+	{
+		ScriptMethod method = ScriptMethod::OnApplicationResume;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDebugRender()
+	{
+		ScriptMethod method = ScriptMethod::OnDebugRender;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCollisionEnter(const Collision& collision)
+	{
+		ScriptMethod method = ScriptMethod::OnCollisionEnter;
+		void* param = (void*)&collision;
+		return InvokeParameteredMethodInternal(method, &param);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnCollisionExit(const Collision& collision)
+	{
+		ScriptMethod method = ScriptMethod::OnCollisionExit;
+		void* param = (void*)&collision;
+		return InvokeParameteredMethodInternal(method, &param);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnTriggerEnter(const Collision& collision)
+	{
+		ScriptMethod method = ScriptMethod::OnTriggerEnter;
+		void* param = (void*)&collision;
+		return InvokeParameteredMethodInternal(method, &param);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnTriggerExit(const Collision& collision)
+	{
+		ScriptMethod method = ScriptMethod::OnTriggerExit;
+		void* param = (void*)&collision;
+		return InvokeParameteredMethodInternal(method, &param);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnFixedJointDisconnected(const std::pair<Math::vec3, Math::vec3>& forceAndTorque)
+	{
+		ScriptMethod method = ScriptMethod::OnFixedJointDisconnected;
+		void* params[] = { (void*)&forceAndTorque.first, (void*)&forceAndTorque.second };
+		return InvokeParameteredMethodInternal(method, params);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnApplicationQuit()
+	{
+		ScriptMethod method = ScriptMethod::OnApplicationQuit;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDisable()
+	{
+		ScriptMethod method = ScriptMethod::OnDisable;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnDestroy()
+	{
+		ScriptMethod method = ScriptMethod::OnDestroy;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeOnGuiRender()
+	{
+		ScriptMethod method = ScriptMethod::OnGuiRender;
+		return InvokeParameteredMethodInternal(method, nullptr);
+	}
+
+	bool ScriptInstance::ScriptMethodExists(ScriptMethod method) const
+	{
+		const bool contained = m_ScriptMethods.contains(method);
+		if (!contained)
+		{
+			return false;
+		}
+
+		const MonoMethod* ptr = m_ScriptMethods.at(method);
+		if (ptr == nullptr)
+		{
+			return false;
+		}
+
+		return true;
+    }
+
+	vxstl::option<RT_ScriptInvokeResult> ScriptInstance::InvokeParameteredMethodInternal(ScriptMethod method, void** params)
+	{
+		if (!m_Instance)
+		{
+			return vxstl::make_option<RT_ScriptInvokeResult>();
+		}
+
+		if (!ScriptMethodExists(method))
+		{
+			return vxstl::make_option<RT_ScriptInvokeResult>();
+		}
+
+		MonoMethod* managedMethod = m_ScriptMethods[method];
+		RT_ScriptInvokeResult result = ScriptUtils::InvokeManagedMethod(m_Instance, managedMethod, params);
+		return vxstl::make_option(result);
+	}
 
 	bool ScriptInstance::GetFieldValueInternal(const std::string& fieldName, void* buffer)
 	{
-		const auto& fields = m_ScriptClass->GetFields();
+		const std::map<std::string, ScriptField>& fields = m_ScriptClass->GetFields();
 		auto it = fields.find(fieldName);
 
 		if (it == fields.end())
@@ -171,7 +194,7 @@ namespace Vortex {
 
 	bool ScriptInstance::SetFieldValueInternal(const std::string& fieldName, const void* value)
 	{
-		const auto& fields = m_ScriptClass->GetFields();
+		const std::map<std::string, ScriptField>& fields = m_ScriptClass->GetFields();
 		auto it = fields.find(fieldName);
 
 		if (it == fields.end())

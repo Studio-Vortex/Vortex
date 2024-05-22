@@ -1,21 +1,29 @@
 #include "vxpch.h"
 #include "OpenGLShader.h"
 
+#include "Vortex/Core/String.h"
+
 #include <Glad/glad.h>
 
 namespace Vortex {
 
 	static GLenum ShaderTypeFromString(const std::string& type)
 	{
-		if (type == "vertex" || type == "Vertex")
+		if (String::FastCompare(type, "vertex") || String::FastCompare(type, "Vertex"))
+		{
 			return GL_VERTEX_SHADER;
-		if (type == "geometry" || type == "Geometry")
+		}
+		else if (String::FastCompare(type, "geometry") || String::FastCompare(type, "Geometry"))
+		{
 			return GL_GEOMETRY_SHADER;
-		if (type == "fragment" || type == "Fragment" || type == "pixel" || type == "Pixel")
+		}
+		else if (String::FastCompare(type, "fragment") || String::FastCompare(type, "Fragment") || String::FastCompare(type, "pixel") || String::FastCompare(type, "Pixel"))
+		{
 			return GL_FRAGMENT_SHADER;
+		}
 
 		VX_CORE_ASSERT(false, "Invalid Shader Type!");
-		return NULL;
+		return (GLenum)0;
 	}
 
 	OpenGLShader::OpenGLShader(const std::string& filepath)
@@ -34,16 +42,22 @@ namespace Vortex {
 		std::unordered_map<GLenum, std::string> sources;
 		sources[GL_VERTEX_SHADER] = vertexSrc;
 		sources[GL_FRAGMENT_SHADER] = fragmentSrc;
+
+		if (!geometrySrc.empty())
+		{
+			sources[GL_GEOMETRY_SHADER] = geometrySrc;
+		}
+
 		Compile(sources);
-		VX_CONSOLE_LOG_INFO("Shader Loaded: {}", m_Name);
+
+		VX_CONSOLE_LOG_INFO("[Renderer] Shader Loaded: {}", m_Name);
 	}
 
 	OpenGLShader::~OpenGLShader()
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (m_RendererID)
-			glDeleteProgram(m_RendererID);
+		glDeleteProgram(m_RendererID);
 	}
 
 	void OpenGLShader::CreateShader(const std::string& filepath)
@@ -53,12 +67,12 @@ namespace Vortex {
 		Compile(shaderSources);
 
 		// Extract name from filepath
-		auto lastSlash = filepath.find_last_of("/\\");
-		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-		auto lastDot = filepath.rfind('.');
-		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
+		size_t lastSlash = filepath.find_last_of("/\\");
+		lastSlash = (lastSlash == std::string::npos) ? (0) : (lastSlash + 1);
+		const size_t lastDot = filepath.rfind('.');
+		const size_t count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
 		m_Name = filepath.substr(lastSlash, count);
-		VX_CONSOLE_LOG_INFO("Shader Loaded: '{}' - path /{}", m_Name, filepath);
+		VX_CONSOLE_LOG_INFO("[Renderer] Shader Loaded: '{}'", m_Name);
 	}
 
 	std::string OpenGLShader::ReadFile(const std::string& filepath) const
@@ -81,12 +95,12 @@ namespace Vortex {
 			}
 			else
 			{
-				VX_CONSOLE_LOG_ERROR("Could not read from file '/{}'", filepath);
+				VX_CONSOLE_LOG_ERROR("File was empty while trying to read shader source '/{}'", filepath);
 			}
 		}
 		else
 		{
-			VX_CONSOLE_LOG_ERROR("Failed to open shader file from: '/{}'", filepath);
+			VX_CONSOLE_LOG_ERROR("Failed to open shader: '/{}'", filepath);
 		}
 
 		return result;
@@ -152,8 +166,8 @@ namespace Vortex {
 
 				glDeleteShader(shader);
 
-				VX_CONSOLE_LOG_ERROR("{}", &infoLog[0]);
-				VX_CORE_ASSERT(false, "Shader compilation failed!");
+				VX_CONSOLE_LOG_ERROR("[Renderer] Shader '{}' compilation failed", m_Name);
+				VX_CONSOLE_LOG_ERROR("[Renderer] Shader Error: {}", &infoLog[0]);
 				break;
 			}
 			
@@ -368,12 +382,17 @@ namespace Vortex {
 	int OpenGLShader::GetUniformLocation(const std::string& uniformName) const
 	{
 		auto it = m_UniformLocationCache.find(uniformName);
-		if (it != m_UniformLocationCache.end())
-			return it->second;
+		
+		// Look for cached location
+		if (it == m_UniformLocationCache.end())
+		{
+			// Cache the location
+			int32_t location = glGetUniformLocation(m_RendererID, uniformName.c_str());
+			m_UniformLocationCache[uniformName] = location;
+			return location;
+		}
 
-		int32_t location = glGetUniformLocation(m_RendererID, uniformName.c_str());
-		m_UniformLocationCache[uniformName] = location;
-		return location;
+		return it->second;
 	}
 
 }

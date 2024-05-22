@@ -101,8 +101,6 @@ namespace Vortex {
 
 		public override int GetHashCode() => (X, Y, Z, W).GetHashCode();
 
-		public float Length() => Mathf.Sqrt(X * X + Y * Y + Z * Z + W * W);
-
 		public static Vector4 Lerp(Vector4 p1, Vector4 p2, float maxDistanceDelta)
 		{
 			if (maxDistanceDelta < 0.0f)

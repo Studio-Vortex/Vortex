@@ -12,7 +12,7 @@ namespace Vortex {
 	{
 	public:
 		WindowResizeEvent(uint32_t width, uint32_t height)
-			: m_Width(width), m_Height(height) {}
+			: m_Width(width), m_Height(height) { }
 
 		inline uint32_t GetWidth() const { return m_Width; }
 		inline uint32_t GetHeight() const { return m_Height; }
@@ -20,7 +20,7 @@ namespace Vortex {
 		std::string ToString() const override
 		{
 			std::stringstream ss;
-			ss << "WindowResizedEvent: " << m_Width << ", " << m_Height;
+			ss << "WindowResizeEvent: " << m_Width << ", " << m_Height;
 			return ss.str();
 		}
 
@@ -32,10 +32,34 @@ namespace Vortex {
 		uint32_t m_Height;
 	};
 
+	class VORTEX_API WindowMoveEvent : public Event
+	{
+	public:
+		WindowMoveEvent(uint32_t positionX, uint32_t positionY)
+			: m_PositionX(positionX), m_PositionY(positionY) { }
+
+		inline uint32_t GetPositionX() const { return m_PositionX; }
+		inline uint32_t GetPositionY() const { return m_PositionY; }
+
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "WindowMoveEvent: " << m_PositionX << ", " << m_PositionY;
+			return ss.str();
+		}
+
+		EVENT_CLASS_TYPE(WindowMove)
+		EVENT_CLASS_CATEGORY(EventCategoryApplication)
+
+	private:
+		uint32_t m_PositionX;
+		uint32_t m_PositionY;
+	};
+
 	class VORTEX_API WindowCloseEvent : public Event
 	{
 	public:
-		WindowCloseEvent() {}
+		WindowCloseEvent() { }
 
 		EVENT_CLASS_TYPE(WindowClose)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
@@ -44,23 +68,19 @@ namespace Vortex {
 	class VORTEX_API WindowDragDropEvent : public Event
 	{
 	public:
-		WindowDragDropEvent(const std::vector<std::filesystem::path>& paths)
-			: m_Filepaths(paths)
-		{
-		}
+		WindowDragDropEvent(const std::vector<Fs::Path>& paths)
+			: m_Filepaths(paths) { }
 
-		WindowDragDropEvent(std::vector<std::filesystem::path>&& paths)
-			: m_Filepaths(std::move(paths))
-		{
-		}
+		WindowDragDropEvent(std::vector<Fs::Path>&& paths)
+			: m_Filepaths(std::move(paths)) { }
 
-		const std::vector<std::filesystem::path>& GetPaths() const { return m_Filepaths; }
+		const std::vector<Fs::Path>& GetPaths() const { return m_Filepaths; }
 
 		EVENT_CLASS_TYPE(WindowDragDrop)
 		EVENT_CLASS_CATEGORY(EventCategoryApplication)
 
 	private:
-		std::vector<std::filesystem::path> m_Filepaths;
+		std::vector<Fs::Path> m_Filepaths;
 	};
 
 }

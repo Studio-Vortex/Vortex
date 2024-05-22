@@ -38,9 +38,3 @@ namespace Vortex {
 
 
 }
-
-namespace ImGui {
-
-	void TextCentered(const char* text, float y = 0.0f, ...);
-
-}

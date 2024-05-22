@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/Math/Math.h"
-#include "Vortex/Core/Math/AABB.h"
+
+#include "Vortex/Math/Math.h"
+#include "Vortex/Math/AABB.h"
 
 #include "Vortex/Scene/Components.h"
 
@@ -66,7 +67,7 @@ namespace Vortex {
 
 		static void DrawAABB(const Math::AABB& aabb, const Math::mat4& transform, const Math::vec4& color);
 
-		static void DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const Math::vec2& size, const Math::vec4& color);
+		static void DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const Math::vec2& size, const Math::vec4& color, int entityID = -1);
 		static void DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const SharedReference<Texture2D>& texture, const Math::vec2& size, const Math::vec4& color, int entityID = -1);
 
 		// Rotation is in radians

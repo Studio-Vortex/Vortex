@@ -102,7 +102,7 @@ namespace Vortex {
 		}
 	}
 
-	void Submesh::Render()
+	void Submesh::Render() const
 	{
 		SharedReference<Shader> shader = m_Material->GetShader();
 		m_Material->Bind();
@@ -245,7 +245,7 @@ namespace Vortex {
 			MaterialProperties materialProps;
 			materialProps.Name = std::string(mat->GetName().C_Str());
 
-			std::filesystem::path directoryPath = FileSystem::GetParentDirectory(std::filesystem::path(filepath));
+			Fs::Path directoryPath = FileSystem::GetParentDirectory(Fs::Path(filepath));
 
 			auto LoadMaterialTextureFunc = [&](auto textureType, auto index = 0)
 			{
@@ -257,8 +257,8 @@ namespace Vortex {
 					return result;
 
 				const char* pathCStr = textureFilepath.C_Str();
-				std::filesystem::path filepath = std::filesystem::path(pathCStr);
-				std::filesystem::path relativePath = directoryPath / filepath;
+				Fs::Path filepath = Fs::Path(pathCStr);
+				Fs::Path relativePath = directoryPath / filepath;
 
 				if (FileSystem::Exists(relativePath))
 				{
@@ -268,15 +268,17 @@ namespace Vortex {
 				return result;
 			};
 
-			materialProps.AlbedoMap = LoadMaterialTextureFunc(aiTextureType_DIFFUSE, 0);
-			if (!materialProps.AlbedoMap)
-				materialProps.AlbedoMap = LoadMaterialTextureFunc(aiTextureType_BASE_COLOR, 0);
+			std::unordered_map<std::string, AssetHandle>& materialTextures = materialProps.Textures;
 
-			materialProps.NormalMap = LoadMaterialTextureFunc(aiTextureType_NORMALS, 0);
-			materialProps.MetallicMap = LoadMaterialTextureFunc(aiTextureType_METALNESS, 0);
-			materialProps.RoughnessMap = LoadMaterialTextureFunc(aiTextureType_REFLECTION, 0);
-			materialProps.EmissionMap = LoadMaterialTextureFunc(aiTextureType_EMISSIVE, 0);
-			materialProps.AmbientOcclusionMap = LoadMaterialTextureFunc(aiTextureType_AMBIENT_OCCLUSION, 0);
+			materialTextures["u_AlbedoMap"] = LoadMaterialTextureFunc(aiTextureType_DIFFUSE, 0);
+			if (!materialTextures["u_AlbedoMap"])
+				materialTextures["u_AlbedoMap"] = LoadMaterialTextureFunc(aiTextureType_BASE_COLOR, 0);
+
+			materialTextures["u_NormalMap"] = LoadMaterialTextureFunc(aiTextureType_NORMALS, 0);
+			materialTextures["u_MetallicMap"] = LoadMaterialTextureFunc(aiTextureType_METALNESS, 0);
+			materialTextures["u_RoughnessMap"] = LoadMaterialTextureFunc(aiTextureType_REFLECTION, 0);
+			materialTextures["u_EmissionMap"] = LoadMaterialTextureFunc(aiTextureType_EMISSIVE, 0);
+			materialTextures["u_AmbientOcclusionMap"] = LoadMaterialTextureFunc(aiTextureType_AMBIENT_OCCLUSION, 0);
 			
 			material = Material::Create(Renderer::GetShaderLibrary().Get("PBR"), materialProps);
 		}

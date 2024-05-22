@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Vortex/Core/Math/Math.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+#include "Vortex/Math/Math.h"
 
 #include "Vortex/Editor/EditorPanel.h"
 #include "Vortex/Editor/ConsoleMessage.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 

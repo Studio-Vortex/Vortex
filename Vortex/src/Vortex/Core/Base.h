@@ -2,8 +2,8 @@
 
 #include "Vortex/Core/PlatformDetection.h"
 
-#include <vector>
 #include <memory>
+#include <cstdint>
 
 // DLL support
 #ifdef VX_PLATFORM_WINDOWS
@@ -18,12 +18,12 @@
 	#endif
 #else
 	#error "Vortex only supports Windows!"
-#endif // End of DLL support
+#endif // DLL support
 
 #ifdef VX_DEBUG
-	#if defined(VX_PLATFORM_WINDOWS)
+	#ifdef VX_PLATFORM_WINDOWS
 		#define VX_DEBUGBREAK() __debugbreak()
-	#elif defined(VX_PLATFORM_LINUX)
+	#elif VX_PLATFORM_LINUX
 		#include <signal.h>
 		#define VX_DEBUGBREAK() raise(SIGTRAP)
 	#else
@@ -42,18 +42,26 @@
 	#define VX_CORE_ASSERT(x, ...)
 #endif // VX_ENABLE_ASSERTS
 
-#define VX_VERIFY(x) { if(!(x)) { VX_DEBUGBREAK(); } }
-#define VX_CORE_VERIFY(x) { if (!(x)) { VX_DEBUGBREAK(); } }
+#ifdef VX_64BIT
+	#define VX_ARCH_POINTER_WIDTH 8
+#elif VX_32BIT
+	#define VX_ARCH_POINTER_WIDTH 4
+#endif // VX_64
+
+#define VX_VERIFY(x) { if(!(x)) { VX_ERROR("Verify Failed: {} {}", __FILE__, __LINE__); } }
+#define VX_CORE_VERIFY(x) { if (!(x)) { VX_CONSOLE_LOG_ERROR("Verify Failed: {} {}", __FILE__, __LINE__); } }
 
 #define VX_FORCE_INLINE inline
 
-#define VX_ARRAYCOUNT(ident) sizeof(ident) / sizeof(ident[0])
+#define VX_ARRAYSIZE(ident) sizeof(ident) / sizeof(ident[0])
+
+#define VX_STRINGIFY(input) #input
 
 #define VX_BIND_CALLBACK(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
-#define BIT(x) (1 << x)
-
 #define VORTEX_BUILD_ID "v0.1a"
+
+#define BIT(x) (1 << x)
 
 namespace Vortex {
 
@@ -61,30 +69,49 @@ namespace Vortex {
 	VORTEX_API void ShutdownEngine();
 
 	template <typename T>
-	using UniqueRef = std::unique_ptr<T>;
+	using VORTEX_API UniqueRef = std::unique_ptr<T>;
 
 	template <typename T>
-	using SharedRef = std::shared_ptr<T>;
+	using VORTEX_API SharedRef = std::shared_ptr<T>;
 
 	template <typename T>
-	using WeakRef = std::weak_ptr<T>;
+	using VORTEX_API WeakRef = std::weak_ptr<T>;
 
 	template <typename T, typename... Args>
-	constexpr UniqueRef<T> CreateUnique(Args&&... args)
+	VORTEX_API constexpr UniqueRef<T> CreateUnique(Args&&... args)
 	{
 		return std::make_unique<T>(std::forward<Args>(args)...);
 	}
 
 	template <typename T, typename... Args>
-	constexpr SharedRef<T> CreateShared(Args&&... args)
+	VORTEX_API constexpr SharedRef<T> CreateShared(Args&&... args)
 	{
 		return std::make_shared<T>(std::forward<Args>(args)...);
 	}
 
 	template <typename T, typename... Args>
-	constexpr WeakRef<T> CreateWeak(SharedRef<T> ptr)
+	VORTEX_API constexpr WeakRef<T> CreateWeak(SharedRef<T> ptr)
 	{
 		return WeakRef<T>(ptr);
 	}
+
+	// --- TYPEDEFS -----------------------------------------------------
+	
+	typedef int8_t VORTEX_API i8;
+	typedef int16_t VORTEX_API i16;
+	typedef int32_t VORTEX_API i32;
+	typedef int64_t VORTEX_API i64;
+
+	typedef uint8_t VORTEX_API u8;
+	typedef uint16_t VORTEX_API u16;
+	typedef uint32_t VORTEX_API u32;
+	typedef uint64_t VORTEX_API u64;
+
+	typedef float VORTEX_API f32;
+	typedef double VORTEX_API f64;
+
+	typedef uint8_t VORTEX_API byte;
+
+	// ------------------------------------------------------------------
 
 }

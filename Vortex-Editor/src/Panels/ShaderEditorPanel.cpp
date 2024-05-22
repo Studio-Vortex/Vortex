@@ -2,12 +2,12 @@
 
 namespace Vortex {
 
-	void ShaderEditorPanel::OnEditorAttach()
+	void ShaderEditorPanel::OnPanelAttach()
 	{
 		m_TextEditor.SetShowWhitespaces(false);
 	}
 
-	void ShaderEditorPanel::OnEditorDetach() { }
+	void ShaderEditorPanel::OnPanelDetach() { }
 
 	void ShaderEditorPanel::OnGuiRender()
 	{

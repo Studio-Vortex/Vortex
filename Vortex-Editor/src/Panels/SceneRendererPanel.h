@@ -11,13 +11,16 @@ namespace Vortex {
 	public:
 		~SceneRendererPanel() override = default;
 
+		void OnPanelAttach() override;
 		void OnGuiRender() override;
 
 		EDITOR_PANEL_TYPE(SceneRenderer)
 
 	private:
-		inline static std::vector<SharedReference<Shader>> s_Loaded2DShaders;
-		inline static std::vector<SharedReference<Shader>> s_Loaded3DShaders;
+		std::vector<SharedReference<Shader>> m_Loaded2DShaders;
+		std::vector<SharedReference<Shader>> m_Loaded3DShaders;
+		std::vector<std::string> m_ShaderNames;
+		std::vector<SharedReference<Shader>> m_Shaders;
 	};
 
 }

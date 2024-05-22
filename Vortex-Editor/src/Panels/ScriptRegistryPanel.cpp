@@ -6,39 +6,47 @@ namespace Vortex {
 
 	void ScriptRegistryPanel::OnGuiRender()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
 		if (!IsOpen)
 			return;
 
-		Gui::Begin(m_PanelName.c_str(), &IsOpen);
+		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
 
-		static std::vector<MonoAssemblyTypeInfo> coreAssemblyTypeInfo = ScriptEngine::GetCoreAssemblyTypeInfo();
+		Gui::Begin(m_PanelName.c_str(), &IsOpen, flags);
 
-		Gui::PushFont(boldFont);
-		Gui::Text("Core Assembly Classes: %u", (uint32_t)coreAssemblyTypeInfo.size());
-		Gui::PopFont();
+		const ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
+		Math::vec2 tableSize = { contentRegionAvail.x, contentRegionAvail.y };
 
-		if (Gui::BeginTable("Registry", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
-		{
-			Gui::TableSetupColumn("Registered Class Name");
-			Gui::TableSetupColumn("Field Count");
-			Gui::TableHeadersRow();
+		tableSize.y -= Gui::CalcTextSize("Dummy Text").y * 1.25f;
 
-			Gui::TableNextColumn();
-			for (const auto& typeInfo : coreAssemblyTypeInfo)
-				Gui::Text("%s.%s", typeInfo.Namespace, typeInfo.Name);
-
-			Gui::TableNextColumn();
-			for (const auto& typeInfo : coreAssemblyTypeInfo)
-				Gui::Text("%u", typeInfo.FieldCount);
-
-			Gui::EndTable();
-		}
+		RenderScriptCoreTypedefInfo(tableSize);
 
 		Gui::End();
+	}
+
+	void ScriptRegistryPanel::RenderScriptCoreTypedefInfo(const Math::vec2& size)
+	{
+		static std::vector<ScriptAssemblyTypedefInfo> scriptCoreTypedefInfo = ScriptEngine::GetCoreAssemblyTypeInfo();
+
+		UI::PushFont("Bold");
+		Gui::Text("Script Core Typedefs: %u", (uint32_t)scriptCoreTypedefInfo.size());
+		UI::PopFont();
+
+		static const char* columns[] = { "Registered Class Name", "Field Count" };
+
+		UI::Table("Script Core Registry", columns, VX_ARRAYSIZE(columns), *(ImVec2*)&size, []()
+		{
+			Gui::TableNextColumn();
+			for (const ScriptAssemblyTypedefInfo& typedefInfo : scriptCoreTypedefInfo)
+			{
+				Gui::Text("%s.%s", typedefInfo.Namespace, typedefInfo.Name);
+			}
+
+			Gui::TableNextColumn();
+			for (const ScriptAssemblyTypedefInfo& typedefInfo : scriptCoreTypedefInfo)
+			{
+				Gui::Text("%u", typedefInfo.FieldCount);
+			}
+		});
 	}
 
 }

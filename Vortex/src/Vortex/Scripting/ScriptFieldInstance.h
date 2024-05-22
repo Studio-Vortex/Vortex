@@ -1,12 +1,14 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include "Vortex/Scripting/ScriptField.h"
 
 namespace Vortex {
 
 #define VX_SCRIPT_FIELD_MAX_BYTES 16
 
-	struct ScriptFieldInstance
+	struct VORTEX_API ScriptFieldInstance
 	{
 		ScriptField Field;
 

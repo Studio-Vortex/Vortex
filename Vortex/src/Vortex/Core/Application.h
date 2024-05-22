@@ -13,9 +13,23 @@
 
 #include "Vortex/Gui/GuiLayer.h"
 
+#include "Vortex/stl/function_queue.h"
+
 int main(int argc, char** argv);
 
 namespace Vortex {
+
+	struct VORTEX_API FrameTime
+	{
+		TimeStep DeltaTime = 0.0f;
+		float ScriptUpdateTime = 0.0f;
+		float PhysicsUpdateTime = 0.0f;
+
+		void Clear()
+		{
+			*this = FrameTime();
+		}
+	};
 
 	struct VORTEX_API ApplicationCommandLineArgs
 	{
@@ -57,48 +71,44 @@ namespace Vortex {
 
 		void OnEvent(Event& e);
 
-		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
+		VX_FORCE_INLINE GuiLayer* GetGuiLayer() { return m_GuiLayer; }
 
 		VX_FORCE_INLINE static Application& Get() { return *s_Instance; }
 		VX_FORCE_INLINE Window& GetWindow() { return *m_Window; }
 		VX_FORCE_INLINE const Window& GetWindow() const { return *m_Window; }
 
-		const ApplicationProperties& GetProperties() const { return m_Properties; }
+		VX_FORCE_INLINE const ApplicationProperties& GetProperties() const { return m_Properties; }
 
 		VX_FORCE_INLINE bool IsRuntime() const { return m_Properties.IsRuntime; }
 		VX_FORCE_INLINE bool IsMinimized() const { return m_ApplicationMinimized; }
 
 		void Close();
 
-		void SubmitToMainThreadQueue(const std::function<void()>& func);
+		VX_FORCE_INLINE vxstl::function_queue<void>& GetPreUpdateFunctionQueue() const { return m_MainThreadPreUpdateFunctionQueue; }
+		VX_FORCE_INLINE vxstl::function_queue<void>& GetPostUpdateFunctionQueue() const { return m_MainThreadPostUpdateFunctionQueue; }
 
 		// TODO: think of a better place to put these
-		std::string GetEditorBinaryPath() const { return "Vortex-Editor.exe"; }
-		std::string GetRuntimeBinaryPath() const { return "Vortex-Runtime.exe"; }
+		VX_FORCE_INLINE std::string GetEditorBinaryPath() const { return "Vortex-Editor.exe"; }
+		VX_FORCE_INLINE std::string GetRuntimeBinaryPath() const { return "Vortex-Runtime.exe"; }
 
 		void AddModule(const SubModule& submodule);
 		void RemoveModule(const SubModule& submodule);
 		const ModuleLibrary& GetModuleLibrary() const;
 
+		VX_FORCE_INLINE const FrameTime& GetFrameTime() const { return m_FrameTime; }
+		VX_FORCE_INLINE FrameTime& GetFrameTime() { return m_FrameTime; }
+
 	private:
-		void SetWorkingDirectory();
+		i32 Run();
 
-		// We can't use 'CreateWindow' because it is a function of the Windows API
-		void CreateWindowV();
-
-		void InitializeSubModules();
-		void ShutdownSubModules();
-
-		void ExecuteMainThreadQueue();
-		
-		void Run();
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 		bool OnWindowResizeEvent(WindowResizeEvent& e);
 
 	private:
-		static Application* s_Instance;
+		inline static Application* s_Instance = nullptr;
 
 	private:
+		FrameTime m_FrameTime;
 		ApplicationProperties m_Properties;
 		UniqueRef<Window> m_Window = nullptr;
 		GuiLayer* m_GuiLayer = nullptr;
@@ -106,10 +116,11 @@ namespace Vortex {
 
 		ModuleLibrary m_ModuleLibrary;
 
-		std::vector<std::function<void()>> m_MainThreadQueue;
-		std::mutex m_MainThreadQueueMutex;
+		mutable vxstl::function_queue<void> m_MainThreadPreUpdateFunctionQueue;
+		mutable vxstl::function_queue<void> m_MainThreadPostUpdateFunctionQueue;
 
 		float m_LastFrameTimeStamp = 0.0f;
+
 		bool m_Running = false;
 		bool m_ApplicationMinimized = false;
 
@@ -117,7 +128,7 @@ namespace Vortex {
 		friend int ::main(int argc, char** argv);
 	};
 
-	// To be defined in CLIENT as part of Application Initialization
+	// To be defined in CLIENT
 	Application* CreateApplication(ApplicationCommandLineArgs args);
 
 }

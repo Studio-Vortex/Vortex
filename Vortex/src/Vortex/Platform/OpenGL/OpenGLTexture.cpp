@@ -77,8 +77,7 @@ namespace Vortex {
 	{
 		VX_PROFILE_FUNCTION();
 
-		if (m_RendererID)
-			glDeleteTextures(1, &m_RendererID);
+		glDeleteTextures(1, &m_RendererID);
 	}
 
 	void OpenGLTexture2D::SetData(const void* data, uint32_t size)

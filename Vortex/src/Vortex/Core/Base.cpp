@@ -6,7 +6,7 @@
 
 namespace Vortex {
 
-	VORTEX_API void InitalizeEngine()
+	void InitalizeEngine()
 	{
 		Platform::HideConsoleWindow();
 
@@ -16,7 +16,7 @@ namespace Vortex {
 		VX_CONSOLE_LOG_TRACE("Initalizing...");
 	}
 
-	VORTEX_API void ShutdownEngine()
+	void ShutdownEngine()
 	{
 		VX_CONSOLE_LOG_TRACE("Shutting down...");
 

@@ -1,15 +1,20 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include <vector>
 #include <string>
+#include <string_view>
 
 namespace Vortex {
 
 	class VORTEX_API String
 	{
 	public:
-		static std::vector<std::string> SplitString(const std::string_view string, const std::string_view& delimiters);
-		static std::vector<std::string> SplitString(const std::string_view string, const char delimiter);
+		static bool FastCompare(const std::string_view& lhs, const std::string_view& rhs);
+
+		static std::vector<std::string> SplitString(const std::string_view& string, const std::string_view& delimiters);
+		static std::vector<std::string> SplitString(const std::string_view& string, const char delimiter);
 
 		static std::string ToUpper(std::string& string);
 		static std::string ToUpperCopy(std::string_view& string);

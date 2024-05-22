@@ -9,7 +9,7 @@
 #include "Vortex/Asset/AssetManager.h"
 
 #include "Vortex/Scene/Scene.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 
 #include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
 
@@ -17,8 +17,7 @@ namespace Vortex {
 
 	struct ParticleSystemInternalData
 	{
-		using ParticleEmitterData = std::unordered_map<UUID, AssetHandle>;
-		ParticleEmitterData ParticleData;
+		std::unordered_map<UUID, AssetHandle> PausedParticleEmitters;
 
 		SubModule Module;
 	};
@@ -43,8 +42,6 @@ namespace Vortex {
 
 	void ParticleSystem::Shutdown()
 	{
-		s_Data.ParticleData.clear();
-
 		Application::Get().RemoveModule(s_Data.Module);
 		s_Data.Module.Shutdown();
 	}
@@ -52,20 +49,16 @@ namespace Vortex {
 	void ParticleSystem::OnContextSceneCreated(Scene* context)
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
-		
-		s_Data.ParticleData.clear();
 	}
 
 	void ParticleSystem::OnContextSceneDestroyed(Scene* context)
 	{
 		VX_CORE_ASSERT(context, "Invalid scene!");
-
-		s_Data.ParticleData.clear();
 	}
 
-	void ParticleSystem::CreateAsset(Entity& entity)
+	void ParticleSystem::CreateAsset(Actor& actor)
 	{
-		VX_CORE_ASSERT(entity.HasComponent<ParticleEmitterComponent>(), "Entity doesn't have particle emitter component!");
+		VX_CORE_ASSERT(actor.HasComponent<ParticleEmitterComponent>(), "Actor doesn't have particle emitter component!");
 
 		std::string particleSystemDir = "Cache/ParticleSystem";
 		if (!FileSystem::Exists(particleSystemDir))
@@ -74,39 +67,58 @@ namespace Vortex {
 		std::string filename = "ParticleSystem";
 		std::string filepath = filename + ".vparticle";
 
-		ParticleEmitterComponent& pmc = entity.GetComponent<ParticleEmitterComponent>();
+		ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 
 		SharedReference<ParticleEmitter> particleEmitter = Project::GetEditorAssetManager()->CreateNewAsset<ParticleEmitter>(particleSystemDir, filepath, ParticleEmitterProperties{});
 		pmc.EmitterHandle = particleEmitter->Handle;
 		particleEmitter->SetName(filename);
 	}
 
-	void ParticleSystem::DestroyAsset(Entity& entity)
+	void ParticleSystem::DestroyAsset(Actor& actor)
 	{
-		VX_CORE_ASSERT(entity.HasComponent<ParticleEmitterComponent>(), "Entity doesn't have particle emitter component!");
-
-		VX_CORE_ASSERT(s_Data.ParticleData.contains(entity.GetUUID()), "Entity was not found in scene particle emitter map!");
-
-		s_Data.ParticleData.erase(entity.GetUUID());
+		VX_CORE_ASSERT(actor.HasComponent<ParticleEmitterComponent>(), "Actor doesn't have particle emitter component!");
 	}
 
 	void ParticleSystem::OnRuntimeStart(Scene* context)
 	{
+		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(context, "Invalid scene!");
+
+		auto view = context->GetAllActorsWith<ParticleEmitterComponent>();
+
+		for (const auto e : view)
+		{
+			Actor actor{ e, context };
+			if (!actor.IsActive())
+				continue;
+
+			ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
+				continue;
+
+			if (!pmc.IsActive)
+				continue;
+
+			pmc.IsActive = false;
+		}
 	}
 
 	void ParticleSystem::OnUpdateRuntime(Scene* context, TimeStep delta)
 	{
 		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(context, "Invalid scene!");
 
-		for (auto& [entityUUID, assetHandle] : s_Data.ParticleData)
+		auto view = context->GetAllActorsWith<ParticleEmitterComponent>();
+
+		for (const auto e : view)
 		{
-			Entity entity = context->TryGetEntityWithUUID(entityUUID);
-			if (!entity.IsActive())
+			Actor actor{ e, context };
+			if (!actor.IsActive())
 				continue;
 
-			auto& pmc = entity.GetComponent<ParticleEmitterComponent>();
+			ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
 			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
 				continue;
 
@@ -114,12 +126,13 @@ namespace Vortex {
 			if (!particleEmitter)
 				continue;
 
-			// Set the particle position to the entity's translation
-			Math::vec3 entityTranslation = context->GetWorldSpaceTransform(entity).Translation;
-			particleEmitter->GetProperties().Position = entityTranslation;
+			// Set the particle position to the actor's translation
+			const Math::vec3 actorTranslation = context->GetWorldSpaceTransform(actor).Translation;
+			particleEmitter->GetProperties().Position = actorTranslation;
+
 			particleEmitter->OnUpdate(delta);
 
-			if (!particleEmitter->IsActive())
+			if (!pmc.IsActive)
 				continue;
 
 			particleEmitter->EmitParticle();
@@ -128,17 +141,75 @@ namespace Vortex {
 
 	void ParticleSystem::OnRuntimeScenePaused(Scene* context)
 	{
+		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(context, "Invalid scene!");
+
+		auto view = context->GetAllActorsWith<ParticleEmitterComponent>();
+
+		for (const auto e : view)
+		{
+			Actor actor{ e, context };
+			if (!actor.IsActive())
+				continue;
+
+			ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
+				continue;
+
+			if (!pmc.IsActive)
+				continue;
+
+			pmc.IsActive = false;
+
+			s_Data.PausedParticleEmitters[actor.GetUUID()] = pmc.EmitterHandle;
+		}
 	}
 
 	void ParticleSystem::OnRuntimeSceneResumed(Scene* context)
 	{
+		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(context, "Invalid scene!");
+
+		for (const auto& [actorUUID, assetHandle] : s_Data.PausedParticleEmitters)
+		{
+			if (!AssetManager::IsHandleValid(assetHandle))
+				continue;
+
+			Actor actor = context->TryGetActorWithUUID(actorUUID);
+			VX_CORE_ASSERT(actor.HasComponent<ParticleEmitterComponent>(), "Actor must have particle emitter component!");
+
+			ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			pmc.IsActive = true;
+		}
+
+		s_Data.PausedParticleEmitters.clear();
 	}
 
 	void ParticleSystem::OnRuntimeStop(Scene* context)
 	{
+		VX_PROFILE_FUNCTION();
+
 		VX_CORE_ASSERT(context, "Invalid scene!");
+
+		auto view = context->GetAllActorsWith<ParticleEmitterComponent>();
+
+		for (const auto e : view)
+		{
+			Actor actor{ e, context };
+			if (!actor.IsActive())
+				continue;
+
+			ParticleEmitterComponent& pmc = actor.GetComponent<ParticleEmitterComponent>();
+			if (!AssetManager::IsHandleValid(pmc.EmitterHandle))
+				continue;
+
+			if (!pmc.IsActive)
+				continue;
+
+			pmc.IsActive = false;
+		}
 	}
 
 	void ParticleSystem::OnGuiRender()

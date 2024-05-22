@@ -17,24 +17,43 @@ namespace Vortex {
 		EDITOR_PANEL_TYPE(ECSDebug)
 
 	private:
-		void RenderSelectedEntityView(Entity selectedEntity);
-		void RenderSceneEntityView();
+		void RenderSelectedActorView(Actor selectedActor);
+		void RenderSceneActorView();
+
+		void PushClickedActor(Actor actor);
+		UUID PopClickedActor();
 
 		template <typename... TComponent>
-		inline void RenderEntityComponentSignature(Entity entity)
+		inline void RenderActorComponentSignature(Actor actor)
 		{
 			static const char* columns[] = { "Component", "Value" };
 
-			UI::Table("Component Signature", columns, VX_ARRAYCOUNT(columns), { Gui::GetContentRegionAvail().x, 400.0f }, [&]()
+			const ImVec2 contentRegionAvail = Gui::GetContentRegionAvail();
+			const ImVec2 tableSize = { contentRegionAvail.x, 300.0f };
+			UI::Table("Component Signature", columns, VX_ARRAYSIZE(columns), tableSize, [&]()
 			{
 				([&]()
 				{
 					uint32_t offset = strlen("struct Vortex::");
 					const char* componentName = typeid(TComponent).name() + offset;
-					const char* hasComponent = entity.HasComponent<TComponent>() ? "true" : "false";
+					const char* hasComponent = actor.HasComponent<TComponent>() ? "true" : "false";
 					
 					Gui::TableNextColumn();
 					Gui::Text(componentName);
+					UI::DrawItemActivityOutline();
+
+					if (Gui::IsItemClicked())
+					{
+						if (actor.HasComponent<TComponent>())
+						{
+							actor.RemoveComponent<TComponent>();
+						}
+						else
+						{
+							actor.AddComponent<TComponent>();
+						}
+					}
+
 					Gui::TableNextColumn();
 					Gui::Text(hasComponent);
 				}(), ...);
@@ -42,13 +61,15 @@ namespace Vortex {
 		}
 
 		template <typename... TComponent>
-		inline void RenderEntityComponentSignature(ComponentGroup<TComponent...>, Entity selectedEntity)
+		inline void RenderActorComponentSignature(ComponentGroup<TComponent...>, Actor selectedActor)
 		{
-			RenderEntityComponentSignature<TComponent...>(selectedEntity);
+			RenderActorComponentSignature<TComponent...>(selectedActor);
 		}
 
 	private:
-		bool m_ShowEntityComponentSignature = false;
+		std::stack<UUID> m_ClickedActors;
+
+		bool m_ShowActorComponentSignature = false;
 	};
 
 }

@@ -1,13 +1,16 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Scene/Scene.h"
+
 #include "Vortex/Asset/Asset.h"
 
-#include "Vortex/Scripting/MonoAssemblyTypeInfo.h"
+#include "Vortex/Scene/Scene.h"
+
+#include "Vortex/Scripting/RuntimeMethodArgument.h"
+#include "Vortex/Scripting/ScriptAssemblyTypedefInfo.h"
 #include "Vortex/Scripting/ScriptFieldInstance.h"
 #include "Vortex/Scripting/ScriptFieldTypes.h"
-#include "Vortex/Scripting/ManagedMethods.h"
+#include "Vortex/Scripting/ScriptMethods.h"
 #include "Vortex/Scripting/ScriptField.h"
 
 #include "Vortex/Utils/FileSystem.h"
@@ -29,9 +32,8 @@ namespace Vortex {
 
 	class ScriptClass;
 	class ScriptInstance;
-	union RuntimeMethodArgument;
 
-	using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
+	using VORTEX_API ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
 
 	class VORTEX_API ScriptEngine
 	{
@@ -46,36 +48,47 @@ namespace Vortex {
 		static bool LoadAppAssembly(const std::filesystem::path& filepath);
 		static void ReloadAssembly();
 
-		static void OnRuntimeStart(Scene* contextScene);
+		static void OnRuntimeStart(Scene* context);
 		static void OnRuntimeStop();
 
-		static bool EntityClassExists(const std::string& fullyQualifiedClassName);
-		static bool EntityInstanceExists(UUID entityUUID);
-		static void EntityConstructorRuntime(UUID entityUUID, MonoObject* instance);
-		static void CreateEntityScriptInstanceRuntime(Entity entity);
+		static bool ScriptClassExists(const std::string& className);
+		static bool IsScriptClassValid(Actor actor);
+		static bool IsScriptComponentEnabled(Actor actor);
 
-		static bool CallMethod(const std::string& methodName, Entity entity, const std::initializer_list<RuntimeMethodArgument*>& argumentList);
-		static bool CallMethod(ManagedMethod method, Entity entity, const std::initializer_list<RuntimeMethodArgument*>& argumentList = {});
+		static bool ScriptInstanceExists(UUID actorUUID);
+		static bool ScriptInstanceHasMethod(Actor actor, ScriptMethod method);
 
-		static SharedReference<ScriptClass> GetCoreEntityClass();
+		static void RT_ActorConstructor(UUID actorUUID, MonoObject* instance);
+		static void RT_CreateActorScriptInstance(Actor actor);
+		static void RT_InstantiateActor(Actor actor);
+
+		static bool Invoke(Actor actor, const std::string& methodName, const std::vector<RuntimeMethodArgument>& argumentList);
+		static bool Invoke(Actor actor, ScriptMethod method, const std::vector<RuntimeMethodArgument>& argumentList = {});
+
+		static SharedReference<ScriptClass> GetCoreActorClass();
 
 		static Scene* GetContextScene();
-		static MonoImage* GetCoreAssemblyImage();
+		static MonoImage* GetScriptCoreAssemblyImage();
 		static MonoDomain* GetAppDomain();
 		static MonoImage* GetAppAssemblyImage();
 
-		static void RuntimeInstantiateEntity(Entity entity);
+		static SharedReference<ScriptInstance> GetScriptInstance(UUID uuid);
+		static void DuplicateScriptInstance(Actor src, Actor dst);
 
-		static SharedReference<ScriptInstance> GetEntityScriptInstance(UUID uuid);
+		static SharedReference<ScriptInstance> GetFirstInstanceOfScriptClass(SharedReference<ScriptClass> scriptClass);
 
-		static SharedReference<ScriptClass> GetEntityClass(const std::string& name);
-		static std::unordered_map<std::string, SharedReference<ScriptClass>> GetClasses();
-		static const ScriptFieldMap& GetScriptFieldMap(Entity entity);
-		static ScriptFieldMap& GetMutableScriptFieldMap(Entity entity);
+		static SharedReference<ScriptClass> GetScriptClass(const std::string& className);
+		static const std::unordered_map<std::string, SharedReference<ScriptClass>>& GetScriptClasses();
+		static const ScriptFieldMap& GetScriptFieldMap(Actor actor);
+		static ScriptFieldMap& GetMutableScriptFieldMap(Actor actor);
 
-		static MonoObject* GetManagedInstance(UUID uuid);
+		static void CopyFieldValues(Actor src, Actor dst);
 
-		static std::vector<MonoAssemblyTypeInfo> GetCoreAssemblyTypeInfo();
+		static MonoObject* TryGetManagedInstance(UUID uuid);
+
+		static std::vector<ScriptAssemblyTypedefInfo> GetCoreAssemblyTypeInfo();
+
+		static size_t GetScriptInstanceCount();
 
 	private:
 		static void InitMono();

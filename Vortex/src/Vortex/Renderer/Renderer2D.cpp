@@ -4,7 +4,8 @@
 #include "Vortex/Renderer/RenderCommand.h"
 #include "Vortex/Renderer/VertexArray.h"
 #include "Vortex/Renderer/Shader.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Renderer/Font/MSDFData.h"
 
@@ -138,7 +139,7 @@ namespace Vortex
 
 		/// Unit Quad
 		s_Data.UnitQuadVA = VertexArray::Create();
-		s_Data.UnitQuadVB = VertexBuffer::Create(vertices, sizeof(float) * VX_ARRAYCOUNT(vertices));
+		s_Data.UnitQuadVB = VertexBuffer::Create(vertices, sizeof(float) * VX_ARRAYSIZE(vertices));
 		s_Data.UnitQuadVB->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoord" }
@@ -261,7 +262,7 @@ namespace Vortex
 		SetLineWidth(s_Data.LineWidth);
 		SetCullMode(cullMode);
 
-#if VX_RENDERER_STATISTICS
+#if VX_ENABLE_RENDER_STATISTICS
 		ResetStats();
 #endif // SP_RENDERER_STATISTICS
 	}
@@ -460,7 +461,7 @@ namespace Vortex
 
 		s_Data.QuadIndexCount += INDICES_PER_QUAD;
 
-#if VX_RENDERER_STATISTICS
+#if VX_ENABLE_RENDER_STATISTICS
 		s_Data.Renderer2DStatistics.QuadCount++;
 #endif // SP_RENDERER_STATISTICS
 	}
@@ -480,7 +481,7 @@ namespace Vortex
 
 		s_Data.CircleIndexCount += INDICES_PER_QUAD;
 
-#if VX_RENDERER_STATISTICS
+#if VX_ENABLE_RENDER_STATISTICS
 		s_Data.Renderer2DStatistics.QuadCount++;
 #endif // SP_RENDERER_STATISTICS
 	}
@@ -698,7 +699,7 @@ namespace Vortex
 			DrawLine(corners[i], corners[i + 4], color);
 	}
 
-	void Renderer2D::DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const Math::vec2& size, const Math::vec4& color)
+	void Renderer2D::DrawQuadBillboard(const Math::mat4& cameraView, const Math::vec3& translation, const Math::vec2& size, const Math::vec4& color, int entityID)
 	{
 		if (s_Data.QuadIndexCount >= Renderer2DInternalData::MaxIndices)
 			NextBatch();
@@ -714,6 +715,7 @@ namespace Vortex
 		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[1].x * size.x + camUpWS * s_Data.QuadVertexPositions[1].y * size.y;
@@ -721,6 +723,7 @@ namespace Vortex
 		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[2].x * size.x + camUpWS * s_Data.QuadVertexPositions[2].y * size.y;
@@ -728,6 +731,7 @@ namespace Vortex
 		s_Data.QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadVertexBufferPtr->Position = translation + camRightWS * s_Data.QuadVertexPositions[3].x * size.x + camUpWS * s_Data.QuadVertexPositions[3].y * size.y;
@@ -735,6 +739,7 @@ namespace Vortex
 		s_Data.QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 		s_Data.QuadVertexBufferPtr->TexScale = textureScale;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
 		s_Data.QuadVertexBufferPtr++;
 
 		s_Data.QuadIndexCount += 6;
@@ -1069,7 +1074,7 @@ namespace Vortex
 
 		s_Data.LineVertexCount += 2;
 
-#if VX_RENDERER_STATISTICS
+#if VX_ENABLE_RENDER_STATISTICS
 		s_Data.Renderer2DStatistics.LineCount++;
 #endif // SP_RENDERER_STATISTICS
 	}
@@ -1201,8 +1206,12 @@ namespace Vortex
 
 					quadMin *= fsScale;
 					quadMax *= fsScale;
+
 					quadMin += Math::vec2(x, y);
 					quadMax += Math::vec2(x, y);
+
+					Math::vec2 textSize(quadMax - quadMin);
+					//VX_CONSOLE_LOG_INFO("TextSize: {}", textSize);
 
 					if (quadMax.x > maxWidth && lastSpace != -1)
 					{
@@ -1294,7 +1303,7 @@ namespace Vortex
 					fontGeometry.getAdvance(advance, character, utf32string[(size_t)i + 1]);
 					x += fsScale * advance + kerningOffset;
 
-#if VX_RENDERER_STATISTICS
+#if VX_ENABLE_RENDER_STATISTICS
 					s_Data.Renderer2DStatistics.QuadCount++;
 #endif // SP_RENDERER_STATISTICS
 				}

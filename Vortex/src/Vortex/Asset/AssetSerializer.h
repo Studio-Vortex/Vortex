@@ -1,72 +1,36 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include "Vortex/Asset/Asset.h"
 #include "Vortex/Asset/AssetMetadata.h"
 
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
-	class AssetSerializer
+	class VORTEX_API AssetSerializer
 	{
 	public:
 		virtual void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) = 0;
 		virtual bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) = 0;
 	};
 
-	class MeshSerializer : public AssetSerializer
+	class VORTEX_API MeshSerializer : public AssetSerializer
 	{
 	public:
 		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
 		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
 	};
 
-	class FontSerializer : public AssetSerializer
+	class VORTEX_API FontSerializer : public AssetSerializer
 	{
 	public:
 		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
 		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
 	};
 
-	class AudioSerializer : public AssetSerializer
-	{
-	public:
-		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
-		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
-
-		void SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset);
-		bool DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset);
-	};
-
-	class SceneAssetSerializer : public AssetSerializer
-	{
-	public:
-		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
-		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
-	};
-
-	class PrefabAssetSerializer : public AssetSerializer
-	{
-	public:
-		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
-		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
-	};
-
-	class ScriptSerializer : public AssetSerializer
-	{
-	public:
-		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
-		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
-	};
-
-	class TextureSerializer : public AssetSerializer
-	{
-	public:
-		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
-		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
-	};
-
-	class ParticleEmitterSerializer : public AssetSerializer
+	class VORTEX_API AudioSerializer : public AssetSerializer
 	{
 	public:
 		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
@@ -76,7 +40,39 @@ namespace Vortex {
 		bool DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset);
 	};
 
-	class MaterialSerializer : public AssetSerializer
+	class VORTEX_API SceneAssetSerializer : public AssetSerializer
+	{
+	public:
+		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
+		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+	};
+
+	class VORTEX_API PrefabAssetSerializer : public AssetSerializer
+	{
+	public:
+		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
+		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+
+	private:
+		void SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset);
+		bool DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset);
+	};
+
+	class VORTEX_API ScriptSerializer : public AssetSerializer
+	{
+	public:
+		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
+		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+	};
+
+	class VORTEX_API TextureSerializer : public AssetSerializer
+	{
+	public:
+		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
+		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+	};
+
+	class VORTEX_API ParticleEmitterSerializer : public AssetSerializer
 	{
 	public:
 		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
@@ -86,35 +82,7 @@ namespace Vortex {
 		bool DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset);
 	};
 
-	class AnimatorSerializer : public AssetSerializer
-	{
-	public:
-		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
-		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
-	};
-
-	class AnimationSerializer : public AssetSerializer
-	{
-	public:
-		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
-		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
-	};
-
-	class StaticMeshSerializer : public AssetSerializer
-	{
-	public:
-		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
-		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
-	};
-
-	class EnvironmentSerializer : public AssetSerializer
-	{
-	public:
-		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
-		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
-	};
-
-	class AudioListenerSerializer : public AssetSerializer
+	class VORTEX_API MaterialSerializer : public AssetSerializer
 	{
 	public:
 		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
@@ -124,7 +92,45 @@ namespace Vortex {
 		bool DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset);
 	};
 
-	class PhysicsMaterialSerializer : public AssetSerializer
+	class VORTEX_API AnimatorSerializer : public AssetSerializer
+	{
+	public:
+		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
+		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+	};
+
+	class VORTEX_API AnimationSerializer : public AssetSerializer
+	{
+	public:
+		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
+		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+	};
+
+	class VORTEX_API StaticMeshSerializer : public AssetSerializer
+	{
+	public:
+		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
+		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+	};
+
+	class VORTEX_API EnvironmentSerializer : public AssetSerializer
+	{
+	public:
+		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
+		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+	};
+
+	class VORTEX_API AudioListenerSerializer : public AssetSerializer
+	{
+	public:
+		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset) override;
+		bool TryLoadData(const AssetMetadata& metadata, SharedReference<Asset>& asset) override;
+
+		void SerializeToYAML(const AssetMetadata& metadata, const SharedReference<Asset>& asset);
+		bool DeserializeFromYAML(const AssetMetadata& metadata, SharedReference<Asset>& asset);
+	};
+
+	class VORTEX_API PhysicsMaterialSerializer : public AssetSerializer
 	{
 	public:
 		void Serialize(const AssetMetadata& metadata, const SharedReference<Asset>& asset);

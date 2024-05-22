@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Vortex {
+﻿namespace Vortex {
 
 	public class Texture2D
 	{

@@ -2,12 +2,16 @@
 #include "ProjectSerializer.h"
 
 #include "Vortex/Core/Application.h"
-#include "Vortex/Utils/YAML_SerializationUtils.h"
+
 #include "Vortex/Renderer/RendererAPI.h"
 #include "Vortex/Renderer/Renderer.h"
+
 #include "Vortex/Physics/3D/Physics.h"
+#include "Vortex/Physics/3D/PhysicsScene.h"
+
 #include "Vortex/Physics/2D/Physics2D.h"
-#include "Vortex/Physics/3D/PhysXAPIHelpers.h"
+
+#include "Vortex/Utils/YAML_SerializationUtils.h"
 
 #include <fstream>
 
@@ -96,17 +100,6 @@ namespace Vortex {
 					out << YAML::Key << "Resizeable" << YAML::Value << props.BuildProps.Window.Resizeable;
 				}
 				out << YAML::EndMap; // Window
-
-				out << YAML::Key << "ScenesInBuild" << YAML::Value << YAML::BeginSeq; // SceneBuildProperties
-				
-				for (const auto& [buildIndex, sceneFilepath] : props.BuildProps.BuildIndices)
-				{
-					out << YAML::BeginMap;
-					out << YAML::Key << buildIndex << sceneFilepath;
-					out << YAML::EndMap;
-				}
-
-				out << YAML::EndSeq; // SceneBuildProperties
 			}
 			out << YAML::EndMap; // BuildProperties
 
@@ -118,8 +111,12 @@ namespace Vortex {
 				out << YAML::Key << "ShadowMapResolution" << YAML::Value << Renderer::GetShadowMapResolution();
 				out << YAML::Key << "Exposure" << YAML::Value << Renderer::GetSceneExposure();
 				out << YAML::Key << "Gamma" << YAML::Value << Renderer::GetSceneGamma();
+				out << YAML::Key << "MaxReflectionLOD" << YAML::Value << Renderer::GetMaxReflectionLOD();
 				out << YAML::Key << "BloomThreshold" << YAML::Value << Renderer::GetBloomSettings();
 				out << YAML::Key << "BloomSampleSize" << YAML::Value << Renderer::GetBloomSampleSize();
+				out << YAML::Key << "FogEnabled" << YAML::Value << Renderer::GetFogEnabled();
+				out << YAML::Key << "FogDensity" << YAML::Value << Renderer::GetFogDensity();
+				out << YAML::Key << "FogGradient" << YAML::Value << Renderer::GetFogGradient();
 				out << YAML::Key << "RenderFlags" << YAML::Value << Renderer::GetFlags();
 				out << YAML::Key << "UseVSync" << YAML::Value << Application::Get().GetWindow().IsVSyncEnabled();
 				out << YAML::Key << "DisplaySceneIconsInEditor" << YAML::Value << props.RendererProps.DisplaySceneIconsInEditor;
@@ -140,9 +137,9 @@ namespace Vortex {
 				out << YAML::Key << "BroadphaseModel" << YAML::Value << Utils::BroadphaseTypeToString(props.PhysicsProps.BroadphaseModel);
 				out << YAML::Key << "FrictionModel" << YAML::Value << Utils::FrictionTypeToString(props.PhysicsProps.FrictionModel);
 				out << YAML::Key << "ColliderColor" << YAML::Value << props.PhysicsProps.Physics3DColliderColor;
-				out << YAML::Key << "Gravity" << YAML::Value << Physics::GetPhysicsSceneGravity();
-				out << YAML::Key << "SolverPositionIterations" << YAML::Value << Physics::GetPhysicsScenePositionIterations();
-				out << YAML::Key << "SolverVelocityIterations" << YAML::Value << Physics::GetPhysicsSceneVelocityIterations();
+				out << YAML::Key << "Gravity" << YAML::Value << PhysicsScene::GetGravity();
+				out << YAML::Key << "SolverPositionIterations" << YAML::Value << PhysicsScene::GetPositionIterations();
+				out << YAML::Key << "SolverVelocityIterations" << YAML::Value << PhysicsScene::GetVelocityIterations();
 				out << YAML::Key << YAML::EndMap; // Physics3D
 
 				out << YAML::Key << "Physics2D" << YAML::BeginMap; // Physics2D
@@ -166,7 +163,16 @@ namespace Vortex {
 			out << YAML::Key << "EditorProperties" << YAML::BeginMap; // Editior Properties
 			{
 				out << YAML::Key << "FrameStepCount" << YAML::Value << props.EditorProps.FrameStepCount;
-				out << YAML::Key << "EditorCameraFOV" << YAML::Value << props.EditorProps.EditorCameraFOV;
+
+				out << YAML::Key << "EditorCameraProperties" << YAML::BeginMap; // Editor Camera Properties
+				{
+					VX_SERIALIZE_PROPERTY(FOV, props.EditorProps.EditorCameraProps.FOVdegrees, out);
+					VX_SERIALIZE_PROPERTY(Speed, props.EditorProps.EditorCameraProps.Speed, out);
+					VX_SERIALIZE_PROPERTY(Translation, props.EditorProps.EditorCameraProps.Translation, out);
+					VX_SERIALIZE_PROPERTY(ProjectionType, (int)props.EditorProps.EditorCameraProps.ProjectionType, out);
+				}
+				out << YAML::EndMap; // Editor Camera Properties
+
 				out << YAML::Key << "DrawGridAxes" << YAML::Value << props.EditorProps.DrawEditorAxes;
 				out << YAML::Key << "DrawGrid" << YAML::Value << props.EditorProps.DrawEditorGrid;
 				out << YAML::Key << "MaximizeOnPlay" << YAML::Value << props.EditorProps.MaximizeOnPlay;
@@ -253,25 +259,6 @@ namespace Vortex {
 				window.SetDecorated(props.BuildProps.Window.Decorated);
 				window.SetResizeable(props.BuildProps.Window.Resizeable);
 			}
-
-			const auto buildIndicesData = buildData["ScenesInBuild"];
-
-			if (buildIndicesData)
-			{
-				uint32_t buildIndex = 0;
-
-				for (auto& buildIndexData : buildIndicesData)
-				{
-					if (buildIndexData[buildIndex])
-					{
-						std::string sceneFilepath = buildIndexData[buildIndex++].as<std::string>();
-						Scene::SubmitSceneToBuild(sceneFilepath);
-						continue;
-					}
-
-					break;
-				}
-			}
 		}
 
 		{
@@ -290,8 +277,12 @@ namespace Vortex {
 			props.RendererProps.ShadowMapResolution = rendererData["ShadowMapResolution"].as<float>();
 			props.RendererProps.Exposure = rendererData["Exposure"].as<float>();
 			props.RendererProps.Gamma = rendererData["Gamma"].as<float>();
+			props.RendererProps.MaxReflectionLOD = rendererData["MaxReflectionLOD"].as<float>();
 			props.RendererProps.BloomThreshold = rendererData["BloomThreshold"].as<Math::vec3>();
 			props.RendererProps.BloomSampleSize = rendererData["BloomSampleSize"].as<uint32_t>();
+			props.RendererProps.FogEnabled = rendererData["FogEnabled"].as<bool>();
+			props.RendererProps.FogDensity = rendererData["FogDensity"].as<float>();
+			props.RendererProps.FogGradient = rendererData["FogGradient"].as<float>();
 			props.RendererProps.RenderFlags = rendererData["RenderFlags"].as<uint32_t>();
 			props.RendererProps.UseVSync = rendererData["UseVSync"].as<bool>();
 			props.RendererProps.DisplaySceneIconsInEditor = rendererData["DisplaySceneIconsInEditor"].as<bool>();
@@ -318,9 +309,9 @@ namespace Vortex {
 			props.PhysicsProps.Physics3DPositionIterations = physics3DData["SolverPositionIterations"].as<uint32_t>();
 			props.PhysicsProps.Physics3DVelocityIterations = physics3DData["SolverVelocityIterations"].as<uint32_t>();
 
-			Physics::SetPhysicsSceneGravity(props.PhysicsProps.Physics3DGravity);
-			Physics::SetPhysicsScenePositionIterations(props.PhysicsProps.Physics3DPositionIterations);
-			Physics::SetPhysicsSceneVelocityIterations(props.PhysicsProps.Physics3DVelocityIterations);
+			PhysicsScene::SetGravity(props.PhysicsProps.Physics3DGravity);
+			PhysicsScene::SetPositionIterations(props.PhysicsProps.Physics3DPositionIterations);
+			PhysicsScene::SetVelocityIterations(props.PhysicsProps.Physics3DVelocityIterations);
 
 			auto physics2DData = physicsData["Physics2D"];
 			props.PhysicsProps.Physics2DColliderColor = physics2DData["ColliderColor"].as<Math::vec4>();
@@ -344,7 +335,16 @@ namespace Vortex {
 		{
 			auto editorData = projectData["EditorProperties"];
 			props.EditorProps.FrameStepCount = editorData["FrameStepCount"].as<uint32_t>();
-			props.EditorProps.EditorCameraFOV = editorData["EditorCameraFOV"].as<float>();
+
+			YAML::Node editorCameraData = editorData["EditorCameraProperties"];
+			if (editorCameraData)
+			{
+				props.EditorProps.EditorCameraProps.FOVdegrees = editorCameraData["FOV"].as<float>();
+				props.EditorProps.EditorCameraProps.Speed = editorCameraData["Speed"].as<float>();
+				props.EditorProps.EditorCameraProps.Translation = editorCameraData["Translation"].as<Math::vec3>();
+				props.EditorProps.EditorCameraProps.ProjectionType = (Camera::ProjectionType)editorCameraData["ProjectionType"].as<int>();
+			}
+
 			props.EditorProps.DrawEditorAxes = editorData["DrawGridAxes"].as<bool>();
 			props.EditorProps.DrawEditorGrid = editorData["DrawGrid"].as<bool>();
 			props.EditorProps.MaximizeOnPlay = editorData["MaximizeOnPlay"].as<bool>();

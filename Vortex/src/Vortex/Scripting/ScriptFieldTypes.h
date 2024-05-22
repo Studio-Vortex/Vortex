@@ -8,11 +8,11 @@ namespace Vortex {
 	{
 		None = 0,
 		Float, Double,
-		Bool, Char, Short, Int, Long,
+		Bool, Char, String, Short, Int, Long,
 		Byte, UShort, UInt, ULong,
 		Vector2, Vector3, Vector4,
 		Color3, Color4,
-		Entity, AssetHandle
+		Actor, AssetHandle
 	};
 
 }

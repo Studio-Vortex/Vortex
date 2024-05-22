@@ -1,16 +1,20 @@
 #pragma once
 
 #include "Vortex/Asset/Asset.h"
-#include "Vortex/Core/Math/Math.h"
-#include "Vortex/Core/Math/AABB.h"
+
+#include "Vortex/Math/Math.h"
+#include "Vortex/Math/AABB.h"
+
 #include "Vortex/Scene/Components.h"
+
 #include "Vortex/Renderer/VertexArray.h"
 #include "Vortex/Renderer/Material.h"
 #include "Vortex/Renderer/Shader.h"
 #include "Vortex/Renderer/Buffer.h"
 #include "Vortex/Renderer/MeshImportOptions.h"
 #include "Vortex/Renderer/VertexTypes.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include <unordered_map>
 #include <vector>
@@ -40,7 +44,7 @@ namespace Vortex {
 
 		VX_FORCE_INLINE const std::string& GetName() const { return m_MeshName; }
 
-		void Render();
+		void Render() const;
 		void RenderToSkylightShadowMap() const;
 
 		VX_FORCE_INLINE const SharedReference<VertexArray>& GetVertexArray() const { return m_VertexArray; }

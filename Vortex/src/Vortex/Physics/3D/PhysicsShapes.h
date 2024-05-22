@@ -1,24 +1,31 @@
 #pragma once
 
-#include "Vortex/Core/Math/Math.h"
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Core/Base.h"
+
+#include "Vortex/Math/Math.h"
+
+#include "Vortex/Scene/Actor.h"
 #include "Vortex/Scene/Components.h"
+
 #include "Vortex/Physics/3D/PhysicsMaterial.h"
-#include "Vortex/Physics/3D/PhysXAPIHelpers.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 namespace physx {
 
 	class PxMaterial;
+	struct PxFilterData;
+	class PxRigidActor;
+	class PxShape;
 
 }
 
 namespace Vortex {
 
-	class ColliderShape : public RefCounted
+	class VORTEX_API ColliderShape : public RefCounted
 	{
 	protected:
-		ColliderShape(ColliderType type, Entity entity, bool isShared = false);
+		ColliderShape(ColliderType type, Actor actor, bool isShared = false);
 
 	public:
 		virtual ~ColliderShape();
@@ -47,15 +54,15 @@ namespace Vortex {
 
 	protected:
 		ColliderType m_Type;
-		Entity m_Entity;
+		Actor m_Actor;
 		physx::PxMaterial* m_Material = nullptr;
 		bool m_IsShared = false;
 	};
 
-	class BoxColliderShape : public ColliderShape
+	class VORTEX_API BoxColliderShape : public ColliderShape
 	{
 	public:
-		BoxColliderShape(BoxColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
+		BoxColliderShape(BoxColliderComponent& component, physx::PxRigidActor& pxActor, Actor actor);
 		~BoxColliderShape() override = default;
 
 		const Math::vec3& GetHalfSize() const;
@@ -80,10 +87,10 @@ namespace Vortex {
 		physx::PxShape* m_Shape = nullptr;
 	};
 
-	class SphereColliderShape : public ColliderShape
+	class VORTEX_API SphereColliderShape : public ColliderShape
 	{
 	public:
-		SphereColliderShape(SphereColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
+		SphereColliderShape(SphereColliderComponent& component, physx::PxRigidActor& pxActor, Actor actor);
 		~SphereColliderShape() override = default;
 
 		float GetRadius() const;
@@ -108,10 +115,10 @@ namespace Vortex {
 		physx::PxShape* m_Shape = nullptr;
 	};
 
-	class CapsuleColliderShape : public ColliderShape
+	class VORTEX_API CapsuleColliderShape : public ColliderShape
 	{
 	public:
-		CapsuleColliderShape(CapsuleColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
+		CapsuleColliderShape(CapsuleColliderComponent& component, physx::PxRigidActor& pxActor, Actor actor);
 		~CapsuleColliderShape() override = default;
 
 		float GetRadius() const;
@@ -139,10 +146,10 @@ namespace Vortex {
 		physx::PxShape* m_Shape = nullptr;
 	};
 
-	class ConvexMeshShape : public ColliderShape
+	class VORTEX_API ConvexMeshShape : public ColliderShape
 	{
 	public:
-		ConvexMeshShape(MeshColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
+		ConvexMeshShape(MeshColliderComponent& component, physx::PxRigidActor& pxActor, Actor actor);
 		~ConvexMeshShape() override = default;
 
 		virtual const Math::vec3& GetOffset() const override;
@@ -164,10 +171,10 @@ namespace Vortex {
 		std::vector<physx::PxShape*> m_Shapes;
 	};
 
-	class TriangleMeshShape : public ColliderShape
+	class VORTEX_API TriangleMeshShape : public ColliderShape
 	{
 	public:
-		TriangleMeshShape(MeshColliderComponent& component, physx::PxRigidActor& actor, Entity entity);
+		TriangleMeshShape(MeshColliderComponent& component, physx::PxRigidActor& pxActor, Actor actor);
 		~TriangleMeshShape() override = default;
 
 		const Math::vec3& GetOffset() const override;

@@ -1,13 +1,15 @@
 #pragma once
 
 #include "Vortex/Core/UUID.h"
-#include "Vortex/Core/Math/Math.h"
+#include "Vortex/Core/String.h"
+
+#include "Vortex/Math/Math.h"
 
 #include "Vortex/Scene/Components.h"
 
 #include "Vortex/Audio/AudioTypes.h"
 
-#include "Vortex/Physics/3D/PhysXTypes.h"
+#include "Vortex/Physics/3D/PhysicsTypes.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -35,9 +37,9 @@ namespace Vortex {
 
 		static LightType LightTypeFromString(const std::string& lightTypeString)
 		{
-			if (lightTypeString == "Directional")  return LightType::Directional;
-			if (lightTypeString == "Point")        return LightType::Point;
-			if (lightTypeString == "Spot")         return LightType::Spot;
+			if (String::FastCompare(lightTypeString, "Directional"))  return LightType::Directional;
+			if (String::FastCompare(lightTypeString, "Point"))        return LightType::Point;
+			if (String::FastCompare(lightTypeString, "Spot"))         return LightType::Spot;
 
 			VX_CORE_ASSERT(false, "Unknown Light Type!");
 			return LightType::Directional;
@@ -63,14 +65,14 @@ namespace Vortex {
 
 		static MeshType MeshTypeFromString(const std::string& meshTypeString)
 		{
-			if (meshTypeString == "Cube")     return MeshType::Cube;
-			if (meshTypeString == "Sphere")   return MeshType::Sphere;
-			if (meshTypeString == "Capsule")  return MeshType::Capsule;
-			if (meshTypeString == "Cone")     return MeshType::Cone;
-			if (meshTypeString == "Cylinder") return MeshType::Cylinder;
-			if (meshTypeString == "Plane")    return MeshType::Plane;
-			if (meshTypeString == "Torus")    return MeshType::Torus;
-			if (meshTypeString == "Custom")   return MeshType::Custom;
+			if (String::FastCompare(meshTypeString, "Cube"))     return MeshType::Cube;
+			if (String::FastCompare(meshTypeString, "Sphere"))   return MeshType::Sphere;
+			if (String::FastCompare(meshTypeString, "Capsule"))  return MeshType::Capsule;
+			if (String::FastCompare(meshTypeString, "Cone"))     return MeshType::Cone;
+			if (String::FastCompare(meshTypeString, "Cylinder")) return MeshType::Cylinder;
+			if (String::FastCompare(meshTypeString, "Plane"))    return MeshType::Plane;
+			if (String::FastCompare(meshTypeString, "Torus"))    return MeshType::Torus;
+			if (String::FastCompare(meshTypeString, "Custom"))   return MeshType::Custom;
 
 			VX_CORE_ASSERT(false, "Unknown Mesh Type!");
 			return MeshType::Cube;
@@ -92,10 +94,10 @@ namespace Vortex {
 
 		static AttenuationModel AttenuationModelTypeFromString(const std::string& model)
 		{
-			if (model == "None")        return AttenuationModel::None;
-			if (model == "Inverse")     return AttenuationModel::Inverse;
-			if (model == "Linear")      return AttenuationModel::Linear;
-			if (model == "Exponential") return AttenuationModel::Exponential;
+			if (String::FastCompare(model, "None"))        return AttenuationModel::None;
+			if (String::FastCompare(model, "Inverse"))     return AttenuationModel::Inverse;
+			if (String::FastCompare(model, "Linear"))      return AttenuationModel::Linear;
+			if (String::FastCompare(model, "Exponential")) return AttenuationModel::Exponential;
 
 			VX_CORE_ASSERT(false, "Unknown Attenutation Model!");
 			return AttenuationModel::None;
@@ -115,8 +117,8 @@ namespace Vortex {
 
 		static PanMode PanModeTypeFromString(const std::string& mode)
 		{
-			if (mode == "Balance") return PanMode::Balance;
-			if (mode == "Pan")     return PanMode::Pan;
+			if (String::FastCompare(mode, "Balance")) return PanMode::Balance;
+			if (String::FastCompare(mode, "Pan"))     return PanMode::Pan;
 
 			VX_CORE_ASSERT(false, "Unknown Pan Mode!");
 			return PanMode::Balance;
@@ -136,8 +138,8 @@ namespace Vortex {
 
 		static PositioningMode PositioningModeTypeFromString(const std::string& mode)
 		{
-			if (mode == "Absolute") return PositioningMode::Absolute;
-			if (mode == "Relative") return PositioningMode::Relative;
+			if (String::FastCompare(mode, "Absolute")) return PositioningMode::Absolute;
+			if (String::FastCompare(mode, "Relative")) return PositioningMode::Relative;
 
 			VX_CORE_ASSERT(false, "Unknown Positioning Mode!");
 			return PositioningMode::Absolute;
@@ -158,9 +160,9 @@ namespace Vortex {
 
 		static RigidBody2DType RigidBody2DBodyTypeFromString(const std::string& bodyTypeString)
 		{
-			if (bodyTypeString == "Static")    return RigidBody2DType::Static;
-			if (bodyTypeString == "Dynamic")   return RigidBody2DType::Dynamic;
-			if (bodyTypeString == "Kinematic") return RigidBody2DType::Kinematic;
+			if (String::FastCompare(bodyTypeString, "Static"))    return RigidBody2DType::Static;
+			if (String::FastCompare(bodyTypeString, "Dynamic"))   return RigidBody2DType::Dynamic;
+			if (String::FastCompare(bodyTypeString, "Kinematic")) return RigidBody2DType::Kinematic;
 
 			VX_CORE_ASSERT(false, "Unknown Body Type!");
 			return RigidBody2DType::Static;
@@ -180,8 +182,8 @@ namespace Vortex {
 
 		static RigidBodyType RigidBodyTypeFromString(const std::string& bodyTypeString)
 		{
-			if (bodyTypeString == "Static")    return RigidBodyType::Static;
-			if (bodyTypeString == "Dynamic")   return RigidBodyType::Dynamic;
+			if (String::FastCompare(bodyTypeString, "Static"))    return RigidBodyType::Static;
+			if (String::FastCompare(bodyTypeString, "Dynamic"))   return RigidBodyType::Dynamic;
 
 			VX_CORE_ASSERT(false, "Unknown Body Type!");
 			return RigidBodyType::Static;
@@ -202,9 +204,9 @@ namespace Vortex {
 
 		static CollisionDetectionType CollisionDetectionTypeFromString(const std::string& collisionDetectionString)
 		{
-			if (collisionDetectionString == "Discrete")              return CollisionDetectionType::Discrete;
-			if (collisionDetectionString == "Continuous")            return CollisionDetectionType::Continuous;
-			if (collisionDetectionString == "ContinuousSpeculative") return CollisionDetectionType::ContinuousSpeculative;
+			if (String::FastCompare(collisionDetectionString, "Discrete"))              return CollisionDetectionType::Discrete;
+			if (String::FastCompare(collisionDetectionString, "Continuous"))            return CollisionDetectionType::Continuous;
+			if (String::FastCompare(collisionDetectionString, "ContinuousSpeculative")) return CollisionDetectionType::ContinuousSpeculative;
 
 			VX_CORE_ASSERT(false, "Unknown Collision Detection Type!");
 			return CollisionDetectionType::None;
@@ -224,8 +226,8 @@ namespace Vortex {
 
 		static NonWalkableMode NonWalkableModeFromString(const std::string& walkableMode)
 		{
-			if (walkableMode == "PreventClimbing") return NonWalkableMode::PreventClimbing;
-			if (walkableMode == "PreventClimbingAndForceSliding") return NonWalkableMode::PreventClimbingAndForceSliding;
+			if (String::FastCompare(walkableMode, "PreventClimbing")) return NonWalkableMode::PreventClimbing;
+			if (String::FastCompare(walkableMode, "PreventClimbingAndForceSliding")) return NonWalkableMode::PreventClimbingAndForceSliding;
 
 			VX_CORE_ASSERT(false, "Unknown Non Walkable Mode!");
 			return NonWalkableMode::PreventClimbing;
@@ -245,8 +247,8 @@ namespace Vortex {
 
 		static CapsuleClimbMode CapsuleClimbModeFromString(const std::string& climbMode)
 		{
-			if (climbMode == "Easy")        return CapsuleClimbMode::Easy;
-			if (climbMode == "Constrained") return CapsuleClimbMode::Constrained;
+			if (String::FastCompare(climbMode, "Easy"))        return CapsuleClimbMode::Easy;
+			if (String::FastCompare(climbMode, "Constrained")) return CapsuleClimbMode::Constrained;
 
 			VX_CORE_ASSERT(false, "Unknown Capsule Climb Mode!");
 			return CapsuleClimbMode::Easy;
@@ -268,10 +270,10 @@ namespace Vortex {
 
 		static CombineMode CombineModeFromString(const std::string& mode)
 		{
-			if (mode == "Average")  return CombineMode::Average;
-			if (mode == "Max")     	return CombineMode::Average;
-			if (mode == "Min")     	return CombineMode::Average;
-			if (mode == "Multiply") return CombineMode::Average;
+			if (String::FastCompare(mode, "Average"))  return CombineMode::Average;
+			if (String::FastCompare(mode, "Max"))     	return CombineMode::Average;
+			if (String::FastCompare(mode, "Min"))     	return CombineMode::Average;
+			if (String::FastCompare(mode, "Multiply")) return CombineMode::Average;
 
 			VX_CORE_ASSERT(false, "Unknown Combine Mode!");
 			return CombineMode::Average;

@@ -9,9 +9,9 @@ namespace Vortex {
 
 	struct LauncherProperties
 	{
-		std::filesystem::path WorkingDirectory = "";
-		std::filesystem::path ProjectPath = "";
-		std::filesystem::path EditorPath = "";
+		Fs::Path WorkingDirectory = "";
+		Fs::Path ProjectFilepath = "";
+		Fs::Path EditorAppFilepath = "";
 
 		inline static char ProjectDirectoryBuffer[VX_MAX_PROJECT_NAME_LENGTH];
 		inline static char ProjectNameBuffer[VX_MAX_PROJECT_NAME_LENGTH];
@@ -35,16 +35,19 @@ namespace Vortex {
 	private:
 		void DisplayCreateProjectPopup();
 		
+		void CreateProject();
+
 		void CreateProjectFilesAndDirectories();
 		void CreatePremakeBuildScript();
 		void GenerateProjectSolution();
 		void BuildProjectSolution();
 
-		void CreateProject();
 		void SaveProjectToDisk();
-		void LaunchEditor();
+		void LaunchEditorApp();
 
 		void ResetInputFields();
+		void ClearProjectNameBuffer();
+		void ClearProjectDirectoryBuffer();
 		void ResetWorkingDirectory();
 
 	private:

@@ -3,19 +3,20 @@
 
 namespace Vortex {
 
-	Entity& SelectionManager::GetSelectedEntity()
+	Actor& SelectionManager::GetSelectedActor()
 	{
-		return s_SelectedEntity;
+		return s_SelectedActor;
 	}
 
-	void SelectionManager::SetSelectedEntity(Entity entity)
+	Actor& SelectionManager::SetSelectedActor(Actor actor)
 	{
-		s_SelectedEntity = entity;
+		s_SelectedActor = actor;
+		return GetSelectedActor();
 	}
 
-	void SelectionManager::DeselectEntity()
+	void SelectionManager::DeselectActor()
 	{
-		s_SelectedEntity = Entity{};
+		s_SelectedActor = Actor{};
 	}
 
 }

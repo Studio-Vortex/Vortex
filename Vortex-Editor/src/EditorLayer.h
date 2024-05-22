@@ -9,6 +9,9 @@ namespace Vortex {
 
 	class EditorCamera;
 
+	enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
+	enum class SelectionMode { Actor, Submesh };
+
 	class EditorLayer : public Layer
 	{
 	public:
@@ -20,11 +23,12 @@ namespace Vortex {
 
 		void OnUpdate(TimeStep ts) override;
 		void OnGuiRender() override;
+		void OnPanelsRender();
 		void OnMainMenuBarRender();
 		void OnScenePanelRender();
 		void UIHandleAssetDrop();
 		void UIOnPopupRender();
-		void OnGizmosRender(EditorCamera* editorCamera, const ViewportBounds& viewportBounds, bool allowInPlayMode = false);
+		void OnGizmosRender(EditorCamera* editorCamera, const ViewportBounds& viewportBounds);
 		void OnSecondViewportPanelRender();
 		void OnEvent(Event& e) override;
 
@@ -33,6 +37,7 @@ namespace Vortex {
 
 		// UI
 
+		void UITransformationModeToolbar();
 		void UIGizmosToolbar();
 		void UICentralToolbar();
 		void UIViewportSettingsToolbar();
@@ -53,7 +58,7 @@ namespace Vortex {
 
 		void CreateNewProject();
 		bool OpenExistingProject();
-		bool OpenProject(const std::filesystem::path& filepath);
+		bool OpenProject(const Fs::Path& filepath);
 		void SaveProject();
 		void CloseProject();
 		void BuildProject();
@@ -63,11 +68,11 @@ namespace Vortex {
 
 		void CreateNewScene();
 		void OpenExistingScene();
-		void OpenScene(const std::filesystem::path& filepath);
+		void OpenScene(const AssetMetadata& metadata);
 		void SaveSceneAs();
 		void SaveScene();
 
-		void SerializeScene(SharedReference<Scene>& scene, const std::filesystem::path& filepath);
+		void SerializeScene();
 
 		void OnScenePlay();
 		void OnScenePause();
@@ -80,46 +85,58 @@ namespace Vortex {
 
 		// Gizmos
 
-		void OnNoGizmoSelected();
-		void OnTranslationToolSelected();
-		void OnRotationToolSelected();
-		void OnScaleToolSelected();
+		void OnSelectGizmoToolSelected();
+		void OnTranslationGizmoToolSelected();
+		void OnRotationGizmoToolSelected();
+		void OnScaleToolGizmoSelected();
 
 		// Overlay
 
-		void OnOverlayRender(EditorCamera* editorCamera, bool renderInPlayMode);
+		void OnOverlayRender(EditorCamera* editorCamera);
 
-		void OverlayRenderMeshBoundingBox(Entity entity, const Math::mat4& transform, const Math::vec4& boundingBoxColor);
+		void OverlayRenderSelectedActorOutline(const Math::vec4& outlineColor);
+
+		void OverlayRenderMeshBoundingBox(Actor actor, const Math::mat4& transform, const Math::vec4& boundingBoxColor);
 		void OverlayRenderMeshBoundingBoxes(const Math::vec4& boundingBoxColor);
-		void OverlayRenderMeshOutline(Entity entity, const Math::mat4& transform, const Math::vec4& outlineColor);
-		void OverlayRenderMeshCollider(Entity entity, const Math::mat4& transform, const Math::vec4& colliderColor);
+		void OverlayRenderMeshOutline(Actor actor, const Math::mat4& transform, const Math::vec4& outlineColor);
+		void OverlayRenderMeshCollider(Actor actor, const Math::mat4& transform, const Math::vec4& colliderColor);
 		void OverlayRenderMeshColliders(const Math::vec4& colliderColor);
-		void OverlayRenderSpriteCollider(EditorCamera* editorCamera, Entity entity, const Math::mat4& transform, const Math::vec4& colliderColor);
+		void OverlayRenderSpriteCollider(EditorCamera* editorCamera, Actor actor, const Math::mat4& transform, const Math::vec4& colliderColor);
 		void OverlayRenderSpriteColliders(EditorCamera* editorCamera, const Math::vec4& colliderColor);
 		void OverlayRenderSpriteBoundingBoxes(const Math::vec4& boundingBoxColor);
-		void OverlayRenderSpriteOutline(Entity entity, const Math::mat4& transform, const Math::vec4& outlineColor);
-		void OverlayRenderGrid(bool drawAxis);
+		void OverlayRenderSpriteOutline(Actor actor, const Math::mat4& transform, const Math::vec4& outlineColor);
+		void OverlayRenderGrid(EditorCamera* editorCamera, bool drawAxes);
 
 		// Editor Callbacks
 
-		void OnLaunchRuntime(const std::filesystem::path& filepath);
-		void QueueSceneTransition();
+		void LaunchRuntimeApp();
+		void QueueSceneTransition(const std::string& sceneName);
 
 		// Helper
 
 		void SetWindowTitle(const std::string& sceneName);
-		void DuplicateSelectedEntity();
+		void DuplicateSelectedActor();
 		void SetSceneContext(SharedReference<Scene>& scene);
 		void ResetEditorCameras();
-		void CaptureFramebufferImageToDisk();
+		void CaptureSceneViewportFramebufferImageToDisk();
 		void ReplaceSceneFileExtensionIfNeeded(std::string& filepath);
 
-		std::vector<Math::vec4> GetFrustumCornersWorldSpace(const TransformComponent& transform, const SceneCamera& sceneCamera);
+		void ToggleGrid() const;
+		void ToggleSceneViewportMaximized() const;
+
+		void SwitchSceneState(SceneState state);
+		bool InEditSceneState() const;
+		bool InPlaySceneState() const;
+		bool InSimulateSceneState() const;
+
+		EditorCamera* GetCurrentEditorCamera() const;
+
+		std::vector<Math::vec4> GetCameraFrustumCornersWorldSpace(const Camera* camera, const Math::mat4& view);
 
 		std::pair<float, float> GetEditorCameraMouseViewportSpace(bool mainViewport);
-		Math::Ray CastRay(EditorCamera* editorCamera, float mx, float my);
+		Math::Ray Raycast(EditorCamera* editorCamera, float mx, float my);
 
-		Entity GetHoveredMeshEntityFromRaycast();
+		Actor GetHoveredMeshActorFromRaycast();
 
 	private:
 		struct SelectionData
@@ -141,17 +158,17 @@ namespace Vortex {
 		SharedReference<Scene> m_ActiveScene = nullptr;
 		SharedReference<Scene> m_EditorScene = nullptr;
 		
-		std::filesystem::path m_EditorScenePath;
+		AssetMetadata m_EditorSceneMetadata;
+		AssetMetadata m_StartSceneMetadata;
+		Fs::Path m_RuntimeAppFilepath;
 
-		std::filesystem::path m_StartScenePath;
-
-		Entity m_HoveredEntity;
+		Actor m_HoveredActor;
 
 		struct MeshImportPopupData
 		{
 			std::string MeshFilepath = "";
 			MeshImportOptions ModelImportOptions = MeshImportOptions();
-			Entity MeshEntityToEdit;
+			Actor MeshActorToEdit;
 		};
 
 		MeshImportPopupData m_MeshImportPopupData;
@@ -162,37 +179,40 @@ namespace Vortex {
 		ViewportBounds m_SecondViewportBounds;
 
 		int32_t m_GizmoType = -1;
-		uint32_t m_TranslationMode = 0; // Local mode
+		uint32_t m_TransformationMode = 0; // Local mode
 
-		bool m_ShowScenePanel = true;
-		bool m_ShowSecondViewport = false;
-		bool m_ShowSceneCreateEntityMenu = false;
+		float m_SceneViewportBorderFadeLengthInSeconds = 3.0f;
+		float m_SceneViewportBorderFadeTimer = 0.0f;
+		float m_SceneViewportBorderSize = 3.0f;
+		Math::vec4 m_SceneViewportBorderFadeColor = ColorToVec4(Color::White);
+		Math::vec4 m_SceneViewportOnPlayBorderColor = ColorToVec4(Color::Red);
+		Math::vec4 m_SceneViewportOnSimulateBorderColor = ColorToVec4(Color::Green);
+
+		bool m_SceneViewportPanelOpen = true;
+		bool m_SecondViewportPanelOpen = false;
+		bool m_ShowViewportCreateActorMenu = false;
 		bool m_SceneViewportFocused = false;
 		bool m_SceneViewportHovered = false;
 		bool m_SecondViewportFocused = false;
 		bool m_SecondViewportHovered = false;
-		bool m_SceneViewportMaximized = false;
+		mutable bool m_SceneViewportMaximized = false;
 		bool m_AllowViewportCameraEvents = false;
 		bool m_AllowSecondViewportCameraEvents = false;
 		bool m_StartedClickInViewport = false;
 		bool m_StartedClickInSecondViewport = false;
-		bool m_ShowSelectedEntityCollider = false;
-		bool m_ShowSelectedEntityOutline = true;
-		bool m_CaptureFramebufferToDiskOnSave = false;
+		bool m_ShowSelectedActorOutline = true;
+		bool m_CaptureSceneViewportFramebufferToDiskOnSave = false;
 		bool m_TransitionedFromStartScene = false;
 
 		// Popups
 
-		bool m_OpenCreateScriptPopup = false;
-		bool m_OpenMeshImportPopup = false;
+		bool m_CreateScriptPopupOpen = false;
+		bool m_MeshImportPopupOpen = false;
 
 		SharedReference<PanelManager> m_PanelManager = nullptr;
 
-		enum class SceneState { Edit = 0, Play = 1, Simulate = 2 };
 		SceneState m_SceneState = SceneState::Edit;
-
-		enum class SelectionMode { Entity, Submesh };
-		SelectionMode m_SelectionMode = SelectionMode::Entity;
+		SelectionMode m_SelectionMode = SelectionMode::Actor;
 	};
 
 }

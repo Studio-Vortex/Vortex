@@ -18,25 +18,22 @@ namespace Vortex {
 		void OnEvent(Event& e) override;
 
 	private:
-		void OnRuntimeScenePlay();
-		void OnRuntimeSceneStop();
+		void OnScenePlay();
+		void OnSceneStop();
 
 		bool OnWindowCloseEvent(WindowCloseEvent& e);
 
 		bool OpenProject(const std::filesystem::path& filepath);
 		void CloseProject();
-		bool OpenScene(const AssetMetadata& sceneMetadata);
+		bool OpenScene(const AssetMetadata& metadata);
 
-		void SetSceneBuildIndexFromMetadata(const AssetMetadata& sceneMetadata);
-
-		void QueueSceneTransition();
+		void QueueSceneTransition(const std::string& sceneName);
 
 	private:
 		SharedReference<Framebuffer> m_Framebuffer = nullptr;
 		SharedReference<Scene> m_RuntimeScene = nullptr;
 		Math::vec2 m_ViewportSize = Math::vec2();
 		ViewportBounds m_ViewportBounds;
-		Entity m_HoveredEntity;
 	};
 
 }

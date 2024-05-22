@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Renderer/FramebufferProperties.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 

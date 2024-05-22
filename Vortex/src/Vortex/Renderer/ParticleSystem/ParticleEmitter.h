@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Vortex/Core/Base.h"
-#include "Vortex/Core/TimeStep.h"
-
 #include "Vortex/Asset/Asset.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Renderer/ParticleSystem/Particle.h"
 #include "Vortex/Renderer/ParticleSystem/ParticleEmitterProperties.h"
+
+#include "Vortex/Core/TimeStep.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include <string>
 
@@ -30,14 +30,9 @@ namespace Vortex {
 
 		const std::vector<Particle>& GetParticles() const { return m_ParticlePool; }
 
-		void Start();
-		void Stop();
-
 		void OnUpdate(TimeStep delta);
 
 		void EmitParticle();
-
-		inline bool IsActive() const { return m_IsActive; };
 
 		ASSET_CLASS_TYPE(ParticleAsset)
 
@@ -52,8 +47,6 @@ namespace Vortex {
 		
 		std::vector<Particle> m_ParticlePool;
 		uint32_t m_PoolIndex = s_MaxParticles - 1;
-
-		bool m_IsActive = false;
 	};
 
 }

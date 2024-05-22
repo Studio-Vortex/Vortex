@@ -1,12 +1,15 @@
 #include "vxpch.h"
 #include "WindowsWindow.h"
 
-#include "Vortex/Core/Input/Input.h"
+#include "Vortex/Input/Input.h"
+
 #include "Vortex/Events/WindowEvent.h"
 #include "Vortex/Events/MouseEvent.h"
 #include "Vortex/Events/KeyEvent.h"
 
 #include "Vortex/Renderer/Renderer.h"
+
+#include "Vortex/Utils/FileSystem.h"
 
 #include "Vortex/Platform/OpenGL/OpenGLContext.h"
 
@@ -61,30 +64,26 @@ namespace Vortex {
 		{
 			VX_PROFILE_SCOPE("glfwCreateWindow");
 
-#ifdef VX_DEBUG
 			switch (Renderer::GetGraphicsAPI())
 			{
 				case RendererAPI::API::OpenGL:
+				{
+#ifdef VX_DEBUG
 					glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-					break;
-				case RendererAPI::API::Direct3D:
-					break;
-				case RendererAPI::API::Vulkan:
-					break;
-			}
 #endif // VX_DEBUG
-
-			switch (Renderer::GetGraphicsAPI())
-			{
-				case Vortex::RendererAPI::API::OpenGL:
 					glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR);
 					glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSION_MINOR);
 					break;
-				case Vortex::RendererAPI::API::Direct3D:
+				}
+				case RendererAPI::API::Direct3D:
+				{
 					glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 					break;
-				case Vortex::RendererAPI::API::Vulkan:
+				}
+				case RendererAPI::API::Vulkan:
+				{
 					break;
+				}
 			}
 
 			if (!m_Properties.Decorated)
@@ -131,7 +130,9 @@ namespace Vortex {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data.Position = Math::vec2{ (float)xpos, (float)ypos };
 
-			// TODO potentially a window moved event
+			WindowMoveEvent event(xpos, ypos);
+			// TODO figure out why this crashes
+			//data.EventCallback(event);
 		});
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
@@ -144,9 +145,11 @@ namespace Vortex {
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
-			const bool invalidKeyCode = key < (int32_t)KeyCode::StartingKey || key > (int32_t)KeyCode::MaxKeys;
+			const bool invalidKeyCode = key < (int32_t)KeyCode::FirstKey || key > (int32_t)KeyCode::MaxKeys;
 			if (invalidKeyCode)
+			{
 				return;
+			}
 
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -222,12 +225,16 @@ namespace Vortex {
 			data.EventCallback(event);
 		});
 
-		glfwSetJoystickCallback([](int jid, int event)
+		glfwSetJoystickCallback([](int jid, int action)
 		{
-			if (event == GLFW_CONNECTED)
+			if (action == GLFW_CONNECTED)
+			{
 				VX_CONSOLE_LOG_INFO("Joystick: {} Connected", jid);
-			else if (event == GLFW_DISCONNECTED)
+			}
+			else if (action == GLFW_DISCONNECTED)
+			{
 				VX_CONSOLE_LOG_INFO("Joystick: {} Disconnected", jid);
+			}
 		});
 
 		glfwSetDropCallback(m_Window, [](GLFWwindow* window, int pathCount, const char* paths[])
@@ -236,7 +243,9 @@ namespace Vortex {
 			
 			std::vector<std::filesystem::path> filepaths(pathCount);
 			for (uint32_t i = 0; i < pathCount; i++)
-				filepaths[i] = paths[i];
+			{
+				filepaths[i] = Fs::Path(paths[i]);
+			}
 
 			WindowDragDropEvent event(std::move(filepaths));
 			data.EventCallback(event);
@@ -269,43 +278,46 @@ namespace Vortex {
 
 	void WindowsWindow::SetTitle(const std::string& title)
 	{
-		glfwSetWindowTitle(m_Window, title.c_str());
 		m_Properties.Title = title;
+		glfwSetWindowTitle(m_Window, m_Properties.Title.c_str());
 	}
 
 	void WindowsWindow::SetSize(const Math::vec2& size)
 	{
-		glfwSetWindowSize(m_Window, (int)size.x, (int)size.y);
 		m_Properties.Size = size;
+		glfwSetWindowSize(m_Window, (int)m_Properties.Size.x, (int)m_Properties.Size.y);
 	}
 
 	void WindowsWindow::SetMaximized(bool maximized)
 	{
-		if (maximized)
-			glfwMaximizeWindow(m_Window);
-		else
-			glfwRestoreWindow(m_Window);
-
 		m_Properties.Maximized = maximized;
+
+		if (m_Properties.Maximized)
+		{
+			glfwMaximizeWindow(m_Window);
+		}
+		else
+		{
+			glfwRestoreWindow(m_Window);
+		}
 	}
 
     void WindowsWindow::SetDecorated(bool decorated)
     {
-		glfwSetWindowAttrib(m_Window, GLFW_DECORATED, (int)decorated);
 		m_Properties.Decorated = decorated;
+		glfwSetWindowAttrib(m_Window, GLFW_DECORATED, (int)m_Properties.Decorated);
     }
 
     void WindowsWindow::SetResizeable(bool resizeable)
     {
-		glfwSetWindowAttrib(m_Window, GLFW_RESIZABLE, (int)resizeable);
 		m_Properties.Resizeable = resizeable;
+		glfwSetWindowAttrib(m_Window, GLFW_RESIZABLE, (int)m_Properties.Resizeable);
     }
 
 	void WindowsWindow::SetVSync(bool enabled)
 	{
-		VX_PROFILE_FUNCTION();
-		glfwSwapInterval((int)enabled);
 		m_Properties.VSync = enabled;
+		glfwSwapInterval((int)m_Properties.VSync);
 	}
 
 	void WindowsWindow::CenterWindow() const
@@ -313,10 +325,10 @@ namespace Vortex {
 		GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
 
-		int posX = (videoMode->width  >> 1) - ((int)m_Properties.Size.x >> 1);
-		int posY = (videoMode->height >> 1) - ((int)m_Properties.Size.y >> 1);
+		const int centerPosX = (videoMode->width  >> 1) - ((int)m_Properties.Size.x >> 1);
+		const int centerPosY = (videoMode->height >> 1) - ((int)m_Properties.Size.y >> 1);
 
-		glfwSetWindowPos(m_Window, posX, posY);
+		glfwSetWindowPos(m_Window, centerPosX, centerPosY);
 	}
 
 	void WindowsWindow::Shutdown()
@@ -327,7 +339,9 @@ namespace Vortex {
 		s_GLFWWindowCount--;
 
 		if (s_GLFWWindowCount == 0)
+		{
 			glfwTerminate();
+		}
 	}
 
 }

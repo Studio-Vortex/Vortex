@@ -16,8 +16,8 @@ namespace Vortex {
 		BuildSettingsPanel(const BuildAndRunFn& func0, const BuildFn& func1);
 		~BuildSettingsPanel() override = default;
 
-		void OnEditorAttach() override;
-		void OnEditorDetach() override;
+		void OnPanelAttach() override;
+		void OnPanelDetach() override;
 
 		void OnGuiRender() override;
 
@@ -32,8 +32,10 @@ namespace Vortex {
 		BuildAndRunFn m_BuildAndRunFn;
 		BuildFn m_BuildFn;
 
-		std::filesystem::path m_ProjectPath;
-		std::filesystem::path m_StartupScene;
+		Fs::Path m_ProjectPath;
+		Fs::Path m_StartupScene;
+
+		ImGuiTextFilter m_StartSceneSearchTextFilter;
 	};
 
 }

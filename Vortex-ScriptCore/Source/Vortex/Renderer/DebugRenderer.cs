@@ -2,19 +2,15 @@
 
 	public static class DebugRenderer
 	{
-		public static void BeginScene()
+		public static float LineWidth
 		{
-			InternalCalls.DebugRenderer_BeginScene();
+			get => InternalCalls.DebugRenderer_GetLineWidth();
+			set => InternalCalls.DebugRenderer_SetLineWidth(value);
 		}
 
-		public static void SetClearColor(Vector3 color)
+		public static void DrawLine(Vector3 startPoint, Vector3 endPoint, Vector4 color)
 		{
-			InternalCalls.DebugRenderer_SetClearColor(ref color);
-		}
-
-		public static void DrawLine(Vector3 p1, Vector3 p2, Vector4 color)
-		{
-			InternalCalls.DebugRenderer_DrawLine(ref p1, ref p2, ref color);
+			InternalCalls.DebugRenderer_DrawLine(ref startPoint, ref endPoint, ref color);
 		}
 
 		public static void DrawQuadBillboard(Vector3 translation, Vector2 size, Vector4 color)
@@ -37,15 +33,12 @@
 			InternalCalls.DebugRenderer_DrawBoundingBox(ref translation, ref size, ref color);
 		}
 
-		public static void DrawBoundingBox(Entity entity, Vector4 color)
+		public static void DrawBoundingBox(Actor actor, Vector4 color)
 		{
-			InternalCalls.DebugRenderer_DrawBoundingBoxFromTransform(entity.ID, ref color);
+			InternalCalls.DebugRenderer_DrawBoundingBoxFromTransform(actor.ID, ref color);
 		}
 
-		public static void Flush()
-		{
-			InternalCalls.DebugRenderer_Flush();
-		}
+		public static void Flush() => InternalCalls.DebugRenderer_Flush();
 	}
 
 }

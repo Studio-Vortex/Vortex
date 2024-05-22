@@ -2,7 +2,7 @@
 
 #include "Vortex/Project/Project.h"
 
-#include "Vortex/Scene/Entity.h"
+#include "Vortex/Scene/Actor.h"
 #include "Vortex/Scene/Scene.h"
 #include "Vortex/Scene/Components.h"
 
@@ -11,7 +11,7 @@
 #include "Vortex/Renderer/RendererAPI.h"
 #include "Vortex/Renderer/RenderCommand.h"
 
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 #include <vector>
 
@@ -36,6 +36,8 @@ namespace Vortex {
 		uint32_t ActivePointLights = 0;
 		uint32_t SpotLightIndex = 0;
 		uint32_t ActiveSpotLights = 0;
+		uint32_t EmissiveMeshIndex = 0;
+		uint32_t ActiveEmissiveMeshes = 0;
 	};
 
 	struct VORTEX_API RenderTime
@@ -46,7 +48,7 @@ namespace Vortex {
 		float BloomPassRenderTime = 0.0f;
 	};
 
-	enum class PostProcessStage
+	enum class VORTEX_API PostProcessStage
 	{
 		None = 0, Bloom,
 	};
@@ -55,7 +57,7 @@ namespace Vortex {
 	{
 		SharedReference<Framebuffer> TargetFramebuffer = nullptr;
 		Math::vec3 CameraPosition = {};
-		Viewport ViewportSize = {};
+		Viewport ViewportInfo = {};
 		PostProcessStage* Stages = nullptr;
 		uint32_t StageCount = 0;
 	};
@@ -74,7 +76,7 @@ namespace Vortex {
 
 		static void OnWindowResize(const Viewport& viewport);
 
-		static void BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& translation, SharedReference<Framebuffer> targetFramebuffer);
+		static void BeginScene(const Camera& camera, const Math::mat4& view, const Math::vec3& cameraTranslation, SharedReference<Framebuffer> targetFramebuffer);
 		static void BeginScene(const EditorCamera* camera, SharedReference<Framebuffer> targetFramebuffer);
 		static void EndScene();
 
@@ -82,6 +84,7 @@ namespace Vortex {
 		static void DrawIndexed(const SharedReference<Shader>& shader, const SharedReference<VertexArray>& vertexArray);
 
 		static void RenderLightSource(const TransformComponent& transform, const LightSourceComponent& lightSourceComponent);
+		static void RenderEmissiveMaterial(const Math::vec3& translation, const Math::vec3& radiance, float intensity);
 		static void DrawEnvironmentMap(const Math::mat4& view, const Math::mat4& projection, SkyboxComponent& skyboxComponent, SharedReference<Skybox>& environment);
 
 		static void DrawFrustum(const std::vector<Math::vec4>& corners, const Math::vec4& color);
@@ -131,9 +134,10 @@ namespace Vortex {
 
 		static float GetSceneExposure();
 		static void SetSceneExposure(float exposure);
-
 		static float GetSceneGamma();
 		static void SetSceneGamma(float gamma);
+		static float GetMaxReflectionLOD();
+		static void SetMaxReflectionLOD(float lod);
 
 		static Math::vec3 GetBloomSettings();
 		static void SetBloomSettings(const Math::vec3& threshold);
@@ -143,6 +147,16 @@ namespace Vortex {
 
 		static uint32_t GetBloomSampleSize();
 		static void SetBloomSampleSize(uint32_t samples);
+
+		static float GetFogDensity();
+		static void SetFogDensity(float density);
+		static float GetFogGradient();
+		static void SetFogGradient(float gradient);
+		static bool GetFogEnabled();
+		static void SetFogEnabled(bool fogEnabled);
+
+		static bool GetShowNormals();
+		static void SetShowNormals(bool showNormals);
 
 		static uint32_t GetFlags();
 		static void SetFlags(uint32_t flags);
@@ -160,12 +174,12 @@ namespace Vortex {
 	private:
 		// Helpers
 
-		static void BindRenderTarget(SharedReference<Framebuffer>& renderTarget);
-		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraPosition);
+		static void BindRenderTarget(SharedReference<Framebuffer> renderTarget);
+		static void BindShaders(const Math::mat4& view, const Math::mat4& projection, const Math::vec3& cameraTranslation);
 
-		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
-		static void RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
-		static void RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Entity lightSourceEntity, SharedReference<Scene::SceneGeometry>& sceneMeshes);
+		static void RenderDirectionalLightShadow(const LightSourceComponent& lightSourceComponent, Actor lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);
+		static void RenderPointLightShadow(const LightSourceComponent& lightSourceComponent, Actor lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);
+		static void RenderSpotLightShadow(const LightSourceComponent& lightSourceComponent, Actor lightSourceEntity, SharedReference<SceneGeometry>& sceneMeshes);
 
 		// Post Processing
 

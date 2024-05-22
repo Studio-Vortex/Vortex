@@ -5,20 +5,19 @@ namespace Vortex {
 	BuildSettingsPanel::BuildSettingsPanel(const BuildAndRunFn& func0, const BuildFn& func1)
 		: m_BuildAndRunFn(func0), m_BuildFn(func1) { }
 
-	void BuildSettingsPanel::OnEditorAttach()
+	void BuildSettingsPanel::OnPanelAttach()
 	{
-		m_ProjectPath = Project::GetProjectFilepath();
-		m_StartupScene = Project::GetActive()->GetProperties().General.StartScene;
+		SharedReference<Project> project = Project::GetActive();
+		const ProjectProperties& properties = project->GetProperties();
+
+		m_ProjectPath = project->GetProjectFilepath();
+		m_StartupScene = properties.General.StartScene;
 	}
 
-	void BuildSettingsPanel::OnEditorDetach() { }
+	void BuildSettingsPanel::OnPanelDetach() { }
 
 	void BuildSettingsPanel::OnGuiRender()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
 		if (!IsOpen)
 			return;
 
@@ -28,115 +27,61 @@ namespace Vortex {
 
 		std::string projectPath = m_ProjectPath.string();
 		UI::Property("Project Location", projectPath, true);
+		
+		SharedReference<Project> project = Project::GetActive();
+		ProjectProperties& properties = project->GetProperties();
+
+		auto OnSceneSelectedFn = [&](const Fs::Path& filepath) {
+			properties.General.StartScene = m_StartupScene = filepath;
+		};
+
+		auto OnSceneDroppedFn = [&](const Fs::Path& filepath) {
+			AssetType type = Project::GetEditorAssetManager()->GetAssetTypeFromFilepath(filepath);
+			if (type == AssetType::SceneAsset)
+			{
+				OnSceneSelectedFn(Project::GetEditorAssetManager()->GetMetadata(filepath).Filepath);
+			}
+			else
+			{
+				VX_CONSOLE_LOG_ERROR("[Editor] Trying to set start scene with invalid asset type: {}", Utils::StringFromAssetType(type));
+			}
+		};
+
+		const std::string startScenePath = m_StartupScene.string();
+		AssetHandle selectedHandle = 0;
+		if (UI::PropertyAssetReference<Scene>("Start Scene", startScenePath, selectedHandle, OnSceneDroppedFn, Project::GetEditorAssetManager()->GetAssetRegistry()))
+		{
+			const AssetMetadata& metadata = Project::GetEditorAssetManager()->GetMetadata(selectedHandle);
+			if (AssetManager::IsHandleValid(metadata.Handle))
+			{
+				OnSceneSelectedFn(metadata.Filepath);
+			}
+		}
 
 		UI::EndPropertyGrid();
-
-		SharedReference<Project> activeProject = Project::GetActive();
-		ProjectProperties& projectProps = activeProject->GetProperties();
-
-		if (UI::PropertyGridHeader("Scenes in Build"))
-		{
-			const auto& buildIndices = Scene::GetScenesInBuild();
-
-			auto contentRegionAvail = Gui::GetContentRegionAvail();
-			if (Gui::BeginChild("##ScenesInBuild", { 0, contentRegionAvail.y / 2.0f }))
-			{
-				contentRegionAvail = Gui::GetContentRegionAvail();
-
-				uint32_t i = 0;
-
-				int32_t buildIndexToRemove = -1;
-
-				for (const auto& [buildIndex, sceneFilePath] : buildIndices)
-				{
-					contentRegionAvail = Gui::GetContentRegionAvail();
-
-					UI::BeginPropertyGrid();
-
-					size_t lastSlashPos = sceneFilePath.find_last_of("/\\");
-					size_t lastDotPos = sceneFilePath.find_last_of('.');
-					std::string sceneName = sceneFilePath.substr(lastSlashPos + 1, lastDotPos - (lastSlashPos + 1));
-
-					UI::Property(std::to_string(i).c_str(), sceneName, true);
-
-					UI::EndPropertyGrid();
-
-					Gui::SameLine();
-					UI::ShiftCursor(-contentRegionAvail.x + (contentRegionAvail.x * 0.05f), 3.0f);
-					std::string label = (const char*)VX_ICON_TIMES + std::string("##") + std::to_string(i);
-					if (Gui::Button(label.c_str()))
-					{
-						buildIndexToRemove = i;
-					}
-
-					i++;
-				}
-
-				if (buildIndexToRemove != -1)
-				{
-					Scene::RemoveIndexFromBuild(buildIndexToRemove);
-				}
-
-				Gui::EndChild();
-			}
-
-			// Accept Items from the content browser
-			if (Gui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = Gui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-				{
-					const wchar_t* path = (const wchar_t*)payload->Data;
-					std::filesystem::path filePath = std::filesystem::path(path);
-
-					if (filePath.extension().string() == ".vortex")
-					{
-						bool isNewScene = true;
-
-						for (auto& [buildIndex, sceneFilepath] : buildIndices)
-						{
-							if (filePath.string().find(sceneFilepath) != std::string::npos)
-							{
-								isNewScene = false;
-							}
-						}
-
-						if (isNewScene)
-						{
-							auto relativePath = FileSystem::Relative(filePath, Project::GetAssetDirectory());
-
-							if (const bool isFirstSceneInBuild = projectProps.BuildProps.BuildIndices.size() == 0)
-							{
-								projectProps.General.StartScene = relativePath;
-							}
-
-							Scene::SubmitSceneToBuild(relativePath.string());
-						}
-					}
-				}
-
-				Gui::EndDragDropTarget();
-			}
-
-			UI::EndTreeNode();
-		}
 
 		if (UI::PropertyGridHeader("Window", false))
 		{
 			UI::BeginPropertyGrid();
 
-			if (!projectProps.BuildProps.Window.Maximized)
-				UI::Property("Size", projectProps.BuildProps.Window.Size);
-			if (UI::Property("Force 16:9 Aspect Ratio", projectProps.BuildProps.Window.ForceSixteenByNine))
+			bool& maximized = properties.BuildProps.Window.Maximized;
+			if (!maximized)
 			{
-				if (projectProps.BuildProps.Window.ForceSixteenByNine)
-				{
-					FindAndSetBestSize();
-				}
+				UI::Property("Size", properties.BuildProps.Window.Size);
 			}
 
-			UI::Property("Maximized", projectProps.BuildProps.Window.Maximized);
-			UI::Property("Decorated", projectProps.BuildProps.Window.Decorated);
-			UI::Property("Resizeable", projectProps.BuildProps.Window.Resizeable);
+			bool& forceSixteenByNine = properties.BuildProps.Window.ForceSixteenByNine;
+			if (UI::Property("Force 16:9 Aspect Ratio", forceSixteenByNine))
+			{
+				if (forceSixteenByNine)
+					FindAndSetBestSize();
+			}
+
+			bool& decorated = properties.BuildProps.Window.Decorated;
+			bool& resizeable = properties.BuildProps.Window.Resizeable;
+			UI::Property("Maximized", maximized);
+			UI::Property("Decorated", decorated);
+			UI::Property("Resizeable", resizeable);
 
 			UI::EndPropertyGrid();
 			UI::EndTreeNode();
@@ -163,40 +108,58 @@ namespace Vortex {
 
 	void BuildSettingsPanel::FindAndSetBestSize()
 	{
-		SharedReference<Project> activeProject = Project::GetActive();
-		ProjectProperties& projectProps = activeProject->GetProperties();
+		SharedReference<Project> project = Project::GetActive();
+		ProjectProperties& properties = project->GetProperties();
 
-		float width = projectProps.BuildProps.Window.Size.x;
-		float height = projectProps.BuildProps.Window.Size.y;
+		float width = properties.BuildProps.Window.Size.x;
+		float height = properties.BuildProps.Window.Size.y;
 
 		FindBestWidth(width);
 		FindBestHeight(height);
 
-		projectProps.BuildProps.Window.Size = { width, height };
+		properties.BuildProps.Window.Size = { width, height };
 	}
 
 	void BuildSettingsPanel::FindBestWidth(float& width)
 	{
 		if (width > 1600)
+		{
 			width = 1600;
+			return;
+		}
+
+		if (width < 1200)
+		{
+			width = 800;
+			return;
+		}
 
 		if (width < 1600)
-			width = 1600 * 0.75f;
-
-		if (width < (1600 * 0.75f))
-			width = 800;
+		{
+			width = 1200;
+			return;
+		}
 	}
 
 	void BuildSettingsPanel::FindBestHeight(float& height)
 	{
 		if (height > 900)
+		{
 			height = 900;
+			return;
+		}
+
+		if (height < 675)
+		{
+			height = 450;
+			return;
+		}
 
 		if (height < 900)
-			height = 900 * 0.75f;
-
-		if (height < (900 * 0.75f))
-			height = 450;
+		{
+			height = 675;
+			return;
+		}
 	}
 
 }

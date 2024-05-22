@@ -2,7 +2,7 @@
 #include "AssetImporter.h"
 
 #include "Vortex/Project/Project.h"
-#include "Vortex/Scene/PrefabSerializer.h"
+
 #include "Vortex/Serialization/SceneSerializer.h"
 
 namespace Vortex {
@@ -30,7 +30,7 @@ namespace Vortex {
 	{
 		if (!s_Serializers.contains(metadata.Type))
 		{
-			VX_CONSOLE_LOG_WARN("There are currently no asset serializers for assets of type {}", metadata.Filepath.stem().string());
+			VX_CONSOLE_LOG_WARN("There are currently no asset serializers for assets of type {}", Utils::StringFromAssetType(metadata.Type));
 			return;
 		}
 
@@ -47,7 +47,7 @@ namespace Vortex {
 	{
 		if (!s_Serializers.contains(metadata.Type))
 		{
-			VX_CONSOLE_LOG_WARN("There are currently no importers for assets of type {}", metadata.Filepath.stem().string());
+			VX_CONSOLE_LOG_WARN("There are currently no importers for assets of type {}", Utils::StringFromAssetType(metadata.Type));
 			return false;
 		}
 

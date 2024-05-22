@@ -4,30 +4,30 @@
 		where AudioComponent: Component, new()
 	{
 		public readonly AudioComponent Source;
-		public readonly Entity Entity;
+		public readonly Actor Actor;
 
 		internal AudioCone(AudioComponent data)
 		{
 			Source = data;
-			Entity = Source.Entity;
+			Actor = Source.Actor;
 		}
 
 		public float InnerAngle
 		{
-			get => InternalCalls.AudioCone_GetInnerAngle(Entity.ID);
-			set => InternalCalls.AudioCone_SetInnerAngle(Entity.ID, value);
+			get => InternalCalls.AudioCone_GetInnerAngle(Actor.ID);
+			set => InternalCalls.AudioCone_SetInnerAngle(Actor.ID, value);
 		}
 
 		public float OuterAngle
 		{
-			get => InternalCalls.AudioCone_GetOuterAngle(Entity.ID);
-			set => InternalCalls.AudioCone_SetOuterAngle(Entity.ID, value);
+			get => InternalCalls.AudioCone_GetOuterAngle(Actor.ID);
+			set => InternalCalls.AudioCone_SetOuterAngle(Actor.ID, value);
 		}
 
 		public float OuterGain
 		{
-			get => InternalCalls.AudioCone_GetOuterGain(Entity.ID);
-			set => InternalCalls.AudioCone_SetOuterGain(Entity.ID, value);
+			get => InternalCalls.AudioCone_GetOuterGain(Actor.ID);
+			set => InternalCalls.AudioCone_SetOuterGain(Actor.ID, value);
 		}
 	}
 

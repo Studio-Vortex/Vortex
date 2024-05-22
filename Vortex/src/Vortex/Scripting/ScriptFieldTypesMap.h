@@ -13,6 +13,7 @@ namespace Vortex {
 		{ "System.Double",      ScriptFieldType::Double      },
 		{ "System.Boolean",     ScriptFieldType::Bool        },
 		{ "System.Char",        ScriptFieldType::Char        },
+		{ "System.String",      ScriptFieldType::String      },
 		{ "System.Int16",       ScriptFieldType::Short       },
 		{ "System.Int32",       ScriptFieldType::Int         },
 		{ "System.Int64",       ScriptFieldType::Long        },
@@ -25,7 +26,7 @@ namespace Vortex {
 		{ "Vortex.Vector4",     ScriptFieldType::Vector4     },
 		{ "Vortex.Color3",      ScriptFieldType::Color3      },
 		{ "Vortex.Color4",      ScriptFieldType::Color4      },
-		{ "Vortex.Entity",      ScriptFieldType::Entity      },
+		{ "Vortex.Entity",      ScriptFieldType::Actor      },
 		{ "Vortex.AssetHandle", ScriptFieldType::AssetHandle },
 	};
 

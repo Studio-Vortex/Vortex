@@ -1,13 +1,14 @@
 #pragma once
 
+#include "Vortex/Core/Base.h"
+
 #include "Vortex/Renderer/Texture.h"
-#include "Vortex/Renderer/StaticMesh.h"
 
 #include <vector>
 
 namespace Vortex {
 
-	class EditorResources
+	class VORTEX_API EditorResources
 	{
 	public:
 		static void Init();
@@ -56,6 +57,8 @@ namespace Vortex {
 		inline static SharedReference<Texture2D> AudioFileIcon = nullptr;
 		inline static SharedReference<Texture2D> OBJIcon = nullptr;
 		inline static SharedReference<Texture2D> FBXIcon = nullptr;
+		inline static SharedReference<Texture2D> MaterialIcon = nullptr;
+		inline static SharedReference<Texture2D> PrefabIcon = nullptr;
 		inline static SharedReference<Texture2D> FontIcon = nullptr;
 		inline static SharedReference<Texture2D> CodeFileIcon = nullptr;
 		inline static SharedReference<Texture2D> SceneIcon = nullptr;

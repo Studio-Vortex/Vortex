@@ -1,17 +1,18 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/ReferenceCounting/SharedRef.h"
 
 #include "Vortex/Asset/AssetTypes.h"
+
+#include "Vortex/ReferenceCounting/SharedRef.h"
 
 namespace Vortex {
 
 #define ASSET_SYSTEM_TYPE(type) static AssetType GetStaticType() { return AssetType::##type; }\
-								virtual AssetType GetAssetType() override { return GetStaticType(); }\
+								virtual AssetType GetAssetType() const override { return GetStaticType(); }\
 
 	class Scene;
-	class Entity;
+	class Actor;
 
 	class VORTEX_API IAssetSystem : public RefCounted
 	{
@@ -23,13 +24,13 @@ namespace Vortex {
 		virtual void Shutdown() = 0;
 
 		static AssetType GetStaticType() { return AssetType::None; }
-		virtual AssetType GetAssetType() = 0;
+		virtual AssetType GetAssetType() const = 0;
 
 		virtual void OnContextSceneCreated(Scene* context) = 0;
 		virtual void OnContextSceneDestroyed(Scene* context) = 0;
 
-		virtual void CreateAsset(Entity& entity) = 0;
-		virtual void DestroyAsset(Entity& entity) = 0;
+		virtual void CreateAsset(Actor& actor) = 0;
+		virtual void DestroyAsset(Actor& actor) = 0;
 
 		virtual void OnRuntimeStart(Scene* context) = 0;
 		virtual void OnUpdateRuntime(Scene* context) = 0;
@@ -44,7 +45,7 @@ namespace Vortex {
 		virtual void OnGuiRender() = 0;
 
 	private:
-		std::string m_DebugName;
+		std::string m_DebugName = "";
 	};
 
 }

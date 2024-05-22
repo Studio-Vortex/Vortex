@@ -120,7 +120,12 @@ namespace Vortex {
 
 		// Framebuffer
 		const uint32_t num_bloom_mips = 6; // TODO: Play around with this value
-		bool status = m_Framebuffer.Init(windowWidth, windowHeight, num_bloom_mips);
+		const bool status = m_Framebuffer.Init(windowWidth, windowHeight, num_bloom_mips);
+		if (status == false)
+		{
+			VX_CONSOLE_LOG_ERROR("Failed to create bloom framebuffer! cannot continue pipeline");
+			return false;
+		}
 
 		// Shaders
 		m_DownsampleShader = Renderer::GetShaderLibrary().Get("Bloom_Downsample");
@@ -173,7 +178,9 @@ namespace Vortex {
 			// Set current mip as texture input for next iteration
 			glBindTexture(GL_TEXTURE_2D, mip.TextureRendererID);
 			// Disable Karis average for consequent downsamples
-			if (i == 0) { m_DownsampleShader->SetInt("mipLevel", 1); }
+			if (i == 0) {
+				m_DownsampleShader->SetInt("mipLevel", 1);
+			}
 		}
 
 		glUseProgram(0);
@@ -210,7 +217,7 @@ namespace Vortex {
 		}
 
 		// Disable additive blending
-		//glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_BLEND);
 
 		glUseProgram(0);
@@ -307,8 +314,8 @@ namespace Vortex {
 		m_BloomShader->Enable();
 		m_BloomShader->SetInt("diffuseTexture", 0);
 		m_FinalCompositeShader->Enable();
-		m_FinalCompositeShader->SetInt("scene", 0);
-		m_FinalCompositeShader->SetInt("bloomBlur", 1);
+		m_FinalCompositeShader->SetInt("u_SceneTexture", 0);
+		m_FinalCompositeShader->SetInt("u_BloomTexture", 1);
 
 		// bloom renderer
 		// --------------
@@ -330,10 +337,6 @@ namespace Vortex {
 		m_BloomShader->Enable();
 		m_BloomShader->SetFloat3("viewPos", cameraPosition);
 
-		// render
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		// render scene into floating point framebuffer
 		// -----------------------------------------------
 		glBindFramebuffer(GL_FRAMEBUFFER, m_HDRFramebufferRendererID);
@@ -343,8 +346,6 @@ namespace Vortex {
 
 		// unbind render target
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		bool horizontal = true;
 
 		m_BloomRenderer.RenderBloomTexture(m_ColorBufferRendererIDs[1], bloomFilterRadius);
 
@@ -357,7 +358,10 @@ namespace Vortex {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, m_BloomRenderer.BloomTexture());
 
-		m_FinalCompositeShader->SetFloat("exposure", Renderer::GetSceneExposure());
+		m_FinalCompositeShader->SetFloat("u_Exposure", Renderer::GetSceneExposure());
+		m_FinalCompositeShader->SetFloat("u_Gamma", Renderer::GetSceneGamma());
+		m_FinalCompositeShader->SetBool("u_Bloom", true);
+
 		renderQuad();
 	}
 

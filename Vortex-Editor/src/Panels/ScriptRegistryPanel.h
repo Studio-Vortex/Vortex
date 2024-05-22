@@ -14,6 +14,9 @@ namespace Vortex {
 		void OnGuiRender() override;
 
 		EDITOR_PANEL_TYPE(ScriptRegistry)
+
+	private:
+		void RenderScriptCoreTypedefInfo(const Math::vec2& size);
 	};
 
 }

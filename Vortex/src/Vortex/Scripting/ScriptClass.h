@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/ReferenceCounting/RefCounted.h"
 
 #include "Vortex/Scripting/ScriptField.h"
+
+#include "Vortex/ReferenceCounting/RefCounted.h"
 
 #include <string>
 #include <map>
@@ -17,15 +18,17 @@ extern "C"
 
 namespace Vortex {
 
-	class ScriptClass : public RefCounted
+	class VORTEX_API ScriptClass : public RefCounted
 	{
 	public:
 		ScriptClass() = default;
 		ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore = false);
 		~ScriptClass() = default;
 
+		bool operator==(const ScriptClass& other);
+
 		MonoObject* Instantiate();
-		MonoMethod* GetMethod(const std::string& name, int parameterCount);
+		MonoMethod* GetMethod(const std::string& name, uint32_t parameterCount);
 
 		const std::string& GetClassNamespace() const;
 		// Note: can't name this 'GetClassName' because of windows api

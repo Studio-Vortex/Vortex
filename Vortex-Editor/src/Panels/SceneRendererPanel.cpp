@@ -2,62 +2,46 @@
 
 namespace Vortex {
 
+	void SceneRendererPanel::OnPanelAttach()
+	{
+		const ShaderLibrary& shaderLibrary2D = Renderer2D::GetShaderLibrary();
+
+		for (const auto& [name, shader] : shaderLibrary2D)
+		{
+			m_Loaded2DShaders.push_back(shader);
+		}
+
+		const ShaderLibrary& shaderLibrary3D = Renderer::GetShaderLibrary();
+
+		for (const auto& [name, shader] : shaderLibrary3D)
+		{
+			m_Loaded3DShaders.push_back(shader);
+		}
+
+		for (const auto& shader : m_Loaded2DShaders)
+		{
+			m_ShaderNames.push_back(shader->GetName());
+			m_Shaders.push_back(shader);
+		}
+		for (const auto& shader : m_Loaded3DShaders)
+		{
+			m_ShaderNames.push_back(shader->GetName());
+			m_Shaders.push_back(shader);
+		}
+	}
+
 	void SceneRendererPanel::OnGuiRender()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		auto largeFont = io.Fonts->Fonts[1];
-
 		if (!IsOpen)
 			return;
 
-		if (s_Loaded2DShaders.empty())
+		const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
+
+		Gui::Begin(m_PanelName.c_str(), &IsOpen, flags);
+
+		if (Actor skyLightEntity = m_ContextScene->GetSkyLightActor())
 		{
-			const ShaderLibrary& shaders2D = Renderer2D::GetShaderLibrary();
-
-			for (const auto& [name, shader] : shaders2D)
-			{
-				s_Loaded2DShaders.push_back(shader);
-			}
-		}
-
-		if (s_Loaded3DShaders.empty())
-		{
-			const ShaderLibrary& shaders3D = Renderer::GetShaderLibrary();
-
-			for (const auto& [name, shader] : shaders3D)
-			{
-				s_Loaded3DShaders.push_back(shader);
-			}
-		}
-
-		static std::vector<std::string> shaderNames;
-		static std::vector<SharedReference<Shader>> shaders;
-
-		const bool shadersLoaded = !s_Loaded2DShaders.empty() && !s_Loaded3DShaders.empty();
-
-		if (shadersLoaded)
-		{
-			if (shaderNames.empty() && shaders.empty())
-			{
-				for (const auto& shader : s_Loaded2DShaders)
-				{
-					shaderNames.push_back(shader->GetName());
-					shaders.push_back(shader);
-				}
-				for (const auto& shader : s_Loaded3DShaders)
-				{
-					shaderNames.push_back(shader->GetName());
-					shaders.push_back(shader);
-				}
-			}
-		}
-
-		Gui::Begin(m_PanelName.c_str(), &IsOpen);
-
-		if (Entity skyLightEntity = m_ContextScene->GetSkyLightEntity())
-		{
-			const auto& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
+			const LightSourceComponent& lsc = skyLightEntity.GetComponent<LightSourceComponent>();
 			if (lsc.CastShadows)
 			{
 				if (UI::PropertyGridHeader("Shadow Maps", false))
@@ -73,24 +57,26 @@ namespace Vortex {
 
 		if (UI::PropertyGridHeader("Shaders", false))
 		{
-			Gui::PushFont(boldFont);
-			Gui::Text("%u Loaded Shaders", (uint32_t)s_Loaded2DShaders.size() + (uint32_t)s_Loaded3DShaders.size());
-			Gui::PopFont();
+			UI::PushFont("Bold");
+			Gui::Text("%u Loaded Shaders", (uint32_t)m_Loaded2DShaders.size() + (uint32_t)m_Loaded3DShaders.size());
+			UI::PopFont();
 
 			Gui::SameLine();
 			const char* buttonText = "Recompile All";
 			Gui::SetCursorPosX(Gui::GetContentRegionAvail().x + (Gui::CalcTextSize(buttonText).x * 0.5f));
 			if (Gui::Button(buttonText))
 			{
-				for (auto& shader : shaders)
+				for (auto& shader : m_Shaders)
+				{
 					shader->Reload();
+				}
 			}
 
 			static const char* columns[] = { "Name", "" };
 
-			UI::Table("Loaded Shaders", columns, VX_ARRAYCOUNT(columns), Gui::GetContentRegionAvail(), [&]()
+			UI::Table("Loaded Shaders", columns, VX_ARRAYSIZE(columns), Gui::GetContentRegionAvail(), [&]()
 			{
-				for (auto& shader : shaders)
+				for (SharedReference<Shader>& shader : m_Shaders)
 				{
 					Gui::TableNextColumn();
 					const std::string& shaderName = shader->GetName();
@@ -98,7 +84,7 @@ namespace Vortex {
 					UI::Draw::Underline();
 
 					Gui::TableNextColumn();
-					std::string buttonName = "Reload##" + shaderName;
+					const std::string buttonName = "Reload##" + shaderName;
 
 					if (Gui::Button(buttonName.c_str()))
 					{
@@ -114,30 +100,31 @@ namespace Vortex {
 		{
 			UI::BeginPropertyGrid();
 
-			float lineWidth = Renderer2D::GetLineWidth();
-			if (UI::Property("Line Width", lineWidth, 0.1f, 0.1f, 4.0f))
-				Renderer2D::SetLineWidth(lineWidth);
+			SharedReference<Project> project = Project::GetActive();
+			ProjectProperties& properties = project->GetProperties();
+
+			if (UI::Property("Line Width", properties.RendererProps.LineWidth, 0.01f, FLT_MIN, 4.0f))
+			{
+				Renderer2D::SetLineWidth(properties.RendererProps.LineWidth);
+			}
 
 			static const char* cullModes[4] = { "None", "Front", "Back", "Front And Back" };
 			int32_t currentCullMode = (int32_t)Renderer::GetCullMode();
 
-			SharedReference<Project> activeProject = Project::GetActive();
-			ProjectProperties& projectProps = activeProject->GetProperties();
-
-			if (UI::PropertyDropdown("Cull Mode", cullModes, VX_ARRAYCOUNT(cullModes), currentCullMode))
+			if (UI::PropertyDropdown("Cull Mode", cullModes, VX_ARRAYSIZE(cullModes), currentCullMode))
 			{
 				RendererAPI::TriangleCullMode newCullMode = (RendererAPI::TriangleCullMode)currentCullMode;
 				Renderer::SetCullMode(newCullMode);
-				projectProps.RendererProps.TriangleCullMode = Utils::TriangleCullModeToString(newCullMode);
+				properties.RendererProps.TriangleCullMode = Utils::TriangleCullModeToString(newCullMode);
 			}
 
 			auto RecreateEnvironmentMapFunc = [&]()
 			{
-				auto skyboxView = m_ContextScene->GetAllEntitiesWith<SkyboxComponent>();
+				auto skyboxView = m_ContextScene->GetAllActorsWith<SkyboxComponent>();
 
 				for (const auto e : skyboxView)
 				{
-					Entity entity{ e, m_ContextScene.Raw() };
+					Actor entity{ e, m_ContextScene.Raw() };
 
 					SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
 					AssetHandle environmentHandle = skyboxComponent.Skybox;
@@ -163,7 +150,7 @@ namespace Vortex {
 			if (envMapResolution == 1024.0f) currentEnvMapSize = 1;
 			if (envMapResolution == 2048.0f) currentEnvMapSize = 2;
 
-			if (UI::PropertyDropdown("Environment Map Resolution", envMapSizes, VX_ARRAYCOUNT(envMapSizes), currentEnvMapSize))
+			if (UI::PropertyDropdown("Environment Map Resolution", envMapSizes, VX_ARRAYSIZE(envMapSizes), currentEnvMapSize))
 			{
 				switch (currentEnvMapSize)
 				{
@@ -184,7 +171,7 @@ namespace Vortex {
 			if (prefilterMapResolution == 256.0f)  currentPrefilterMapSize = 1;
 			if (prefilterMapResolution == 512.0f)  currentPrefilterMapSize = 2;
 
-			if (UI::PropertyDropdown("Prefilter Map Resolution", prefilterMapSizes, VX_ARRAYCOUNT(prefilterMapSizes), currentPrefilterMapSize))
+			if (UI::PropertyDropdown("Prefilter Map Resolution", prefilterMapSizes, VX_ARRAYSIZE(prefilterMapSizes), currentPrefilterMapSize))
 			{
 				switch (currentPrefilterMapSize)
 				{
@@ -207,7 +194,7 @@ namespace Vortex {
 			if (shadowMapResolution == 4096.0f) currentShadowMapSize = 3;
 			if (shadowMapResolution == 8192.0f) currentShadowMapSize = 4;
 
-			if (UI::PropertyDropdown("Shadow Map Resolution", shadowMapSizes, VX_ARRAYCOUNT(shadowMapSizes), currentShadowMapSize))
+			if (UI::PropertyDropdown("Shadow Map Resolution", shadowMapSizes, VX_ARRAYSIZE(shadowMapSizes), currentShadowMapSize))
 			{
 				switch (currentShadowMapSize)
 				{
@@ -218,32 +205,61 @@ namespace Vortex {
 					case 4: Renderer::SetShadowMapResolution(8192.0f); break;
 				}
 
-				LightSourceComponent skylight;
-				auto lightSourceView = m_ContextScene->GetAllEntitiesWith<LightSourceComponent>();
-				for (const auto e : lightSourceView)
-				{
-					Entity entity{ e, m_ContextScene.Raw() };
-					const LightSourceComponent& lightSourceComponent = entity.GetComponent<LightSourceComponent>();
-					
-					if (lightSourceComponent.Type != LightType::Directional)
-						continue;
-
-					skylight = lightSourceComponent;
-				}
-
 				Renderer::CreateShadowMap(LightType::Directional);
 			}
 
 			float sceneExposure = Renderer::GetSceneExposure();
-			if (UI::Property("Exposure", sceneExposure, 0.01f, 0.01f))
+			if (UI::Property("Exposure", sceneExposure, 0.01f, FLT_MIN, FLT_MAX))
 			{
 				Renderer::SetSceneExposure(sceneExposure);
 			}
 
 			float gamma = Renderer::GetSceneGamma();
-			if (UI::Property("Gamma", gamma, 0.01f, 0.01f))
+			if (UI::Property("Gamma", gamma, 0.01f, FLT_MIN, FLT_MAX))
 			{
 				Renderer::SetSceneGamma(gamma);
+			}
+
+			float maxReflectionLOD = Renderer::GetMaxReflectionLOD();
+			if (UI::Property("Max Reflection LOD", maxReflectionLOD, 1.0f, FLT_MIN, FLT_MAX))
+			{
+				Renderer::SetMaxReflectionLOD(maxReflectionLOD);
+			}
+
+			UI::EndPropertyGrid();
+
+			if (UI::PropertyGridHeader("Fog", false))
+			{
+				UI::BeginPropertyGrid();
+
+				bool fogEnabled = Renderer::GetFogEnabled();
+				if (UI::Property("Fog Enabled", fogEnabled))
+				{
+					Renderer::SetFogEnabled(fogEnabled);
+				}
+
+				float fogDensity = Renderer::GetFogDensity();
+				if (UI::Property("Density", fogDensity, 0.001f, FLT_MIN, FLT_MAX))
+				{
+					Renderer::SetFogDensity(fogDensity);
+				}
+
+				float fogGradient = Renderer::GetFogGradient();
+				if (UI::Property("Gradient", fogGradient, 0.01f, FLT_MIN, FLT_MAX))
+				{
+					Renderer::SetFogGradient(fogGradient);
+				}
+
+				UI::EndPropertyGrid();
+				UI::EndTreeNode();
+			}
+
+			UI::BeginPropertyGrid();
+
+			bool showNormals = Renderer::GetShowNormals();
+			if (UI::Property("Show Normals", showNormals))
+			{
+				Renderer::SetShowNormals(showNormals);
 			}
 
 			static bool wireframeMode = false;
@@ -259,61 +275,6 @@ namespace Vortex {
 			}
 
 			UI::EndPropertyGrid();
-
-			if (UI::PropertyGridHeader("Bloom", false))
-			{
-				UI::BeginPropertyGrid();
-
-				bool bloomEnabled = Renderer::IsFlagSet(RenderFlag::EnableBloom);
-				if (UI::Property("Enable Bloom", bloomEnabled))
-				{
-					Renderer::ToggleFlag(RenderFlag::EnableBloom);
-				}
-
-				if (bloomEnabled)
-				{
-					Math::vec3 bloomSettings = Renderer::GetBloomSettings();
-					bool modified = false;
-					if (UI::Property("Threshold", bloomSettings.x))
-						modified = true;
-					if (UI::Property("Knee", bloomSettings.y))
-						modified = true;
-					if (UI::Property("Intensity", bloomSettings.z))
-						modified = true;
-
-					if (modified)
-					{
-						Renderer::SetBloomSettings(bloomSettings);
-					}
-
-					static const char* bloomBlurSampleSizes[] = { "5", "10", "15", "20", "40" };
-					uint32_t bloomSampleSize = Renderer::GetBloomSampleSize();
-
-					uint32_t currentBloomBlurSamplesSize = 0;
-
-					if (bloomSampleSize == 5)  currentBloomBlurSamplesSize = 0;
-					if (bloomSampleSize == 10) currentBloomBlurSamplesSize = 1;
-					if (bloomSampleSize == 15) currentBloomBlurSamplesSize = 2;
-					if (bloomSampleSize == 20) currentBloomBlurSamplesSize = 3;
-					if (bloomSampleSize == 40) currentBloomBlurSamplesSize = 4;
-
-					if (UI::PropertyDropdown("Bloom Blur Samples", bloomBlurSampleSizes, VX_ARRAYCOUNT(bloomBlurSampleSizes), currentBloomBlurSamplesSize))
-					{
-						switch (currentBloomBlurSamplesSize)
-						{
-							case 0: Renderer::SetBloomSampleSize(5);  break;
-							case 1: Renderer::SetBloomSampleSize(10); break;
-							case 2: Renderer::SetBloomSampleSize(15); break;
-							case 3: Renderer::SetBloomSampleSize(20); break;
-							case 4: Renderer::SetBloomSampleSize(40); break;
-						}
-					}
-				}
-
-				UI::EndPropertyGrid();
-				UI::EndTreeNode();
-			}
-
 			UI::EndTreeNode();
 		}
 

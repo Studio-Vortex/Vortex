@@ -1,93 +1,80 @@
 #include "vxpch.h"
 #include "Prefab.h"
 
-#include "Vortex/Scene/Components.h"
-
-#include "Vortex/Renderer/Font/Font.h"
-#include "Vortex/Renderer/Mesh.h"
-#include "Vortex/Renderer/Skybox.h"
-#include "Vortex/Renderer/ParticleSystem/ParticleEmitter.h"
-
-#include "Vortex/Serialization/SceneSerializer.h"
-
+#include "Vortex/Scene/Scene.h"
+#include "Vortex/Asset/AssetImporter.h"
 #include "Vortex/Scripting/ScriptEngine.h"
 
 namespace Vortex {
 
-	Prefab::Prefab(const std::filesystem::path& filepath)
+	Prefab::Prefab()
 	{
 		m_Scene = Scene::Create();
-		m_Entity = Entity{};
-		m_Filepath = filepath;
 	}
 
-	Prefab::Prefab(Entity entity)
+	void Prefab::Create(Actor actor, bool serialize)
 	{
 		m_Scene = Scene::Create();
-		m_Entity = CreatePrefabFromEntity(entity);
+		m_Actor = CreatePrefabFromActor(actor);
+
+		if (serialize)
+		{
+			AssetImporter::Serialize(SharedReference<Prefab>(this));
+		}
 	}
 
-	Entity Prefab::CreatePrefabFromEntity(Entity entity)
+	Actor Prefab::CreatePrefabFromActor(Actor actor)
 	{
-		Entity newEntity = m_Scene->CreateEntity();
+		VX_CORE_ASSERT(Handle, "invalid asset handle!");
+
+		Actor prefabActor = m_Scene->CreateActor();
 
 		// Add prefab component
-		PrefabComponent& prefabComponent = newEntity.AddComponent<PrefabComponent>();
-		prefabComponent.PrefabUUID = UUID();
-		prefabComponent.EntityUUID = entity.GetUUID();
+		PrefabComponent& prefabComponent = prefabActor.AddComponent<PrefabComponent>();
+		prefabComponent.Prefab = Handle;
+		prefabComponent.ActorUUID = prefabActor.GetUUID();
 
-		entity.m_Scene->CopyComponentIfExists<TagComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<TransformComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<CameraComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<SkyboxComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<LightSourceComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<MeshRendererComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<StaticMeshRendererComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<SpriteRendererComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<CircleRendererComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<ParticleEmitterComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<TextMeshComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<AudioSourceComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<AudioListenerComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<RigidBodyComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<CharacterControllerComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<FixedJointComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<BoxColliderComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<SphereColliderComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<CapsuleColliderComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<MeshColliderComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<RigidBody2DComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<BoxCollider2DComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<CircleCollider2DComponent>(newEntity, m_Scene->m_Registry, entity);
-		entity.m_Scene->CopyComponentIfExists<ScriptComponent>(newEntity, m_Scene->m_Registry, entity);
+		actor.m_Scene->CopyComponentIfExists<TagComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<TransformComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<CameraComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<SkyboxComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<LightSourceComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<MeshRendererComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<StaticMeshRendererComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<SpriteRendererComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<CircleRendererComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<ParticleEmitterComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<TextMeshComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<ButtonComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<AudioSourceComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<AudioListenerComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<RigidBodyComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<CharacterControllerComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<FixedJointComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<BoxColliderComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<SphereColliderComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<CapsuleColliderComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<MeshColliderComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<RigidBody2DComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<BoxCollider2DComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<CircleCollider2DComponent>(prefabActor, m_Scene->m_Registry, actor);
+		actor.m_Scene->CopyComponentIfExists<ScriptComponent>(prefabActor, m_Scene->m_Registry, actor);
 
-		const auto& children = entity.Children();
-		for (const auto& childID : children)
+		const std::vector<UUID>& children = actor.Children();
+		for (const UUID& childID : children)
 		{
-			Entity sourceChild = entity.m_Scene->TryGetEntityWithUUID(childID);
-			VX_CORE_ASSERT(sourceChild, "Child ID Invalid --- This should never happen");
-			Entity childDuplicate = CreatePrefabFromEntity(sourceChild);
+			Actor childDuplicate = CreatePrefabFromActor(actor.m_Scene->TryGetActorWithUUID(childID));
 
-			childDuplicate.SetParentUUID(newEntity.GetUUID());
-			newEntity.Children().push_back(childDuplicate.GetUUID());
+			childDuplicate.SetParentUUID(prefabActor.GetUUID());
+			prefabActor.AddChild(childDuplicate.GetUUID());
 		}
 
-		if (newEntity.HasComponent<ScriptComponent>())
+		if (prefabActor.HasComponent<ScriptComponent>())
 		{
-			ScriptEngine::RuntimeInstantiateEntity(newEntity);
+			ScriptEngine::DuplicateScriptInstance(actor, prefabActor);
 		}
 
-		return newEntity;
-	}
-
-	SharedRef<Prefab> Prefab::Create(const std::filesystem::path& filepath)
-	{
-		return CreateShared<Prefab>(filepath);
-	}
-
-	SharedRef<Prefab> Prefab::Create(Entity entity)
-	{
-		return CreateShared<Prefab>(entity);
+		return prefabActor;
 	}
 
 }

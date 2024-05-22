@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Vortex/Core/Base.h"
-#include "Vortex/Core/Math/Math.h"
+
+#include "Vortex/Math/Math.h"
 
 namespace Vortex {
 
@@ -12,6 +13,7 @@ namespace Vortex {
 		Math::vec2 SizeBegin = Math::vec2(1.0f), SizeEnd = Math::vec2(1.0f);
 		Math::vec4 ColorBegin = Math::vec4(1.0f), ColorEnd = Math::vec4(1.0f);
 		Math::vec4 RandomColor = Math::vec4(1.0f);
+
 		float Rotation = 0.0f;
 
 		float LifeTime = 1.0f;

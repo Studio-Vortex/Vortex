@@ -14,7 +14,7 @@ namespace Vortex {
 
 	void Material::Bind() const
 	{
-		if (AssetHandle handle = m_Properties.NormalMap)
+		if (AssetHandle handle = GetTexture("u_NormalMap"))
 		{
 			uint32_t normalMapTextureSlot = 6;
 			SharedReference<Texture2D> normalMap = AssetManager::GetAsset<Texture2D>(handle);
@@ -26,7 +26,7 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasNormalMap", false);
 
 		m_Shader->SetFloat3("u_Material.Albedo", m_Properties.Albedo);
-		if (AssetHandle handle = m_Properties.AlbedoMap)
+		if (AssetHandle handle = GetTexture("u_AlbedoMap"))
 		{
 			uint32_t albedoMapTextureSlot = 7;
 			SharedReference<Texture2D> albedoMap = AssetManager::GetAsset<Texture2D>(handle);
@@ -38,7 +38,7 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasAlbedoMap", false);
 
 		m_Shader->SetFloat("u_Material.Metallic", m_Properties.Metallic);
-		if (AssetHandle handle = m_Properties.MetallicMap)
+		if (AssetHandle handle = GetTexture("u_MetallicMap"))
 		{
 			uint32_t metallicMapTextureSlot = 8;
 			SharedReference<Texture2D> metallicMap = AssetManager::GetAsset<Texture2D>(handle);
@@ -50,7 +50,7 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasMetallicMap", false);
 
 		m_Shader->SetFloat("u_Material.Roughness", m_Properties.Roughness);
-		if (AssetHandle handle = m_Properties.RoughnessMap)
+		if (AssetHandle handle = GetTexture("u_RoughnessMap"))
 		{
 			uint32_t roughnessMapTextureSlot = 9;
 			SharedReference<Texture2D> roughnessMap = AssetManager::GetAsset<Texture2D>(handle);
@@ -62,7 +62,7 @@ namespace Vortex {
 			m_Shader->SetBool("u_Material.HasRoughnessMap", false);
 
 		m_Shader->SetFloat("u_Material.Emission", m_Properties.Emission);
-		if (AssetHandle handle = m_Properties.EmissionMap)
+		if (AssetHandle handle = GetTexture("u_EmissionMap"))
 		{
 			uint32_t emissionMapTextureSlot = 10;
 			SharedReference<Texture2D> emissionMap = AssetManager::GetAsset<Texture2D>(handle);
@@ -73,7 +73,7 @@ namespace Vortex {
 		else
 			m_Shader->SetBool("u_Material.HasEmissionMap", false);
 
-		if (AssetHandle handle = m_Properties.ParallaxOcclusionMap)
+		if (AssetHandle handle = GetTexture("u_ParallaxOcclusionMap"))
 		{
 			uint32_t parallaxOcclusionMapTextureSlot = 11;
 			SharedReference<Texture2D> parallaxOcclusionMap = AssetManager::GetAsset<Texture2D>(handle);
@@ -85,7 +85,7 @@ namespace Vortex {
 		else
 			m_Shader->SetBool("u_Material.HasPOMap", false);
 
-		if (AssetHandle handle = m_Properties.AmbientOcclusionMap)
+		if (AssetHandle handle = GetTexture("u_AmbientOcclusionMap"))
 		{
 			uint32_t ambientOcclusionMapTextureSlot = 12;
 			SharedReference<Texture2D> ambientOcclusionMap = AssetManager::GetAsset<Texture2D>(handle);
@@ -121,6 +121,25 @@ namespace Vortex {
 		m_Properties.Name = name;
     }
 
+    AssetHandle Material::GetTexture(const std::string& name) const
+    {
+		if (!HasTexture(name)) {
+			return 0;
+		}
+
+		return m_Properties.Textures.at(name);
+    }
+
+    void Material::SetTexture(const std::string& name, AssetHandle texture)
+    {
+		m_Properties.Textures[name] = texture;
+    }
+
+	bool Material::HasTexture(const std::string& name) const
+	{
+		return m_Properties.Textures.contains(name);
+	}
+
 	const Math::vec3& Material::GetAlbedo() const
 	{
 		return m_Properties.Albedo;
@@ -129,26 +148,6 @@ namespace Vortex {
 	void Material::SetAlbedo(const Math::vec3& albedo)
 	{
 		m_Properties.Albedo = albedo;
-	}
-
-	AssetHandle Material::GetAlbedoMap() const
-	{
-		return m_Properties.AlbedoMap;
-	}
-
-	void Material::SetAlbedoMap(AssetHandle albedoMap)
-	{
-		m_Properties.AlbedoMap = albedoMap;
-	}
-
-	AssetHandle Material::GetNormalMap() const
-	{
-		return m_Properties.NormalMap;
-	}
-
-	void Material::SetNormalMap(AssetHandle normalMap)
-	{
-		m_Properties.NormalMap = normalMap;
 	}
 
 	float Material::GetMetallic() const
@@ -161,16 +160,6 @@ namespace Vortex {
 		m_Properties.Metallic = metallic;
 	}
 
-	AssetHandle Material::GetMetallicMap() const
-	{
-		return m_Properties.MetallicMap;
-	}
-
-	void Material::SetMetallicMap(AssetHandle metallicMap)
-	{
-		m_Properties.MetallicMap = metallicMap;
-	}
-
 	float Material::GetRoughness() const
 	{
 		return m_Properties.Roughness;
@@ -179,16 +168,6 @@ namespace Vortex {
 	void Material::SetRoughness(float roughness)
 	{
 		m_Properties.Roughness = roughness;
-	}
-
-	AssetHandle Material::GetRoughnessMap() const
-	{
-		return m_Properties.RoughnessMap;
-	}
-
-	void Material::SetRoughnessMap(AssetHandle roughnessMap)
-	{
-		m_Properties.RoughnessMap = roughnessMap;
 	}
 
 	float Material::GetEmission() const
@@ -201,16 +180,6 @@ namespace Vortex {
 		m_Properties.Emission = emission;
 	}
 
-	AssetHandle Material::GetEmissionMap() const
-	{
-		return m_Properties.EmissionMap;
-	}
-
-	void Material::SetEmissionMap(AssetHandle emissionMap)
-	{
-		m_Properties.EmissionMap = emissionMap;
-	}
-
 	float Material::GetParallaxHeightScale() const
 	{
 		return m_Properties.ParallaxHeightScale;
@@ -219,26 +188,6 @@ namespace Vortex {
 	void Material::SetParallaxHeightScale(float heightScale)
 	{
 		m_Properties.ParallaxHeightScale = heightScale;
-	}
-
-	AssetHandle Material::GetParallaxOcclusionMap() const
-	{
-		return m_Properties.ParallaxOcclusionMap;
-	}
-
-	void Material::SetParallaxOcclusionMap(AssetHandle parallaxOcclusionMap)
-	{
-		m_Properties.ParallaxOcclusionMap = parallaxOcclusionMap;
-	}
-
-	AssetHandle Material::GetAmbientOcclusionMap() const
-	{
-		return m_Properties.AmbientOcclusionMap;
-	}
-
-	void Material::SetAmbientOcclusionMap(AssetHandle ambientOcclusionMap)
-	{
-		m_Properties.AmbientOcclusionMap = ambientOcclusionMap;
 	}
 
     const Math::vec2& Material::GetUV() const
@@ -323,18 +272,12 @@ namespace Vortex {
 
 	void Material::Copy(SharedReference<Material>& dest, const SharedReference<Material>& src)
 	{
-		dest->SetNormalMap(src->GetNormalMap());
-		dest->SetAlbedoMap(src->GetAlbedoMap());
+		dest->m_Properties.Textures = src->m_Properties.Textures;
 		dest->SetAlbedo(src->GetAlbedo());
-		dest->SetMetallicMap(src->GetMetallicMap());
 		dest->SetMetallic(src->GetMetallic());
-		dest->SetRoughnessMap(src->GetRoughnessMap());
 		dest->SetRoughness(src->GetRoughness());
 		dest->SetEmission(src->GetEmission());
-		dest->SetEmissionMap(src->GetEmissionMap());
 		dest->SetParallaxHeightScale(src->GetParallaxHeightScale());
-		dest->SetParallaxOcclusionMap(src->GetParallaxOcclusionMap());
-		dest->SetAmbientOcclusionMap(src->GetAmbientOcclusionMap());
 		dest->SetUV(src->GetUV());
 		dest->SetOpacity(src->GetOpacity());
 		dest->ClearFlags();

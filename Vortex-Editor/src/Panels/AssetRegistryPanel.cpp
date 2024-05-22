@@ -53,13 +53,27 @@ namespace Vortex {
 					continue;
 
 				Gui::Text("AssetHandle: %s", handleAsString.c_str());
+				
 				Gui::SameLine();
+				
 				std::string buttonName = "Reload##" + handleAsString + typeAsString;
 				if (Gui::Button(buttonName.c_str()))
 				{
 					Project::GetEditorAssetManager()->ReloadData(metadata.Handle);
 					VX_CONSOLE_LOG_INFO("Asset Reloaded: Handle: '{}', Path: '{}'", handleAsString, filepath);
 				}
+				
+				Gui::SameLine();
+
+				buttonName = "Remove##" + handleAsString + typeAsString;
+				if (Gui::Button(buttonName.c_str()))
+				{
+					if (Project::GetEditorAssetManager()->RemoveAsset(metadata.Handle))
+						VX_CONSOLE_LOG_INFO("Asset Removed: Handle: '{}', Path: '{}'", handleAsString, filepath);
+					else
+						VX_CONSOLE_LOG_ERROR("Failed to Remove Asset: Handle: '{}', Path: '{}'", handleAsString, filepath);
+				}
+
 				Gui::Text("Filepath: %s", filepath.c_str());
 				Gui::Text("Type: %s", typeAsString.c_str());
 				Gui::Text("IsDataLoaded: %s", metadata.IsDataLoaded ? "true" : "false");

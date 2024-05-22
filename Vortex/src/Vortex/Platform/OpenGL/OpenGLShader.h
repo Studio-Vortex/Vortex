@@ -2,7 +2,7 @@
 
 #include "Vortex/Renderer/Shader.h"
 
-#include "Vortex/Core/Math/Math.h"
+#include "Vortex/Math/Math.h"
 
 #include <unordered_map>
 #include <string>
