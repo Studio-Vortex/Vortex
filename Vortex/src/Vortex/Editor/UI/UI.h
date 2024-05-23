@@ -1013,12 +1013,13 @@ namespace Vortex::UI {
 		return modified;
 	}
 
-	VORTEX_API VX_FORCE_INLINE static bool KeyCodeDropdown(const char* label, const char** options, uint32_t count, KeyCode& selected, const char* desc = nullptr)
+	VORTEX_API VX_FORCE_INLINE static bool KeyCodeDropdown(const char* label, const char** options, uint32_t count, KeyCode& selected, bool showLabel = true, const char* desc = nullptr)
 	{
 		const char* current = Utils::StringFromKeyCode(selected);
 
 		ShiftCursor(10.0f, 9.0f);
-		Gui::Text(label);
+		if (showLabel)
+			Gui::Text(label);
 		if (desc) {
 			Gui::SameLine();
 			HelpMarker(desc);

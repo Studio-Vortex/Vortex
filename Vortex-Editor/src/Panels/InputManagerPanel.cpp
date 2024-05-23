@@ -2,6 +2,17 @@
 
 namespace Vortex {
 
+	void InputManagerPanel::OnPanelAttach()
+	{
+		for (uint32_t i = (uint32_t)KeyCode::Space; i < (uint32_t)KeyCode::MaxKeys; i++)
+		{
+			const char* keycodeStr = Utils::StringFromKeyCode((KeyCode)i);
+			if (std::string(keycodeStr).starts_with("Unknown keycode!"))
+				continue;
+			m_KeycodeOptions.push_back(keycodeStr);
+		}
+	}
+
 	void InputManagerPanel::OnGuiRender()
 	{
 		if (!IsOpen)
@@ -54,19 +65,8 @@ namespace Vortex {
 			static std::string keybindName = "(null)";
 			UI::Property("Keybind Name", keybindName);
 
-			static std::vector<const char*> keycodeOptions;
-			if (keycodeOptions.empty())
-			{
-				for (uint32_t i = (uint32_t)KeyCode::Space; i < (uint32_t)KeyCode::MaxKeys; i++)
-				{
-					const char* keycodeStr = Utils::StringFromKeyCode((KeyCode)i);
-					if (std::string(keycodeStr).starts_with("Unknown keycode!"))
-						continue;
-					keycodeOptions.push_back(keycodeStr);
-				}
-			}
-			KeyCode currentKeycode = KeyCode::Space;
-			UI::KeyCodeDropdown("KeyCode", keycodeOptions.data(), keycodeOptions.size(), currentKeycode);
+			static KeyCode currentKeycode = KeyCode::Space;
+			UI::KeyCodeDropdown("KeyCode", m_KeycodeOptions.data(), m_KeycodeOptions.size(), currentKeycode);
 
 			UI::EndPropertyGrid();
 
@@ -75,12 +75,13 @@ namespace Vortex {
 
 			auto resetPopup = [&]() {
 				keybindName = "(null)";
+				currentKeycode = KeyCode::Space;
 				m_AddKeybindPopupOpen = false;
 			};
 
 			if (Gui::Button("Add", buttonSize))
 			{
-				
+				InputManager::SetKeybindByString(keybindName, currentKeycode);
 
 				resetPopup();
 				Gui::CloseCurrentPopup();
@@ -102,10 +103,29 @@ namespace Vortex {
 	{
 		const InputManager::KeybindMap& keybinds = InputManager::GetAllKeybinds();
 
-		for (const auto& [name, keycode] : keybinds)
+		static const char* columns[] = { "Name", "KeyCode" };
+
+		UI::Table("Keybinds", columns, VX_ARRAYSIZE(columns), Gui::GetContentRegionAvail(), [&]()
 		{
-			
-		}
+			for (const auto& [name, keycode] : keybinds)
+			{
+				Gui::TableNextColumn();
+				UI::ShiftCursorX(10.0f);
+				Gui::Text(name.c_str());
+				UI::Draw::Underline();
+
+				Gui::TableNextColumn();
+				const std::string dropdownName = name;
+
+				UI::ShiftCursorY(-12.0f);
+
+				KeyCode currentKeycode = keycode;
+				if (UI::KeyCodeDropdown(dropdownName.c_str(), m_KeycodeOptions.data(), m_KeycodeOptions.size(), currentKeycode, false))
+				{
+					InputManager::SetKeybindByString(name, currentKeycode);
+				}
+			}
+		});
 	}
 
 	void InputManagerPanel::RenderAddMousebindPopup()

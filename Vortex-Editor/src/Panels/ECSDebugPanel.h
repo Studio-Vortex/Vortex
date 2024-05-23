@@ -39,6 +39,7 @@ namespace Vortex {
 					const char* hasComponent = actor.HasComponent<TComponent>() ? "true" : "false";
 					
 					Gui::TableNextColumn();
+					UI::ShiftCursorX(10.0f);
 					Gui::Text(componentName);
 					UI::DrawItemActivityOutline();
 

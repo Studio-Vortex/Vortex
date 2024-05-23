@@ -12,6 +12,7 @@ namespace Vortex {
 		InputManagerPanel() = default;
 		~InputManagerPanel() override = default;
 
+		void OnPanelAttach() override;
 		void OnGuiRender() override;
 
 		EDITOR_PANEL_TYPE(InputManager)
@@ -26,6 +27,8 @@ namespace Vortex {
 	private:
 		bool m_AddKeybindPopupOpen = false;
 		bool m_AddMousebindPopupOpen = false;
+
+		std::vector<const char*> m_KeycodeOptions;
 	};
 
 }

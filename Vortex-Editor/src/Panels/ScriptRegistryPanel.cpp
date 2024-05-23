@@ -38,12 +38,14 @@ namespace Vortex {
 			Gui::TableNextColumn();
 			for (const ScriptAssemblyTypedefInfo& typedefInfo : scriptCoreTypedefInfo)
 			{
+				UI::ShiftCursorX(10.0f);
 				Gui::Text("%s.%s", typedefInfo.Namespace, typedefInfo.Name);
 			}
 
 			Gui::TableNextColumn();
 			for (const ScriptAssemblyTypedefInfo& typedefInfo : scriptCoreTypedefInfo)
 			{
+				UI::ShiftCursorX(10.0f);
 				Gui::Text("%u", typedefInfo.FieldCount);
 			}
 		});

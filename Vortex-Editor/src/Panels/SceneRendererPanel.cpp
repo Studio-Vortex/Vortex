@@ -79,6 +79,7 @@ namespace Vortex {
 				for (SharedReference<Shader>& shader : m_Shaders)
 				{
 					Gui::TableNextColumn();
+					UI::ShiftCursorX(10.0f);
 					const std::string& shaderName = shader->GetName();
 					Gui::Text(shaderName.c_str());
 					UI::Draw::Underline();
