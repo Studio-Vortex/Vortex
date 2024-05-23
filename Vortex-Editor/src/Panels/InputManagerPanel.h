@@ -25,10 +25,11 @@ namespace Vortex {
 		void RenderMousebinds();
 
 	private:
+		std::vector<const char*> m_KeycodeOptions;
+		std::vector<const char*> m_MousebuttonOptions;
+
 		bool m_AddKeybindPopupOpen = false;
 		bool m_AddMousebindPopupOpen = false;
-
-		std::vector<const char*> m_KeycodeOptions;
 	};
 
 }

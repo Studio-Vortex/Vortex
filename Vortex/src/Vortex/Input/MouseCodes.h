@@ -34,6 +34,13 @@ namespace Vortex {
 		Locked = 2,
 	};
 
+	namespace Utils {
+
+		const char* StringFromMouseButton(MouseButton button);
+		MouseButton MouseButtonFromString(const char* str);
+
+	}
+
 	inline std::ostream& operator<<(std::ostream& stream, MouseButton mouseCode)
 	{
 		return stream << static_cast<int32_t>(mouseCode);

@@ -6,6 +6,7 @@
 #include "Vortex/Core/String.h"
 
 #include "Vortex/Input/KeyCodes.h"
+#include "Vortex/Input/MouseCodes.h"
 
 #include "Vortex/Math/Math.h"
 
@@ -1042,6 +1043,65 @@ namespace Vortex::UI {
 				{
 					current = options[i];
 					selected = Utils::KeyCodeFromString(current);
+					modified = true;
+
+					Gui::CloseCurrentPopup();
+				}
+
+				if (isSelected)
+				{
+					Gui::SetItemDefaultFocus();
+				}
+
+				// skip last item
+				if (i != count - 1)
+				{
+					UI::Draw::Underline();
+					Gui::Spacing();
+				}
+			}
+
+			Gui::EndCombo();
+		}
+
+		DrawItemActivityOutline();
+
+		Gui::PopItemWidth();
+		Gui::NextColumn();
+		Draw::Underline();
+
+		return modified;
+	}
+
+	VORTEX_API VX_FORCE_INLINE static bool MouseButtonDropdown(const char* label, const char** options, uint32_t count, MouseButton& selected, bool showLabel = true, const char* desc = nullptr)
+	{
+		const char* current = Utils::StringFromMouseButton(selected);
+
+		ShiftCursor(10.0f, 9.0f);
+		if (showLabel)
+			Gui::Text(label);
+		if (desc) {
+			Gui::SameLine();
+			HelpMarker(desc);
+		}
+		Gui::NextColumn();
+		ShiftCursorY(4.0f);
+		Gui::PushItemWidth(-1);
+
+		bool modified = false;
+
+		const ImGuiComboFlags flags = ImGuiComboFlags_None;
+
+		const std::string id = "##" + std::string(label);
+		if (Gui::BeginCombo(id.c_str(), current, flags))
+		{
+			for (uint32_t i = 0; i < count; i++)
+			{
+				const bool isSelected = current == options[i];
+				if (Gui::Selectable(options[i], isSelected) || (Gui::IsItemFocused() && Gui::IsKeyPressed(ImGuiKey_Enter)))
+				{
+					current = options[i];
+					selected = Utils::MouseButtonFromString(current);
 					modified = true;
 
 					Gui::CloseCurrentPopup();
