@@ -5,6 +5,7 @@
 #include "Vortex/Core/Log.h"
 
 #include "Vortex/Input/Input.h"
+#include "Vortex/Input/InputManager.h"
 
 #include "Vortex/Math/Noise.h"
 
@@ -657,6 +658,46 @@ namespace Vortex {
 			s_Data.NextSceneName = mstring.String();
 			s_Data.TransitionQueued = true;
 		}
+
+#pragma endregion
+
+#pragma region InputMananger
+
+		KeyCode InputManager_GetKeybind(MonoString* name)
+		{
+			ManagedString mstring(name);
+
+			if (!InputManager::HasKeybind(mstring.String()))
+				return KeyCode::A;
+
+			return InputManager::GetKeybindByString(mstring.String());
+		}
+
+		MouseButton InputManager_GetMousebind(MonoString* name)
+		{
+			ManagedString mstring(name);
+
+			if (!InputManager::HasMousebind(mstring.String()))
+				return MouseButton::Button0;
+
+			return InputManager::GetMousebindByString(mstring.String());
+		}
+
+		bool InputManager_HasKeybind(MonoString* name)
+		{
+			ManagedString mstring(name);
+
+			return InputManager::HasKeybind(mstring.String());
+		}
+
+		bool InputManager_HasMousebind(MonoString* name)
+		{
+			ManagedString mstring(name);
+
+			return InputManager::HasMousebind(mstring.String());
+		}
+
+#pragma endregion
 
 		bool Component_IsValid(UUID actorUUID, MonoReflectionType* componentType)
 		{
@@ -9465,6 +9506,11 @@ namespace Vortex {
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Scene_Resume);
 
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(SceneManager_LoadScene);
+
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(InputManager_GetKeybind);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(InputManager_GetMousebind);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(InputManager_HasKeybind);
+		VX_REGISTER_DEFAULT_INTERNAL_CALL(InputManager_HasMousebind);
 
 		VX_REGISTER_DEFAULT_INTERNAL_CALL(Component_IsValid);
 

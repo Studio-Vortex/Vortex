@@ -125,6 +125,15 @@ namespace Vortex {
 
 #pragma endregion
 
+#pragma region InputManager
+
+		KeyCode InputManager_GetKeybind(MonoString* name);
+		MouseButton InputManager_GetMousebind(MonoString* name);
+		bool InputManager_HasKeybind(MonoString* name);
+		bool InputManager_HasMousebind(MonoString* name);
+
+#pragma endregion
+
 #pragma region Component
 
 		bool Component_IsValid(UUID actorUUID, MonoReflectionType* componentType);

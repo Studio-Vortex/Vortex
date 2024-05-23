@@ -143,6 +143,13 @@ namespace Vortex {
 		MaxKeys            = Menu,
 	};
 
+	namespace Utils {
+		
+		const char* StringFromKeyCode(KeyCode key);
+		KeyCode KeyCodeFromString(const char* str);
+
+	}
+
 	inline std::ostream& operator<<(std::ostream& stream, KeyCode keyCode)
 	{
 		return stream << static_cast<int32_t>(keyCode);

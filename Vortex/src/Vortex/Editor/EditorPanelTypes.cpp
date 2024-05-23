@@ -21,6 +21,7 @@ namespace Vortex {
 				case EditorPanelType::AssetRegistry:         return "Asset Registry";
 				case EditorPanelType::BuildSettings:         return "Build Settings";
 				case EditorPanelType::SystemManager:         return "System Manager";
+				case EditorPanelType::InputManager:          return "Input Manager";
 				case EditorPanelType::ShaderEditor:          return "Shader Editor";
 				case EditorPanelType::Performance:           return "Performance";
 				case EditorPanelType::AudioMixer:            return "Audio Mixer";

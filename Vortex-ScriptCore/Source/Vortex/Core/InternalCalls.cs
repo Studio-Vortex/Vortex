@@ -164,6 +164,22 @@ namespace Vortex {
 
 		#endregion
 
+		#region InputManager
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static KeyCode InputManager_GetKeybind(string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static MouseButton InputManager_GetMousebind(string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool InputManager_HasKeybind(string name);
+
+		[MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static bool InputManager_HasMousebind(string name);
+
+		#endregion
+
 		#region Component
 
 		[MethodImpl(MethodImplOptions.InternalCall)]

@@ -30,6 +30,7 @@
 
 /// Input
 #include "Vortex/Input/Input.h"
+#include "Vortex/Input/InputManager.h"
 #include "Vortex/Input/Gamepad.h"
 #include "Vortex/Input/KeyCodes.h"
 #include "Vortex/Input/MouseCodes.h"

@@ -23,7 +23,7 @@ namespace Vortex {
 
 		void OnUpdate(TimeStep ts) override;
 		void OnGuiRender() override;
-		void OnPanelsRender();
+		void OnEditorPanelsRender();
 		void OnMainMenuBarRender();
 		void OnScenePanelRender();
 		void UIHandleAssetDrop();

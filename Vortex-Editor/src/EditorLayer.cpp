@@ -12,6 +12,7 @@
 #include "Panels/AssetRegistryPanel.h"
 #include "Panels/BuildSettingsPanel.h"
 #include "Panels/SystemManagerPanel.h"
+#include "Panels/InputManagerPanel.h"
 #include "Panels/ShaderEditorPanel.h"
 #include "Panels/PerformancePanel.h"
 #include "Panels/AudioMixerPanel.h"
@@ -89,6 +90,7 @@ namespace Vortex {
 			VX_BIND_CALLBACK(BuildProject)
 		);
 		m_PanelManager->AddPanel<SystemManagerPanel>();
+		m_PanelManager->AddPanel<InputManagerPanel>();
 		m_PanelManager->AddPanel<ShaderEditorPanel>();
 		m_PanelManager->AddPanel<PerformancePanel>();
 		m_PanelManager->AddPanel<AudioMixerPanel>();
@@ -450,7 +452,7 @@ namespace Vortex {
 		const bool projectOpen = Project::GetActive();
 		if (projectOpen && !m_SceneViewportMaximized)
 		{
-			OnPanelsRender();
+			OnEditorPanelsRender();
 		}
 
 		// Always render if open
@@ -495,7 +497,7 @@ namespace Vortex {
 		Gui::End();
 	}
 
-	void EditorLayer::OnPanelsRender()
+	void EditorLayer::OnEditorPanelsRender()
 	{
 		m_PanelManager->OnGuiRender<PhysicsMaterialEditorPanel>();
 		m_PanelManager->OnGuiRender<PhysicsStatisticsPanel>();
@@ -509,6 +511,7 @@ namespace Vortex {
 		m_PanelManager->OnGuiRender<AssetRegistryPanel>();
 		m_PanelManager->OnGuiRender<BuildSettingsPanel>();
 		m_PanelManager->OnGuiRender<SystemManagerPanel>();
+		m_PanelManager->OnGuiRender<InputManagerPanel>();
 		m_PanelManager->OnGuiRender<ShaderEditorPanel>();
 		m_PanelManager->OnGuiRender<AudioMixerPanel>();
 		m_PanelManager->OnGuiRender<SubModulesPanel>();
@@ -836,6 +839,8 @@ namespace Vortex {
 				m_PanelManager->MenuBarItem<ContentBrowserPanel>();
 				separator();
 				Gui::MenuItem("Inspector", nullptr, &m_PanelManager->GetPanel<SceneHierarchyPanel>()->IsInspectorOpen());
+				separator();
+				m_PanelManager->MenuBarItem<InputManagerPanel>();
 				separator();
 				m_PanelManager->MenuBarItem<MaterialEditorPanel>();
 				separator();

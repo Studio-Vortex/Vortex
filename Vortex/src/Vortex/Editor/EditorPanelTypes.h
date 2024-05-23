@@ -21,6 +21,7 @@ namespace Vortex {
 		AssetRegistry,
 		BuildSettings,
 		SystemManager,
+		InputManager,
 		ShaderEditor,
 		Performance,
 		AudioMixer,
